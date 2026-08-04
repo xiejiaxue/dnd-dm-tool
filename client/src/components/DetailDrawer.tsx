@@ -3,6 +3,7 @@ import { api } from '../api';
 import { connection } from '../ws';
 import { useScene } from '../ws';
 import { formatMonster, formatSpell, StatBlock } from '../format';
+import { setPending } from '../pending';
 import type { EntryType } from '../types';
 
 export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryType; id: string; nameZh: string } | null; onBack: () => void }) {
@@ -52,17 +53,12 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
         >{fav ? '已收藏' : '★ 收藏'}</button>
         {role === 'dm' && entry.type === 'monster' && (
           <button
-            onClick={() => {
-              connection.sendOps([{
-                op: 'addToken',
-                token: {
-                  id: `t${Date.now()}`, kind: 'monster', name: entry.nameZh, entryId: entry.id,
-                  x: 200, y: 200, size: 100, avatar: `/api/token/${entry.id}`, color: '#fff',
-                },
-              }]);
-            }}
+            onClick={() => setPending({
+              kind: 'monster', name: entry.nameZh, entryId: entry.id,
+              avatar: `/api/token/${entry.id}`, color: '#fff',
+            })}
             className="flex-1 rounded bg-amber-600/20 text-amber-400 py-1.5 hover:bg-amber-600/30"
-          >➤ 放置到棋盘</button>
+          >✋ 拿起</button>
         )}
       </div>
     </div>

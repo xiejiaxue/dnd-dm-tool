@@ -7,12 +7,13 @@ interface Props {
   token: Token;
   active: boolean;
   selected: boolean;
+  draggable?: boolean;
   onSelect: () => void;
   onDragEnd: (x: number, y: number) => void;
   onContextMenu: () => void;
 }
 
-export default function TokenShape({ token, active, selected, onSelect, onDragEnd, onContextMenu }: Props) {
+export default function TokenShape({ token, active, selected, draggable = true, onSelect, onDragEnd, onContextMenu }: Props) {
   const img = useImage(token.avatar || null);
   const [pulse, setPulse] = useState(0);
 
@@ -31,7 +32,7 @@ export default function TokenShape({ token, active, selected, onSelect, onDragEn
   return (
     <Group
       x={token.x} y={token.y}
-      draggable
+      draggable={draggable}
       onDragEnd={(e) => onDragEnd(e.target.x(), e.target.y())}
       onClick={onSelect}
       onTap={onSelect}

@@ -1,18 +1,44 @@
+import { useEffect, useState } from 'react';
 import TopBar from './components/TopBar';
 import Toolbar from './components/Toolbar';
 import InitiativePanel from './components/InitiativePanel';
 import QueryPanel from './components/QueryPanel';
 import BoardCanvas from './components/BoardCanvas';
+import { useScene } from './ws';
+import { setPending, subscribe } from './pending';
+import type { PendingToken } from './pending';
 
 export default function App() {
+  const { role } = useScene();
+  const [tool, setTool] = useState('select');
+  const [pending, setPendingState] = useState<PendingToken | null>(null);
+
+  // QueryPanel hands a "picked-up" token via the global bus; keep it in sync
+  // and switch to the add tool so a DM can click-to-place right away.
+  useEffect(() => {
+    return subscribe((p) => {
+      setPendingState(p);
+      if (p && role === 'dm') setTool('add');
+    });
+  }, [role]);
+
   return (
     <div className="h-full flex flex-col">
       <TopBar />
       <InitiativePanel />
       <div className="flex-1 flex min-h-0">
-        <Toolbar />
+        <Toolbar
+          role={role}
+          tool={tool}
+          onTool={setTool}
+          pendingLabel={pending ? `点击棋盘放置：${pending.name}` : null}
+        />
         <div className="flex-1 min-w-0 relative bg-zinc-900">
-          <BoardCanvas />
+          <BoardCanvas
+            tool={tool}
+            pending={pending}
+            onClearPending={() => setPending(null)}
+          />
         </div>
         <QueryPanel />
       </div>
