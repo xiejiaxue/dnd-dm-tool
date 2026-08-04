@@ -77,4 +77,10 @@ describe('REST API', () => {
     expect((await request(app).post('/api/verify-password').send({ password: 'secret' })).body.ok).toBe(true);
     expect((await request(app).post('/api/verify-password').send({ password: 'wrong' })).body.ok).toBe(false);
   });
+
+  it('delete scene with invalid id returns 500 without hanging', async () => {
+    const res = await request(app).delete('/api/scenes/' + encodeURIComponent('scene 1'));
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('server error');
+  });
 });

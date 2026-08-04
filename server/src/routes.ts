@@ -40,12 +40,20 @@ export function createApp(deps: RouteDeps): express.Express {
   r.get('/meta', (_req, res) => res.json({ ok: true, dataReady: deps.dataReady(), online: deps.online() }));
 
   r.get('/scenes', async (_req, res) => {
-    res.json(await deps.store.list());
+    try {
+      res.json(await deps.store.list());
+    } catch {
+      res.status(500).json({ error: 'server error' });
+    }
   });
   r.post('/scenes', async (req, res) => {
-    const name = String(req.body.name ?? '未命名场景').slice(0, 60);
-    const scene = await deps.store.create(name);
-    res.status(201).json(scene);
+    try {
+      const name = String(req.body.name ?? '未命名场景').slice(0, 60);
+      const scene = await deps.store.create(name);
+      res.status(201).json(scene);
+    } catch {
+      res.status(500).json({ error: 'server error' });
+    }
   });
   r.get('/scenes/:id', async (req, res) => {
     try {
@@ -55,8 +63,12 @@ export function createApp(deps: RouteDeps): express.Express {
     }
   });
   r.delete('/scenes/:id', async (req, res) => {
-    await deps.store.delete(req.params.id);
-    res.json({ ok: true });
+    try {
+      await deps.store.delete(req.params.id);
+      res.json({ ok: true });
+    } catch {
+      res.status(500).json({ error: 'server error' });
+    }
   });
 
   r.get('/search', (req, res) => {
