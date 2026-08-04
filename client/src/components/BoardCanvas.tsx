@@ -81,8 +81,8 @@ export default function BoardCanvas() {
             selected={selectedId === t.id}
             onSelect={() => setSelectedId(t.id)}
             onDragEnd={(x, y) => {
-              const sx = grid.snap ? Math.round(x / grid.size) * grid.size : x;
-              const sy = grid.snap ? Math.round(y / grid.size) * grid.size : y;
+              const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
+              const sy = grid.snap ? Math.round((y - grid.offset[1]) / grid.size) * grid.size + grid.offset[1] : y;
               connection.sendOps([{ op: 'moveToken', tokenId: t.id, x: sx, y: sy }]);
             }}
             onContextMenu={() => setSelectedId(t.id)}
@@ -96,8 +96,8 @@ export default function BoardCanvas() {
             selected={selectedId === p.id}
             onSelect={() => setSelectedId(p.id)}
             onDragEnd={(x, y) => {
-              const sx = grid.snap ? Math.round(x / grid.size) * grid.size : x;
-              const sy = grid.snap ? Math.round(y / grid.size) * grid.size : y;
+              const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
+              const sy = grid.snap ? Math.round((y - grid.offset[1]) / grid.size) * grid.size + grid.offset[1] : y;
               connection.sendOps([{ op: 'moveToken', tokenId: p.id, x: sx, y: sy }]);
             }}
             onContextMenu={() => setSelectedId(p.id)}

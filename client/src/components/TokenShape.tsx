@@ -1,5 +1,5 @@
 import { Group, Circle, Image as KImage, Text, Ring } from 'react-konva';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useImage } from '../useImage';
 import type { Token } from '../types';
 
@@ -15,6 +15,18 @@ interface Props {
 export default function TokenShape({ token, active, selected, onSelect, onDragEnd, onContextMenu }: Props) {
   const img = useImage(token.avatar || null);
   const [pulse, setPulse] = useState(0);
+
+  // Animate the active-turn gold ring: oscillate pulse 0..4 while active.
+  useEffect(() => {
+    if (!active) { setPulse(0); return; }
+    let raf: number;
+    const tick = (t: number) => {
+      setPulse(2 + Math.sin(t / 250) * 2); // 0..4 平滑振荡
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active]);
 
   return (
     <Group
