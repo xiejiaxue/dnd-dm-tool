@@ -12,8 +12,24 @@ export default function QueryPanel() {
   const [q, setQ] = useState('');
   const [type, setType] = useState<EntryType | 'all'>('all');
   const [results, setResults] = useState<IndexEntry[]>([]);
-  const [detail, setDetail] = useState<IndexEntry | null>(null);
+  // DetailDrawer only needs the id trio; both search results and favorites fit it.
+  const [detail, setDetail] = useState<{ type: EntryType; id: string; nameZh: string } | null>(null);
   const { scene } = useScene();
+  // Favorites tab: resolve the Chinese name for each favorited entryId.
+  const [favNames, setFavNames] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const favs = scene?.favorites ?? [];
+    const missing = favs.filter(f => !(f.entryId in favNames));
+    if (missing.length === 0) return;
+    let alive = true;
+    for (const f of missing) {
+      api.entry(f.type, f.entryId)
+        .then(e => { if (alive) setFavNames(prev => ({ ...prev, [f.entryId]: e.name ?? f.entryId })); })
+        .catch(() => {});
+    }
+    return () => { alive = false; };
+  }, [scene?.favorites, favNames]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -71,13 +87,21 @@ export default function QueryPanel() {
           {tab === 'fav' && (
             <div className="flex-1 overflow-y-auto">
               {favorites.length === 0 && <div className="p-3 text-zinc-500 text-xs">收藏夹为空，从查询中点击 ★ 收藏</div>}
-              {favorites.map(f => (
-                <div key={`${f.type}-${f.entryId}`} className="px-3 py-2 border-b border-zinc-800/50 flex justify-between items-center">
-                  <span className="text-zinc-200">{f.type} · {f.entryId}</span>
-                  <button className="text-zinc-500 hover:text-red-400"
-                    onClick={() => connection.sendOps([{ op: 'removeFavorite', type: f.type, entryId: f.entryId }])}>✕</button>
-                </div>
-              ))}
+              {favorites.map(f => {
+                const zh = favNames[f.entryId] ?? f.entryId;
+                return (
+                  <button key={`${f.type}-${f.entryId}`}
+                    onClick={() => setDetail({ type: f.type, id: f.entryId, nameZh: zh })}
+                    className="w-full text-left px-3 py-2 border-b border-zinc-800/50 flex justify-between items-center hover:bg-zinc-800">
+                    <span>
+                      <span className="block text-zinc-100">{zh}</span>
+                      <span className="block text-xs text-zinc-500">{f.entryId}</span>
+                    </span>
+                    <button className="text-zinc-500 hover:text-red-400 shrink-0"
+                      onClick={(e) => { e.stopPropagation(); connection.sendOps([{ op: 'removeFavorite', type: f.type, entryId: f.entryId }]); }}>✕</button>
+                  </button>
+                );
+              })}
             </div>
           )}
         </>
