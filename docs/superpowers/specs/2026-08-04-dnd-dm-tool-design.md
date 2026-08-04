@@ -18,7 +18,7 @@ DM 在一台电脑上运行服务，DM 本人和玩家通过浏览器连接：DM
 3. **快速查询**：从 5e不全书（5etools 中文数据）查询怪物、法术、装备，中英文均支持模糊搜索；点选后展示完整详情。
 4. **Token 放置**：可在棋盘放置怪物和玩家 token；怪物头像自动从网络下载并裁剪为圆形 token 后缓存。
 5. **会话收藏夹**：DM 收藏常用怪物/法术/装备，快速拖入棋盘或查看。
-6. **先攻顺序追踪**：顶部先攻栏，管理战斗行动顺序。
+6. **先攻顺序追踪**：顶部先攻栏。玩家可在自己浏览器输入先攻值提交；DM 端按数值自动排序计算行动顺序（DM 也可手动拖拽调整）；**当前回合行动者的棋盘 token 外圈金色脉冲高亮**，先攻栏同步高亮当前项。
 7. **局域网多人**：DM 浏览器（localhost）为编辑模式；玩家浏览器（局域网 IP）可拖动 token、查看棋盘。
 
 ### 2.2 非功能需求
@@ -69,7 +69,7 @@ DM 在一台电脑上运行服务，DM 本人和玩家通过浏览器连接：DM
 ```
 
 ### 4.1 前端组件
-- `BoardCanvas` — Konva 画布：地图图片、网格、墙、token。
+- `BoardCanvas` — Konva 画布：地图图片、网格、墙、token；当前回合行动者的 token 外圈渲染金色脉冲高亮环。
 - `QueryPanel` — 查询面板（怪物/法术/装备），含 `DetailDrawer` 详情覆盖层。
 - `FavoritesBar` — 会话收藏夹。
 - `InitiativePanel` — 顶部先攻栏。
@@ -131,11 +131,18 @@ DM 在一台电脑上运行服务，DM 本人和玩家通过浏览器连接：DM
   ],
   "walls": [ { "id":"w1", "p1":[0,0], "p2":[500,0] } ],
   "initiative": [
-    { "id":"i1", "tokenId":"t1", "name":"哥布林", "value":18, "active":false }
+    { "id":"i1", "tokenId":"t1", "name":"哥布林", "value":18, "source":"dm", "active":true },
+    { "id":"i2", "sessionId":"s3", "tokenId":"p1", "name":"阿拉贡", "value":15, "source":"player", "active":false }
   ],
   "favorites": [ { "type":"monster", "entryId":"goblin" } ]
 }
 ```
+
+先攻条目字段说明：
+- `source`：`dm`（DM 手动添加）或 `player`（玩家自己提交）。
+- `sessionId`：玩家提交时的连接标识（可选，用于玩家重复提交时 upsert 同一条目，不产生重复）。
+- `tokenId`：可选。关联棋盘 token 后，当前回合该 token 外圈高亮。玩家提交时可选择自己扮演的棋盘 player token。
+- 服务器在每次提交/编辑后按 `value` 降序稳定排序（同分保持原顺序），DM 可拖拽覆盖顺序。
 
 ### 6.2 存储布局
 ```
@@ -157,7 +164,7 @@ data/
 ┌─────────────────────────────────────────────────────────────────────┐
 │ 顶部状态栏:  ⚙ 场景「洞穴地牢」 [切换场景▾]  玩家在线:●2  口令:1234   │
 ├─────────────────────────────────────────────────────────────────────┤
-│ 先攻栏（横向，可滚动）:   ▶ 哥布林A  哥布林B   ▷ 阿拉贡  ＋   排序     │
+│ 先攻栏（横向，可滚动）:   ▶ 哥布林A  哥布林B   ▷ 阿拉贡  ＋   排序  ⏭下一回合│
 ├───────┬─────────────────────────────────────────────┬───────────────┤
 │ 工具竖栏│                                             │  查询窗口(可收起)│
 │ [选择] │                                             │  ┌───────────┐ │
@@ -176,7 +183,8 @@ data/
 - **深色主题**，红/琥珀色点缀。
 - **工具竖栏**宽 48px，图标按钮，选中态高亮。
 - **查询窗口**宽 320px，可折叠，标签：`查询 | 收藏夹`；点结果 → 详情覆盖在查询窗口上（带返回）。
-- **先攻栏**固定顶部，横向滚动；当前行动者高亮；底部「下一回合」按钮。
+- **先攻栏**固定顶部，横向滚动；当前行动者高亮；「下一回合」按钮推进行动者。
+- **先攻提交（玩家端）**：玩家视图的底部/先攻栏附近有「我的先攻」输入框 + 提交按钮；提交后出现在 DM 先攻栏并按值排序。
 - **Token 菜单**：选中后旁弹浮层（改名/大小/加入先攻/删除）。
 - **玩家端**：同布局，工具竖栏仅「选择」「缩放」。
 
@@ -190,7 +198,7 @@ data/
 | 放置/删除 token | ✅ | ❌ |
 | 画墙/网格/上传地图 | ✅ | ❌ |
 | 保存/加载场景 | ✅ | ❌ |
-| 先攻顺序编辑 | ✅ | 只读 |
+| 先攻：编辑/排序/下一回合 | ✅ | 仅提交自己的先攻值 |
 | 查询/收藏夹 | ✅ | ✅ |
 
 - 身份识别：`localhost` 连接 = DM；局域网 IP 连接 = 玩家。
@@ -205,8 +213,10 @@ data/
   - `{type:'op', ops:[...]}` — 应用后的操作广播。
   - `{type:'meta', online:n}` — 在线人数。
   - `{type:'error', message}`。
-- 操作类型（op）：`moveToken / addToken / removeToken / updateToken / addPlayer / updatePlayer / addWall / removeWall / updateGrid / updateMap / setInitiative / addToInitiative / removeFromInitiative`。
-- 服务器按角色校验 op 权限；`moveToken` 所有角色允许，其余 DM 专属。
+- 操作类型（op）：`moveToken / addToken / removeToken / updateToken / addPlayer / updatePlayer / addWall / removeWall / updateGrid / updateMap / submitInitiative / addToInitiative / removeFromInitiative / advanceTurn / reorderInitiative`。
+- 服务器按角色校验 op 权限；`moveToken` 与 `submitInitiative`（提交自己的先攻）所有角色允许，其余 DM 专属。
+- `submitInitiative`：按 `sessionId` upsert 玩家自己的先攻条目，服务器立即按 `value` 降序排序并广播。
+- `advanceTurn`：推进当前行动者到下一位，广播后各端将对应 token 外圈高亮。
 - token 拖动：本地实时渲染，**拖动结束时广播一次**（避免刷屏）；服务器应用并广播，**last-write-wins**。
 - 持久化：服务器应用每个 op 到 in-memory scene 后 debounce 写盘。
 
@@ -240,6 +250,7 @@ data/
 - token 圆形裁剪（sharp，输出尺寸/透明度）。
 - 场景序列化/反序列化（round-trip）。
 - 先攻列表排序逻辑（value 降序、active 标记、下一位计算）。
+- `submitInitiative` upsert（同 sessionId 不重复、重提交覆盖）+ 排序；`advanceTurn` 推进与 token 高亮对应关系。
 - op 应用逻辑（moveToken/addToken 等）与权限校验。
 
 ### 11.2 集成测试（Vitest + ws）
