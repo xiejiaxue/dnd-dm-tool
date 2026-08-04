@@ -19,14 +19,15 @@ interface Props {
   tool: string;
   pending: PendingToken | null;
   onClearPending: () => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect }: Props) {
   const { scene, role } = useScene();
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [stageSize, setStageSize] = useState(getStageSize);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   // Live preview line while dragging the wall tool: [x1, y1, x2, y2].
   const [wallPreview, setWallPreview] = useState<[number, number, number, number] | null>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -197,13 +198,13 @@ export default function BoardCanvas({ tool, pending, onClearPending }: Props) {
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id}
             draggable={tool !== 'wall'}
-            onSelect={() => setSelectedId(t.id)}
+            onSelect={() => onSelect(t.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
               const sy = grid.snap ? Math.round((y - grid.offset[1]) / grid.size) * grid.size + grid.offset[1] : y;
               connection.sendOps([{ op: 'moveToken', tokenId: t.id, x: sx, y: sy }]);
             }}
-            onContextMenu={() => setSelectedId(t.id)}
+            onContextMenu={() => onSelect(t.id)}
           />
         ))}
         {scene.players.map(p => (
@@ -213,13 +214,13 @@ export default function BoardCanvas({ tool, pending, onClearPending }: Props) {
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
             draggable={tool !== 'wall'}
-            onSelect={() => setSelectedId(p.id)}
+            onSelect={() => onSelect(p.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
               const sy = grid.snap ? Math.round((y - grid.offset[1]) / grid.size) * grid.size + grid.offset[1] : y;
               connection.sendOps([{ op: 'moveToken', tokenId: p.id, x: sx, y: sy }]);
             }}
-            onContextMenu={() => setSelectedId(p.id)}
+            onContextMenu={() => onSelect(p.id)}
           />
         ))}
       </Layer>
