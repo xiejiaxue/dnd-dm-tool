@@ -1,8 +1,9 @@
 import { Stage, Layer, Rect, Line, Image as KImage, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { useScene } from '../ws';
+import { useScene, connection } from '../ws';
 import { useImage } from '../useImage';
+import TokenShape from './TokenShape';
 
 // Layout offsets around the canvas: Toolbar (w-12) + QueryPanel (w-80),
 // TopBar (h-11) + InitiativePanel (h-14).
@@ -18,6 +19,7 @@ export default function BoardCanvas() {
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [stageSize, setStageSize] = useState(getStageSize);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const stageRef = useRef<Konva.Stage>(null);
 
   // Keep the Stage sized to the viewport when the window resizes.
@@ -71,6 +73,36 @@ export default function BoardCanvas() {
           {vLines.map(l => <Line key={l.key} points={[l.x, 0, l.x, area.h]} stroke={grid.color} strokeWidth={1} />)}
           {hLines.map(l => <Line key={l.key} points={[0, l.y, area.w, l.y]} stroke={grid.color} strokeWidth={1} />)}
         </Group>
+        {scene.tokens.map(t => (
+          <TokenShape
+            key={t.id}
+            token={t}
+            active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
+            selected={selectedId === t.id}
+            onSelect={() => setSelectedId(t.id)}
+            onDragEnd={(x, y) => {
+              const sx = grid.snap ? Math.round(x / grid.size) * grid.size : x;
+              const sy = grid.snap ? Math.round(y / grid.size) * grid.size : y;
+              connection.sendOps([{ op: 'moveToken', tokenId: t.id, x: sx, y: sy }]);
+            }}
+            onContextMenu={() => setSelectedId(t.id)}
+          />
+        ))}
+        {scene.players.map(p => (
+          <TokenShape
+            key={p.id}
+            token={p}
+            active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
+            selected={selectedId === p.id}
+            onSelect={() => setSelectedId(p.id)}
+            onDragEnd={(x, y) => {
+              const sx = grid.snap ? Math.round(x / grid.size) * grid.size : x;
+              const sy = grid.snap ? Math.round(y / grid.size) * grid.size : y;
+              connection.sendOps([{ op: 'moveToken', tokenId: p.id, x: sx, y: sy }]);
+            }}
+            onContextMenu={() => setSelectedId(p.id)}
+          />
+        ))}
       </Layer>
     </Stage>
   );
