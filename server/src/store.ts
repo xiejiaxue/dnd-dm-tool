@@ -21,7 +21,7 @@ export class SceneStore {
   }
 
   async list(): Promise<{ id: string; name: string }[]> {
-    const files = fs.readdirSync(this.dir).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(this.dir).filter(f => f.endsWith('.json') && f !== 'last-scene.json');
     const out: { id: string; name: string }[] = [];
     for (const f of files) {
       try {

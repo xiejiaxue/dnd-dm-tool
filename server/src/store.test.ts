@@ -53,4 +53,12 @@ describe('SceneStore', () => {
     store.setLast(null);
     expect(await store.last()).toBeNull();
   });
+
+  it('list excludes last-scene.json', async () => {
+    const s = await store.create('a');
+    store.setLast(s.id);
+    const list = await store.list();
+    expect(list).toHaveLength(1);
+    expect(list[0].id).toBe(s.id);
+  });
 });
