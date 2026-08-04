@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-server/
+
+# Local runtime data (5etools 数据包、场景存档、图片缓存、上传文件)
+data/
+
+# OS
+.DS_Store
