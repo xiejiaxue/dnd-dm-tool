@@ -26,4 +26,11 @@ describe('EntryService', () => {
   it('throws for unknown id', async () => {
     await expect(svc.get('monster', 'ZZ__Nope')).rejects.toBeInstanceOf(EntryNotFoundError);
   });
+
+  it('disambiguates same-name entries by source', async () => {
+    const phb = await svc.get('item', 'PHB__Longsword');
+    expect(phb).toMatchObject({ source: 'PHB', cost: 1500 });
+    const xge = await svc.get('item', 'XGE__Longsword');
+    expect(xge).toMatchObject({ source: 'XGE', cost: 500 });
+  });
 });
