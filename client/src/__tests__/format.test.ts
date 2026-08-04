@@ -14,6 +14,14 @@ describe('renderMarkup', () => {
   it('removes link pipe suffixes', () => {
     expect(renderMarkup('见 {@condition 中毒}。')).toBe('见 中毒。');
   });
+  it('expands bare melee/ranged attack tags', () => {
+    expect(renderMarkup('{@atk mw} 命中{@hit +4}')).toBe('近战武器攻击 命中+4');
+    expect(renderMarkup('{@atk rw}')).toBe('远程武器攻击');
+    expect(renderMarkup('{@atk mw,rw}')).toBe('近战武器攻击');
+  });
+  it('expands bare hit tag', () => {
+    expect(renderMarkup('{@h}6 点伤害')).toBe('命中6 点伤害');
+  });
 });
 
 describe('formatMonster', () => {
@@ -56,6 +64,19 @@ describe('formatMonster', () => {
     const sb = formatMonster(m);
     expect(sb.meta).toBe('大型，构装体，无阵营，CR 5');
     expect(sb.rows[0]).toEqual(['AC', '17']);
+  });
+
+  it('translates string-form monster types', () => {
+    const m = { name: '底栖魔鱼', size: ['L'], type: 'aberration', alignment: ['C', 'E'], cr: 4 };
+    const sb = formatMonster(m);
+    expect(sb.meta).toBe('大型，异怪，混乱邪恶，CR 4');
+  });
+
+  it('filters non-speed keys and appends speed conditions', () => {
+    const m = { name: '幽灵', size: ['M'], type: { type: 'undead' }, speed: { fly: { number: 90, condition: '(悬浮)' }, canHover: true } };
+    const sb = formatMonster(m);
+    expect(sb.meta).toBe('中型，亡灵');
+    expect(sb.rows).toEqual([['速度', '飞行 90(悬浮)']]);
   });
 });
 
@@ -101,5 +122,20 @@ describe('formatSpell', () => {
       ['持续时间', '专注，1 分钟'],
     ]);
     expect(sb.body[0]).toBe('每个生物的攻击和豁免+1d4。');
+  });
+
+  it('renders object-form material components as their text', () => {
+    const s = {
+      name: '完全复生术',
+      level: 7,
+      school: 'N',
+      time: [{ number: 1, unit: 'hour' }],
+      range: { type: 'point', distance: { type: 'touch' } },
+      components: { v: true, s: true, m: { text: '至少价值 25gp 的金粉，作为该法术的耗材', cost: 2500, consume: true } },
+      duration: [{ type: 'instant' }],
+      entries: ['你触碰一个已死的生物。'],
+    };
+    const sb = formatSpell(s);
+    expect(sb.rows[1]).toEqual(['成分', 'V, S, M（至少价值 25gp 的金粉，作为该法术的耗材）']);
   });
 });
