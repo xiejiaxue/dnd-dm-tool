@@ -6,13 +6,15 @@ import { useImage } from '../useImage';
 import TokenShape from './TokenShape';
 import type { PendingToken } from '../pending';
 
-// Layout offsets around the canvas: Toolbar (w-12) + QueryPanel (w-80),
-// TopBar (h-11) + InitiativePanel (h-14).
-const OFFSET_X = 48 + 320;
+// Layout offsets around the canvas: Toolbar (w-12) + QueryPanel (w-80 when
+// open, w-10 when collapsed), TopBar (h-11) + InitiativePanel (h-14).
+const QUERY_OPEN = 320;
+const QUERY_CLOSED = 40;
 const OFFSET_Y = 44 + 56;
 
-function getStageSize() {
-  return { width: window.innerWidth - OFFSET_X, height: window.innerHeight - OFFSET_Y };
+function getStageSize(queryOpen: boolean) {
+  const offsetX = 48 + (queryOpen ? QUERY_OPEN : QUERY_CLOSED);
+  return { width: window.innerWidth - offsetX, height: window.innerHeight - OFFSET_Y };
 }
 
 interface Props {
@@ -21,25 +23,27 @@ interface Props {
   onClearPending: () => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  queryOpen: boolean;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, queryOpen }: Props) {
   const { scene, role } = useScene();
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [stageSize, setStageSize] = useState(getStageSize);
+  const [stageSize, setStageSize] = useState(() => getStageSize(queryOpen));
   // Live preview line while dragging the wall tool: [x1, y1, x2, y2].
   const [wallPreview, setWallPreview] = useState<[number, number, number, number] | null>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const wallStart = useRef<[number, number] | null>(null);
   const wallEnd = useRef<{ x: number; y: number } | null>(null);
 
-  // Keep the Stage sized to the viewport when the window resizes.
+  // Keep the Stage sized to the viewport when the window resizes or when the
+  // query panel toggles between open/collapsed.
   useEffect(() => {
-    const onResize = () => setStageSize(getStageSize());
+    const onResize = () => setStageSize(getStageSize(queryOpen));
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, []);
+  }, [queryOpen]);
 
   // Leaving wall mode cancels any in-progress wall line.
   useEffect(() => {

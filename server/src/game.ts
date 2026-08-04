@@ -130,4 +130,8 @@ export class GameServer {
   broadcastMeta(): void {
     this.broadcast({ type: 'meta', online: this.clients.size });
   }
+
+  clientsCount(): number {
+    return this.clients.size;
+  }
 }
