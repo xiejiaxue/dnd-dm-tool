@@ -1,6 +1,15 @@
 export function renderMarkup(s: string): string {
   return s
-    .replace(/\{@([a-z]+)\s+([^}]+)\}/g, (_m, _tag, inner: string) => inner.split('|')[0])
+    .replace(/\{@([a-z]+)\s+([^}]*)\}/g, (_m, tag: string, inner: string) => {
+      const t = inner.trim().split('|')[0];
+      if (tag === 'atk') {
+        if (t.includes('mw')) return '近战武器攻击';
+        if (t.includes('rw')) return '远程武器攻击';
+        return '';
+      }
+      return t;
+    })
+    .replace(/\{@([a-z]+)\}/g, (_m, tag: string) => (tag === 'h' ? '命中' : ''))
     .replace(/\{\{([^}]+)\}\}/g, '$1');
 }
 
@@ -56,14 +65,21 @@ function fmtSpeed(speed: unknown): string {
   if (!speed) return '';
   if (typeof speed === 'string') return speed;
   return Object.entries(speed as Record<string, unknown>)
+    .filter(([k]) => SPEED_ZH[k])
     .map(([k, v]) => {
       const zh = SPEED_ZH[k] ?? k;
-      if (typeof v === 'object' && v != null) {
-        const num = (v as { number?: unknown }).number;
-        return `${zh} ${String(num ?? v)}`;
+      let num: number | undefined;
+      let cond = '';
+      if (typeof v === 'number') num = v;
+      else if (typeof v === 'object' && v != null) {
+        const o = v as { number?: unknown; condition?: unknown };
+        num = typeof o.number === 'number' ? o.number : undefined;
+        if (o.condition) cond = String(o.condition);
       }
-      return `${zh} ${String(v)}`;
+      if (num == null || num === 0) return '';
+      return `${zh} ${num}${cond}`;
     })
+    .filter(Boolean)
     .join('，');
 }
 
@@ -75,7 +91,7 @@ function fmtLanguages(lang: unknown): string {
 
 export function formatMonster(m: any): StatBlock {
   const size = SIZE_ZH[String(m.size?.[0])] ?? m.size?.[0] ?? '';
-  const type = TYPE_ZH[m.type?.type] ?? m.type?.type ?? (typeof m.type === 'string' ? m.type : '');
+  const type = TYPE_ZH[m.type?.type ?? m.type] ?? m.type?.type ?? (typeof m.type === 'string' ? m.type : '');
   const body = [
     ...(m.trait ?? []).map((t: any) => `**${t.name}。** ${(t.entries ?? []).map(renderMarkup).join(' ')}`),
     ...(m.action ?? []).map((a: any) => `**${a.name}。** ${(a.entries ?? []).map(renderMarkup).join(' ')}`),
@@ -116,8 +132,10 @@ function fmtRange(r: any): string {
 
 export function formatSpell(s: any): StatBlock {
   const time = (s.time ?? []).map((t: any) => `${t.number ?? 1} ${TIME_UNIT_ZH[t.unit] ?? t.unit ?? ''}`).join(' 或 ');
+  const m = s.components?.m;
+  const mText = typeof m === 'string' ? m : (m?.text ?? '');
   const comp = [
-    s.components?.v ? 'V' : '', s.components?.s ? 'S' : '', s.components?.m ? `M（${s.components.m}）` : '',
+    s.components?.v ? 'V' : '', s.components?.s ? 'S' : '', m ? `M（${mText}）` : '',
   ].filter(Boolean).join(', ');
   const dur = (s.duration ?? []).map(fmtDuration).filter(Boolean).join(' 或 ');
   return {
