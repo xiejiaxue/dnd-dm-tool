@@ -1,1 +1,1 @@
-{ "item": [ { "ENG_name": "Longsword", "name": "长剑", "source": "PHB", "type": "M", "cost": 1500, "damage": "1d8" } ] }
+{ "item": [ { "ENG_name": "Longsword", "name": "长剑", "source": "PHB", "type": "M", "cost": 1500, "damage": "1d8" }, { "ENG_name": "Longsword", "name": "长剑", "source": "XGE", "type": "M", "cost": 500 } ] }

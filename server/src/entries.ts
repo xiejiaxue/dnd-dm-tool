@@ -45,7 +45,7 @@ export class EntryService {
     const entry = this.index.find(e => e.type === type && e.id === id);
     if (!entry) throw new EntryNotFoundError(id);
     const arr = await this.loadFile(entry.bookFile);
-    const found = arr.find((x: any) => (x.ENG_name ?? x.name) === entry.nameEn);
+    const found = arr.find((x: any) => (x.ENG_name ?? x.name) === entry.nameEn && x.source === entry.source);
     if (!found) throw new EntryNotFoundError(id);
     return found;
   }
