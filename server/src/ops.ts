@@ -1,0 +1,135 @@
+import { Op, Role, Scene, InitiativeEntry } from './types';
+import { sortInitiative, advanceInitiative } from './initiative';
+
+export function isPlayerOp(op: Op): boolean {
+  return op.op === 'moveToken' || op.op === 'submitInitiative';
+}
+
+export function canOp(role: Role, op: Op): boolean {
+  if (role === 'dm') return true;
+  return isPlayerOp(op);
+}
+
+export function applyOp(scene: Scene, op: Op): void {
+  switch (op.op) {
+    case 'addToken': {
+      if (!scene.tokens.some(t => t.id === op.token.id)) scene.tokens.push(op.token);
+      return;
+    }
+    case 'moveToken': {
+      const t = findToken(scene, op.tokenId);
+      if (t) { t.x = op.x; t.y = op.y; }
+      return;
+    }
+    case 'removeToken': {
+      scene.tokens = scene.tokens.filter(t => t.id !== op.tokenId);
+      return;
+    }
+    case 'updateToken': {
+      const t = findToken(scene, op.tokenId);
+      if (t) Object.assign(t, op.patch);
+      return;
+    }
+    case 'addPlayer': {
+      if (!scene.players.some(p => p.id === op.player.id)) scene.players.push(op.player);
+      return;
+    }
+    case 'updatePlayer': {
+      const p = scene.players.find(p => p.id === op.tokenId);
+      if (p) Object.assign(p, op.patch);
+      return;
+    }
+    case 'addWall': {
+      if (!scene.walls.some(w => w.id === op.wall.id)) scene.walls.push(op.wall);
+      return;
+    }
+    case 'removeWall': {
+      scene.walls = scene.walls.filter(w => w.id !== op.wallId);
+      return;
+    }
+    case 'updateGrid': {
+      Object.assign(scene.grid, op.patch);
+      return;
+    }
+    case 'updateMap': {
+      scene.mapImage = op.mapImage;
+      scene.mapSize = op.mapSize;
+      scene.playArea = op.playArea;
+      return;
+    }
+    case 'submitInitiative': {
+      const existing = op.sessionId != null
+        ? scene.initiative.find(e => e.sessionId === op.sessionId)
+        : scene.initiative.find(e => e.source === 'player' && e.name === op.name);
+      if (existing) {
+        existing.name = op.name;
+        existing.value = op.value;
+        existing.tokenId = op.tokenId ?? existing.tokenId;
+      } else {
+        scene.initiative.push({
+          id: genEntryId(scene),
+          name: op.name,
+          value: op.value,
+          source: 'player',
+          sessionId: op.sessionId ?? null,
+          tokenId: op.tokenId ?? null,
+          active: false,
+        });
+      }
+      scene.initiative = sortInitiative(scene.initiative);
+      return;
+    }
+    case 'addToInitiative': {
+      scene.initiative.push({
+        id: genEntryId(scene),
+        name: op.name,
+        value: op.value,
+        source: op.source,
+        sessionId: null,
+        tokenId: op.tokenId,
+        active: false,
+      });
+      scene.initiative = sortInitiative(scene.initiative);
+      return;
+    }
+    case 'removeFromInitiative': {
+      scene.initiative = scene.initiative.filter(e => e.id !== op.entryId);
+      return;
+    }
+    case 'advanceTurn': {
+      scene.initiative = advanceInitiative(scene.initiative);
+      return;
+    }
+    case 'reorderInitiative': {
+      const byId = new Map(scene.initiative.map(e => [e.id, e]));
+      const ordered: InitiativeEntry[] = [];
+      for (const id of op.order) {
+        const e = byId.get(id);
+        if (e) { ordered.push(e); byId.delete(id); }
+      }
+      for (const e of byId.values()) ordered.push(e); // 未被列出的追加尾部
+      scene.initiative = ordered;
+      return;
+    }
+    case 'addFavorite': {
+      if (!scene.favorites.some(f => f.type === op.favorite.type && f.entryId === op.favorite.entryId)) {
+        scene.favorites.push(op.favorite);
+      }
+      return;
+    }
+    case 'removeFavorite': {
+      scene.favorites = scene.favorites.filter(f => !(f.type === op.type && f.entryId === op.entryId));
+      return;
+    }
+  }
+}
+
+function findToken(scene: Scene, tokenId: string) {
+  return scene.tokens.find(t => t.id === tokenId) ?? scene.players.find(t => t.id === tokenId);
+}
+
+let n = 0;
+function genEntryId(scene: Scene): string {
+  n += 1;
+  return `ini-${Date.now().toString(36)}-${n}`;
+}
