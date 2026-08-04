@@ -12,6 +12,9 @@ export default function App() {
   const { role } = useScene();
   const [tool, setTool] = useState('select');
   const [pending, setPendingState] = useState<PendingToken | null>(null);
+  // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
+  // token to the initiative order with its tokenId (enables the turn highlight).
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // QueryPanel hands a "picked-up" token via the global bus; keep it in sync
   // and switch to the add tool so a DM can click-to-place right away.
@@ -25,7 +28,7 @@ export default function App() {
   return (
     <div className="h-full flex flex-col">
       <TopBar />
-      <InitiativePanel />
+      <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
       <div className="flex-1 flex min-h-0">
         <Toolbar
           role={role}
@@ -38,6 +41,8 @@ export default function App() {
             tool={tool}
             pending={pending}
             onClearPending={() => setPending(null)}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
           />
         </div>
         <QueryPanel />
