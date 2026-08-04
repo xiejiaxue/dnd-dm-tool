@@ -13,7 +13,16 @@ export function canOp(role: Role, op: Op): boolean {
 export function applyOp(scene: Scene, op: Op): void {
   switch (op.op) {
     case 'addToken': {
-      if (!scene.tokens.some(t => t.id === op.token.id)) scene.tokens.push(op.token);
+      if (!scene.tokens.some(t => t.id === op.token.id)) {
+        const token = { ...op.token };
+        // Auto-number monster tokens by entryId so same-type monsters are
+        // distinguishable on the board (哥布林 1, 哥布林 2, …).
+        if (token.kind === 'monster' && token.entryId) {
+          const same = scene.tokens.filter(t => t.kind === 'monster' && t.entryId === token.entryId);
+          token.number = Math.max(0, ...same.map(t => t.number ?? 0)) + 1;
+        }
+        scene.tokens.push(token);
+      }
       return;
     }
     case 'moveToken': {

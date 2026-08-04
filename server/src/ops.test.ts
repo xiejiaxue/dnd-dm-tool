@@ -44,6 +44,23 @@ describe('applyOp token ops', () => {
     applyOp(s, { op: 'moveToken', tokenId: 'nope', x: 1, y: 2 });
     expect(s.tokens).toHaveLength(0);
   });
+
+  it('auto-numbers monster tokens per entryId', () => {
+    const s = freshScene();
+    const mk = (id: string, entryId: string) => ({ id, kind: 'monster' as const, name: '地精', entryId, x: 0, y: 0, size: 100, avatar: '/api/token/x', color: '#fff' });
+    applyOp(s, { op: 'addToken', token: mk('a', 'MM__Goblin') });
+    applyOp(s, { op: 'addToken', token: mk('b', 'MM__Goblin') });
+    applyOp(s, { op: 'addToken', token: mk('c', 'MM__Hobgoblin') });
+    const goblins = s.tokens.filter(t => t.entryId === 'MM__Goblin');
+    expect(goblins.map(t => t.number)).toEqual([1, 2]);
+    expect(s.tokens.find(t => t.id === 'c')!.number).toBe(1);
+  });
+
+  it('player tokens get no number', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addPlayer', player: { id: 'p1', kind: 'player', name: '阿拉贡', entryId: null, x: 0, y: 0, size: 100, avatar: '', color: '#e53e3e', sessionId: null } });
+    expect(s.players[0].number).toBeUndefined();
+  });
 });
 
 describe('applyOp players', () => {

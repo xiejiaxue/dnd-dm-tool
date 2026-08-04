@@ -54,8 +54,10 @@ export class TokenService {
     }
     try {
       const monster = await this.entrySvc.get('monster', entryId);
-      const url = `${this.imageBase}/img/bestiary/${monster.source}/${monster.ENG_name}.jpg`;
-      const buf = await fetchImage(url);
+      // Try common extensions in order; many 5etools portraits are .jpg but
+      // some are .png/.webp. Falls through to the placeholder if all fail.
+      const base = `${this.imageBase}/img/bestiary/${monster.source}/${monster.ENG_name}`;
+      const buf = await fetchFirst(base, ['.jpg', '.png', '.webp']);
       const cropped = await circleCrop(buf);
       fs.writeFileSync(pngPath, cropped);
       return { buffer: cropped, contentType: 'image/png' };
@@ -87,4 +89,16 @@ async function fetchImage(url: string): Promise<Buffer> {
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length < 100) throw new Error('image too small');
   return buf;
+}
+
+async function fetchFirst(base: string, exts: string[]): Promise<Buffer> {
+  let lastErr: unknown;
+  for (const ext of exts) {
+    try {
+      return await fetchImage(`${base}${ext}`);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr ?? new Error('no image found');
 }
