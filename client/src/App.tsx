@@ -15,6 +15,8 @@ export default function App() {
   // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
   // token to the initiative order with its tokenId (enables the turn highlight).
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Collapsible query panel — players can shrink it to reclaim board space.
+  const [queryCollapsed, setQueryCollapsed] = useState(false);
 
   // QueryPanel hands a "picked-up" token via the global bus; keep it in sync
   // and switch to the add tool so a DM can click-to-place right away.
@@ -43,9 +45,10 @@ export default function App() {
             onClearPending={() => setPending(null)}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            queryOpen={!queryCollapsed}
           />
         </div>
-        <QueryPanel />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={() => setQueryCollapsed(c => !c)} />
       </div>
     </div>
   );

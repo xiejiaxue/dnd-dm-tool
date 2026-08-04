@@ -7,7 +7,12 @@ import type { EntryType, IndexEntry } from '../types';
 
 type Tab = 'query' | 'fav';
 
-export default function QueryPanel() {
+interface Props {
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+}
+
+export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   const [tab, setTab] = useState<Tab>('query');
   const [q, setQ] = useState('');
   const [type, setType] = useState<EntryType | 'all'>('all');
@@ -41,15 +46,33 @@ export default function QueryPanel() {
 
   const favorites = scene?.favorites ?? [];
 
+  // Collapsed: a thin vertical bar so players can reclaim board space.
+  if (collapsed) {
+    return (
+      <aside className="w-10 border-l border-zinc-700/60 bg-zinc-900 flex flex-col items-center pt-2 text-sm">
+        <button
+          onClick={onToggleCollapsed}
+          title="展开查询面板"
+          className="w-8 h-8 rounded-md hover:bg-zinc-700 text-zinc-400 text-lg"
+        >⇥</button>
+      </aside>
+    );
+  }
+
   return (
     <aside className="w-80 border-l border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
-      <div className="flex border-b border-zinc-800">
+      <div className="flex items-center border-b border-zinc-800">
         {(['query', 'fav'] as Tab[]).map(t => (
           <button key={t} onClick={() => { setTab(t); setDetail(null); }}
             className={`flex-1 py-2 text-center ${tab === t ? 'text-amber-400 border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
             {t === 'query' ? '查询' : '收藏夹'}
           </button>
         ))}
+        <button
+          onClick={onToggleCollapsed}
+          title="收起查询面板"
+          className="shrink-0 px-2 h-8 text-zinc-500 hover:text-zinc-200 text-lg"
+        >⇤</button>
       </div>
 
       {detail ? (
