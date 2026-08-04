@@ -65,15 +65,16 @@ describe('WebSocket 同步', () => {
     player.send(JSON.stringify({ type: 'init', role: 'player' }));
     await once(player, 'state');
 
-    // DM places a token
+    // DM places a token; server broadcasts authoritative full state
     dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '/api/token/MM__Goblin', color: '#fff' } }] }));
-    const b1 = await once(player, 'op');
-    expect(b1.ops[0].op).toBe('addToken');
+    const b1 = await once(player, 'state');
+    expect(b1.scene.tokens.some((t: any) => t.id === 't1')).toBe(true);
 
-    // Player moves that token
+    // Player moves that token; both peers receive the resulting full state
     player.send(JSON.stringify({ type: 'op', ops: [{ op: 'moveToken', tokenId: 't1', x: 500, y: 500 }] }));
-    const b2 = await once(dm, 'op');
-    expect(b2.ops[0]).toMatchObject({ op: 'moveToken', x: 500, y: 500 });
+    const b2 = await once(dm, 'state');
+    expect(b2.scene.tokens[0].x).toBe(500);
+    expect(b2.scene.tokens[0].y).toBe(500);
 
     dm.close();
     player.close();

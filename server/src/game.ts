@@ -89,7 +89,7 @@ export class GameServer {
         if (allowed.length > 0) {
           for (const op of allowed) applyOp(this.current, op);
           this.store.save(this.current);
-          this.broadcast({ type: 'op', ops: allowed });
+          this.broadcast({ type: 'state', scene: this.current });
         }
         if (denied.length > 0) {
           client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied for some ops' }));
