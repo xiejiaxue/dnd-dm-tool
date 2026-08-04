@@ -9,26 +9,28 @@ import { GameServer } from '../src/game';
 import { SceneStore } from '../src/store';
 
 let server: http.Server;
-let dmUrl: string;
-let playerUrl: string;
+let baseUrl: string;
 let dir: string;
 let game: GameServer;
 
 beforeAll(async () => {
+  // Test-only backdoor: init messages may declare their own role.
+  // Keeps the integration test self-contained and portable on hosts where the
+  // 127.0.0.2 loopback alias is unreachable. Never set in production.
+  process.env.DND_TEST_ROLE = '1';
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-'));
   const store = new SceneStore(path.join(dir, 'scenes'));
   game = new GameServer(store, { password: 'pw' });
   await game.init();
   server = http.createServer((_req, res) => res.end('ok'));
   attachWsServer(server, game);
-  // 绑定 0.0.0.0：127.0.0.1 → DM，127.0.0.2（loopback 别名）→ 玩家
-  await new Promise<void>(res => server.listen(0, '0.0.0.0', () => res()));
+  await new Promise<void>(res => server.listen(0, '127.0.0.1', () => res()));
   const addr = server.address() as { port: number };
-  dmUrl = `ws://127.0.0.1:${addr.port}/ws`;
-  playerUrl = `ws://127.0.0.2:${addr.port}/ws`;
+  baseUrl = `ws://127.0.0.1:${addr.port}/ws`;
 });
 
 afterAll(() => {
+  delete process.env.DND_TEST_ROLE;
   server.close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -55,20 +57,20 @@ function once(ws: WebSocket, type: string): Promise<any> {
 
 describe('WebSocket 同步', () => {
   it('玩家可移动 token，DM 可放置 token，两端都收到广播', async () => {
-    const dm = await connect(dmUrl);
-    dm.send(JSON.stringify({ type: 'init', dmToken: 'pw' }));   // localhost 已是 dm，这里再验证 token
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
     await once(dm, 'state');
 
-    const player = await connect(playerUrl);
-    player.send(JSON.stringify({ type: 'init' }));
-    const pState = await once(player, 'state');
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
 
-    // DM 放置一个 token
+    // DM places a token
     dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '/api/token/MM__Goblin', color: '#fff' } }] }));
     const b1 = await once(player, 'op');
     expect(b1.ops[0].op).toBe('addToken');
 
-    // 玩家移动该 token
+    // Player moves that token
     player.send(JSON.stringify({ type: 'op', ops: [{ op: 'moveToken', tokenId: 't1', x: 500, y: 500 }] }));
     const b2 = await once(dm, 'op');
     expect(b2.ops[0]).toMatchObject({ op: 'moveToken', x: 500, y: 500 });
@@ -78,8 +80,8 @@ describe('WebSocket 同步', () => {
   });
 
   it('玩家尝试 DM 专属 op 被拒绝（收到 error）', async () => {
-    const player = await connect(playerUrl);
-    player.send(JSON.stringify({ type: 'init' }));
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
     await once(player, 'state');
     player.send(JSON.stringify({ type: 'op', ops: [{ op: 'advanceTurn' }] }));
     const err = await once(player, 'error');
@@ -88,12 +90,12 @@ describe('WebSocket 同步', () => {
   });
 
   it('DM 切换场景，所有客户端收到新 state', async () => {
-    const dm = await connect(dmUrl);
-    dm.send(JSON.stringify({ type: 'init', dmToken: 'pw' }));
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
     await once(dm, 'state');
 
-    const player = await connect(playerUrl);
-    player.send(JSON.stringify({ type: 'init' }));
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
     await once(player, 'state');
 
     const scene = await game.store.create('新场景');
