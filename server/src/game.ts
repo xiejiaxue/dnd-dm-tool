@@ -65,7 +65,14 @@ export class GameServer {
   private handle(client: Client, msg: any): void {
     switch (msg.type) {
       case 'init': {
-        client.role = this.roleFor(this.remoteAddress(client), msg.dmToken);
+        // Test-only backdoor (DND_TEST_ROLE is never set in production):
+        // lets an init message declare its own role so integration tests stay
+        // self-contained and portable on hosts without the 127.0.0.2 alias.
+        if (process.env.DND_TEST_ROLE === '1' && (msg.role === 'dm' || msg.role === 'player')) {
+          client.role = msg.role;
+        } else {
+          client.role = this.roleFor(this.remoteAddress(client), msg.dmToken);
+        }
         client.name = String(msg.name ?? '').slice(0, 20);
         client.ws.send(JSON.stringify({ type: 'state', scene: this.current, role: client.role }));
         this.broadcastMeta();
