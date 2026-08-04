@@ -19,6 +19,8 @@ export interface Token {
   size: number;
   avatar: string;
   color: string;
+  // Monster tokens get an auto-assigned serial number per entryId (哥布林 1, 2, 3…).
+  number?: number;
 }
 
 export interface PlayerToken extends Token {

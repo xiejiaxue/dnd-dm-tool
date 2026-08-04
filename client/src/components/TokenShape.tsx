@@ -67,6 +67,24 @@ export default function TokenShape({ token, active, selected, draggable = true, 
           listening={false}
         />
       )}
+      {/* 怪物编号徽章（右上角） */}
+      {token.kind === 'monster' && token.number != null && (() => {
+        const r = token.size * 0.17;
+        const cx = token.size * 0.78;
+        const cy = token.size * 0.22;
+        const fs = r * 1.3;
+        return (
+          <Group x={0} y={0} listening={false}>
+            <Circle x={cx} y={cy} radius={r} fill="#0f1115" stroke="#f59e0b" strokeWidth={2} />
+            <Text
+              text={String(token.number)}
+              x={cx - r} y={cy - fs / 2} width={r * 2}
+              align="center" fill="#fbbf24" fontStyle="bold"
+              fontSize={fs}
+            />
+          </Group>
+        );
+      })()}
       <Text text={token.name} y={token.size / 2 + 2} width={token.size} align="center" fill="#fff" fontSize={12} fontStyle="bold" />
     </Group>
   );
