@@ -1,0 +1,12 @@
+{
+  "spell": [
+    {
+      "ENG_name": "Fireball", "name": "火球术", "source": "PHB", "page": 241,
+      "level": 3, "school": "V", "time": [{"number": 1, "unit": "action"}],
+      "range": {"type": "point", "distance": {"type": "feet", "amount": 150}},
+      "components": {"v": true, "s": true, "m": "一小球蝙蝠粪及硫磺"},
+      "duration": [{"type": "instant"}],
+      "entries": ["半径 20 尺球状区域内每个生物必须进行敏捷豁免。失败受 {@damage 8d6} 火焰伤害。"]
+    }
+  ]
+}

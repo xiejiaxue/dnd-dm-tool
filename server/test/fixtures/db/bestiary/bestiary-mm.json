@@ -1,0 +1,18 @@
+{
+  "monster": [
+    {
+      "ENG_name": "Goblin", "name": "地精", "source": "MM", "page": 166, "size": ["S"],
+      "type": {"type": "humanoid", "tags": ["地精"]}, "ac": [15], "hp": {"average": 7, "formula": "2d6"},
+      "speed": {"walk": 30}, "str": 8, "dex": 14, "con": 10, "int": 10, "wis": 8, "cha": 8,
+      "cr": "1/4", "languages": "通用语，地精语",
+      "trait": [{"ENG_name": "Nimble Escape", "name": "灵巧逃脱", "entries": ["{@i 灵巧逃脱}描述。"]}],
+      "action": [{"ENG_name": "Scimitar", "name": "弯刀", "entries": ["近战武器攻击：命中 {@hit +4}，触及 5 尺，单个目标。伤害 {@damage 1d6 + 2} 点挥砍伤害。"]}]
+    },
+    {
+      "ENG_name": "Hobgoblin", "name": "大地精", "source": "MM", "page": 186, "size": ["M"],
+      "ac": [18], "hp": {"average": 11, "formula": "2d8 + 2"}, "speed": {"walk": 30},
+      "str": 13, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 9, "cr": "1/2", "languages": "通用语，地精语",
+      "trait": [], "action": []
+    }
+  ]
+}
