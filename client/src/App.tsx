@@ -5,12 +5,12 @@ import InitiativePanel from './components/InitiativePanel';
 import QueryPanel from './components/QueryPanel';
 import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
-import { useScene } from './ws';
+import { useScene, connection } from './ws';
 import { setPending, subscribe } from './pending';
 import type { PendingToken } from './pending';
 
 export default function App() {
-  const { role } = useScene();
+  const { role, scene } = useScene();
   const [tool, setTool] = useState('select');
   const [pending, setPendingState] = useState<PendingToken | null>(null);
   // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
@@ -38,6 +38,8 @@ export default function App() {
           tool={tool}
           onTool={setTool}
           pendingLabel={pending ? `点击棋盘放置：${pending.name}` : null}
+          gridShow={scene?.grid.show ?? true}
+          onToggleGrid={() => connection.sendOps([{ op: 'updateGrid', patch: { show: !(scene?.grid.show ?? true) } }])}
         />
         <EnemyList />
         <div className="flex-1 min-w-0 relative bg-zinc-900">

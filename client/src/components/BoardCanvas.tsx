@@ -270,10 +270,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         )}
         {scene.mapImage && !map && <Rect width={area.w} height={area.h} fill="#262932" listening={false} />}
         <Rect x={area.x} y={area.y} width={area.w} height={area.h} stroke="#f59e0b" strokeWidth={2} strokeScaleEnabled={false} dash={[8, 8]} listening={false} />
-        <Group listening={false}>
-          {vLines.map(l => <Line key={l.key} points={[l.x, 0, l.x, area.h]} stroke={grid.color} strokeWidth={1} />)}
-          {hLines.map(l => <Line key={l.key} points={[0, l.y, area.w, l.y]} stroke={grid.color} strokeWidth={1} />)}
-        </Group>
+        {(grid.show ?? true) && (
+          <Group listening={false}>
+            {vLines.map(l => <Line key={l.key} points={[l.x, 0, l.x, area.h]} stroke={grid.color} strokeWidth={1} />)}
+            {hLines.map(l => <Line key={l.key} points={[0, l.y, area.w, l.y]} stroke={grid.color} strokeWidth={1} />)}
+          </Group>
+        )}
         {/* Existing walls: thick dark lines. */}
         {scene.walls.map(w => (
           <Line key={w.id} points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke="#111827" strokeWidth={10} lineCap="round" lineJoin="round" listening={false} />
