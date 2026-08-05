@@ -18,6 +18,9 @@ export class GameServer {
   campaignStore: CampaignStore;
   currentCampaign: Campaign;
   private clients = new Set<Client>();
+  // 串行化 op 应用：保证 重读→apply→save 严格顺序执行，避免同一事件循环
+  // tick 内两条战役 op 消息（ws 帧合并）读到同一旧状态、后者覆盖前者丢 op。
+  private opQueue: Promise<void> = Promise.resolve();
 
   constructor(store: SceneStore, campaignStore: CampaignStore, private opts: { password: string | null }) {
     this.store = store;
@@ -112,9 +115,11 @@ export class GameServer {
         if (allowed.length > 0) {
           const campaignOps = allowed.filter(isCampaignOp);
           const sceneOps = allowed.filter((op: Op) => !isCampaignOp(op));
-          this.applyAllowedOps(client, campaignOps, sceneOps).catch(() => {
-            client.ws.send(JSON.stringify({ type: 'error', message: 'op apply failed' }));
-          });
+          this.opQueue = this.opQueue
+            .then(() => this.applyAllowedOps(campaignOps, sceneOps))
+            .catch(() => {
+              client.ws.send(JSON.stringify({ type: 'error', message: 'op apply failed' }));
+            });
         }
         if (denied.length > 0) {
           client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied for some ops' }));
@@ -170,7 +175,7 @@ export class GameServer {
     this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
   }
 
-  private async applyAllowedOps(_client: Client, campaignOps: Op[], sceneOps: Op[]): Promise<void> {
+  private async applyAllowedOps(campaignOps: Op[], sceneOps: Op[]): Promise<void> {
     if (campaignOps.length > 0) {
       // 重读磁盘上的当前战役，吸收 REST（如 assignSceneToCampaign）写入的变更，
       // 避免用陈旧的内存对象覆盖磁盘导致归属/敌人库丢失。
