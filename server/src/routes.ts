@@ -129,6 +129,7 @@ export function createApp(deps: RouteDeps): express.Express {
   });
   r.post('/campaigns/:id/scenes', async (req, res) => {
     try {
+      await deps.campaigns.get(req.params.id); // missing -> CampaignNotFoundError -> 404
       await deps.campaigns.assignScene(req.params.id, String(req.body.sceneId ?? ''));
       res.json({ ok: true });
     } catch { res.status(404).json({ error: 'campaign not found' }); }

@@ -105,4 +105,10 @@ describe('REST API', () => {
     const del = await request(app).delete(`/api/campaigns/${id}`);
     expect(del.status).toBe(200);
   });
+
+  it('assign scene to missing campaign returns 404', async () => {
+    const scene = await request(app).post('/api/scenes').send({ name: '孤儿场景' });
+    const res = await request(app).post('/api/campaigns/nope/scenes').send({ sceneId: scene.body.id });
+    expect(res.status).toBe(404);
+  });
 });
