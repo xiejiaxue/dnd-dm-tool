@@ -86,6 +86,13 @@ describe('applyOp players', () => {
     applyOp(s, { op: 'removePlayer', tokenId: 'p1' });
     expect(s.players.map(p => p.id)).toEqual(['p2']);
   });
+
+  it('updatePlayer applies hp patch', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addPlayer', player: { id: 'p1', kind: 'player', name: '阿拉贡', entryId: null, x: 0, y: 0, size: 100, avatar: '', color: '#e53e3e', sessionId: 's1' } });
+    applyOp(s, { op: 'updatePlayer', tokenId: 'p1', patch: { hp: { current: 12, max: 12 } } });
+    expect(s.players[0].hp).toEqual({ current: 12, max: 12 });
+  });
 });
 
 describe('applyOp walls & grid & map', () => {
