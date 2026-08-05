@@ -58,25 +58,30 @@ function once(ws: WebSocket, type: string): Promise<any> {
 }
 
 describe('WebSocket 同步', () => {
-  it('玩家可移动 token，DM 可放置 token，两端都收到广播', async () => {
+  it('玩家自动创建 token，可移动自己的 token，DM 可放置怪物', async () => {
     const dm = await connect(baseUrl);
     dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
     await once(dm, 'state');
 
     const player = await connect(baseUrl);
-    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    player.send(JSON.stringify({ type: 'init', role: 'player', sessionId: 'ps-1' }));
+    const pState = await once(player, 'state');
+    const my = pState.scene.players.find((x: any) => x.sessionId === 'ps-1');
+    expect(my).toBeTruthy();
+
+    // 玩家拖自己的 token → 广播
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'moveToken', tokenId: my.id, x: 500, y: 500 }] }));
+    const b2 = await once(dm, 'state');
+    expect(b2.scene.players.find((x: any) => x.id === my.id)).toMatchObject({ x: 500, y: 500 });
+
+    // DM 放置一个怪物
+    dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '/api/token/MM__Goblin', color: '#fff' } }] }));
     await once(player, 'state');
 
-    // DM places a token; server broadcasts authoritative full state
-    dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '/api/token/MM__Goblin', color: '#fff' } }] }));
-    const b1 = await once(player, 'state');
-    expect(b1.scene.tokens.some((t: any) => t.id === 't1')).toBe(true);
-
-    // Player moves that token; both peers receive the resulting full state
-    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'moveToken', tokenId: 't1', x: 500, y: 500 }] }));
-    const b2 = await once(dm, 'state');
-    expect(b2.scene.tokens[0].x).toBe(500);
-    expect(b2.scene.tokens[0].y).toBe(500);
+    // 玩家尝试拖怪物 → 被拒
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'moveToken', tokenId: 't1', x: 100, y: 100 }] }));
+    const err = await once(player, 'error');
+    expect(err.message).toMatch(/permission/i);
 
     dm.close();
     player.close();
