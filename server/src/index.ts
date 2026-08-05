@@ -18,7 +18,7 @@ async function main() {
   const entries = new EntryService(DB_DIR);
   const tokens = new TokenService(TOKEN_CACHE_DIR, entries, IMAGE_BASE);
 
-  const game = new GameServer(store, campaignStore, { password: DM_PASSWORD });
+  const game = new GameServer(store, campaignStore, { password: DM_PASSWORD }, entries);
   await game.init();
 
   let dataReady = false;

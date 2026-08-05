@@ -22,7 +22,14 @@ export class GameServer {
   // tick 内两条战役 op 消息（ws 帧合并）读到同一旧状态、后者覆盖前者丢 op。
   private opQueue: Promise<void> = Promise.resolve();
 
-  constructor(store: SceneStore, campaignStore: CampaignStore, private opts: { password: string | null }) {
+  constructor(
+    store: SceneStore,
+    campaignStore: CampaignStore,
+    private opts: { password: string | null },
+    // Optional: used to auto-fill max HP for placed monster tokens. Structural
+    // so tests can construct GameServer without wiring the entry service.
+    private entries?: { get(type: 'monster', id: string): Promise<any> },
+  ) {
     this.store = store;
     this.campaignStore = campaignStore;
     this.current = null as unknown as Scene;
@@ -231,6 +238,19 @@ export class GameServer {
       this.campaignStore.save(this.currentCampaign);
     }
     if (sceneOps.length > 0) {
+      // Auto-fill max HP for freshly placed monster tokens from the 5e stat
+      // block (single authoritative point covering every placement path).
+      for (const op of sceneOps) {
+        if (op.op === 'addToken' && this.entries && op.token.kind === 'monster' && op.token.entryId && !op.token.hp) {
+          try {
+            const e = await this.entries.get('monster', op.token.entryId);
+            const avg = Number(e?.hp?.average);
+            if (Number.isFinite(avg) && avg > 0) {
+              op.token = { ...op.token, hp: { current: avg, max: avg } };
+            }
+          } catch { /* leave hp unset if the stat block can't be loaded */ }
+        }
+      }
       for (const op of sceneOps) applyOp(this.current, op);
       this.store.save(this.current);
     }
