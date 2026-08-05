@@ -1,6 +1,8 @@
 import { WebSocket } from 'ws';
 import { SceneStore } from './store';
-import { Op, Role, Scene } from './types';
+import { CampaignStore } from './campaign-store';
+import { Op, Role, Scene, Campaign } from './types';
+import { applyCampaignOp, isCampaignOp } from './campaign-ops';
 import { applyOp, canOp } from './ops';
 
 interface Client {
@@ -13,29 +15,50 @@ interface Client {
 export class GameServer {
   current: Scene;
   store: SceneStore;
+  campaignStore: CampaignStore;
+  currentCampaign: Campaign;
   private clients = new Set<Client>();
 
-  constructor(store: SceneStore, private opts: { password: string | null }) {
+  constructor(store: SceneStore, campaignStore: CampaignStore, private opts: { password: string | null }) {
     this.store = store;
+    this.campaignStore = campaignStore;
     this.current = null as unknown as Scene;
+    this.currentCampaign = null as unknown as Campaign;
   }
 
   async init(): Promise<void> {
-    const last = await this.store.last();
-    if (last) {
+    // 迁移：无战役时自动建「默认战役」收录全部场景
+    if ((await this.campaignStore.list()).length === 0) {
+      const scenes = await this.store.list();
+      const def = await this.campaignStore.create('默认战役');
+      for (const s of scenes) await this.campaignStore.assignScene(def.id, s.id);
+    }
+    // 定位当前场景（last-scene 或首个）
+    let sceneId: string | null = await this.store.last();
+    if (!sceneId) {
+      const scenes = await this.store.list();
+      sceneId = scenes.length > 0 ? scenes[0].id : null;
+    }
+    if (sceneId) {
       try {
-        this.current = await this.store.get(last);
+        this.current = await this.store.get(sceneId);
+        this.currentCampaign = await this.campaignForScene(sceneId);
         return;
       } catch { /* fallthrough */ }
     }
-    const scenes = await this.store.list();
-    if (scenes.length > 0) {
-      this.current = await this.store.get(scenes[0].id);
-      await this.store.setLast(this.current.id);
-      return;
-    }
     this.current = await this.store.create('默认场景');
     await this.store.setLast(this.current.id);
+    this.currentCampaign = await this.campaignForScene(this.current.id);
+  }
+
+  private async campaignForScene(sceneId: string): Promise<Campaign> {
+    for (const c of await this.campaignStore.all()) {
+      if (c.sceneIds.includes(sceneId)) return c;
+    }
+    const list = await this.campaignStore.list();
+    const target = list.length > 0 ? list[0].id : (await this.campaignStore.create('默认战役')).id;
+    await this.campaignStore.assignScene(target, sceneId);
+    return this.campaignStore.get(target);
   }
 
   roleFor(address: string, dmToken?: string): Role {
@@ -74,7 +97,7 @@ export class GameServer {
           client.role = this.roleFor(this.remoteAddress(client), msg.dmToken);
         }
         client.name = String(msg.name ?? '').slice(0, 20);
-        client.ws.send(JSON.stringify({ type: 'state', scene: this.current, role: client.role }));
+        client.ws.send(JSON.stringify({ type: 'state', scene: this.current, role: client.role, campaign: this.currentCampaign }));
         this.broadcastMeta();
         return;
       }
@@ -87,9 +110,17 @@ export class GameServer {
         const allowed = ops.filter((op: Op) => canOp(client.role, op));
         const denied = ops.filter((op: Op) => !canOp(client.role, op));
         if (allowed.length > 0) {
-          for (const op of allowed) applyOp(this.current, op);
-          this.store.save(this.current);
-          this.broadcast({ type: 'state', scene: this.current });
+          const campaignOps = allowed.filter(isCampaignOp);
+          const sceneOps = allowed.filter((op: Op) => !isCampaignOp(op));
+          if (campaignOps.length > 0) {
+            for (const op of campaignOps) applyCampaignOp(this.currentCampaign, op);
+            this.campaignStore.save(this.currentCampaign);
+          }
+          if (sceneOps.length > 0) {
+            for (const op of sceneOps) applyOp(this.current, op);
+            this.store.save(this.current);
+          }
+          this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
         }
         if (denied.length > 0) {
           client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied for some ops' }));
@@ -106,6 +137,16 @@ export class GameServer {
         });
         return;
       }
+      case 'switchCampaign': {
+        if (client.role !== 'dm') {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied' }));
+          return;
+        }
+        this.switchCampaign(String(msg.campaignId)).catch(() => {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'campaign load failed' }));
+        });
+        return;
+      }
     }
   }
 
@@ -113,7 +154,26 @@ export class GameServer {
     this.store.save(this.current);
     this.current = await this.store.get(id);
     await this.store.setLast(id);
-    this.broadcast({ type: 'state', scene: this.current, role: undefined });
+    this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
+  }
+
+  private async switchCampaign(id: string): Promise<void> {
+    this.store.save(this.current);
+    const campaign = await this.campaignStore.get(id);
+    this.currentCampaign = campaign;
+    let scene = this.current;
+    if (!campaign.sceneIds.includes(this.current.id)) {
+      scene = campaign.sceneIds.length > 0
+        ? await this.store.get(campaign.sceneIds[0])
+        : await this.store.create('未命名场景');
+      if (!campaign.sceneIds.includes(scene.id)) {
+        campaign.sceneIds.push(scene.id);
+        this.campaignStore.save(campaign);
+      }
+    }
+    this.current = scene;
+    await this.store.setLast(this.current.id);
+    this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
   }
 
   private remoteAddress(client: Client): string {
