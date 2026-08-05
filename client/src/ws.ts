@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Op, Role, Scene } from './types';
+import type { Op, Role, Scene, Campaign } from './types';
 
 export interface SceneState {
   scene: Scene | null;
   role: Role;
   online: number;
   connected: boolean;
+  campaign: Campaign | null;
 }
 
 type Listener = (msg: any) => void;
@@ -20,7 +21,7 @@ class Connection {
   // load, which on localhost can complete before React registers the useScene
   // listener — so the initial state message would be lost. We buffer the last
   // state/meta here and replay it to late subscribers to avoid hanging on 连接中.
-  lastState: { scene: Scene; role: Role } | null = null;
+  lastState: { scene: Scene; role: Role; campaign: Campaign | null } | null = null;
   lastOnline = 0;
   connected = false;
 
@@ -39,7 +40,7 @@ class Connection {
       let msg: any;
       try { msg = JSON.parse(ev.data as string); } catch { return; }
       if (msg.type === 'state') {
-        this.lastState = { scene: msg.scene, role: msg.role ?? 'player' };
+        this.lastState = { scene: msg.scene, role: msg.role ?? 'player', campaign: msg.campaign ?? null };
         this.connected = true;
       } else if (msg.type === 'meta') {
         this.lastOnline = msg.online;
@@ -65,7 +66,7 @@ class Connection {
   onMessage(cb: Listener): () => void {
     this.listeners.add(cb);
     // Replay the latest snapshot to listeners that subscribe after it arrived.
-    if (this.lastState) cb({ type: 'state', scene: this.lastState.scene, role: this.lastState.role });
+    if (this.lastState) cb({ type: 'state', scene: this.lastState.scene, role: this.lastState.role, campaign: this.lastState.campaign });
     if (this.connected) cb({ type: 'meta', online: this.lastOnline });
     return () => this.listeners.delete(cb);
   }
@@ -83,6 +84,7 @@ export function useScene(): SceneState {
     role: connection.lastState?.role ?? 'player',
     online: connection.lastOnline,
     connected: connection.connected,
+    campaign: connection.lastState?.campaign ?? null,
   }));
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -91,7 +93,7 @@ export function useScene(): SceneState {
     return connection.onMessage((msg) => {
       const cur = stateRef.current;
       if (msg.type === 'state') {
-        setState({ ...cur, scene: msg.scene, role: msg.role ?? cur.role, connected: true });
+        setState({ ...cur, scene: msg.scene, role: msg.role ?? cur.role, campaign: msg.campaign ?? cur.campaign, connected: true });
       } else if (msg.type === 'meta') {
         setState({ ...cur, online: msg.online, connected: true });
       } else if (msg.type === 'error') {

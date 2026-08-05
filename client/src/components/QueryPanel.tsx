@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { connection } from '../ws';
 import { useScene } from '../ws';
+import { setPending } from '../pending';
 import DetailDrawer from './DetailDrawer';
 import type { EntryType, IndexEntry } from '../types';
 
-type Tab = 'query' | 'fav';
+type Tab = 'query' | 'camp' | 'fav';
 
 interface Props {
   collapsed: boolean;
@@ -19,7 +20,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   const [results, setResults] = useState<IndexEntry[]>([]);
   // DetailDrawer only needs the id trio; both search results and favorites fit it.
   const [detail, setDetail] = useState<{ type: EntryType; id: string; nameZh: string } | null>(null);
-  const { scene, role } = useScene();
+  const { scene, role, campaign } = useScene();
   // Favorites tab: resolve the Chinese name for each favorited entryId.
   const [favNames, setFavNames] = useState<Record<string, string>>({});
 
@@ -44,12 +45,18 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
     return () => clearTimeout(t);
   }, [q, type]);
 
+  // Resolve the scene id -> name mapping for the campaign tab's scene list.
+  const [sceneNames, setSceneNames] = useState<Record<string, string>>({});
+  useEffect(() => {
+    api.scenes().then(list => setSceneNames(Object.fromEntries(list.map(s => [s.id, s.name])))).catch(() => {});
+  }, []);
+
   // Directly add a monster token to the scene, tiled in a grid around the
   // play-area centre so repeated adds don't stack exactly on top of each other.
-  const addMonsterToScene = (r: IndexEntry) => {
+  const spawnEnemy = (entryId: string, nameZh: string) => {
     if (!scene) return;
     const area = scene.playArea;
-    const i = scene.tokens.filter(t => t.entryId === r.id).length;
+    const i = scene.tokens.filter(t => t.entryId === entryId).length;
     const x = area.x + area.w / 2 + (i % 4 - 1) * 100;
     const y = area.y + area.h / 2 + (Math.floor(i / 4) - 1) * 100;
     connection.sendOps([{
@@ -57,14 +64,16 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
       token: {
         id: `t${Date.now()}-${i}`,
         kind: 'monster',
-        name: r.nameZh,
-        entryId: r.id,
+        name: nameZh,
+        entryId,
         x, y, size: 100,
-        avatar: `/api/token/${r.id}`,
+        avatar: `/api/token/${entryId}`,
         color: '#fff',
       },
     }]);
   };
+  const addMonsterToScene = (r: IndexEntry) => spawnEnemy(r.id, r.nameZh);
+  const isInLibrary = (entryId: string) => (campaign?.enemies ?? []).some(e => e.entryId === entryId);
 
   const favorites = scene?.favorites ?? [];
 
@@ -84,10 +93,10 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   return (
     <aside className="w-80 border-l border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
       <div className="flex items-center border-b border-zinc-800">
-        {(['query', 'fav'] as Tab[]).map(t => (
+        {(['query', 'camp', 'fav'] as Tab[]).map(t => (
           <button key={t} onClick={() => { setTab(t); setDetail(null); }}
             className={`flex-1 py-2 text-center ${tab === t ? 'text-amber-400 border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
-            {t === 'query' ? '查询' : '收藏夹'}
+            {t === 'query' ? '查询' : t === 'camp' ? '战役库' : '收藏夹'}
           </button>
         ))}
         <button
@@ -130,6 +139,14 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
                       className="shrink-0 mr-2 ml-1 px-2 py-1 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-xs"
                     >＋ 添加</button>
                   )}
+                  {role === 'dm' && r.type === 'monster' && (
+                    <button
+                      onClick={() => connection.sendOps([{ op: 'addEnemy', entryId: r.id, nameZh: r.nameZh }])}
+                      title="加入战役库"
+                      className={`shrink-0 mr-1 px-1.5 py-0.5 rounded text-xs ${isInLibrary(r.id) ? 'text-zinc-600' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}
+                      disabled={isInLibrary(r.id)}
+                    >{isInLibrary(r.id) ? '已在库' : '入库'}</button>
+                  )}
                 </div>
               ))}
               {q.trim() && results.length === 0 && <div className="p-3 text-zinc-500 text-xs">无结果</div>}
@@ -153,6 +170,33 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
                   </button>
                 );
               })}
+            </div>
+          )}
+          {tab === 'camp' && (
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-3 py-1.5 text-xs text-zinc-500 bg-zinc-800/40">敌人 ({campaign?.enemies.length ?? 0})</div>
+              {(campaign?.enemies ?? []).map(e => (
+                <div key={e.entryId} className="flex items-center gap-2 px-2 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800/50">
+                  <img src={`/api/token/${e.entryId}`} alt="" className="w-6 h-6 rounded-full bg-zinc-700 shrink-0" />
+                  <span className="flex-1 truncate text-zinc-200">{e.nameZh}</span>
+                  <button onClick={() => spawnEnemy(e.entryId, e.nameZh)} title="一键放入当前场景"
+                    className="shrink-0 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-xs">＋</button>
+                  <button onClick={() => setPending({ kind: 'monster', name: e.nameZh, entryId: e.entryId, avatar: `/api/token/${e.entryId}`, color: '#fff' })}
+                    title="拿起放置" className="shrink-0 px-1.5 py-0.5 rounded hover:bg-zinc-700 text-zinc-300 text-xs">✋</button>
+                  {role === 'dm' && (
+                    <button onClick={() => connection.sendOps([{ op: 'removeEnemy', entryId: e.entryId }])}
+                      title="移出战役库" className="shrink-0 px-1.5 py-0.5 rounded hover:bg-zinc-700 text-zinc-400 hover:text-red-400 text-xs">✕</button>
+                  )}
+                </div>
+              ))}
+              {(campaign?.enemies.length ?? 0) === 0 && <div className="p-3 text-zinc-500 text-xs">战役库为空，搜索怪物后点「加入战役库」</div>}
+              <div className="px-3 py-1.5 text-xs text-zinc-500 bg-zinc-800/40 mt-2">场景 ({campaign?.sceneIds.length ?? 0})</div>
+              {(campaign?.sceneIds ?? []).map(sid => (
+                <button key={sid} onClick={() => connection.sendControl({ type: 'switchScene', sceneId: sid })}
+                  className="w-full text-left px-3 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800 text-zinc-200">
+                  {sceneNames[sid] ?? sid}
+                </button>
+              ))}
             </div>
           )}
         </>

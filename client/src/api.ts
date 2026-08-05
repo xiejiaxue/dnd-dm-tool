@@ -1,4 +1,4 @@
-import type { EntryType, IndexEntry, Scene } from './types';
+import type { EntryType, IndexEntry, Scene, Campaign } from './types';
 
 async function json<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
@@ -14,6 +14,12 @@ export const api = {
   createScene: (name: string) =>
     json<Scene>('/api/scenes', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }) }),
   deleteScene: (id: string) => json<{ ok: boolean }>(`/api/scenes/${id}`, { method: 'DELETE' }),
+  campaigns: () => json<{ id: string; name: string }[]>('/api/campaigns'),
+  createCampaign: (name: string) =>
+    json<Campaign>('/api/campaigns', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }) }),
+  deleteCampaign: (id: string) => json<{ ok: boolean }>(`/api/campaigns/${id}`, { method: 'DELETE' }),
+  assignSceneToCampaign: (campaignId: string, sceneId: string) =>
+    json<{ ok: boolean }>(`/api/campaigns/${campaignId}/scenes`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sceneId }) }),
   verifyPassword: async (password: string): Promise<boolean> => {
     const r = await fetch('/api/verify-password', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password }) });
     const b = await r.json();
