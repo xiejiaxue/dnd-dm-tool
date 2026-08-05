@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { connection, useScene } from '../ws';
+import { connection, getMySessionId, useScene } from '../ws';
 import DetailDrawer from './DetailDrawer';
-import type { Token } from '../types';
+import type { PlayerToken, Token } from '../types';
+
+// Player token color choices (same palette the DM sees when placing a player).
+const PALETTE = ['#e53e3e', '#38a169', '#3182ce', '#d69e2e', '#805ad5', '#dd6b20', '#319795', '#d53f8c'];
 
 // Left-hand panel listing the monster tokens currently in the scene, with HP
 // tracking (click to edit current/max), quick delete (DM), a detail button,
@@ -14,8 +17,14 @@ export default function EnemyList() {
   const [hpEditId, setHpEditId] = useState<string | null>(null);
   const [hpCur, setHpCur] = useState('');
   const [hpMax, setHpMax] = useState('');
+  const [editName, setEditName] = useState(false);
+  const [nameVal, setNameVal] = useState('');
+  const [hpEdit, setHpEdit] = useState(false);
   const tokens = scene?.tokens ?? [];
   const isDm = role === 'dm';
+  // Locate this player's own token, bound to their stable browser session id.
+  const mySessionId = getMySessionId();
+  const myToken: PlayerToken | undefined = scene?.players.find(p => p.sessionId === mySessionId);
 
   const inInitiative = (tokenId: string) =>
     (scene?.initiative ?? []).some(e => e.tokenId === tokenId);
@@ -59,6 +68,40 @@ export default function EnemyList() {
 
   return (
     <aside className="w-52 border-r border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
+      {role === 'player' && myToken && (
+        <div className="px-2 py-2 border-b border-zinc-800 bg-zinc-800/30">
+          <div className="text-xs text-zinc-400 mb-1">我的角色</div>
+          <div className="flex items-center gap-1.5">
+            {editName ? (
+              <input autoFocus value={nameVal} onChange={e => setNameVal(e.target.value)}
+                onBlur={() => { if (nameVal.trim()) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { name: nameVal.trim().slice(0, 20) } }]); setEditName(false); }}
+                onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
+                className="flex-1 min-w-0 bg-zinc-900 rounded px-1 py-0.5 text-sm" />
+            ) : (
+              <button className="flex-1 min-w-0 text-left truncate text-zinc-100"
+                onClick={() => { setNameVal(myToken.name); setEditName(true); }}>{myToken.name} ✎</button>
+            )}
+            <span className="shrink-0 text-[10px] text-zinc-500">HP</span>
+            {hpEdit ? (
+              <input autoFocus value={hpCur} onChange={e => setHpCur(e.target.value)}
+                onBlur={() => { const c = Number(hpCur), m = Number(hpMax); if (Number.isFinite(c) && Number.isFinite(m)) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { hp: { current: c, max: m } } }]); setHpEdit(false); }}
+                onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
+                className="w-8 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs" />
+            ) : (
+              <button className="shrink-0 text-emerald-400 text-xs" onClick={() => { setHpCur(String(myToken.hp?.current ?? '')); setHpMax(String(myToken.hp?.max ?? '')); setHpEdit(true); }}>
+                {myToken.hp ? `${myToken.hp.current}/${myToken.hp.max}` : '—'}
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            {PALETTE.map(c => (
+              <button key={c} onClick={() => connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { color: c } }])}
+                className={`w-4 h-4 rounded-full ${myToken.color === c ? 'ring-2 ring-white' : ''}`} style={{ background: c }} />
+            ))}
+          </div>
+          <div className="text-[10px] text-zinc-600 mt-1">拖动画布上的 token 可移动位置</div>
+        </div>
+      )}
       <div className="px-2 py-2 border-b border-zinc-800 text-xs text-zinc-400 flex items-center justify-between gap-1">
         <span>敌人 <span className="text-zinc-500">({tokens.length})</span></span>
         {isDm && (
