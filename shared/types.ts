@@ -70,6 +70,7 @@ export type Op =
   | { op: 'removeToken'; tokenId: string }
   | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color'>> }
   | { op: 'addPlayer'; player: PlayerToken }
+  | { op: 'removePlayer'; tokenId: string }
   | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId'>> }
   | { op: 'addWall'; wall: Wall }
   | { op: 'removeWall'; wallId: string }

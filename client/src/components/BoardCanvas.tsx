@@ -128,30 +128,58 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return () => window.removeEventListener('mouseup', onUp);
   }, [tool]);
 
-  // Add tool: click empty canvas to place the pending token, snapped to grid.
+  // Empty-canvas click: place the pending token (add tool) or deselect (select).
   const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (tool !== 'add' || !pending || role !== 'dm' || !scene) return;
-    if (e.target !== stageRef.current) return;
-    const p = worldPos();
-    if (!p) return;
-    const sx = snap(p.x, 0);
-    const sy = snap(p.y, 1);
-    connection.sendOps([{
-      op: 'addToken',
-      token: {
-        id: `t${Date.now()}`,
-        kind: pending.kind,
-        name: pending.name,
-        entryId: pending.entryId,
-        x: sx,
-        y: sy,
-        size: 100,
-        avatar: pending.avatar,
-        color: pending.color,
-      },
-    }]);
-    onClearPending();
-  }, [tool, pending, role, scene, worldPos, snap, onClearPending]);
+    if (!scene || e.target !== stageRef.current) return;
+    if (tool === 'add' && pending && role === 'dm') {
+      const p = worldPos();
+      if (!p) return;
+      const sx = snap(p.x, 0);
+      const sy = snap(p.y, 1);
+      connection.sendOps([{
+        op: 'addToken',
+        token: {
+          id: `t${Date.now()}`,
+          kind: pending.kind,
+          name: pending.name,
+          entryId: pending.entryId,
+          x: sx,
+          y: sy,
+          size: 100,
+          avatar: pending.avatar,
+          color: pending.color,
+        },
+      }]);
+      onClearPending();
+    } else {
+      onSelect(null);
+    }
+  }, [tool, pending, role, scene, worldPos, snap, onClearPending, onSelect]);
+
+  // Remove the selected token from the map (monster or player token).
+  const handleDelete = useCallback(() => {
+    if (!selectedId || role !== 'dm' || !scene) return;
+    if (scene.tokens.some(t => t.id === selectedId)) {
+      connection.sendOps([{ op: 'removeToken', tokenId: selectedId }]);
+    } else if (scene.players.some(p => p.id === selectedId)) {
+      connection.sendOps([{ op: 'removePlayer', tokenId: selectedId }]);
+    }
+    onSelect(null);
+  }, [selectedId, role, scene, onSelect]);
+
+  // Delete key removes the selected token (skip when typing in an input).
+  const handleDeleteRef = useRef(handleDelete);
+  handleDeleteRef.current = handleDelete;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Delete') return;
+      const el = document.activeElement as HTMLElement | null;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      handleDeleteRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-zinc-600">连接中…</div>;
 
@@ -165,6 +193,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }
 
   return (
+    <div className="relative h-full w-full">
     <Stage
       ref={stageRef}
       width={stageSize.width}
@@ -233,5 +262,29 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         ))}
       </Layer>
     </Stage>
+    {/* Selected-token action popup (DM only). Must be OUTSIDE the Konva Stage
+        (react-konva only accepts Konva nodes as Stage children); the Stage is
+        wrapped in a relative container so this HTML overlay tracks the token. */}
+    {role === 'dm' && (() => {
+      const sel = scene.tokens.find(t => t.id === selectedId) ?? scene.players.find(p => p.id === selectedId);
+      if (!sel) return null;
+      return (
+        <div
+          className="absolute z-10"
+          style={{
+            left: sel.x * scale + pos.x + (sel.size / 2) * scale,
+            top: sel.y * scale + pos.y - 4,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <button
+            onClick={handleDelete}
+            title="删除 token（Delete 键）"
+            className="px-2 py-1 rounded bg-red-600/20 text-red-400 hover:bg-red-600/30 text-xs shadow-lg shadow-black/40 whitespace-nowrap"
+          >🗑 删除</button>
+        </div>
+      );
+    })()}
+  </div>
   );
 }
