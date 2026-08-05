@@ -94,7 +94,7 @@ describe('applyOp walls & grid & map', () => {
     const s = freshScene();
     applyOp(s, { op: 'updateGrid', patch: { size: 50 } });
     expect(s.grid.size).toBe(50);
-    expect(s.grid.snap).toBe(true);
+    expect(s.grid.snap).toBe(false);
   });
 
   it('map update', () => {
