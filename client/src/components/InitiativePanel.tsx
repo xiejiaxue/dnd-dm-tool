@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { connection, useScene } from '../ws';
 
 interface Props {
@@ -13,6 +13,19 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
   const [dmName, setDmName] = useState('');
   const [dmValue, setDmValue] = useState('');
   const entries = scene?.initiative ?? [];
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Active turn id: auto-scroll so the current tag is always visible in the strip.
+  const activeId = scene?.initiative.find(e => e.active)?.id ?? null;
+
+  useEffect(() => {
+    if (!activeId || !scrollRef.current) return;
+    const el = scrollRef.current.querySelector<HTMLElement>(`[data-ini="${activeId}"]`);
+    if (el) {
+      const container = scrollRef.current;
+      const targetLeft = el.offsetLeft - container.clientWidth / 2 + el.clientWidth / 2;
+      container.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+    }
+  }, [activeId]);
   const selectedToken = scene
     ? scene.tokens.find(t => t.id === selectedTokenId) ?? scene.players.find(p => p.id === selectedTokenId)
     : undefined;
@@ -54,9 +67,9 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
     <div className="h-14 border-b border-zinc-700/60 bg-zinc-900 flex items-center px-2 gap-2 text-sm">
       <span className="text-zinc-500 shrink-0">先攻</span>
       {/* 先攻条目：固定长度的可滚动区，条目多时滚动而右侧控件不被推出屏幕 */}
-      <div className="flex-1 min-w-0 overflow-x-auto flex items-center gap-2 h-full py-2">
+      <div ref={scrollRef} className="flex-1 min-w-0 overflow-x-auto flex items-center gap-2 h-full py-2">
         {entries.map(e => (
-          <div key={e.id}
+          <div key={e.id} data-ini={e.id}
             className={`shrink-0 px-2 py-0.5 rounded flex items-center gap-1.5 ${e.active ? 'bg-emerald-700/60 text-white ring-1 ring-emerald-400' : 'bg-zinc-800 text-zinc-300'}`}>
             <span>{e.name}</span>
             <span className={e.active ? 'text-emerald-200' : 'text-amber-400'}>{e.value}</span>
