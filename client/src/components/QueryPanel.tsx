@@ -19,7 +19,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   const [results, setResults] = useState<IndexEntry[]>([]);
   // DetailDrawer only needs the id trio; both search results and favorites fit it.
   const [detail, setDetail] = useState<{ type: EntryType; id: string; nameZh: string } | null>(null);
-  const { scene } = useScene();
+  const { scene, role } = useScene();
   // Favorites tab: resolve the Chinese name for each favorited entryId.
   const [favNames, setFavNames] = useState<Record<string, string>>({});
 
@@ -43,6 +43,28 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
     }, 250);
     return () => clearTimeout(t);
   }, [q, type]);
+
+  // Directly add a monster token to the scene, tiled in a grid around the
+  // play-area centre so repeated adds don't stack exactly on top of each other.
+  const addMonsterToScene = (r: IndexEntry) => {
+    if (!scene) return;
+    const area = scene.playArea;
+    const i = scene.tokens.filter(t => t.entryId === r.id).length;
+    const x = area.x + area.w / 2 + (i % 4 - 1) * 100;
+    const y = area.y + area.h / 2 + (Math.floor(i / 4) - 1) * 100;
+    connection.sendOps([{
+      op: 'addToken',
+      token: {
+        id: `t${Date.now()}-${i}`,
+        kind: 'monster',
+        name: r.nameZh,
+        entryId: r.id,
+        x, y, size: 100,
+        avatar: `/api/token/${r.id}`,
+        color: '#fff',
+      },
+    }]);
+  };
 
   const favorites = scene?.favorites ?? [];
 
@@ -93,16 +115,22 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
           {tab === 'query' && (
             <div className="flex-1 overflow-y-auto">
               {results.map(r => (
-                <button key={r.id} onClick={() => setDetail(r)}
-                  className="w-full text-left px-3 py-2 hover:bg-zinc-800 border-b border-zinc-800/50 flex justify-between gap-2">
-                  <span>
-                    <span className="block text-zinc-100">{r.nameZh}</span>
-                    <span className="block text-xs text-zinc-500">{r.nameEn} · {r.source}</span>
-                  </span>
-                  <span className="shrink-0 text-xs text-amber-400/80 self-center">
+                <div key={r.id} className="flex items-center border-b border-zinc-800/50 hover:bg-zinc-800">
+                  <button onClick={() => setDetail(r)} className="flex-1 text-left px-3 py-2 min-w-0">
+                    <span className="block text-zinc-100 truncate">{r.nameZh}</span>
+                    <span className="block text-xs text-zinc-500 truncate">{r.nameEn} · {r.source}</span>
+                  </button>
+                  <span className="shrink-0 text-xs text-amber-400/80 pr-1">
                     {r.type === 'monster' ? r.cr ?? '' : r.type === 'spell' ? `${r.level ?? 0} 环` : ''}
                   </span>
-                </button>
+                  {role === 'dm' && r.type === 'monster' && (
+                    <button
+                      onClick={() => addMonsterToScene(r)}
+                      title="添加到场景"
+                      className="shrink-0 mr-2 ml-1 px-2 py-1 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-xs"
+                    >＋ 添加</button>
+                  )}
+                </div>
               ))}
               {q.trim() && results.length === 0 && <div className="p-3 text-zinc-500 text-xs">无结果</div>}
             </div>
