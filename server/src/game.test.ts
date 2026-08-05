@@ -77,6 +77,29 @@ describe('GameServer 战役集成', () => {
     expect(persistedScene.tokens.some(t => t.id === 't1')).toBe(true);
   });
 
+  it('同一 tick 内两条战役 op 消息串行化，不丢 op', async () => {
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'game-race-'));
+    try {
+      const s = new SceneStore(path.join(d, 'scenes'));
+      const cs = new CampaignStore(path.join(d, 'campaigns'));
+      const g = new GameServer(s, cs, { password: 'pw' });
+      await g.init();
+      // 同一 tick 连续处理两条含战役 op 的消息（模拟 ws 帧合并）
+      (g as any).handle(fakeClient('dm'), {
+        type: 'op', ops: [{ op: 'addEnemy', entryId: 'MM__Goblin', nameZh: '地精' }],
+      });
+      (g as any).handle(fakeClient('dm'), {
+        type: 'op', ops: [{ op: 'addEnemy', entryId: 'MM__Orc', nameZh: '兽人' }],
+      });
+      await new Promise(r => setTimeout(r, 0));
+      const persisted = await cs.get(g.currentCampaign.id);
+      expect(persisted.enemies.map((e: any) => e.entryId))
+        .toEqual(expect.arrayContaining(['MM__Goblin', 'MM__Orc']));
+    } finally {
+      fs.rmSync(d, { recursive: true, force: true });
+    }
+  });
+
   it('switchCampaign 载入新战役，当前场景不属于该战役则切换其首场景', async () => {
     const c = await campaignStore.create('新战役');
     const scene = await store.create('新场景');
