@@ -11,6 +11,7 @@ interface Client {
   ws: WebSocket;
   role: Role;
   name: string;
+  sessionId: string;
   dmToken?: string;
 }
 
@@ -73,6 +74,40 @@ export class GameServer {
     return this.campaignStore.get(target);
   }
 
+  // Ensure the player's token exists in this scene, creating it if missing.
+  // Returns true if the scene's players array was mutated (needs a save).
+  private ensurePlayerToken(scene: Scene, sessionId: string): boolean {
+    if (scene.players.some(p => p.sessionId === sessionId)) return false;
+    let n = 1;
+    for (const p of scene.players) {
+      const m = /^玩家(\d+)$/.exec(p.name);
+      if (m) n = Math.max(n, Number(m[1]) + 1);
+    }
+    const colors = ['#e53e3e', '#38a169', '#3182ce', '#d69e2e', '#805ad5', '#dd6b20', '#319795', '#d53f8c'];
+    scene.players.push({
+      id: newId('p'),
+      kind: 'player',
+      name: `玩家${n}`,
+      entryId: null,
+      x: 150 + (n * 40) % 600,
+      y: 150 + (n * 30) % 400,
+      size: 100,
+      avatar: '',
+      color: colors[n % colors.length],
+      sessionId,
+    });
+    return true;
+  }
+
+  // Ensure every connected player has a token in the given scene.
+  private async ensureAllPlayerTokens(scene: Scene): Promise<void> {
+    let changed = false;
+    for (const c of this.clients) {
+      if (c.role === 'player' && c.sessionId && this.ensurePlayerToken(scene, c.sessionId)) changed = true;
+    }
+    if (changed) this.store.save(scene);
+  }
+
   roleFor(address: string, dmToken?: string): Role {
     const a = address.replace(/^::ffff:/, '');
     const isLocal = a === '127.0.0.1' || a === '::1';
@@ -82,7 +117,7 @@ export class GameServer {
   }
 
   attach(ws: any): void {
-    const client: Client = { ws, role: 'player', name: '' };
+    const client: Client = { ws, role: 'player', name: '', sessionId: '' };
     this.clients.add(client);
     this.broadcastMeta();
 
@@ -100,6 +135,7 @@ export class GameServer {
   private handle(client: Client, msg: any): void {
     switch (msg.type) {
       case 'init': {
+        client.sessionId = String(msg.sessionId ?? '');
         // Test-only backdoor (DND_TEST_ROLE is never set in production):
         // lets an init message declare its own role so integration tests stay
         // self-contained and portable on hosts without the 127.0.0.2 alias.
@@ -109,6 +145,12 @@ export class GameServer {
           client.role = this.roleFor(this.remoteAddress(client), msg.dmToken);
         }
         client.name = String(msg.name ?? '').slice(0, 20);
+        // Ensure a player reconnecting (or joining) has a token in the current
+        // scene; persist + broadcast only when a new token was created.
+        if (client.role === 'player' && client.sessionId && this.ensurePlayerToken(this.current, client.sessionId)) {
+          this.store.save(this.current);
+          this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
+        }
         client.ws.send(JSON.stringify({ type: 'state', scene: this.current, role: client.role, campaign: this.currentCampaign }));
         this.broadcastMeta();
         return;
@@ -190,6 +232,7 @@ export class GameServer {
     }
     this.current = await this.store.get(id);
     await this.store.setLast(id);
+    await this.ensureAllPlayerTokens(this.current);
     this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
   }
 
@@ -221,6 +264,7 @@ export class GameServer {
     this.currentCampaign = campaign;
     this.current = scene;
     await this.store.setLast(this.current.id);
+    await this.ensureAllPlayerTokens(this.current);
     this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
   }
 
