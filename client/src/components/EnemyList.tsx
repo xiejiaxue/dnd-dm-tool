@@ -59,8 +59,15 @@ export default function EnemyList() {
 
   return (
     <aside className="w-52 border-r border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
-      <div className="px-2 py-2 border-b border-zinc-800 text-xs text-zinc-400">
-        敌人 <span className="text-zinc-500">({tokens.length})</span>
+      <div className="px-2 py-2 border-b border-zinc-800 text-xs text-zinc-400 flex items-center justify-between gap-1">
+        <span>敌人 <span className="text-zinc-500">({tokens.length})</span></span>
+        {isDm && (
+          <button
+            onClick={() => connection.sendControl({ type: 'rollInitiative' })}
+            title="对场景内所有怪物掷 d20+敏捷调整值，加入/重掷先攻"
+            className="shrink-0 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-[10px]"
+          >自动随机先攻</button>
+        )}
       </div>
       {detail ? (
         <DetailDrawer entry={detail} onBack={() => setDetail(null)} />

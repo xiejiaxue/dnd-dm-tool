@@ -207,4 +207,30 @@ describe('WebSocket 同步', () => {
 
     dm.close();
   });
+
+  it('DM 自动随机先攻：场景内怪物获得 d20 先攻值并进入先攻列表', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+
+    dm.send(JSON.stringify({ type: 'op', ops: [
+      { op: 'addToken', token: { id: 'ri-a', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '', color: '#fff' } },
+      { op: 'addToken', token: { id: 'ri-b', kind: 'monster', name: '兽人', entryId: 'MM__Orc', x: 0, y: 0, size: 100, avatar: '', color: '#fff' } },
+    ] }));
+    await once(dm, 'state');
+
+    dm.send(JSON.stringify({ type: 'rollInitiative' }));
+    const st = await once(dm, 'state');
+    const a = st.scene.initiative.find((e: any) => e.tokenId === 'ri-a');
+    const b = st.scene.initiative.find((e: any) => e.tokenId === 'ri-b');
+    expect(a).toBeTruthy();
+    expect(b).toBeTruthy();
+    // 测试环境未接 entries（敏捷 +0），d20 范围 1..20
+    expect(a.value).toBeGreaterThanOrEqual(1);
+    expect(a.value).toBeLessThanOrEqual(20);
+    expect(b.value).toBeGreaterThanOrEqual(1);
+    expect(b.value).toBeLessThanOrEqual(20);
+
+    dm.close();
+  });
 });
