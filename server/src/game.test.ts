@@ -158,3 +158,39 @@ describe('GameServer 迁移（init 收录全部场景 + 幂等性）', () => {
     }
   });
 });
+
+describe('ensurePlayerToken', () => {
+  let dir: string;
+  let game: GameServer;
+  let store: SceneStore;
+
+  beforeEach(async () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pt-'));
+    store = new SceneStore(path.join(dir, 'scenes'));
+    game = new GameServer(store, new CampaignStore(path.join(dir, 'campaigns')), { password: null });
+    await game.init();
+  });
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  it('creates a token for a new sessionId with 玩家N name and binds sessionId', () => {
+    (game as any).ensurePlayerToken(game.current, 'sess-a');
+    const p = game.current.players.find(x => x.sessionId === 'sess-a');
+    expect(p).toBeTruthy();
+    expect(p!.name).toMatch(/^玩家\d+$/);
+    expect(p!.color).toMatch(/^#/);
+  });
+
+  it('reuses the existing token for the same sessionId', () => {
+    (game as any).ensurePlayerToken(game.current, 'sess-a');
+    (game as any).ensurePlayerToken(game.current, 'sess-a');
+    expect(game.current.players.filter(x => x.sessionId === 'sess-a')).toHaveLength(1);
+  });
+
+  it('assigns increasing 玩家N names', () => {
+    (game as any).ensurePlayerToken(game.current, 'sess-a');
+    (game as any).ensurePlayerToken(game.current, 'sess-b');
+    const names = game.current.players.map(p => p.name).sort();
+    expect(names[0]).toBe('玩家1');
+    expect(names[1]).toBe('玩家2');
+  });
+});
