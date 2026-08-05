@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { connection, useScene } from '../ws';
+import { connection, getMySessionId, useScene } from '../ws';
 
 interface Props {
   selectedTokenId?: string | null;
@@ -9,13 +9,16 @@ interface Props {
 export default function InitiativePanel({ selectedTokenId, onClearSelected }: Props) {
   const { scene, role } = useScene();
   const [value, setValue] = useState('');
-  const [myToken, setMyToken] = useState('');
   const [dmName, setDmName] = useState('');
   const [dmValue, setDmValue] = useState('');
   const entries = scene?.initiative ?? [];
   const scrollRef = useRef<HTMLDivElement>(null);
   // Active turn id: auto-scroll so the current tag is always visible in the strip.
   const activeId = scene?.initiative.find(e => e.active)?.id ?? null;
+  // The player's own token, matched by the stable sessionId the browser sends on
+  // init. The server auto-creates the token for this session on the first init.
+  const mySessionId = getMySessionId();
+  const myToken = scene?.players.find(p => p.sessionId === mySessionId) ?? null;
 
   useEffect(() => {
     if (!activeId || !scrollRef.current) return;
@@ -40,7 +43,7 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
       sid = crypto.randomUUID();
       localStorage.setItem('player-session-id', sid);
     }
-    connection.sendOps([{ op: 'submitInitiative', name: `玩家${value}`, value: v, tokenId: myToken || null, sessionId: sid }]);
+    connection.sendOps([{ op: 'submitInitiative', name: myToken?.name ?? `玩家${value}`, value: v, tokenId: myToken?.id ?? null, sessionId: sid }]);
     setValue('');
   };
 
@@ -102,13 +105,11 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
       )}
       {role === 'player' && (
         <div className="shrink-0 flex items-center gap-1">
-          <select value={myToken} onChange={e => setMyToken(e.target.value)} className="bg-zinc-800 rounded px-1 py-0.5 text-xs">
-            <option value="">我的角色</option>
-            {(scene?.players ?? []).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          <span className="text-emerald-300 text-xs shrink-0">{myToken ? myToken.name : '未认领角色'}</span>
           <input value={value} onChange={e => setValue(e.target.value)} placeholder="先攻值"
             className="w-16 bg-zinc-800 rounded px-2 py-0.5 text-center" />
-          <button onClick={submit} className="px-2 py-0.5 rounded bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30">提交</button>
+          <button onClick={submit} disabled={!myToken}
+            className="px-2 py-0.5 rounded bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 disabled:opacity-40">提交</button>
         </div>
       )}
     </div>

@@ -11,6 +11,16 @@ export interface SceneState {
 
 type Listener = (msg: any) => void;
 
+// Stable per-browser player identity; the server binds the player's token to it.
+export function getMySessionId(): string {
+  let sid = localStorage.getItem('player-session-id');
+  if (!sid) {
+    sid = crypto.randomUUID();
+    localStorage.setItem('player-session-id', sid);
+  }
+  return sid;
+}
+
 class Connection {
   private ws: WebSocket | null = null;
   private listeners = new Set<Listener>();
@@ -34,7 +44,7 @@ class Connection {
     this.ws = new WebSocket(`${proto}://${location.host}/ws`);
     this.ws.onopen = () => {
       this.retry = 0;
-      this.sendControl({ type: 'init', dmToken: this.dmToken ?? undefined });
+      this.sendControl({ type: 'init', dmToken: this.dmToken ?? undefined, sessionId: getMySessionId() });
     };
     this.ws.onmessage = (ev) => {
       let msg: any;
