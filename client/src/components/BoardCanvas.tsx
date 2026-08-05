@@ -1,7 +1,7 @@
 import { Stage, Layer, Rect, Line, Image as KImage, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { useScene, connection } from '../ws';
+import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
 import TokenShape from './TokenShape';
 import type { PendingToken } from '../pending';
@@ -29,6 +29,7 @@ interface Props {
 
 export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, queryOpen }: Props) {
   const { scene, role } = useScene();
+  const mySessionId = getMySessionId();
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [stageSize, setStageSize] = useState(() => getStageSize(queryOpen));
@@ -290,7 +291,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             token={t}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id}
-            draggable={tool !== 'wall'}
+            draggable={role === 'dm' && tool !== 'wall'}
             onSelect={() => onSelect(t.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
@@ -306,7 +307,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             token={p}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
-            draggable={tool !== 'wall'}
+            draggable={tool !== 'wall' && (role === 'dm' || p.sessionId === mySessionId)}
             onSelect={() => onSelect(p.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
