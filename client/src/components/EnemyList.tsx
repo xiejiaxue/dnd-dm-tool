@@ -1,14 +1,41 @@
 import { useState } from 'react';
 import { connection, useScene } from '../ws';
 import DetailDrawer from './DetailDrawer';
+import type { Token } from '../types';
 
 // Left-hand panel listing the monster tokens currently in the scene, with
-// quick delete (DM) and a detail button that reuses DetailDrawer's stat block.
+// quick delete (DM), a detail button that reuses DetailDrawer's stat block,
+// and an "加入先攻" action that adds the token to the initiative order.
 export default function EnemyList() {
   const { scene, role } = useScene();
   const [detail, setDetail] = useState<{ type: 'monster'; id: string; nameZh: string } | null>(null);
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [addValue, setAddValue] = useState('');
   const tokens = scene?.tokens ?? [];
   const isDm = role === 'dm';
+
+  const inInitiative = (tokenId: string) =>
+    (scene?.initiative ?? []).some(e => e.tokenId === tokenId);
+
+  const startAdd = (t: Token) => {
+    setAddingId(t.id);
+    setAddValue('');
+  };
+
+  const commitAdd = (t: Token) => {
+    const v = Number(addValue);
+    if (Number.isFinite(v)) {
+      connection.sendOps([{
+        op: 'addToInitiative',
+        name: t.number != null ? `${t.name} #${t.number}` : t.name,
+        value: v,
+        source: 'dm',
+        tokenId: t.id,
+      }]);
+    }
+    setAddingId(null);
+    setAddValue('');
+  };
 
   return (
     <aside className="w-52 border-r border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
@@ -21,6 +48,26 @@ export default function EnemyList() {
         <div className="flex-1 overflow-y-auto">
           {tokens.map(t => {
             const eid = t.entryId;
+            const added = inInitiative(t.id);
+            if (addingId === t.id) {
+              return (
+                <div key={t.id} className="flex items-center gap-1 px-2 py-1.5 border-b border-zinc-800/50 bg-zinc-800/50">
+                  <span className="flex-1 truncate text-zinc-200">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+                  <input
+                    autoFocus
+                    value={addValue}
+                    onChange={e => setAddValue(e.target.value)}
+                    onBlur={() => commitAdd(t)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') commitAdd(t);
+                      if (e.key === 'Escape') { setAddingId(null); setAddValue(''); }
+                    }}
+                    placeholder="先攻值"
+                    className="w-14 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs"
+                  />
+                </div>
+              );
+            }
             return (
               <div key={t.id} className="flex items-center gap-1 px-2 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800/50">
                 <span className="flex-1 truncate text-zinc-200">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
@@ -30,6 +77,16 @@ export default function EnemyList() {
                     title="显示详细数据"
                     className="shrink-0 w-6 h-6 rounded hover:bg-zinc-700 text-zinc-400 hover:text-amber-400"
                   >📖</button>
+                )}
+                {isDm && !added && (
+                  <button
+                    onClick={() => startAdd(t)}
+                    title="加入先攻"
+                    className="shrink-0 px-1 py-0.5 rounded hover:bg-emerald-700/30 text-emerald-400 text-xs"
+                  >先攻</button>
+                )}
+                {isDm && added && (
+                  <span title="已在先攻列表" className="shrink-0 px-1 py-0.5 text-[10px] text-emerald-600">已入</span>
                 )}
                 {isDm && (
                   <button
