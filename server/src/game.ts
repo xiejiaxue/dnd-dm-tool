@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 import { SceneStore } from './store';
 import { CampaignStore } from './campaign-store';
 import { Op, Role, Scene, Campaign } from './types';
-import { applyCampaignOp, isCampaignOp } from './campaign-ops';
+import { applyCampaignOp, isCampaignOp, CampaignOp } from './campaign-ops';
 import { applyOp, canOp } from './ops';
 
 interface Client {
@@ -151,6 +151,14 @@ export class GameServer {
 
   private async switchScene(id: string): Promise<void> {
     this.store.save(this.current);
+    // Spec §7: only scenes within the current campaign can be switched to. If
+    // the DM switches to an unassigned scene, reconcile its campaign (move it
+    // into the current campaign) — graceful, matching campaignForScene.
+    if (!this.currentCampaign.sceneIds.includes(id)) {
+      await this.campaignStore.assignScene(this.currentCampaign.id, id);
+      // Reload so the broadcast campaign reflects the reconciled sceneIds.
+      this.currentCampaign = await this.campaignStore.get(this.currentCampaign.id);
+    }
     this.current = await this.store.get(id);
     await this.store.setLast(id);
     this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
@@ -159,23 +167,35 @@ export class GameServer {
   private async switchCampaign(id: string): Promise<void> {
     this.store.save(this.current);
     const campaign = await this.campaignStore.get(id);
-    this.currentCampaign = campaign;
-    let scene = this.current;
+    let scene: Scene;
     if (!campaign.sceneIds.includes(this.current.id)) {
-      scene = campaign.sceneIds.length > 0
-        ? await this.store.get(campaign.sceneIds[0])
-        : await this.store.create('未命名场景');
-      if (!campaign.sceneIds.includes(scene.id)) {
-        campaign.sceneIds.push(scene.id);
-        this.campaignStore.save(campaign);
+      // Resolve the target scene FIRST and only then commit currentCampaign —
+      // a missing/corrupt scene must never leave currentCampaign pointing at a
+      // campaign whose scene failed to load. Skip ids whose file was deleted
+      // after the campaign was last saved (the DELETE route cleanup may not
+      // have run), pick the first existing one, and persist the pruned ids.
+      const existing: Scene[] = [];
+      for (const sid of campaign.sceneIds) {
+        try { existing.push(await this.store.get(sid)); } catch { /* skip missing */ }
       }
+      campaign.sceneIds = existing.map(s => s.id);
+      if (existing.length === 0) {
+        scene = await this.store.create('未命名场景');
+        campaign.sceneIds.push(scene.id);
+      } else {
+        scene = existing[0];
+      }
+      this.campaignStore.save(campaign);
+    } else {
+      scene = this.current;
     }
+    this.currentCampaign = campaign;
     this.current = scene;
     await this.store.setLast(this.current.id);
     this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
   }
 
-  private async applyAllowedOps(campaignOps: Op[], sceneOps: Op[]): Promise<void> {
+  private async applyAllowedOps(campaignOps: CampaignOp[], sceneOps: Op[]): Promise<void> {
     if (campaignOps.length > 0) {
       // 重读磁盘上的当前战役，吸收 REST（如 assignSceneToCampaign）写入的变更，
       // 避免用陈旧的内存对象覆盖磁盘导致归属/敌人库丢失。
