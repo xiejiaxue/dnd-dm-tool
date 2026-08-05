@@ -238,4 +238,44 @@ describe('WebSocket 同步', () => {
 
     dm.close();
   });
+
+  it('玩家改他人 token 被拒；提交先攻自动关联自己的 token', async () => {
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player', sessionId: 'ps-2' }));
+    const st = await once(player, 'state');
+    const my = st.scene.players.find((x: any) => x.sessionId === 'ps-2');
+
+    // 尝试改他人的（不存在的）token
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'updatePlayer', tokenId: 'nobody', patch: { name: 'X' } }] }));
+    const err = await once(player, 'error');
+    expect(err.message).toMatch(/permission/i);
+
+    // 提交先攻：tokenId 为自己的
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'submitInitiative', name: my.name, value: 14, tokenId: my.id, sessionId: 'ps-2' }] }));
+    const st2 = await once(player, 'state');
+    expect(st2.scene.initiative.some((e: any) => e.tokenId === my.id && e.value === 14)).toBe(true);
+
+    player.close();
+  });
+
+  it('切场景后玩家 token 跟随到新场景', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player', sessionId: 'ps-3' }));
+    await once(player, 'state');
+
+    const campaign = await game.campaignStore.create('战役B');
+    const scene = await game.store.create('场景B');
+    await game.campaignStore.assignScene(campaign.id, scene.id);
+    dm.send(JSON.stringify({ type: 'switchCampaign', campaignId: campaign.id }));
+    const s1 = await once(dm, 'state');
+    const s2 = await once(player, 'state');
+    expect(s1.scene.players.some((x: any) => x.sessionId === 'ps-3')).toBe(true);
+    expect(s2.scene.players.some((x: any) => x.sessionId === 'ps-3')).toBe(true);
+
+    dm.close();
+    player.close();
+  });
 });
