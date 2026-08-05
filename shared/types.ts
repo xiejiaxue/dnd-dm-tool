@@ -69,6 +69,18 @@ export interface Scene {
   favorites: Favorite[];
 }
 
+export interface EnemyTemplate {
+  entryId: string;   // 如 'MM__Goblin'
+  nameZh: string;    // 如 '地精'
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  sceneIds: string[];        // 战役内的场景 id，一个场景只属于一个战役
+  enemies: EnemyTemplate[];  // 按 entryId 去重，保持加入顺序
+}
+
 export type Op =
   | { op: 'moveToken'; tokenId: string; x: number; y: number }
   | { op: 'addToken'; token: Token }
@@ -82,6 +94,9 @@ export type Op =
   | { op: 'updateGrid'; patch: Partial<GridConfig> }
   | { op: 'updateMap'; mapImage: string | null; mapSize: [number, number]; playArea: PlayArea }
   | { op: 'updateMapScale'; mapScale: number }
+  | { op: 'addEnemy'; entryId: string; nameZh: string }
+  | { op: 'removeEnemy'; entryId: string }
+  | { op: 'switchCampaign'; campaignId: string }
   | { op: 'submitInitiative'; name: string; value: number; tokenId: string | null; sessionId?: string | null }
   | { op: 'addToInitiative'; name: string; value: number; source: 'dm'; tokenId: string | null }
   | { op: 'removeFromInitiative'; entryId: string }
