@@ -73,17 +73,41 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return Math.round((v - off) / grid.size) * grid.size + off;
   }, [scene]);
 
-  const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault();
-    const stage = stageRef.current!;
+  const MIN_SCALE = 0.1;
+  const MAX_SCALE = 8;
+
+  // Zoom by a factor around a pointer position (container coordinates), keeping
+  // the world point under the cursor fixed — the standard "free zoom" behavior.
+  const zoomAt = useCallback((pointer: { x: number; y: number }, factor: number) => {
+    const stage = stageRef.current;
+    if (!stage) return;
     const oldScale = stage.scaleX();
-    const pointer = stage.getPointerPosition()!;
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, oldScale * factor));
+    if (newScale === oldScale) return;
     const mousePointTo = { x: (pointer.x - stage.x()) / oldScale, y: (pointer.y - stage.y()) / oldScale };
-    const dir = e.evt.deltaY > 0 ? -1 : 1;
-    const newScale = Math.min(4, Math.max(0.2, oldScale * (dir > 0 ? 1.1 : 0.9)));
     setScale(newScale);
     setPos({ x: pointer.x - mousePointTo.x * newScale, y: pointer.y - mousePointTo.y * newScale });
   }, []);
+
+  // Zoom around the visible canvas centre (used by the +/- buttons).
+  const zoomCenter = useCallback((factor: number) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    zoomAt({ x: stage.width() / 2, y: stage.height() / 2 }, factor);
+  }, [zoomAt]);
+
+  const resetView = useCallback(() => {
+    setScale(1);
+    setPos({ x: 0, y: 0 });
+  }, []);
+
+  const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+    const pointer = stageRef.current?.getPointerPosition();
+    if (!pointer) return;
+    const dir = e.evt.deltaY > 0 ? -1 : 1;
+    zoomAt(pointer, dir > 0 ? 1.1 : 0.9);
+  }, [zoomAt]);
 
   // Wall tool: mousedown on empty canvas records the snapped start point.
   const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -129,9 +153,15 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return () => window.removeEventListener('mouseup', onUp);
   }, [tool]);
 
-  // Empty-canvas click: place the pending token (add tool) or deselect (select).
+  // Empty-canvas click: zoom tool zooms, add tool places the pending token,
+  // select tool deselects.
   const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!scene || e.target !== stageRef.current) return;
+    if (tool === 'zoom') {
+      const pointer = stageRef.current?.getPointerPosition();
+      if (pointer) zoomAt(pointer, e.evt.shiftKey ? 0.8 : 1.25);
+      return;
+    }
     if (tool === 'add' && pending && role === 'dm') {
       const p = worldPos();
       if (!p) return;
@@ -155,7 +185,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     } else {
       onSelect(null);
     }
-  }, [tool, pending, role, scene, worldPos, snap, onClearPending, onSelect]);
+  }, [tool, pending, role, scene, worldPos, snap, onClearPending, onSelect, zoomAt]);
 
   // Remove the selected token from the map (monster or player token).
   const handleDelete = useCallback(() => {
@@ -211,7 +241,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       onMouseMove={handleMouseMove}
       onMouseUp={finishWall}
       onClick={handleClick}
-      className={tool === 'add' ? 'cursor-crosshair' : tool === 'wall' ? 'cursor-crosshair' : 'cursor-grab'}
+      className={tool === 'add' || tool === 'wall' ? 'cursor-crosshair' : tool === 'zoom' ? 'cursor-zoom-in' : 'cursor-grab'}
     >
       <Layer>
         {map && <KImage image={map} x={0} y={0} listening={false} />}
@@ -286,6 +316,13 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         </div>
       );
     })()}
+    {/* Zoom controls (all roles): zoom in/out, reset, current percentage. */}
+    <div className="absolute bottom-3 right-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
+      <button onClick={() => zoomCenter(1.25)} title="放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
+      <button onClick={() => zoomCenter(0.8)} title="缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
+      <button onClick={resetView} title="重置视图" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-sm leading-none">⟲</button>
+      <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round(scale * 100)}%</span>
+    </div>
   </div>
   );
 }
