@@ -51,13 +51,13 @@ export interface Campaign {
 ```
 data/
 ├─ campaigns/
-│  ├─ index.json          战役列表 [{id, name}]
 │  └─ <id>.json           战役详情 {id, name, sceneIds, enemies}
 └─ scenes/                保持不变
 ```
 
+- **不需要 `index.json`**：`list()` 直接扫描 `data/campaigns/*.json` 得到战役列表（避免 index 与详情文件同步问题），模式照抄 `SceneStore` 的目录扫描。
 - 新增 `CampaignStore(dir)`（模式照抄 `SceneStore`）：
-  - `list(): Promise<{id,name}[]>`（扫目录或读 index.json）
+  - `list(): Promise<{id,name}[]>`（扫描 `data/campaigns/*.json`）
   - `create(name): Promise<Campaign>`
   - `get(id): Promise<Campaign>`（不存在抛 `CampaignNotFoundError`）
   - `save(campaign): void`
