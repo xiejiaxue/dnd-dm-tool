@@ -146,6 +146,16 @@ export class GameServer {
         });
         return;
       }
+      case 'renameScene': {
+        if (client.role !== 'dm') {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied' }));
+          return;
+        }
+        this.renameScene(String(msg.sceneId), String(msg.name ?? '').slice(0, 60)).catch(() => {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'scene rename failed' }));
+        });
+        return;
+      }
     }
   }
 
@@ -193,6 +203,23 @@ export class GameServer {
     this.current = scene;
     await this.store.setLast(this.current.id);
     this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
+  }
+
+  // Rename a scene. The current scene updates in memory and is broadcast so the
+  // TopBar reflects it immediately; other scenes are renamed on disk and the
+  // switcher picks the new name up on its next list reload.
+  private async renameScene(sceneId: string, name: string): Promise<void> {
+    const trimmed = name.trim();
+    if (!trimmed) throw new Error('empty scene name');
+    if (sceneId === this.current.id) {
+      this.current.name = trimmed;
+      this.store.save(this.current);
+      this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
+      return;
+    }
+    const scene = await this.store.get(sceneId);
+    scene.name = trimmed;
+    this.store.save(scene);
   }
 
   private async applyAllowedOps(campaignOps: CampaignOp[], sceneOps: Op[]): Promise<void> {

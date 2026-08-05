@@ -6,22 +6,51 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
   const { campaign } = useScene();
   const [scenes, setScenes] = useState<{ id: string; name: string }[]>([]);
   const [name, setName] = useState('');
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const reload = () => api.scenes().then(setScenes);
   useEffect(() => { reload(); }, []);
   const visible = scenes.filter(s => (campaign?.sceneIds ?? []).includes(s.id));
 
+  const commitRename = (id: string) => {
+    const v = renameValue.trim();
+    if (v) connection.sendControl({ type: 'renameScene', sceneId: id, name: v });
+    setRenamingId(null);
+    setRenameValue('');
+    reload();
+  };
+
   return (
     <div className="absolute top-11 right-0 z-20 w-64 bg-zinc-800 border border-zinc-700 rounded shadow-xl p-2 text-sm">
       <div className="text-xs text-zinc-500 mb-1">场景列表</div>
       {visible.map(s => (
-        <div key={s.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-zinc-700">
+        <div key={s.id} className="flex items-center gap-1.5 py-1 px-1 rounded hover:bg-zinc-700">
+          {renamingId === s.id ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={e => setRenameValue(e.target.value)}
+              onBlur={() => commitRename(s.id)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') commitRename(s.id);
+                if (e.key === 'Escape') { setRenamingId(null); setRenameValue(''); }
+              }}
+              className="flex-1 min-w-0 bg-zinc-900 rounded px-2 py-1 text-sm"
+            />
+          ) : (
+            <button
+              className="flex-1 min-w-0 text-left truncate"
+              onClick={() => { connection.sendControl({ type: 'switchScene', sceneId: s.id }); onClose(); }}
+            >{s.name}</button>
+          )}
           <button
-            className="flex-1 text-left"
-            onClick={() => { connection.sendControl({ type: 'switchScene', sceneId: s.id }); onClose(); }}
-          >{s.name}</button>
+            className="shrink-0 text-zinc-500 hover:text-amber-400"
+            title="重命名场景"
+            onClick={() => { setRenamingId(s.id); setRenameValue(s.name); }}
+          >✏️</button>
           <button
-            className="text-zinc-500 hover:text-red-400"
+            className="shrink-0 text-zinc-500 hover:text-red-400"
             title="删除场景"
             onClick={() => { api.deleteScene(s.id).then(reload); }}
           >✕</button>
