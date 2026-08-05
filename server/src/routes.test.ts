@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import request from 'supertest';
 import { createApp } from './routes';
 import { SceneStore } from './store';
+import { CampaignStore } from './campaign-store';
 import { SearchService } from './search';
 import { EntryService } from './entries';
 import { TokenService } from './tokens';
@@ -14,18 +15,20 @@ const FIXTURES = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../
 
 let app: any;
 let store: SceneStore;
+let campaigns: CampaignStore;
 let dir: string;
 
 beforeAll(async () => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'api-'));
   store = new SceneStore(path.join(dir, 'scenes'));
+  campaigns = new CampaignStore(path.join(dir, 'campaigns'));
   const search = new SearchService(FIXTURES);
   await search.load();
   const entries = new EntryService(FIXTURES);
   await entries.warm();
   const tokens = new TokenService(path.join(dir, 'tokens'), entries, 'http://127.0.0.1:1/nonexist');
   app = createApp({
-    store, search, entries, tokens,
+    store, campaigns, search, entries, tokens,
     uploadsDir: path.join(dir, 'uploads'),
     online: () => 2,
     dataReady: () => true,
@@ -82,5 +85,24 @@ describe('REST API', () => {
     const res = await request(app).delete('/api/scenes/' + encodeURIComponent('scene 1'));
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('server error');
+  });
+
+  it('campaigns CRUD and scene assignment', async () => {
+    const c = await request(app).post('/api/campaigns').send({ name: '地牢冒险' });
+    expect(c.status).toBe(201);
+    const id = c.body.id;
+    const list = await request(app).get('/api/campaigns');
+    expect(list.body.some((x: any) => x.id === id)).toBe(true);
+    const detail = await request(app).get(`/api/campaigns/${id}`);
+    expect(detail.body.name).toBe('地牢冒险');
+    const scene = await request(app).post('/api/scenes').send({ name: '第一幕' });
+    const assign = await request(app).post(`/api/campaigns/${id}/scenes`).send({ sceneId: scene.body.id });
+    expect(assign.status).toBe(200);
+    const after = await request(app).get(`/api/campaigns/${id}`);
+    expect(after.body.sceneIds).toContain(scene.body.id);
+    const missing = await request(app).get('/api/campaigns/nope');
+    expect(missing.status).toBe(404);
+    const del = await request(app).delete(`/api/campaigns/${id}`);
+    expect(del.status).toBe(200);
   });
 });

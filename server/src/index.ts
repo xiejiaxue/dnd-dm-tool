@@ -25,6 +25,7 @@ async function main() {
 
   const app = createApp({
     store,
+    campaigns: campaignStore,
     search,
     entries,
     tokens,
