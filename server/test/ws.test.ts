@@ -258,6 +258,26 @@ describe('WebSocket 同步', () => {
     player.close();
   });
 
+  it('玩家不能移动另一个玩家的 token（所有权过滤）', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    const pA = await connect(baseUrl);
+    pA.send(JSON.stringify({ type: 'init', role: 'player', sessionId: 'ps-9' }));
+    const st = await once(pA, 'state');
+    const aToken = st.scene.players.find((x: any) => x.sessionId === 'ps-9');
+    const pB = await connect(baseUrl);
+    pB.send(JSON.stringify({ type: 'init', role: 'player', sessionId: 'ps-10' }));
+    await once(pB, 'state');
+
+    // ps-10 尝试移动 ps-9 的 token → 拒绝
+    pB.send(JSON.stringify({ type: 'op', ops: [{ op: 'moveToken', tokenId: aToken.id, x: 100, y: 100 }] }));
+    const err = await once(pB, 'error');
+    expect(err.message).toMatch(/permission/i);
+
+    pA.close(); pB.close(); dm.close();
+  });
+
   it('切场景后玩家 token 跟随到新场景', async () => {
     const dm = await connect(baseUrl);
     dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
