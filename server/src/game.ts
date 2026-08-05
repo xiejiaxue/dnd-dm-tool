@@ -4,6 +4,8 @@ import { CampaignStore } from './campaign-store';
 import { Op, Role, Scene, Campaign } from './types';
 import { applyCampaignOp, isCampaignOp, CampaignOp } from './campaign-ops';
 import { applyOp, canOp } from './ops';
+import { sortInitiative } from './initiative';
+import { newId } from './scene';
 
 interface Client {
   ws: WebSocket;
@@ -163,6 +165,16 @@ export class GameServer {
         });
         return;
       }
+      case 'rollInitiative': {
+        if (client.role !== 'dm') {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied' }));
+          return;
+        }
+        this.rollInitiative().catch(() => {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'initiative roll failed' }));
+        });
+        return;
+      }
     }
   }
 
@@ -227,6 +239,49 @@ export class GameServer {
     const scene = await this.store.get(sceneId);
     scene.name = trimmed;
     this.store.save(scene);
+  }
+
+  // D&D 5e initiative for every monster in the scene: d20 + dex modifier
+  // (modifier from the stat block's dex score). Re-rolling updates existing
+  // entries by tokenId; new monsters get appended. All clients see the roll.
+  private async rollInitiative(): Promise<void> {
+    const rolls: { tokenId: string; name: string; value: number }[] = [];
+    for (const t of this.current.tokens) {
+      if (t.kind !== 'monster') continue;
+      let mod = 0;
+      if (this.entries && t.entryId) {
+        try {
+          const e = await this.entries.get('monster', t.entryId);
+          const dex = Number(e?.dex);
+          if (Number.isFinite(dex)) mod = Math.floor((dex - 10) / 2);
+        } catch { /* unknown monster → +0 */ }
+      }
+      rolls.push({
+        tokenId: t.id,
+        name: t.number != null ? `${t.name} #${t.number}` : t.name,
+        value: Math.floor(Math.random() * 20) + 1 + mod,
+      });
+    }
+    for (const r of rolls) {
+      const existing = this.current.initiative.find(e => e.tokenId === r.tokenId);
+      if (existing) {
+        existing.name = r.name;
+        existing.value = r.value;
+      } else {
+        this.current.initiative.push({
+          id: newId('ini'),
+          name: r.name,
+          value: r.value,
+          source: 'dm',
+          sessionId: null,
+          tokenId: r.tokenId,
+          active: false,
+        });
+      }
+    }
+    this.current.initiative = sortInitiative(this.current.initiative);
+    this.store.save(this.current);
+    this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
   }
 
   private async applyAllowedOps(campaignOps: CampaignOp[], sceneOps: Op[]): Promise<void> {
