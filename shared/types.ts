@@ -7,6 +7,8 @@ export interface GridConfig {
   color: string;
   offset: [number, number];
   snap: boolean;
+  // Whether the grid overlay is visible (DM toggles it from the toolbar).
+  show: boolean;
 }
 
 export interface Token {
