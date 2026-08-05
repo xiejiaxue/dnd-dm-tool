@@ -6,6 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, '../..');
 export const DATA_DIR = path.join(ROOT, 'data');
 export const SCENES_DIR = path.join(DATA_DIR, 'scenes');
+export const CAMPAIGNS_DIR = path.join(DATA_DIR, 'campaigns');
 export const TOKEN_CACHE_DIR = path.join(DATA_DIR, 'images', 'tokens');
 export const UPLOADS_DIR = path.join(DATA_DIR, 'images', 'uploads');
 export const DB_DIR = path.join(DATA_DIR, 'db');

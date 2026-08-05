@@ -5,18 +5,20 @@ import { createApp, RouteDeps } from './routes';
 import { GameServer } from './game';
 import { attachWsServer } from './ws';
 import { SceneStore } from './store';
+import { CampaignStore } from './campaign-store';
 import { SearchService } from './search';
 import { EntryService } from './entries';
 import { TokenService } from './tokens';
-import { ROOT, PORT, HOST, SCENES_DIR, TOKEN_CACHE_DIR, UPLOADS_DIR, DB_DIR, DM_PASSWORD, IMAGE_BASE } from './config';
+import { ROOT, PORT, HOST, SCENES_DIR, CAMPAIGNS_DIR, TOKEN_CACHE_DIR, UPLOADS_DIR, DB_DIR, DM_PASSWORD, IMAGE_BASE } from './config';
 
 async function main() {
   const store = new SceneStore(SCENES_DIR);
+  const campaignStore = new CampaignStore(CAMPAIGNS_DIR);
   const search = new SearchService(DB_DIR);
   const entries = new EntryService(DB_DIR);
   const tokens = new TokenService(TOKEN_CACHE_DIR, entries, IMAGE_BASE);
 
-  const game = new GameServer(store, { password: DM_PASSWORD });
+  const game = new GameServer(store, campaignStore, { password: DM_PASSWORD });
   await game.init();
 
   let dataReady = false;
