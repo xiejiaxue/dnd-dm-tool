@@ -6,14 +6,15 @@ import { useImage } from '../useImage';
 import TokenShape from './TokenShape';
 import type { PendingToken } from '../pending';
 
-// Layout offsets around the canvas: Toolbar (w-12) + QueryPanel (w-80 when
-// open, w-10 when collapsed), TopBar (h-11) + InitiativePanel (h-14).
+// Layout offsets around the canvas: Toolbar (w-12) + EnemyList (w-52) +
+// QueryPanel (w-80 open / w-10 collapsed), TopBar (h-11) + InitiativePanel (h-14).
 const QUERY_OPEN = 320;
 const QUERY_CLOSED = 40;
+const ENEMY_LIST = 208;
 const OFFSET_Y = 44 + 56;
 
 function getStageSize(queryOpen: boolean) {
-  const offsetX = 48 + (queryOpen ? QUERY_OPEN : QUERY_CLOSED);
+  const offsetX = 48 + ENEMY_LIST + (queryOpen ? QUERY_OPEN : QUERY_CLOSED);
   return { width: window.innerWidth - offsetX, height: window.innerHeight - OFFSET_Y };
 }
 

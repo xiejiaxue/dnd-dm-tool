@@ -3,6 +3,7 @@ import TopBar from './components/TopBar';
 import Toolbar from './components/Toolbar';
 import InitiativePanel from './components/InitiativePanel';
 import QueryPanel from './components/QueryPanel';
+import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
 import { useScene } from './ws';
 import { setPending, subscribe } from './pending';
@@ -38,6 +39,7 @@ export default function App() {
           onTool={setTool}
           pendingLabel={pending ? `点击棋盘放置：${pending.name}` : null}
         />
+        <EnemyList />
         <div className="flex-1 min-w-0 relative bg-zinc-900">
           <BoardCanvas
             tool={tool}
