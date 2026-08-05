@@ -68,6 +68,11 @@ export function applyOp(scene: Scene, op: Op): void {
       scene.mapImage = op.mapImage;
       scene.mapSize = op.mapSize;
       scene.playArea = op.playArea;
+      scene.mapScale = 1; // a new map starts at natural scale for fresh calibration
+      return;
+    }
+    case 'updateMapScale': {
+      scene.mapScale = op.mapScale;
       return;
     }
     case 'submitInitiative': {

@@ -103,6 +103,16 @@ describe('applyOp walls & grid & map', () => {
     expect(s.mapImage).toBe('uploads/m.jpg');
     expect(s.mapSize).toEqual([800, 600]);
   });
+
+  it('mapScale applies and resets on new map', () => {
+    const s = freshScene();
+    expect(s.mapScale).toBe(1);
+    applyOp(s, { op: 'updateMapScale', mapScale: 0.75 });
+    expect(s.mapScale).toBe(0.75);
+    // a new uploaded map resets the calibration
+    applyOp(s, { op: 'updateMap', mapImage: 'uploads/m2.jpg', mapSize: [800, 600], playArea: { x: 0, y: 0, w: 800, h: 600 } });
+    expect(s.mapScale).toBe(1);
+  });
 });
 
 describe('applyOp initiative', () => {
