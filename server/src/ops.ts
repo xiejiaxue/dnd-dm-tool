@@ -2,7 +2,7 @@ import { Op, Role, Scene, InitiativeEntry } from './types';
 import { sortInitiative, advanceInitiative } from './initiative';
 
 export function isPlayerOp(op: Op): boolean {
-  return op.op === 'moveToken' || op.op === 'submitInitiative';
+  return op.op === 'moveToken' || op.op === 'submitInitiative' || op.op === 'updatePlayer';
 }
 
 export function canOp(role: Role, op: Op): boolean {
