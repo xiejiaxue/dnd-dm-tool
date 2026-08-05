@@ -7,6 +7,7 @@ import WebSocket from 'ws';
 import { attachWsServer } from '../src/ws';
 import { GameServer } from '../src/game';
 import { SceneStore } from '../src/store';
+import { CampaignStore } from '../src/campaign-store';
 
 let server: http.Server;
 let baseUrl: string;
@@ -20,7 +21,8 @@ beforeAll(async () => {
   process.env.DND_TEST_ROLE = '1';
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ws-'));
   const store = new SceneStore(path.join(dir, 'scenes'));
-  game = new GameServer(store, { password: 'pw' });
+  const campaignStore = new CampaignStore(path.join(dir, 'campaigns'));
+  game = new GameServer(store, campaignStore, { password: 'pw' });
   await game.init();
   server = http.createServer((_req, res) => res.end('ok'));
   attachWsServer(server, game);
@@ -105,6 +107,54 @@ describe('WebSocket 同步', () => {
     const s2 = await once(player, 'state');
     expect(s1.scene.name).toBe('新场景');
     expect(s2.scene.name).toBe('新场景');
+
+    dm.close();
+    player.close();
+  });
+
+  it('DM 加入敌人库，玩家收到含敌人的 state', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
+
+    dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addEnemy', entryId: 'MM__Goblin', nameZh: '地精' }] }));
+    const b = await once(player, 'state');
+    expect(b.campaign.enemies.some((e: any) => e.entryId === 'MM__Goblin')).toBe(true);
+
+    dm.close();
+    player.close();
+  });
+
+  it('玩家尝试加敌人被拒绝', async () => {
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'addEnemy', entryId: 'x', nameZh: 'y' }] }));
+    const err = await once(player, 'error');
+    expect(err.message).toMatch(/permission/i);
+    player.close();
+  });
+
+  it('DM 切换战役，两端收到新战役与场景', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
+
+    const campaign = await game.campaignStore.create('新战役');
+    const scene = await game.store.create('战役场景');
+    await game.campaignStore.assignScene(campaign.id, scene.id);
+
+    dm.send(JSON.stringify({ type: 'switchCampaign', campaignId: campaign.id }));
+    const s1 = await once(dm, 'state');
+    const s2 = await once(player, 'state');
+    expect(s1.campaign.name).toBe('新战役');
+    expect(s2.scene.name).toBe('战役场景');
 
     dm.close();
     player.close();
