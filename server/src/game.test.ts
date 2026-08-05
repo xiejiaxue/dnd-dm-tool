@@ -93,3 +93,43 @@ describe('GameServer 战役集成', () => {
     expect(updated.sceneIds).toContain(game.current.id);
   });
 });
+
+describe('GameServer 迁移（init 收录全部场景 + 幂等性）', () => {
+  it('init 将已存在的全部 N 个场景收录进「默认战役」', async () => {
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'game-migrate-'));
+    try {
+      const s = new SceneStore(path.join(d, 'scenes'));
+      const cs = new CampaignStore(path.join(d, 'campaigns'));
+      const a = await s.create('场景A');
+      const b = await s.create('场景B');
+      const c = await s.create('场景C');
+      const g = new GameServer(s, cs, { password: 'pw' });
+      await g.init();
+      expect(g.currentCampaign.name).toBe('默认战役');
+      expect(g.currentCampaign.sceneIds).toEqual(expect.arrayContaining([a.id, b.id, c.id]));
+      expect(g.currentCampaign.sceneIds).toHaveLength(3);
+      expect((await cs.list())).toHaveLength(1);
+    } finally {
+      fs.rmSync(d, { recursive: true, force: true });
+    }
+  });
+
+  it('再次 init 不会创建第二个「默认战役」（幂等性）', async () => {
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), 'game-migrate-'));
+    try {
+      const s = new SceneStore(path.join(d, 'scenes'));
+      const cs = new CampaignStore(path.join(d, 'campaigns'));
+      await s.create('场景A');
+      await s.create('场景B');
+      const g = new GameServer(s, cs, { password: 'pw' });
+      await g.init();
+      await g.init();
+      const campaigns = await cs.list();
+      expect(campaigns.filter(x => x.name === '默认战役')).toHaveLength(1);
+      expect(g.currentCampaign.name).toBe('默认战役');
+      expect(g.currentCampaign.sceneIds).toHaveLength(2);
+    } finally {
+      fs.rmSync(d, { recursive: true, force: true });
+    }
+  });
+});
