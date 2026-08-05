@@ -45,9 +45,12 @@ export default function TokenShape({ token, active, selected, draggable = true, 
         stroke={selected ? '#f59e0b' : token.color || '#000'}
         strokeWidth={selected ? 3 : 1.5}
       />
-      {/* 头像：圆形裁剪（clipFunc 画圆裁出圆形图） */}
+      {/* 头像：圆形裁剪（clipFunc 画圆裁出圆形图）。底圆以 (0,0) 为中心，
+          故把头像整体平移 -size/2 使其裁剪圆心也落在 (0,0)，与底圆重合。 */}
       {img && (
         <Group
+          x={-token.size / 2}
+          y={-token.size / 2}
           clipFunc={(ctx) => {
             ctx.beginPath();
             ctx.arc(token.size / 2, token.size / 2, token.size / 2, 0, Math.PI * 2, false);
