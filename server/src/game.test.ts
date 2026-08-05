@@ -5,6 +5,8 @@ import path from 'node:path';
 import { GameServer } from './game';
 import { SceneStore } from './store';
 import { CampaignStore } from './campaign-store';
+import { applyOp } from './ops';
+import { Role } from './types';
 
 let game: GameServer;
 let store: SceneStore;
@@ -192,5 +194,38 @@ describe('ensurePlayerToken', () => {
     const names = game.current.players.map(p => p.name).sort();
     expect(names[0]).toBe('玩家1');
     expect(names[1]).toBe('玩家2');
+  });
+});
+
+describe('player ownership filter', () => {
+  let game: GameServer;
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pt-'));
+    const store = new SceneStore(path.join(dir, 'scenes'));
+    game = new GameServer(store, new CampaignStore(path.join(dir, 'campaigns')), { password: null });
+    await game.init();
+  });
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  it('player can move own token, cannot move a monster', () => {
+    const dmClient = { role: 'dm' as Role, sessionId: '' };
+    const player = { role: 'player' as Role, sessionId: 'sess-a' };
+    // 放一个怪物
+    applyOp(game.current, { op: 'addToken', token: { id: 'm1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '', color: '#fff' } });
+    (game as any).ensurePlayerToken(game.current, 'sess-a');
+    const p = game.current.players[0];
+    expect((game as any).ownsToken(player, p.id)).toBe(true);
+    expect((game as any).ownsToken(player, 'm1')).toBe(false);
+    expect((game as any).ownsToken(dmClient, 'm1')).toBe(true);
+  });
+
+  it('player cannot updatePlayer on another player token', () => {
+    (game as any).ensurePlayerToken(game.current, 'sess-a');
+    (game as any).ensurePlayerToken(game.current, 'sess-b');
+    const pB = game.current.players.find(x => x.sessionId === 'sess-b')!;
+    const playerA = { role: 'player' as Role, sessionId: 'sess-a' };
+    expect((game as any).ownsToken(playerA, pB.id)).toBe(false);
   });
 });

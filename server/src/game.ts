@@ -99,6 +99,13 @@ export class GameServer {
     return true;
   }
 
+  // A player may only move/update their own token; DM owns everything.
+  private ownsToken(client: Client, tokenId: string): boolean {
+    if (client.role === 'dm') return true;
+    const p = this.current.players.find(x => x.id === tokenId);
+    return p != null && p.sessionId != null && p.sessionId === client.sessionId;
+  }
+
   // Ensure every connected player has a token in the given scene.
   private async ensureAllPlayerTokens(scene: Scene): Promise<void> {
     let changed = false;
@@ -161,8 +168,14 @@ export class GameServer {
       }
       case 'op': {
         const ops = Array.isArray(msg.ops) ? msg.ops : [];
-        const allowed = ops.filter((op: Op) => canOp(client.role, op));
-        const denied = ops.filter((op: Op) => !canOp(client.role, op));
+        const roleAllowed = ops.filter((op: Op) => canOp(client.role, op));
+        // 玩家只能 move/update 自己的 token（所有权过滤）
+        const allowed: Op[] = roleAllowed.filter((op: Op) => {
+          if (op.op === 'moveToken') return this.ownsToken(client, op.tokenId);
+          if (op.op === 'updatePlayer') return this.ownsToken(client, op.tokenId);
+          return true;
+        });
+        const denied = ops.filter((op: Op) => !canOp(client.role, op) || !allowed.some(o => o === op));
         if (allowed.length > 0) {
           const campaignOps = allowed.filter(isCampaignOp);
           const sceneOps = allowed.filter((op: Op) => !isCampaignOp(op));
