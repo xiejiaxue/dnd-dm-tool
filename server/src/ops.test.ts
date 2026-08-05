@@ -39,6 +39,13 @@ describe('applyOp token ops', () => {
     expect(s.tokens).toHaveLength(0);
   });
 
+  it('updateToken applies hp patch', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '', color: '#fff', hp: { current: 7, max: 7 } } });
+    applyOp(s, { op: 'updateToken', tokenId: 't1', patch: { hp: { current: 3, max: 7 } } });
+    expect(s.tokens[0].hp).toEqual({ current: 3, max: 7 });
+  });
+
   it('updateToken on missing token is a no-op', () => {
     const s = freshScene();
     applyOp(s, { op: 'moveToken', tokenId: 'nope', x: 1, y: 2 });

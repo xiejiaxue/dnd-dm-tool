@@ -23,6 +23,8 @@ export interface Token {
   color: string;
   // Monster tokens get an auto-assigned serial number per entryId (哥布林 1, 2, 3…).
   number?: number;
+  // Current/max hit points (monsters only; filled from the stat block on place).
+  hp?: { current: number; max: number };
 }
 
 export interface PlayerToken extends Token {
@@ -85,7 +87,7 @@ export type Op =
   | { op: 'moveToken'; tokenId: string; x: number; y: number }
   | { op: 'addToken'; token: Token }
   | { op: 'removeToken'; tokenId: string }
-  | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color'>> }
+  | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> }
   | { op: 'addPlayer'; player: PlayerToken }
   | { op: 'removePlayer'; tokenId: string }
   | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId'>> }
