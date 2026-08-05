@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { connection } from '../ws';
+import { connection, useScene } from '../ws';
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
+  const { campaign } = useScene();
   const [scenes, setScenes] = useState<{ id: string; name: string }[]>([]);
   const [name, setName] = useState('');
 
   const reload = () => api.scenes().then(setScenes);
   useEffect(() => { reload(); }, []);
+  const visible = scenes.filter(s => (campaign?.sceneIds ?? []).includes(s.id));
 
   return (
     <div className="absolute top-11 right-0 z-20 w-64 bg-zinc-800 border border-zinc-700 rounded shadow-xl p-2 text-sm">
       <div className="text-xs text-zinc-500 mb-1">场景列表</div>
-      {scenes.map(s => (
+      {visible.map(s => (
         <div key={s.id} className="flex items-center gap-2 py-1 px-1 rounded hover:bg-zinc-700">
           <button
             className="flex-1 text-left"
@@ -33,7 +35,15 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
           className="flex-1 bg-zinc-900 rounded px-2 py-1 text-sm"
         />
         <button
-          onClick={() => { if (name.trim()) api.createScene(name.trim()).then(reload); setName(''); }}
+          onClick={() => {
+            if (name.trim()) {
+              api.createScene(name.trim()).then(async s => {
+                if (campaign) await api.assignSceneToCampaign(campaign.id, s.id);
+                reload();
+              });
+            }
+            setName('');
+          }}
           className="px-2 py-1 rounded bg-amber-600/20 text-amber-400"
         >＋</button>
       </div>

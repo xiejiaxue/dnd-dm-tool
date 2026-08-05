@@ -3,10 +3,12 @@ import { api } from '../api';
 import { connection, useScene } from '../ws';
 import { uploadImage } from '../upload';
 import SceneSwitcher from './SceneSwitcher';
+import CampaignSwitcher from './CampaignSwitcher';
 
 export default function TopBar() {
-  const { scene, role, online } = useScene();
+  const { scene, role, online, campaign } = useScene();
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [campaignOpen, setCampaignOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [pw, setPw] = useState('');
   const [pwMsg, setPwMsg] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export default function TopBar() {
   return (
     <header className="h-11 flex items-center gap-3 px-3 border-b border-zinc-700/60 bg-zinc-900 text-sm relative">
       <span className="font-semibold">⚙ DM 追踪</span>
-      <span className="text-zinc-500 truncate">场景「{scene?.name ?? '连接中…'}」</span>
+      <span className="text-zinc-500 truncate">战役「{campaign?.name ?? '…'}」 / 场景「{scene?.name ?? '连接中…'}」</span>
       <div className="ml-auto flex items-center gap-3 text-zinc-400">
         <span>玩家在线: <span className="text-emerald-400">{online}</span></span>
         {isDm && (
@@ -60,18 +62,23 @@ export default function TopBar() {
             >🗺 上传地图</button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onMapPicked} />
             <button
-              onClick={() => setSwitcherOpen(o => !o)}
+              onClick={() => { setSwitcherOpen(o => !o); setCampaignOpen(false); }}
               className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
             >切换场景▾</button>
+            <button
+              onClick={() => { setCampaignOpen(o => !o); setSwitcherOpen(false); }}
+              className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+            >战役▾</button>
           </>
         )}
         <button
-          onClick={() => { setSettingsOpen(o => !o); setSwitcherOpen(false); }}
+          onClick={() => { setSettingsOpen(o => !o); setSwitcherOpen(false); setCampaignOpen(false); }}
           className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
         >⚙ 设置</button>
       </div>
 
       {switcherOpen && <SceneSwitcher onClose={() => setSwitcherOpen(false)} />}
+      {campaignOpen && <CampaignSwitcher onClose={() => setCampaignOpen(false)} />}
 
       {settingsOpen && (
         <div className="absolute top-11 right-0 z-20 w-72 bg-zinc-800 border border-zinc-700 rounded shadow-xl p-3 text-sm">
