@@ -66,7 +66,16 @@ export function createApp(deps: RouteDeps): express.Express {
   });
   r.delete('/scenes/:id', async (req, res) => {
     try {
-      await deps.store.delete(req.params.id);
+      const id = req.params.id;
+      await deps.store.delete(id);
+      // A deleted scene must not stay referenced by any campaign's sceneIds —
+      // otherwise the 战役库 tab would render it and switchScene would fail.
+      for (const c of await deps.campaigns.all()) {
+        if (c.sceneIds.includes(id)) {
+          c.sceneIds = c.sceneIds.filter(s => s !== id);
+          deps.campaigns.save(c);
+        }
+      }
       res.json({ ok: true });
     } catch {
       res.status(500).json({ error: 'server error' });
@@ -124,13 +133,18 @@ export function createApp(deps: RouteDeps): express.Express {
     catch { res.status(404).json({ error: 'campaign not found' }); }
   });
   r.delete('/campaigns/:id', async (req, res) => {
-    try { await deps.campaigns.delete(req.params.id); res.json({ ok: true }); }
-    catch { res.status(500).json({ error: 'server error' }); }
+    try {
+      await deps.campaigns.get(req.params.id); // missing -> CampaignNotFoundError -> 404
+      await deps.campaigns.delete(req.params.id);
+      res.json({ ok: true });
+    } catch { res.status(404).json({ error: 'campaign not found' }); }
   });
   r.post('/campaigns/:id/scenes', async (req, res) => {
     try {
       await deps.campaigns.get(req.params.id); // missing -> CampaignNotFoundError -> 404
-      await deps.campaigns.assignScene(req.params.id, String(req.body.sceneId ?? ''));
+      const sceneId = String(req.body.sceneId ?? '');
+      if (!sceneId) return res.status(400).json({ error: 'sceneId required' });
+      await deps.campaigns.assignScene(req.params.id, sceneId);
       res.json({ ok: true });
     } catch { res.status(404).json({ error: 'campaign not found' }); }
   });

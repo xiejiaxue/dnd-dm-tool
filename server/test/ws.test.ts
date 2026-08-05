@@ -182,4 +182,29 @@ describe('WebSocket 同步', () => {
 
     dm.close();
   });
+
+  it('sceneIds[0] 场景被删后 switchCampaign 落到存活场景且不报错（Findings 1+2 回归）', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+
+    const campaign = await game.campaignStore.create('删除场景战役');
+    const s1 = await game.store.create('战役场景 1');
+    const s2 = await game.store.create('战役场景 2');
+    await game.campaignStore.assignScene(campaign.id, s1.id);
+    await game.campaignStore.assignScene(campaign.id, s2.id);
+    // 复现前提：sceneIds[0]（s1）的磁盘文件被删除，但战役归属尚未清理
+    await game.store.delete(s1.id);
+    expect((await game.campaignStore.get(campaign.id)).sceneIds).toContain(s1.id);
+
+    dm.send(JSON.stringify({ type: 'switchCampaign', campaignId: campaign.id }));
+    const st = await once(dm, 'state');
+    // 一致状态：currentCampaign 已是目标战役，current 场景为存活的 s2，无 error
+    expect(st.campaign.name).toBe('删除场景战役');
+    expect(st.campaign.sceneIds).toEqual([s2.id]);
+    expect(st.scene.id).toBe(s2.id);
+    expect(st.scene.name).toBe('战役场景 2');
+
+    dm.close();
+  });
 });
