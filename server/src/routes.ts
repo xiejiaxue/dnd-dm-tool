@@ -2,12 +2,14 @@ import express, { Router } from 'express';
 import multer from 'multer';
 import fs from 'node:fs';
 import { SceneStore } from './store';
+import { CampaignStore } from './campaign-store';
 import { SearchService } from './search';
 import { EntryService } from './entries';
 import { TokenService } from './tokens';
 
 export interface RouteDeps {
   store: SceneStore;
+  campaigns: CampaignStore;
   search: SearchService;
   entries: EntryService;
   tokens: TokenService;
@@ -105,6 +107,31 @@ export function createApp(deps: RouteDeps): express.Express {
   r.post('/upload/token', upload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'no file' });
     res.json({ url: `/uploads/${req.file.filename}` });
+  });
+
+  r.get('/campaigns', async (_req, res) => {
+    try { res.json(await deps.campaigns.list()); }
+    catch { res.status(500).json({ error: 'server error' }); }
+  });
+  r.post('/campaigns', async (req, res) => {
+    try {
+      const name = String(req.body.name ?? '未命名战役').slice(0, 60);
+      res.status(201).json(await deps.campaigns.create(name));
+    } catch { res.status(500).json({ error: 'server error' }); }
+  });
+  r.get('/campaigns/:id', async (req, res) => {
+    try { res.json(await deps.campaigns.get(req.params.id)); }
+    catch { res.status(404).json({ error: 'campaign not found' }); }
+  });
+  r.delete('/campaigns/:id', async (req, res) => {
+    try { await deps.campaigns.delete(req.params.id); res.json({ ok: true }); }
+    catch { res.status(500).json({ error: 'server error' }); }
+  });
+  r.post('/campaigns/:id/scenes', async (req, res) => {
+    try {
+      await deps.campaigns.assignScene(req.params.id, String(req.body.sceneId ?? ''));
+      res.json({ ok: true });
+    } catch { res.status(404).json({ error: 'campaign not found' }); }
   });
 
   r.post('/verify-password', (req, res) => {
