@@ -159,4 +159,27 @@ describe('WebSocket 同步', () => {
     dm.close();
     player.close();
   });
+
+  it('REST 归属场景后 DM 发战役 op：重读磁盘，归属不被覆盖', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+
+    // 模拟 REST 归属：新建场景并直接写磁盘，内存 currentCampaign 不更新
+    const newScene = await game.store.create('REST 新场景');
+    const campaignId = game.currentCampaign.id;
+    await game.campaignStore.assignScene(campaignId, newScene.id);
+    // 复现前提：内存 currentCampaign.sceneIds 仍是旧的（不含新场景）
+    expect(game.currentCampaign.sceneIds).not.toContain(newScene.id);
+
+    dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addEnemy', entryId: 'MM__Orc', nameZh: '兽人' }] }));
+    const b = await once(dm, 'state');
+    expect(b.campaign.sceneIds).toContain(newScene.id);
+    expect(b.campaign.enemies.some((e: any) => e.entryId === 'MM__Orc')).toBe(true);
+    // 磁盘上的战役仍保留该归属（旧实现会在此处被内存覆盖而丢失）
+    const persisted = await game.campaignStore.get(campaignId);
+    expect(persisted.sceneIds).toContain(newScene.id);
+
+    dm.close();
+  });
 });

@@ -67,6 +67,8 @@ describe('GameServer 战役集成', () => {
         { op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '/api/token/MM__Goblin', color: '#fff' } },
       ],
     });
+    // op 应用现在经 async applyAllowedOps（重读磁盘），需等微任务落定
+    await new Promise(r => setTimeout(r, 0));
     expect(game.currentCampaign.enemies.some(e => e.entryId === 'MM__Goblin')).toBe(true);
     expect(game.current.tokens.some(t => t.id === 't1')).toBe(true);
     const persistedCampaign = await campaignStore.get(game.currentCampaign.id);
