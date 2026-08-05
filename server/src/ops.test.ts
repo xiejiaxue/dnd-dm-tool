@@ -71,6 +71,14 @@ describe('applyOp players', () => {
     applyOp(s, { op: 'updatePlayer', tokenId: 'p1', patch: { sessionId: 'sess-1' } });
     expect(s.players[0].sessionId).toBe('sess-1');
   });
+
+  it('removes a player token', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addPlayer', player: { id: 'p1', kind: 'player', name: '阿拉贡', entryId: null, x: 0, y: 0, size: 100, avatar: '', color: '#e53e3e', sessionId: null } });
+    applyOp(s, { op: 'addPlayer', player: { id: 'p2', kind: 'player', name: '莱戈拉斯', entryId: null, x: 0, y: 0, size: 100, avatar: '', color: '#38a169', sessionId: null } });
+    applyOp(s, { op: 'removePlayer', tokenId: 'p1' });
+    expect(s.players.map(p => p.id)).toEqual(['p2']);
+  });
 });
 
 describe('applyOp walls & grid & map', () => {

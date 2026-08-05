@@ -43,6 +43,10 @@ export function applyOp(scene: Scene, op: Op): void {
       if (!scene.players.some(p => p.id === op.player.id)) scene.players.push(op.player);
       return;
     }
+    case 'removePlayer': {
+      scene.players = scene.players.filter(p => p.id !== op.tokenId);
+      return;
+    }
     case 'updatePlayer': {
       const p = scene.players.find(p => p.id === op.tokenId);
       if (p) Object.assign(p, op.patch);
