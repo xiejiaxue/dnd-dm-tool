@@ -101,6 +101,21 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     setPos({ x: 0, y: 0 });
   }, []);
 
+  // Map-image calibration: scale the map (NOT the tokens/grid) so a hand-drawn
+  // map's cells line up with the grid. Sent as an op so it persists per scene.
+  const adjustMapScale = useCallback((factor: number) => {
+    if (!scene) return;
+    const cur = scene.mapScale ?? 1;
+    const next = Math.min(5, Math.max(0.1, Math.round(cur * factor * 100) / 100));
+    if (next !== cur) connection.sendOps([{ op: 'updateMapScale', mapScale: next }]);
+  }, [scene]);
+
+  const setMapScale = useCallback((value: number) => {
+    if (!scene) return;
+    const clamped = Math.min(5, Math.max(0.1, value));
+    if (clamped !== (scene.mapScale ?? 1)) connection.sendOps([{ op: 'updateMapScale', mapScale: clamped }]);
+  }, [scene]);
+
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const pointer = stageRef.current?.getPointerPosition();
@@ -244,7 +259,15 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       className={tool === 'add' || tool === 'wall' ? 'cursor-crosshair' : tool === 'zoom' ? 'cursor-zoom-in' : 'cursor-grab'}
     >
       <Layer>
-        {map && <KImage image={map} x={0} y={0} listening={false} />}
+        {map && (
+          <KImage
+            image={map}
+            x={0} y={0}
+            width={scene.mapSize[0] * (scene.mapScale ?? 1)}
+            height={scene.mapSize[1] * (scene.mapScale ?? 1)}
+            listening={false}
+          />
+        )}
         {scene.mapImage && !map && <Rect width={area.w} height={area.h} fill="#262932" listening={false} />}
         <Rect x={area.x} y={area.y} width={area.w} height={area.h} stroke="#f59e0b" strokeWidth={2} strokeScaleEnabled={false} dash={[8, 8]} listening={false} />
         <Group listening={false}>
@@ -316,13 +339,24 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         </div>
       );
     })()}
-    {/* Zoom controls (all roles): zoom in/out, reset, current percentage. */}
+    {/* View zoom controls (all roles): zoom in/out, reset, current percentage. */}
     <div className="absolute bottom-3 right-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
       <button onClick={() => zoomCenter(1.25)} title="放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
       <button onClick={() => zoomCenter(0.8)} title="缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
       <button onClick={resetView} title="重置视图" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-sm leading-none">⟲</button>
       <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round(scale * 100)}%</span>
     </div>
+    {/* Map-image scale (DM only): scales the map to fit the grid while tokens
+        keep their size — for calibrating hand-drawn maps. */}
+    {role === 'dm' && scene?.mapImage && (
+      <div className="absolute bottom-3 left-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
+        <span className="text-center text-[10px] text-zinc-400 select-none">地图</span>
+        <button onClick={() => adjustMapScale(1.1)} title="地图放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
+        <button onClick={() => adjustMapScale(0.9)} title="地图缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
+        <button onClick={() => setMapScale(1)} title="地图重置为 100%" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-sm leading-none">⟲</button>
+        <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round((scene.mapScale ?? 1) * 100)}%</span>
+      </div>
+    )}
   </div>
   );
 }

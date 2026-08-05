@@ -15,6 +15,7 @@ export function createScene(name: string): Scene {
     name,
     mapImage: null,
     mapSize: [1600, 1200],
+    mapScale: 1,
     grid: { ...DEFAULT_GRID },
     playArea: { ...DEFAULT_PLAY },
     tokens: [],

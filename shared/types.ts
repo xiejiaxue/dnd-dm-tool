@@ -55,6 +55,9 @@ export interface Scene {
   name: string;
   mapImage: string | null;
   mapSize: [number, number];
+  // Scale factor applied to the map image (not to tokens/grid) so a hand-drawn
+  // map can be calibrated to the grid. Defaults to 1.
+  mapScale?: number;
   grid: GridConfig;
   playArea: PlayArea;
   tokens: Token[];
@@ -76,6 +79,7 @@ export type Op =
   | { op: 'removeWall'; wallId: string }
   | { op: 'updateGrid'; patch: Partial<GridConfig> }
   | { op: 'updateMap'; mapImage: string | null; mapSize: [number, number]; playArea: PlayArea }
+  | { op: 'updateMapScale'; mapScale: number }
   | { op: 'submitInitiative'; name: string; value: number; tokenId: string | null; sessionId?: string | null }
   | { op: 'addToInitiative'; name: string; value: number; source: 'dm'; tokenId: string | null }
   | { op: 'removeFromInitiative'; entryId: string }
