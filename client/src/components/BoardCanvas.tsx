@@ -3,6 +3,7 @@ import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
+import { FOG_CELL } from '../types';
 import TokenShape from './TokenShape';
 import type { PendingToken } from '../pending';
 
@@ -12,6 +13,10 @@ const QUERY_OPEN = 320;
 const QUERY_CLOSED = 40;
 const ENEMY_LIST = 208;
 const OFFSET_Y = 44 + 56;
+
+// Fog overlay color by role: the DM sees a translucent amber veil (they can see
+// through it), players see near-opaque dark so unrevealed areas hide the map.
+const FOG_COLOR = { dm: 'rgba(245,158,11,0.35)', player: 'rgba(15,17,21,0.98)' } as const;
 
 function getStageSize(queryOpen: boolean) {
   const offsetX = 48 + ENEMY_LIST + (queryOpen ? QUERY_OPEN : QUERY_CLOSED);
@@ -25,9 +30,11 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   queryOpen: boolean;
+  // Eraser brush radius in fog cells (0/1/2), used by the DM's erase tool.
+  brushSize: number;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, queryOpen }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, queryOpen, brushSize }: Props) {
   const { scene, role } = useScene();
   const mySessionId = getMySessionId();
   const [scale, setScale] = useState(1);
@@ -38,6 +45,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const stageRef = useRef<Konva.Stage>(null);
   const wallStart = useRef<[number, number] | null>(null);
   const wallEnd = useRef<{ x: number; y: number } | null>(null);
+  // Eraser: batch of fog cells to reveal, drained by a throttled timer so rapid
+  // drag strokes coalesce into a single setFog op (ref mirrors the state copy).
+  const [eraserBatch, setEraserBatch] = useState<number[]>([]);
+  const eraserBatchRef = useRef<number[]>([]);
+  const eraserTimer = useRef<number | null>(null);
 
   // Keep the Stage sized to the viewport when the window resizes or when the
   // query panel toggles between open/collapsed.
@@ -56,6 +68,22 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     }
   }, [tool]);
 
+  // Leaving erase mode drops the queued eraser batch and pending send timer.
+  useEffect(() => {
+    if (tool !== 'erase') {
+      if (eraserTimer.current) clearTimeout(eraserTimer.current);
+      eraserTimer.current = null;
+      eraserBatchRef.current = [];
+    }
+  }, [tool]);
+
+  // On unmount, make sure no throttled setFog send is left pending.
+  useEffect(() => {
+    return () => {
+      if (eraserTimer.current) clearTimeout(eraserTimer.current);
+    };
+  }, []);
+
   const map = useImage(scene?.mapImage ? scene.mapImage : null);
 
   // Convert a container-space pointer to world coordinates (unaffected by pan/zoom).
@@ -73,6 +101,44 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     const off = grid.offset[axis];
     return Math.round((v - off) / grid.size) * grid.size + off;
   }, [scene]);
+
+  // Map a world point to its fog cell index (0..cols*rows-1), or -1 if outside.
+  const fogCellAt = useCallback((wx: number, wy: number): number => {
+    if (!scene) return -1;
+    const cols = Math.ceil(scene.playArea.w / FOG_CELL);
+    const rows = Math.ceil(scene.playArea.h / FOG_CELL);
+    const cx = Math.floor(wx / FOG_CELL);
+    const cy = Math.floor(wy / FOG_CELL);
+    if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) return -1;
+    return cy * cols + cx;
+  }, [scene]);
+
+  // Collect cells under the brush (radius in fog cells) and queue a throttled
+  // setFog send.
+  const revealAt = useCallback((wx: number, wy: number) => {
+    const center = fogCellAt(wx, wy);
+    if (center < 0 || !scene) return;
+    const cols = Math.ceil(scene.playArea.w / FOG_CELL);
+    const centerCol = center % cols;
+    const centerRow = Math.floor(center / cols);
+    const r = brushSize;
+    for (let dr = -r; dr <= r; dr++) {
+      for (let dc = -r; dc <= r; dc++) {
+        const idx = (centerRow + dr) * cols + (centerCol + dc);
+        if (idx >= 0 && idx < (scene.fog?.length ?? 0) && !(scene.fog?.[idx])) {
+          eraserBatchRef.current.push(idx);
+        }
+      }
+    }
+    if (eraserTimer.current == null) {
+      eraserTimer.current = window.setTimeout(() => {
+        const cells = [...new Set(eraserBatchRef.current)];
+        eraserBatchRef.current = [];
+        eraserTimer.current = null;
+        if (cells.length) connection.sendOps([{ op: 'setFog', cells, revealed: true }]);
+      }, 120);
+    }
+  }, [fogCellAt, scene, brushSize]);
 
   const MIN_SCALE = 0.1;
   const MAX_SCALE = 8;
@@ -125,24 +191,35 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     zoomAt(pointer, dir > 0 ? 1.1 : 0.9);
   }, [zoomAt]);
 
-  // Wall tool: mousedown on empty canvas records the snapped start point.
+  // Erase tool: mousedown reveals cells under the brush (DM only). Runs BEFORE
+  // the wall guard below so it short-circuits for non-wall tools.
   const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (tool === 'erase' && role === 'dm') {
+      const p = worldPos();
+      if (p) revealAt(p.x, p.y);
+      return;
+    }
     if (tool !== 'wall' || !scene || e.target !== stageRef.current) return;
     const p = worldPos();
     if (!p) return;
     wallStart.current = [snap(p.x, 0), snap(p.y, 1)];
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], wallStart.current[0], wallStart.current[1]]);
-  }, [tool, scene, worldPos, snap]);
+  }, [tool, role, scene, worldPos, snap, revealAt]);
 
-  // Wall tool: mousemove updates the live preview line.
+  // Erase tool: dragging reveals cells as the pointer moves (DM only).
   const handleMouseMove = useCallback(() => {
+    if (tool === 'erase' && role === 'dm') {
+      const p = worldPos();
+      if (p) revealAt(p.x, p.y);
+      return;
+    }
     if (tool !== 'wall' || !wallStart.current) return;
     const p = worldPos();
     if (!p) return;
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], p.x, p.y]);
-  }, [tool, worldPos]);
+  }, [tool, role, worldPos, revealAt]);
 
   const finishWall = useCallback(() => {
     if (tool !== 'wall' || !wallStart.current || !scene) return;
@@ -247,7 +324,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       height={stageSize.height}
       scaleX={scale} scaleY={scale} x={pos.x} y={pos.y}
       onWheel={handleWheel}
-      draggable={tool !== 'wall'}
+      // The Stage stays non-draggable while drawing (wall) or erasing so that
+      // mousemove fires on every pointer move instead of being captured by a
+      // drag — same pattern the wall tool uses for its live preview.
+      draggable={tool !== 'wall' && tool !== 'erase'}
       onDragEnd={(e) => {
         // Konva bubbles dragend from dragged children (tokens) up to the Stage;
         // only update the pan position when the Stage itself was the drag target.
@@ -317,6 +397,24 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(p.id)}
           />
         ))}
+        {/* 战争迷雾：未揭示格子按角色配色渲染（盖住地图与 token） */}
+        {(() => {
+          const fog = scene.fog;
+          if (!fog) return null;
+          const cols = Math.ceil(area.w / FOG_CELL);
+          const cells: { key: string; x: number; y: number }[] = [];
+          for (let i = 0; i < fog.length; i++) {
+            if (!fog[i]) {
+              cells.push({ key: `f${i}`, x: (i % cols) * FOG_CELL, y: Math.floor(i / cols) * FOG_CELL });
+            }
+          }
+          const color = FOG_COLOR[role];
+          return (
+            <Group listening={false}>
+              {cells.map(c => <Rect key={c.key} x={c.x} y={c.y} width={FOG_CELL} height={FOG_CELL} fill={color} />)}
+            </Group>
+          );
+        })()}
       </Layer>
     </Stage>
     {/* Selected-token action popup (DM only). Must be OUTSIDE the Konva Stage
