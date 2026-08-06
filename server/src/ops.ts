@@ -2,7 +2,7 @@ import { Op, Role, Scene, InitiativeEntry, FOG_CELL, fogGridSize } from './types
 import { sortInitiative, advanceInitiative } from './initiative';
 
 export function isPlayerOp(op: Op): boolean {
-  return op.op === 'moveToken' || op.op === 'submitInitiative' || op.op === 'updatePlayer';
+  return op.op === 'moveToken' || op.op === 'submitInitiative' || op.op === 'updatePlayer' || op.op === 'updateToken';
 }
 
 export function canOp(role: Role, op: Op): boolean {

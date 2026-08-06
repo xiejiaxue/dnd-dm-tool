@@ -169,10 +169,15 @@ export class GameServer {
       case 'op': {
         const ops = Array.isArray(msg.ops) ? msg.ops : [];
         const roleAllowed = ops.filter((op: Op) => canOp(client.role, op));
-        // 玩家只能 move/update 自己的 token（所有权过滤）
+        // 玩家只能 move/update 自己的 token（所有权过滤）；对 updateToken
+        // 玩家仅允许 HP patch（敌人 HP 追踪），不能改名/改大小/改色/换头像。
         const allowed: Op[] = roleAllowed.filter((op: Op) => {
           if (op.op === 'moveToken') return this.ownsToken(client, op.tokenId);
           if (op.op === 'updatePlayer') return this.ownsToken(client, op.tokenId);
+          if (op.op === 'updateToken' && client.role !== 'dm') {
+            const keys = Object.keys(op.patch);
+            return keys.length === 1 && keys[0] === 'hp';
+          }
           return true;
         });
         const denied = ops.filter((op: Op) => !canOp(client.role, op) || !allowed.some(o => o === op));
