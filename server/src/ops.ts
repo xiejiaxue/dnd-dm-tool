@@ -1,4 +1,4 @@
-import { Op, Role, Scene, InitiativeEntry, FOG_CELL } from './types';
+import { Op, Role, Scene, InitiativeEntry, FOG_CELL, fogGridSize } from './types';
 import { sortInitiative, advanceInitiative } from './initiative';
 
 export function isPlayerOp(op: Op): boolean {
@@ -161,10 +161,13 @@ export function applyOp(scene: Scene, op: Op): void {
 }
 
 function ensureFog(scene: Scene): boolean[] {
-  if (!scene.fog) {
-    const cols = Math.ceil(scene.playArea.w / FOG_CELL);
-    const rows = Math.ceil(scene.playArea.h / FOG_CELL);
-    scene.fog = new Array(cols * rows).fill(false);
+  // Grid spans the whole rendered map (mapSize * mapScale), or playArea without
+  // a map. Rebuild when the extent changed (map upload / mapScale calibration)
+  // so the stored array always matches the current fog grid.
+  const { cols, rows } = fogGridSize(scene);
+  const len = cols * rows;
+  if (!scene.fog || scene.fog.length !== len) {
+    scene.fog = new Array(len).fill(false);
   }
   return scene.fog;
 }

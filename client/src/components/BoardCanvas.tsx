@@ -3,7 +3,7 @@ import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
-import { FOG_CELL } from '../types';
+import { FOG_CELL, fogGridSize } from '../types';
 import TokenShape from './TokenShape';
 import type { PendingToken } from '../pending';
 
@@ -106,10 +106,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }, [scene]);
 
   // Map a world point to its fog cell index (0..cols*rows-1), or -1 if outside.
+  // The grid spans the whole rendered map (mapSize * mapScale), not just the
+  // play area, so fog covers the entire board.
   const fogCellAt = useCallback((wx: number, wy: number): number => {
     if (!scene) return -1;
-    const cols = Math.ceil(scene.playArea.w / FOG_CELL);
-    const rows = Math.ceil(scene.playArea.h / FOG_CELL);
+    const { cols, rows } = fogGridSize(scene);
     const cx = Math.floor(wx / FOG_CELL);
     const cy = Math.floor(wy / FOG_CELL);
     if (cx < 0 || cy < 0 || cx >= cols || cy >= rows) return -1;
@@ -123,8 +124,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const revealAt = useCallback((wx: number, wy: number) => {
     const center = fogCellAt(wx, wy);
     if (center < 0 || !scene) return;
-    const cols = Math.ceil(scene.playArea.w / FOG_CELL);
-    const rows = Math.ceil(scene.playArea.h / FOG_CELL);
+    const { cols, rows } = fogGridSize(scene);
     const fogLen = scene.fog?.length ?? cols * rows;
     const centerCol = center % cols;
     const centerRow = Math.floor(center / cols);
@@ -426,15 +426,24 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             的旧场景视为全遮挡，即每个格子都渲染为迷雾。 */}
         {(() => {
           const fog = scene.fog;
-          const cols = Math.ceil(area.w / FOG_CELL);
-          const rows = Math.ceil(area.h / FOG_CELL);
+          // Grid spans the whole rendered map (mapSize * mapScale), or playArea
+          // without a map — fog must cover the entire board, not just the play
+          // area, even when the map is scaled up for calibration.
+          const { cols, rows } = fogGridSize(scene);
+          const color = FOG_COLOR[role];
+          // Fully-covered boards (common: fresh scenes, players before the DM
+          // erases) render as ONE rect — avoids thousands of Konva nodes when
+          // the map is large (e.g. a 5000px map at 50px cells = 6600 cells).
+          const allCovered = !fog || fog.every(x => !x);
+          if (allCovered) {
+            return <Rect x={0} y={0} width={cols * FOG_CELL} height={rows * FOG_CELL} fill={color} listening={false} />;
+          }
           const cells: { key: string; x: number; y: number }[] = [];
           for (let i = 0; i < cols * rows; i++) {
-            if (!fog || !fog[i]) {
+            if (!fog[i]) {
               cells.push({ key: `f${i}`, x: (i % cols) * FOG_CELL, y: Math.floor(i / cols) * FOG_CELL });
             }
           }
-          const color = FOG_COLOR[role];
           return (
             <Group listening={false}>
               {cells.map(c => <Rect key={c.key} x={c.x} y={c.y} width={FOG_CELL} height={FOG_CELL} fill={color} />)}
