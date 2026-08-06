@@ -4,6 +4,20 @@ export type Role = 'dm' | 'player';
 // the DM's eraser can reveal the map at fine granularity.
 export const FOG_CELL = 50;
 
+// Fog grid dimensions: cover the WHOLE rendered map (mapSize * mapScale), or
+// the play area when there's no map, so fog never leaves a gap on the board.
+// Used by the server's ensureFog and the client's fog render/eraser.
+export function fogGridSize(scene: {
+  mapImage: string | null;
+  mapSize: [number, number];
+  mapScale?: number;
+  playArea: PlayArea;
+}): { cols: number; rows: number } {
+  const w = scene.mapImage ? scene.mapSize[0] * (scene.mapScale ?? 1) : scene.playArea.w;
+  const h = scene.mapImage ? scene.mapSize[1] * (scene.mapScale ?? 1) : scene.playArea.h;
+  return { cols: Math.ceil(w / FOG_CELL), rows: Math.ceil(h / FOG_CELL) };
+}
+
 export type EntryType = 'monster' | 'spell' | 'item' | 'feat' | 'condition';
 
 export interface GridConfig {
