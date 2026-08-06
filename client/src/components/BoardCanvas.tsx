@@ -46,10 +46,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const wallStart = useRef<[number, number] | null>(null);
   const wallEnd = useRef<{ x: number; y: number } | null>(null);
   // Eraser: batch of fog cells to reveal, drained by a throttled timer so rapid
-  // drag strokes coalesce into a single setFog op (ref mirrors the state copy).
-  const [eraserBatch, setEraserBatch] = useState<number[]>([]);
+  // drag strokes coalesce into a single setFog op. eraserDown gates reveals to
+  // actual drag strokes (mouse pressed), not mere hovering.
   const eraserBatchRef = useRef<number[]>([]);
   const eraserTimer = useRef<number | null>(null);
+  const eraserDown = useRef(false);
 
   // Keep the Stage sized to the viewport when the window resizes or when the
   // query panel toggles between open/collapsed.
@@ -68,12 +69,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     }
   }, [tool]);
 
-  // Leaving erase mode drops the queued eraser batch and pending send timer.
+  // Leaving erase mode drops the queued eraser batch, pending send timer, and
+  // the press flag.
   useEffect(() => {
     if (tool !== 'erase') {
       if (eraserTimer.current) clearTimeout(eraserTimer.current);
       eraserTimer.current = null;
       eraserBatchRef.current = [];
+      eraserDown.current = false;
     }
   }, [tool]);
 
@@ -114,18 +117,27 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }, [scene]);
 
   // Collect cells under the brush (radius in fog cells) and queue a throttled
-  // setFog send.
+  // setFog send. Scenes without a fog array yet are treated as fully obscured
+  // (fogLen = full grid), and the server's ensureFog lazily initializes fog on
+  // the first send — so the eraser works on old scenes too.
   const revealAt = useCallback((wx: number, wy: number) => {
     const center = fogCellAt(wx, wy);
     if (center < 0 || !scene) return;
     const cols = Math.ceil(scene.playArea.w / FOG_CELL);
+    const rows = Math.ceil(scene.playArea.h / FOG_CELL);
+    const fogLen = scene.fog?.length ?? cols * rows;
     const centerCol = center % cols;
     const centerRow = Math.floor(center / cols);
     const r = brushSize;
     for (let dr = -r; dr <= r; dr++) {
       for (let dc = -r; dc <= r; dc++) {
-        const idx = (centerRow + dr) * cols + (centerCol + dc);
-        if (idx >= 0 && idx < (scene.fog?.length ?? 0) && !(scene.fog?.[idx])) {
+        const row = centerRow + dr;
+        const col = centerCol + dc;
+        // Stay inside the fog grid — skipping out-of-range avoids wrapping a
+        // brush stroke around the play-area border into an unrelated row.
+        if (row < 0 || row >= rows || col < 0 || col >= cols) continue;
+        const idx = row * cols + col;
+        if (idx >= 0 && idx < fogLen && !(scene.fog?.[idx])) {
           eraserBatchRef.current.push(idx);
         }
       }
@@ -191,10 +203,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     zoomAt(pointer, dir > 0 ? 1.1 : 0.9);
   }, [zoomAt]);
 
-  // Erase tool: mousedown reveals cells under the brush (DM only). Runs BEFORE
-  // the wall guard below so it short-circuits for non-wall tools.
+  // Erase tool: mousedown reveals cells under the brush (DM only) and marks the
+  // press so mousemove only reveals while actually dragging. Runs BEFORE the
+  // wall guard below so it short-circuits for non-wall tools.
   const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     if (tool === 'erase' && role === 'dm') {
+      eraserDown.current = true;
       const p = worldPos();
       if (p) revealAt(p.x, p.y);
       return;
@@ -207,9 +221,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     setWallPreview([wallStart.current[0], wallStart.current[1], wallStart.current[0], wallStart.current[1]]);
   }, [tool, role, scene, worldPos, snap, revealAt]);
 
-  // Erase tool: dragging reveals cells as the pointer moves (DM only).
+  // Erase tool: while pressed, dragging reveals cells as the pointer moves (DM
+  // only). Without the eraserDown gate, mere hovering would reveal.
   const handleMouseMove = useCallback(() => {
     if (tool === 'erase' && role === 'dm') {
+      if (!eraserDown.current) return;
       const p = worldPos();
       if (p) revealAt(p.x, p.y);
       return;
@@ -242,6 +258,15 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   useEffect(() => {
     if (tool !== 'wall') return;
     const onUp = () => finishWallRef.current();
+    window.addEventListener('mouseup', onUp);
+    return () => window.removeEventListener('mouseup', onUp);
+  }, [tool]);
+
+  // Release the eraser press even if the pointer is released outside the Stage
+  // (mirrors the wall tool's window mouseup pattern).
+  useEffect(() => {
+    if (tool !== 'erase') return;
+    const onUp = () => { eraserDown.current = false; };
     window.addEventListener('mouseup', onUp);
     return () => window.removeEventListener('mouseup', onUp);
   }, [tool]);
@@ -371,7 +396,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             token={t}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id}
-            draggable={role === 'dm' && tool !== 'wall'}
+            draggable={role === 'dm' && tool !== 'wall' && tool !== 'erase'}
             onSelect={() => onSelect(t.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
@@ -387,7 +412,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             token={p}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
-            draggable={tool !== 'wall' && (role === 'dm' || p.sessionId === mySessionId)}
+            draggable={tool !== 'wall' && tool !== 'erase' && (role === 'dm' || p.sessionId === mySessionId)}
             onSelect={() => onSelect(p.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
@@ -397,14 +422,15 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(p.id)}
           />
         ))}
-        {/* 战争迷雾：未揭示格子按角色配色渲染（盖住地图与 token） */}
+        {/* 战争迷雾：未揭示格子按角色配色渲染（盖住地图与 token）。无 fog 字段
+            的旧场景视为全遮挡，即每个格子都渲染为迷雾。 */}
         {(() => {
           const fog = scene.fog;
-          if (!fog) return null;
           const cols = Math.ceil(area.w / FOG_CELL);
+          const rows = Math.ceil(area.h / FOG_CELL);
           const cells: { key: string; x: number; y: number }[] = [];
-          for (let i = 0; i < fog.length; i++) {
-            if (!fog[i]) {
+          for (let i = 0; i < cols * rows; i++) {
+            if (!fog || !fog[i]) {
               cells.push({ key: `f${i}`, x: (i % cols) * FOG_CELL, y: Math.floor(i / cols) * FOG_CELL });
             }
           }
