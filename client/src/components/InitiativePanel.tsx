@@ -38,12 +38,7 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
     if (!Number.isFinite(v)) return;
     // Stable sessionId: the server upserts by it, so re-submitting updates the
     // same initiative entry instead of creating duplicates.
-    let sid = localStorage.getItem('player-session-id');
-    if (!sid) {
-      sid = crypto.randomUUID();
-      localStorage.setItem('player-session-id', sid);
-    }
-    connection.sendOps([{ op: 'submitInitiative', name: myToken?.name ?? `玩家${value}`, value: v, tokenId: myToken?.id ?? null, sessionId: sid }]);
+    connection.sendOps([{ op: 'submitInitiative', name: myToken?.name ?? `玩家${value}`, value: v, tokenId: myToken?.id ?? null, sessionId: mySessionId }]);
     setValue('');
   };
 
