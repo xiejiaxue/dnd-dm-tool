@@ -69,6 +69,7 @@ export function applyOp(scene: Scene, op: Op): void {
       scene.mapSize = op.mapSize;
       scene.playArea = op.playArea;
       scene.mapScale = 1; // a new map starts at natural scale for fresh calibration
+      scene.fog = undefined; // 换图后旧 fog 按新 playArea 错位，重置以便按新尺寸重建
       return;
     }
     case 'updateMapScale': {
@@ -142,7 +143,9 @@ export function applyOp(scene: Scene, op: Op): void {
     case 'setFog': {
       const fog = ensureFog(scene);
       for (const c of op.cells) {
-        if (c >= 0 && c < fog.length) fog[c] = op.revealed;
+        // Guard non-integer indices (e.g. NaN from a malformed client) so a bad
+        // cell can never silently write a bogus fog slot.
+        if (Number.isInteger(c) && c >= 0 && c < fog.length) fog[c] = op.revealed;
       }
       return;
     }

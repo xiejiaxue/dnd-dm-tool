@@ -66,7 +66,9 @@ export function createApp(deps: RouteDeps): express.Express {
   });
   r.get('/scenes/:id', async (req, res) => {
     try {
-      res.json(await deps.store.get(req.params.id));
+      const scene = await deps.store.get(req.params.id);
+      if (!scene.unlocked) return res.status(403).json({ error: 'scene not unlocked' });
+      res.json(scene);
     } catch {
       res.status(404).json({ error: 'scene not found' });
     }

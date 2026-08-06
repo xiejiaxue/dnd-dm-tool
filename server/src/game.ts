@@ -235,7 +235,8 @@ export class GameServer {
           client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied' }));
           return;
         }
-        this.updateSceneUnlock(String(msg.sceneId), Boolean(msg.unlocked)).catch(() => {
+        // Strict === true: only an explicit true unlocks; absent/garbage stays locked.
+        this.updateSceneUnlock(String(msg.sceneId), msg.unlocked === true).catch(() => {
           client.ws.send(JSON.stringify({ type: 'error', message: 'scene unlock failed' }));
         });
         return;
