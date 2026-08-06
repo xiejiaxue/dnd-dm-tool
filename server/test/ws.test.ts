@@ -298,4 +298,43 @@ describe('WebSocket 同步', () => {
     dm.close();
     player.close();
   });
+
+  it('DM 揭示迷雾格子，玩家收到含 fog 的 state', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
+
+    dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'setFog', cells: [0, 1, 2], revealed: true }] }));
+    const st = await once(player, 'state');
+    expect(st.scene.fog![0]).toBe(true);
+    expect(st.scene.fog![1]).toBe(true);
+    expect(st.scene.fog![3]).toBe(false);
+
+    dm.close();
+    player.close();
+  });
+
+  it('玩家尝试 setFog 被拒', async () => {
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'setFog', cells: [0], revealed: true }] }));
+    const err = await once(player, 'error');
+    expect(err.message).toMatch(/permission/i);
+    player.close();
+  });
+
+  it('DM 解锁场景后持久化', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    dm.send(JSON.stringify({ type: 'updateSceneUnlock', sceneId: game.current.id, unlocked: true }));
+    const st = await once(dm, 'state');
+    expect(st.scene.unlocked).toBe(true);
+    expect((await game.store.get(game.current.id)).unlocked).toBe(true);
+    dm.close();
+  });
 });
