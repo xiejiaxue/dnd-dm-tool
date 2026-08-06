@@ -18,10 +18,11 @@ describe('canOp', () => {
     for (const op of ops) expect(canOp('dm', op)).toBe(true);
   });
 
-  it('player can moveToken, submitInitiative, updatePlayer (ownership enforced in GameServer)', () => {
+  it('player can moveToken, submitInitiative, updatePlayer, updateToken (HP-only enforced in GameServer)', () => {
     expect(canOp('player', { op: 'moveToken', tokenId: 'a', x: 0, y: 0 })).toBe(true);
     expect(canOp('player', { op: 'submitInitiative', name: 'x', value: 5, tokenId: null })).toBe(true);
     expect(canOp('player', { op: 'updatePlayer', tokenId: 'p1', patch: { name: 'x' } })).toBe(true);
+    expect(canOp('player', { op: 'updateToken', tokenId: 't1', patch: { hp: { current: 3, max: 7 } } })).toBe(true);
     expect(canOp('player', { op: 'addToken', token: {} as never })).toBe(false);
     expect(canOp('player', { op: 'advanceTurn' })).toBe(false);
   });

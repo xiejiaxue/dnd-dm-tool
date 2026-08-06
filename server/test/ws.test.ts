@@ -337,4 +337,30 @@ describe('WebSocket 同步', () => {
     expect((await game.store.get(game.current.id)).unlocked).toBe(true);
     dm.close();
   });
+
+  it('玩家可修改敌人 HP，但不能改名/改大小', async () => {
+    const dm = await connect(baseUrl);
+    dm.send(JSON.stringify({ type: 'init', role: 'dm', dmToken: 'pw' }));
+    await once(dm, 'state');
+    const player = await connect(baseUrl);
+    player.send(JSON.stringify({ type: 'init', role: 'player' }));
+    await once(player, 'state');
+
+    // DM 放置一个怪物
+    dm.send(JSON.stringify({ type: 'op', ops: [{ op: 'addToken', token: { id: 'hp-t1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '', color: '#fff', hp: { current: 7, max: 7 } } }] }));
+    await once(player, 'state');
+
+    // 玩家改 HP → 允许
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'updateToken', tokenId: 'hp-t1', patch: { hp: { current: 3, max: 7 } } }] }));
+    const st = await once(player, 'state');
+    expect(st.scene.tokens.find((t: any) => t.id === 'hp-t1').hp).toEqual({ current: 3, max: 7 });
+
+    // 玩家改名 → 被拒
+    player.send(JSON.stringify({ type: 'op', ops: [{ op: 'updateToken', tokenId: 'hp-t1', patch: { name: '改名地精' } }] }));
+    const err = await once(player, 'error');
+    expect(err.message).toMatch(/permission/i);
+
+    dm.close();
+    player.close();
+  });
 });
