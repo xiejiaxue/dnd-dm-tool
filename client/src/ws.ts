@@ -15,7 +15,12 @@ type Listener = (msg: any) => void;
 export function getMySessionId(): string {
   let sid = localStorage.getItem('player-session-id');
   if (!sid) {
-    sid = crypto.randomUUID();
+    // crypto.randomUUID is only available in secure contexts (HTTPS or
+    // localhost). Players reach the tool over plain HTTP on a LAN IP, so fall
+    // back to a random id when the browser lacks it.
+    sid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
     localStorage.setItem('player-session-id', sid);
   }
   return sid;
