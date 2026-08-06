@@ -10,7 +10,8 @@ export const api = {
   search: (q: string, type: EntryType | 'all' = 'all') =>
     json<IndexEntry[]>(`/api/search?q=${encodeURIComponent(q)}&type=${type}`),
   entry: (type: EntryType, id: string) => json<any>(`/api/entry/${type}/${encodeURIComponent(id)}`),
-  scenes: () => json<{ id: string; name: string }[]>('/api/scenes'),
+  scenes: () => json<{ id: string; name: string; unlocked: boolean }[]>('/api/scenes'),
+  scene: (id: string) => json<Scene>(`/api/scenes/${id}`),
   createScene: (name: string) =>
     json<Scene>('/api/scenes', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }) }),
   deleteScene: (id: string) => json<{ ok: boolean }>(`/api/scenes/${id}`, { method: 'DELETE' }),
