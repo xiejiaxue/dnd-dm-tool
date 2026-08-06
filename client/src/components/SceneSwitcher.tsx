@@ -4,7 +4,7 @@ import { connection, useScene } from '../ws';
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
   const { campaign } = useScene();
-  const [scenes, setScenes] = useState<{ id: string; name: string }[]>([]);
+  const [scenes, setScenes] = useState<{ id: string; name: string; unlocked: boolean }[]>([]);
   const [name, setName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -44,6 +44,11 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
               onClick={() => { connection.sendControl({ type: 'switchScene', sceneId: s.id }); onClose(); }}
             >{s.name}</button>
           )}
+          <button
+            title={s.unlocked ? '锁定场景（玩家不可见）' : '解锁场景（玩家可见）'}
+            onClick={() => { connection.sendControl({ type: 'updateSceneUnlock', sceneId: s.id, unlocked: !s.unlocked }); reload(); }}
+            className={`shrink-0 text-xs ${s.unlocked ? 'text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'}`}
+          >{s.unlocked ? '🔓' : '🔒'}</button>
           <button
             className="shrink-0 text-zinc-500 hover:text-amber-400"
             title="重命名场景"

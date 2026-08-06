@@ -43,10 +43,17 @@ export function createApp(deps: RouteDeps): express.Express {
 
   r.get('/scenes', async (_req, res) => {
     try {
-      res.json(await deps.store.list());
-    } catch {
-      res.status(500).json({ error: 'server error' });
-    }
+      const list = await deps.store.list();
+      const out = await Promise.all(list.map(async ({ id }) => {
+        try {
+          const s = await deps.store.get(id);
+          return { id, name: s.name, unlocked: Boolean(s.unlocked) };
+        } catch {
+          return { id, name: '(未知)', unlocked: false };
+        }
+      }));
+      res.json(out);
+    } catch { res.status(500).json({ error: 'server error' }); }
   });
   r.post('/scenes', async (req, res) => {
     try {
