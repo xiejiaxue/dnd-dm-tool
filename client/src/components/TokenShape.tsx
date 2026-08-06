@@ -89,7 +89,7 @@ export default function TokenShape({ token, active, selected, draggable = true, 
         );
       })()}
       <Text text={token.name} y={token.size / 2 + 2} width={token.size} align="center"
-        fill={token.kind === 'monster' ? '#ef4444' : '#fff'} fontSize={12} fontStyle="bold" />
+        fill={token.kind === 'monster' ? '#ef4444' : '#22c55e'} fontSize={12} fontStyle="bold" />
     </Group>
   );
 }
