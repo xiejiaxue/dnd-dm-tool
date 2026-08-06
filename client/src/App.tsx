@@ -18,6 +18,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Collapsible query panel — players can shrink it to reclaim board space.
   const [queryCollapsed, setQueryCollapsed] = useState(false);
+  // Eraser brush radius in fog cells (小/中/大 → 0/1/2).
+  const [brushSize, setBrushSize] = useState(1);
 
   // QueryPanel hands a "picked-up" token via the global bus; keep it in sync
   // and switch to the add tool so a DM can click-to-place right away.
@@ -40,6 +42,8 @@ export default function App() {
           pendingLabel={pending ? `点击棋盘放置：${pending.name}` : null}
           gridShow={scene?.grid.show ?? true}
           onToggleGrid={() => connection.sendOps([{ op: 'updateGrid', patch: { show: !(scene?.grid.show ?? true) } }])}
+          brushSize={brushSize}
+          onBrushSize={setBrushSize}
         />
         <EnemyList />
         <div className="flex-1 min-w-0 relative bg-zinc-900">
@@ -50,6 +54,7 @@ export default function App() {
             selectedId={selectedId}
             onSelect={setSelectedId}
             queryOpen={!queryCollapsed}
+            brushSize={brushSize}
           />
         </div>
         <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={() => setQueryCollapsed(c => !c)} />
