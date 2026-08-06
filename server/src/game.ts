@@ -230,6 +230,16 @@ export class GameServer {
         });
         return;
       }
+      case 'updateSceneUnlock': {
+        if (client.role !== 'dm') {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'permission denied' }));
+          return;
+        }
+        this.updateSceneUnlock(String(msg.sceneId), Boolean(msg.unlocked)).catch(() => {
+          client.ws.send(JSON.stringify({ type: 'error', message: 'scene unlock failed' }));
+        });
+        return;
+      }
     }
   }
 
@@ -295,6 +305,20 @@ export class GameServer {
     }
     const scene = await this.store.get(sceneId);
     scene.name = trimmed;
+    this.store.save(scene);
+  }
+
+  // Unlock/lock a scene for players. Current scene updates in memory + saves +
+  // broadcasts; other scenes are updated on disk (the switcher reloads).
+  private async updateSceneUnlock(sceneId: string, unlocked: boolean): Promise<void> {
+    if (sceneId === this.current.id) {
+      this.current.unlocked = unlocked;
+      this.store.save(this.current);
+      this.broadcast({ type: 'state', scene: this.current, campaign: this.currentCampaign });
+      return;
+    }
+    const scene = await this.store.get(sceneId);
+    scene.unlocked = unlocked;
     this.store.save(scene);
   }
 
