@@ -229,3 +229,22 @@ describe('player ownership filter', () => {
     expect((game as any).ownsToken(playerA, pB.id)).toBe(false);
   });
 });
+
+describe('updateSceneUnlock', () => {
+  // 复用 ensurePlayerToken 测试的 temp dir 模式
+  it('unlocks the current scene and broadcasts', async () => {
+    const client = { role: 'dm' as Role, sessionId: '' };
+    (game as any).handle(client, { type: 'updateSceneUnlock', sceneId: game.current.id, unlocked: true });
+    // handle 异步 → 需微任务刷新
+    await new Promise(r => setTimeout(r, 0));
+    expect(game.current.unlocked).toBe(true);
+  });
+
+  it('unlocks a non-current scene by loading + saving its file', async () => {
+    const other = await game.store.create('另一场景');
+    (game as any).handle({ role: 'dm' as Role, sessionId: '' }, { type: 'updateSceneUnlock', sceneId: other.id, unlocked: true });
+    await new Promise(r => setTimeout(r, 0));
+    const loaded = await game.store.get(other.id);
+    expect(loaded.unlocked).toBe(true);
+  });
+});
