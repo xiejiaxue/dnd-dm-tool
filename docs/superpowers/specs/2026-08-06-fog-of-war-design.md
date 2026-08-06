@@ -29,16 +29,15 @@ unlocked?: boolean;
 | { op: 'setFog'; cells: number[]; revealed: boolean }   // 批量设置格子揭示/隐藏
 | { op: 'revealAllFog' }                                  // 一键擦除（全揭示）
 | { op: 'coverAllFog' }                                   // 一键覆盖（全遮挡）
-| { op: 'updateSceneUnlock'; sceneId: string; unlocked: boolean }  // 解锁/锁定场景
 ```
 
 - `applyOp`（纯函数，作用在 scene）：
   - `setFog`：对每个 cell 索引，若在 `[0, fog.length)` 内则 `fog[cell] = revealed`（越界忽略）
   - `revealAllFog`：`fog.fill(true)`
   - `coverAllFog`：`fog.fill(false)`
-  - `updateSceneUnlock`：改 `scene.unlocked`（注意：目标可能不是当前场景——见 §5）
-- `canOp`：以上 DM 专属（`setFog`/`revealAllFog`/`coverAllFog`/`updateSceneUnlock` 不在 `isPlayerOp`）。
+- `canOp`：以上 DM 专属（`setFog`/`revealAllFog`/`coverAllFog` 不在 `isPlayerOp`）。
 - 场景无 `fog` 字段时，`setFog`/`revealAll`/`coverAll` 先初始化数组（长度按 playArea 计算）。
+- **解锁场景不是 op，而是控制消息** `{ type: 'updateSceneUnlock', sceneId, unlocked }`（DM）：由 GameServer 双路径处理（当前场景直接改内存+保存+广播；非当前场景加载该场景改文件），见 §5（Task 2 实现）。
 
 ## 4. 渲染（BoardCanvas）
 
@@ -56,7 +55,7 @@ unlocked?: boolean;
   - `mousedown` 在画布：计算指针所在迷雾格，把以该格为中心、笔刷半径范围内的格子标记为揭示
   - `mousemove` 拖动：继续揭示经过区域的格子
   - 实时聚合一批 `cells` → `setFog { cells, revealed: true }`（节流，避免刷屏）
-- `updateSceneUnlock`：DM 在 SceneSwitcher 每个场景行加「🔓/🔒」开关，切换发 op（当前场景直接改内存+保存+广播；非当前场景由 GameServer 加载该场景改文件——参照 `renameScene` 的双路径）。
+- `updateSceneUnlock`（控制消息，非 op）：DM 在 SceneSwitcher 每个场景行加「🔓/🔒」开关，切换发控制消息 `{ type: 'updateSceneUnlock', sceneId, unlocked }`（当前场景直接改内存+保存+广播；非当前场景由 GameServer 加载该场景改文件——参照 `renameScene` 的双路径），Task 2 实现。
 
 ## 6. 玩家端 UI
 

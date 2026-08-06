@@ -1,4 +1,4 @@
-import { Op, Role, Scene, InitiativeEntry } from './types';
+import { Op, Role, Scene, InitiativeEntry, FOG_CELL } from './types';
 import { sortInitiative, advanceInitiative } from './initiative';
 
 export function isPlayerOp(op: Op): boolean {
@@ -139,7 +139,31 @@ export function applyOp(scene: Scene, op: Op): void {
       scene.favorites = scene.favorites.filter(f => !(f.type === op.type && f.entryId === op.entryId));
       return;
     }
+    case 'setFog': {
+      const fog = ensureFog(scene);
+      for (const c of op.cells) {
+        if (c >= 0 && c < fog.length) fog[c] = op.revealed;
+      }
+      return;
+    }
+    case 'revealAllFog': {
+      ensureFog(scene).fill(true);
+      return;
+    }
+    case 'coverAllFog': {
+      ensureFog(scene).fill(false);
+      return;
+    }
   }
+}
+
+function ensureFog(scene: Scene): boolean[] {
+  if (!scene.fog) {
+    const cols = Math.ceil(scene.playArea.w / FOG_CELL);
+    const rows = Math.ceil(scene.playArea.h / FOG_CELL);
+    scene.fog = new Array(cols * rows).fill(false);
+  }
+  return scene.fog;
 }
 
 function findToken(scene: Scene, tokenId: string) {

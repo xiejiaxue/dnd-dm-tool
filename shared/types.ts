@@ -1,5 +1,9 @@
 export type Role = 'dm' | 'player';
 
+// Fog cell size in px — denser than the main grid (grid.size, default 100) so
+// the DM's eraser can reveal the map at fine granularity.
+export const FOG_CELL = 50;
+
 export type EntryType = 'monster' | 'spell' | 'item' | 'feat' | 'condition';
 
 export interface GridConfig {
@@ -69,6 +73,10 @@ export interface Scene {
   walls: Wall[];
   initiative: InitiativeEntry[];
   favorites: Favorite[];
+  // Fog of war: per-cell "revealed" flags, index = row*cols+col (FOG_CELL px cells).
+  fog?: boolean[];
+  // DM unlocks a scene so players can view it in the campaign library.
+  unlocked?: boolean;
 }
 
 export interface EnemyTemplate {
@@ -105,7 +113,10 @@ export type Op =
   | { op: 'advanceTurn' }
   | { op: 'reorderInitiative'; order: string[] }
   | { op: 'addFavorite'; favorite: Favorite }
-  | { op: 'removeFavorite'; type: EntryType; entryId: string };
+  | { op: 'removeFavorite'; type: EntryType; entryId: string }
+  | { op: 'setFog'; cells: number[]; revealed: boolean }
+  | { op: 'revealAllFog' }
+  | { op: 'coverAllFog' };
 
 export interface IndexEntry {
   type: EntryType;
