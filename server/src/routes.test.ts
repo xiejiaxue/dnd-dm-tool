@@ -68,12 +68,33 @@ describe('REST API', () => {
     const c = await request(app).post('/api/scenes').send({ name: '地牢' });
     expect(c.status).toBe(201);
     const id = c.body.id;
+    const s = await store.get(id);
+    s.unlocked = true;
+    store.save(s);
     const g = await request(app).get(`/api/scenes/${id}`);
     expect(g.body.name).toBe('地牢');
     const list = await request(app).get('/api/scenes');
     expect(list.body.some((x: any) => x.id === id)).toBe(true);
     const d = await request(app).delete(`/api/scenes/${id}`);
     expect(d.status).toBe(200);
+  });
+
+  it('scene detail is gated by unlocked', async () => {
+    const c = await request(app).post('/api/scenes').send({ name: '未解锁场景' });
+    expect(c.status).toBe(201);
+    const id = c.body.id;
+    // 未解锁 → 403（不泄露完整场景数据）
+    const locked = await request(app).get(`/api/scenes/${id}`);
+    expect(locked.status).toBe(403);
+    expect(locked.body.error).toBe('scene not unlocked');
+    // 解锁后 → 200 返回完整场景
+    const s = await store.get(id);
+    s.unlocked = true;
+    store.save(s);
+    const unlocked = await request(app).get(`/api/scenes/${id}`);
+    expect(unlocked.status).toBe(200);
+    expect(unlocked.body.name).toBe('未解锁场景');
+    expect(unlocked.body.unlocked).toBe(true);
   });
 
   it('password verify', async () => {

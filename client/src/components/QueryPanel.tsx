@@ -48,9 +48,12 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   // Resolve the scene id -> {name, unlocked} mapping for the campaign tab's scene
   // list. Players only see DM-unlocked scenes (read-only preview); DMs switch.
   const [sceneNames, setSceneNames] = useState<Record<string, { name: string; unlocked: boolean }>>({});
+  // Re-fetch the scene id -> {name, unlocked} mapping whenever the campaign's
+  // scene list changes, so a scene the DM unlocks mid-session shows up in the
+  // player's campaign library without a reload.
   useEffect(() => {
     api.scenes().then(list => setSceneNames(Object.fromEntries(list.map(s => [s.id, { name: s.name, unlocked: s.unlocked }])))).catch(() => {});
-  }, []);
+  }, [campaign?.sceneIds]);
   // Read-only scene preview for players (map thumbnail + token list).
   const [preview, setPreview] = useState<Scene | null>(null);
 
@@ -79,6 +82,9 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   const isInLibrary = (entryId: string) => (campaign?.enemies ?? []).some(e => e.entryId === entryId);
 
   const favorites = scene?.favorites ?? [];
+  // Scenes the DM has unlocked for players; rendered once instead of filtering
+  // the sceneIds array twice.
+  const unlockedScenes = (campaign?.sceneIds ?? []).filter(sid => sceneNames[sid]?.unlocked ?? false);
 
   // Collapsed: a thin vertical bar so players can reclaim board space.
   if (collapsed) {
@@ -205,15 +211,13 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
               {role === 'player' && (
                 <>
                   <div className="px-3 py-1.5 text-xs text-zinc-500 bg-zinc-800/40">DM 解锁的场景</div>
-                  {(campaign?.sceneIds ?? [])
-                    .filter(sid => sceneNames[sid]?.unlocked ?? false)
-                    .map(sid => (
-                      <button key={sid} onClick={() => api.scene(sid).then(setPreview).catch(() => {})}
-                        className="w-full text-left px-3 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800 text-zinc-200">
-                        {sceneNames[sid]?.name ?? sid}
-                      </button>
-                    ))}
-                  {(campaign?.sceneIds ?? []).filter(sid => sceneNames[sid]?.unlocked ?? false).length === 0 && (
+                  {unlockedScenes.map(sid => (
+                    <button key={sid} onClick={() => api.scene(sid).then(setPreview).catch(() => {})}
+                      className="w-full text-left px-3 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800 text-zinc-200">
+                      {sceneNames[sid]?.name ?? sid}
+                    </button>
+                  ))}
+                  {unlockedScenes.length === 0 && (
                     <div className="p-3 text-zinc-500 text-xs">暂无 DM 解锁的场景</div>
                   )}
                 </>

@@ -85,7 +85,7 @@ unlocked?: boolean;
 ### 8.2 集成测试（ws 双端）
 - DM `setFog` 揭示格子 → 玩家收到含 `fog` 的 state（对应格子 true）
 - DM `revealAllFog` / `coverAllFog` → 广播
-- 玩家尝试 `setFog` / `updateSceneUnlock` → 拒绝
+- 玩家尝试 `setFog`（DM 专属 op）→ 按 op 权限拒绝；玩家尝试 `updateSceneUnlock`（控制消息，非 op）→ `GameServer.handle` 控制消息路径按 DM-only 权限检查拒绝
 - 场景解锁后，玩家战役库能列出（客户端逻辑由 UI 任务验证）
 
 ## 9. 明确不做的（本版本）
