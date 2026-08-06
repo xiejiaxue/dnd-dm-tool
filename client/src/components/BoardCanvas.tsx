@@ -247,7 +247,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       height={stageSize.height}
       scaleX={scale} scaleY={scale} x={pos.x} y={pos.y}
       onWheel={handleWheel}
-      draggable={role === 'dm' && tool !== 'wall'}
+      draggable={tool !== 'wall'}
       onDragEnd={(e) => {
         // Konva bubbles dragend from dragged children (tokens) up to the Stage;
         // only update the pan position when the Stage itself was the drag target.
