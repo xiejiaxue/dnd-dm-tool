@@ -176,3 +176,30 @@ describe('applyOp favorites', () => {
     expect(s.favorites).toHaveLength(0);
   });
 });
+
+describe('applyOp fog', () => {
+  it('setFog reveals cells and ignores out-of-range', () => {
+    const s = freshScene(); // playArea 1600x1200 → cols=32, rows=24, len=768
+    applyOp(s, { op: 'setFog', cells: [0, 1, 100, 99999], revealed: true });
+    expect(s.fog![0]).toBe(true);
+    expect(s.fog![1]).toBe(true);
+    expect(s.fog![100]).toBe(true);
+    expect(s.fog![99999]).toBeUndefined(); // 越界被忽略，数组长度不变
+    expect(s.fog!.length).toBe(768);
+    applyOp(s, { op: 'setFog', cells: [0], revealed: false });
+    expect(s.fog![0]).toBe(false);
+  });
+
+  it('revealAllFog and coverAllFog', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'revealAllFog' });
+    expect(s.fog!.every(Boolean)).toBe(true);
+    applyOp(s, { op: 'coverAllFog' });
+    expect(s.fog!.every(x => !x)).toBe(true);
+  });
+
+  it('unlocked defaults to undefined for old scenes', () => {
+    const s = freshScene();
+    expect(s.unlocked).toBeUndefined();
+  });
+});
