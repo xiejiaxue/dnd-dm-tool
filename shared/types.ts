@@ -112,7 +112,7 @@ export type Op =
   | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> }
   | { op: 'addPlayer'; player: PlayerToken }
   | { op: 'removePlayer'; tokenId: string }
-  | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp'>> }
+  | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> }
   | { op: 'addWall'; wall: Wall }
   | { op: 'removeWall'; wallId: string }
   | { op: 'updateGrid'; patch: Partial<GridConfig> }
