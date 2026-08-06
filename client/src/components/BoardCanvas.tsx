@@ -484,8 +484,19 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     </div>
     {/* Map-image scale (DM only): scales the map to fit the grid while tokens
         keep their size — for calibrating hand-drawn maps. */}
-    {role === 'dm' && scene?.mapImage && (
+    {/* Fog controls (DM): reveal-all (清空遮罩) and cover-all (添加遮罩), text
+        buttons per user request. */}
+    {role === 'dm' && (
       <div className="absolute bottom-3 left-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
+        <span className="text-center text-[10px] text-zinc-400 select-none">迷雾</span>
+        <button onClick={() => connection.sendOps([{ op: 'revealAllFog' }])}
+          className="px-2 py-1 rounded hover:bg-emerald-700/30 text-emerald-400 text-xs">一键清空遮罩</button>
+        <button onClick={() => connection.sendOps([{ op: 'coverAllFog' }])}
+          className="px-2 py-1 rounded hover:bg-amber-700/30 text-amber-400 text-xs">一键添加遮罩</button>
+      </div>
+    )}
+    {role === 'dm' && scene?.mapImage && (
+      <div className="absolute bottom-28 left-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
         <span className="text-center text-[10px] text-zinc-400 select-none">地图</span>
         <button onClick={() => adjustMapScale(1.1)} title="地图放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
         <button onClick={() => adjustMapScale(0.9)} title="地图缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
