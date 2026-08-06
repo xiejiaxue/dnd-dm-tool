@@ -16,7 +16,7 @@ const OFFSET_Y = 44 + 56;
 
 // Fog overlay color by role: the DM sees a translucent amber veil (they can see
 // through it), players see near-opaque dark so unrevealed areas hide the map.
-const FOG_COLOR = { dm: 'rgba(245,158,11,0.35)', player: 'rgba(15,17,21,0.98)' } as const;
+const FOG_COLOR = { dm: 'rgba(245,158,11,0.35)', player: '#0f1115' } as const;
 
 function getStageSize(queryOpen: boolean) {
   const offsetX = 48 + ENEMY_LIST + (queryOpen ? QUERY_OPEN : QUERY_CLOSED);
