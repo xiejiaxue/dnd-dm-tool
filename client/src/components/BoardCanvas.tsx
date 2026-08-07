@@ -375,7 +375,6 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           />
         )}
         {scene.mapImage && !map && <Rect width={area.w} height={area.h} fill="#262932" listening={false} />}
-        <Rect x={area.x} y={area.y} width={area.w} height={area.h} stroke="#f59e0b" strokeWidth={2} strokeScaleEnabled={false} dash={[8, 8]} listening={false} />
         {(grid.show ?? true) && (
           <Group listening={false}>
             {vLines.map(l => <Line key={l.key} points={[l.x, 0, l.x, area.h]} stroke={grid.color} strokeWidth={1} />)}
