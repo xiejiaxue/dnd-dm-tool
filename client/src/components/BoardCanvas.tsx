@@ -185,13 +185,13 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const adjustMapScale = useCallback((factor: number) => {
     if (!scene) return;
     const cur = scene.mapScale ?? 1;
-    const next = Math.min(5, Math.max(0.1, Math.round(cur * factor * 100) / 100));
+    const next = Math.min(8, Math.max(0.1, Math.round(cur * factor * 100) / 100));
     if (next !== cur) connection.sendOps([{ op: 'updateMapScale', mapScale: next }]);
   }, [scene]);
 
   const setMapScale = useCallback((value: number) => {
     if (!scene) return;
-    const clamped = Math.min(5, Math.max(0.1, value));
+    const clamped = Math.min(8, Math.max(0.1, value));
     if (clamped !== (scene.mapScale ?? 1)) connection.sendOps([{ op: 'updateMapScale', mapScale: clamped }]);
   }, [scene]);
 
