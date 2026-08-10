@@ -1,5 +1,5 @@
 import { Group, Circle, Image as KImage, Text, Ring } from 'react-konva';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useImage } from '../useImage';
 import type { Token } from '../types';
 
@@ -8,12 +8,14 @@ interface Props {
   active: boolean;
   selected: boolean;
   draggable?: boolean;
+  /** Includes grid settings so ignored callback identities cannot go stale. */
+  interactionKey: string;
   onSelect: () => void;
   onDragEnd: (x: number, y: number) => void;
   onContextMenu: () => void;
 }
 
-export default function TokenShape({ token, active, selected, draggable = true, onSelect, onDragEnd, onContextMenu }: Props) {
+function TokenShape({ token, active, selected, draggable = true, onSelect, onDragEnd, onContextMenu }: Props) {
   const img = useImage(token.avatar || null);
   const [pulse, setPulse] = useState(0);
 
@@ -93,3 +95,15 @@ export default function TokenShape({ token, active, selected, draggable = true, 
     </Group>
   );
 }
+
+// Board patches structurally share untouched tokens. Ignoring freshly-created
+// callback closures here lets a remote name/HP/map-scale update avoid
+// rerendering every other Konva token; interactionKey covers their only
+// callback-captured board setting (grid snapping).
+export default memo(TokenShape, (previous, next) => (
+  previous.token === next.token
+  && previous.active === next.active
+  && previous.selected === next.selected
+  && previous.draggable === next.draggable
+  && previous.interactionKey === next.interactionKey
+));

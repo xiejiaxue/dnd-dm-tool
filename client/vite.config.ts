@@ -10,8 +10,10 @@ export default defineConfig({
     host: '0.0.0.0',
     fs: { allow: [path.resolve(__dirname, '..')] },
     proxy: {
-      '/api': 'http://localhost:3001',
-      '/ws': { target: 'ws://localhost:3001', ws: true },
+      // Wrangler owns the local D1/R2/Durable Object state.  Keeping the Vite
+      // dev server as a same-origin-looking proxy lets browser cookies and the
+      // room WebSocket follow exactly the same path as production.
+      '/api': { target: 'http://localhost:8787', ws: true },
     },
   },
   build: { outDir: 'dist' },

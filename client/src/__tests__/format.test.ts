@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderMarkup, formatMonster, formatSpell } from '../format';
+import { renderMarkup, formatCompendiumEntry, formatMonster, formatSpell } from '../format';
 
 describe('renderMarkup', () => {
   it('strips 5etools inline tags to inner text', () => {
@@ -137,5 +137,17 @@ describe('formatSpell', () => {
     };
     const sb = formatSpell(s);
     expect(sb.rows[1]).toEqual(['成分', 'V, S, M（至少价值 25gp 的金粉，作为该法术的耗材）']);
+  });
+});
+
+describe('formatCompendiumEntry', () => {
+  it('renders non-spell online records as a generic readable entry', () => {
+    const item = formatCompendiumEntry('item', {
+      name: '次元袋', source: 'DMG', page: 153, rarity: 'uncommon', type: 'W',
+      entries: ['这个袋子的内部空间比外观看起来大得多。', { name: '取出物品', entries: ['取出物品需要一个动作。'] }],
+    });
+    expect(item.meta).toBe('装备 · DMG · 第 153 页');
+    expect(item.rows).toContainEqual(['稀有度', 'uncommon']);
+    expect(item.body).toEqual(['这个袋子的内部空间比外观看起来大得多。', '**取出物品。** 取出物品需要一个动作。']);
   });
 });

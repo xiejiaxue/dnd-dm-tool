@@ -1,9 +1,8 @@
-// Upload a local image (map or token) to the server and return its URL.
+import { api } from './api';
+
+// Upload a local image (map or token) to the current room's private asset
+// route. The Worker authorizes the request from its HttpOnly session cookie.
 export async function uploadImage(file: File, kind: 'map' | 'token'): Promise<string> {
-  const fd = new FormData();
-  fd.append('file', file);
-  const res = await fetch(`/api/upload/${kind}`, { method: 'POST', body: fd });
-  if (!res.ok) throw new Error('upload failed');
-  const b = await res.json();
-  return b.url as string;
+  const asset = await api.uploadAsset(file, kind);
+  return asset.url;
 }

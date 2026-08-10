@@ -18,6 +18,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   const [q, setQ] = useState('');
   const [type, setType] = useState<EntryType | 'all'>('all');
   const [results, setResults] = useState<IndexEntry[]>([]);
+  const [resultSource, setResultSource] = useState<'local' | 'online' | 'unavailable' | null>(null);
   // DetailDrawer only needs the id trio; both search results and favorites fit it.
   const [detail, setDetail] = useState<{ type: EntryType; id: string; nameZh: string } | null>(null);
   const { scene, role, campaign } = useScene();
@@ -38,11 +39,40 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   }, [scene?.favorites, favNames]);
 
   useEffect(() => {
+    let cancelled = false;
     const t = setTimeout(() => {
-      if (!q.trim()) { setResults([]); return; }
-      api.search(q, type).then(setResults).catch(() => setResults([]));
+      const search = async () => {
+        if (!q.trim()) {
+          if (!cancelled) {
+            setResults([]);
+            setResultSource(null);
+          }
+          return;
+        }
+        try {
+          const local = await api.search(q, type);
+          if (cancelled) return;
+          if (local.length > 0) {
+            setResults(local);
+            setResultSource('local');
+            return;
+          }
+          // R2 stays the default source. Only a miss reaches the limited,
+          // cached same-origin Worker proxy for the online 5e 不全书 data.
+          const online = await api.searchOnline(q, type);
+          if (cancelled) return;
+          setResults(online);
+          setResultSource('online');
+        } catch {
+          if (!cancelled) {
+            setResults([]);
+            setResultSource('unavailable');
+          }
+        }
+      };
+      void search();
     }, 250);
-    return () => clearTimeout(t);
+    return () => { cancelled = true; clearTimeout(t); };
   }, [q, type]);
 
   // Resolve the scene id -> {name, unlocked} mapping for the campaign tab's scene
@@ -132,6 +162,16 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
           </div>
           {tab === 'query' && (
             <div className="flex-1 overflow-y-auto">
+              {q.trim() && resultSource === 'online' && (
+                <div className="px-3 py-2 text-xs text-sky-300 bg-sky-950/30 border-b border-sky-900/60">
+                  本地资料未命中，显示在线 <a href="https://github.com/tjliqy/5etools-cn" target="_blank" rel="noreferrer" className="underline hover:text-sky-200">5e 不全书（tjliqy/5etools-cn）</a>结果（<a href="https://github.com/tjliqy/5etools-cn/blob/cn2.0/LICENSE.md" target="_blank" rel="noreferrer" className="underline hover:text-sky-200">CC BY-NC-SA 4.0</a>）。
+                </div>
+              )}
+              {q.trim() && resultSource === 'unavailable' && (
+                <div className="px-3 py-2 text-xs text-amber-300 bg-amber-950/30 border-b border-amber-900/60">
+                  本地未找到结果，在线资料暂时不可用。
+                </div>
+              )}
               {results.map(r => (
                 <div key={r.id} className="flex items-center border-b border-zinc-800/50 hover:bg-zinc-800">
                   <button onClick={() => setDetail(r)} className="flex-1 text-left px-3 py-2 min-w-0">
@@ -158,7 +198,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
                   )}
                 </div>
               ))}
-              {q.trim() && results.length === 0 && <div className="p-3 text-zinc-500 text-xs">无结果</div>}
+              {q.trim() && results.length === 0 && resultSource !== 'unavailable' && <div className="p-3 text-zinc-500 text-xs">无结果</div>}
             </div>
           )}
           {tab === 'fav' && (
@@ -174,8 +214,10 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
                       <span className="block text-zinc-100">{zh}</span>
                       <span className="block text-xs text-zinc-500">{f.entryId}</span>
                     </span>
-                    <button className="text-zinc-500 hover:text-red-400 shrink-0"
-                      onClick={(e) => { e.stopPropagation(); connection.sendOps([{ op: 'removeFavorite', type: f.type, entryId: f.entryId }]); }}>✕</button>
+                    {role !== 'spectator' && (
+                      <button className="text-zinc-500 hover:text-red-400 shrink-0"
+                        onClick={(e) => { e.stopPropagation(); connection.sendOps([{ op: 'removeFavorite', type: f.type, entryId: f.entryId }]); }}>✕</button>
+                    )}
                   </button>
                 );
               })}

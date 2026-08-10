@@ -18,6 +18,7 @@ const scene = {
 class FakeWS {
   static instances: FakeWS[] = [];
   static OPEN = 1;
+  static CONNECTING = 0;
   readyState = 0;
   sent: string[] = [];
   onopen: (() => void) | null = null;
@@ -43,14 +44,24 @@ describe('Connection 竞态修复（订阅晚于初始 state）', () => {
     vi.resetModules();
     FakeWS.instances = [];
     vi.stubGlobal('WebSocket', FakeWS);
-    vi.stubGlobal('location', { protocol: 'http:', host: 'localhost:3001' });
-    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {} });
+    vi.stubGlobal('location', { protocol: 'https:', host: 'table.example' });
   });
   afterEach(() => { vi.unstubAllGlobals(); });
 
+  it('只有选定 room URL 后才建立连接', async () => {
+    const { connection } = await import('../ws');
+    expect(FakeWS.instances).toHaveLength(0);
+    connection.connect('first-room');
+    await new Promise(r => setTimeout(r, 10));
+    expect(FakeWS.instances).toHaveLength(1);
+    expect(FakeWS.instances[0].url).toBe('wss://table.example/api/rooms/first-room/ws');
+    connection.disconnect();
+  });
+
   it('监听器注册晚于 state 到达时，仍能收到补发的 state', async () => {
     const { connection } = await import('../ws');
-    await new Promise(r => setTimeout(r, 10)); // 等 onopen + init
+    connection.connect('test-room');
+    await new Promise(r => setTimeout(r, 10));
     const ws = FakeWS.instances[0];
     // 服务端在监听器注册前就返回了 state
     recv(ws, { type: 'state', scene, role: 'dm' });
@@ -61,22 +72,62 @@ describe('Connection 竞态修复（订阅晚于初始 state）', () => {
     expect(state).toBeTruthy();
     expect(state.scene.name).toBe('测试场景');
     expect(state.role).toBe('dm');
+    expect(ws.url).toBe('wss://table.example/api/rooms/test-room/ws');
+    expect(ws.sent.map(frame => JSON.parse(frame))).toContainEqual({ type: 'capabilities', patches: 1 });
+    connection.disconnect();
   });
 
   it('useScene 初始状态能读取已到达的 lastState', async () => {
     const { connection } = await import('../ws');
+    connection.connect('test-room');
     await new Promise(r => setTimeout(r, 10));
     recv(FakeWS.instances[0], { type: 'state', scene, role: 'player' });
     expect(connection.lastState?.scene.name).toBe('测试场景');
     expect(connection.connected).toBe(true);
+    connection.disconnect();
   });
 
   it('断线后 connected 复位为 false', async () => {
     const { connection } = await import('../ws');
+    connection.connect('test-room');
     await new Promise(r => setTimeout(r, 10));
     recv(FakeWS.instances[0], { type: 'state', scene, role: 'dm' });
     expect(connection.connected).toBe(true);
     FakeWS.instances[0].onclose?.();
     expect(connection.connected).toBe(false);
+    connection.disconnect();
+  });
+
+  it('操作会先在本机显示，并由小型 patch 确认而不是等待整份场景', async () => {
+    const { connection } = await import('../ws');
+    connection.connect('test-room');
+    await new Promise(r => setTimeout(r, 10));
+    const ws = FakeWS.instances[0];
+    recv(ws, { type: 'state', scene, role: 'dm', revision: 0 });
+
+    connection.sendOps([{ op: 'updateMapScale', mapScale: 1.25 }]);
+    expect(connection.lastState?.scene.mapScale).toBe(1.25);
+    const command = ws.sent.map(frame => JSON.parse(frame)).find(frame => frame.type === 'op');
+    expect(command?.id).toEqual(expect.any(String));
+
+    recv(ws, { type: 'ack', commandId: command.id, revision: 1 });
+    recv(ws, { type: 'patch', revision: 1, ops: [{ op: 'updateMapScale', mapScale: 1.25 }] });
+    expect(connection.lastState?.revision).toBe(1);
+    expect(connection.lastState?.scene.mapScale).toBe(1.25);
+    connection.disconnect();
+  });
+
+  it('被服务器拒绝的乐观操作会回滚', async () => {
+    const { connection } = await import('../ws');
+    connection.connect('test-room');
+    await new Promise(r => setTimeout(r, 10));
+    const ws = FakeWS.instances[0];
+    recv(ws, { type: 'state', scene, role: 'dm', revision: 0 });
+
+    connection.sendOps([{ op: 'updateMapScale', mapScale: 1.5 }]);
+    const command = ws.sent.map(frame => JSON.parse(frame)).find(frame => frame.type === 'op');
+    recv(ws, { type: 'error', commandId: command.id, code: 'FORBIDDEN', message: '不允许' });
+    expect(connection.lastState?.scene.mapScale).toBeUndefined();
+    connection.disconnect();
   });
 });

@@ -1,44 +1,79 @@
 # D&D DM 追踪工具
 
-局域网多人 D&D 5e DM 追踪工具：棋盘（地图底图/网格/墙/token）、5e不全书中文查询、收藏夹、先攻追踪。
+现在这是一个 Cloudflare 全栈多人桌游应用：玩家不再需要同一 Wi‑Fi 或输入局域网 IP；DM 创建房间后，把邀请链接发给朋友即可。
 
-## 启动
+```text
+浏览器（同一 HTTPS URL / 同源 WSS）
+        │
+        ▼
+Cloudflare Worker ── D1：身份、桌团、战役、房间、成员、邀请、审计
+        │
+        ├──────────── R2：私有地图、头像、资料库 JSON
+        │
+        └──────────── Room Durable Object：一张桌子的权威实时状态、WebSocket、事件
+```
 
-1. `npm install`
-2. `npm run data:update`   # 下载 5etools 中文数据 + 构建索引（需联网，约几十 MB）
-3. `npm run build && npm start`   # 生产模式，监听 0.0.0.0:3001
-4. DM 浏览器打开 `http://localhost:3001`（DM 权限）
-5. 玩家连同一 WiFi，打开 `http://<你的局域网IP>:3001`（玩家权限，可拖 token、提交先攻）
+详细的权限、组队、房间与部署设计见 [Cloudflare 架构说明](docs/cloudflare-architecture.md)。
 
-开发模式：`npm run dev`（后端 3001 + 前端 5173，仅本机开发用）
+## 本地开发
 
-## 功能
-
-- **棋盘**：上传地图底图、网格开关/大小/颜色/吸附、画墙（纯视觉标记）、缩放平移、token 放置与拖拽。
-- **查询**：中英文模糊搜索怪物/法术/装备/专长，点击查看完整中文详情。
-- **收藏夹**：常用条目一键收藏，收藏夹显示中文名并可打开详情。
-- **先攻追踪**：玩家输入先攻值提交（按 sessionId 去重），DM 推进回合，当前行动者的 token 外圈金色高亮。
-- **场景管理**：多场景新建/切换/删除，每次操作自动保存，刷新后回到上次场景。
-- **权限**：`localhost` 连接为 DM；玩家可拖 token、提交先攻；用口令可升级为 DM 权限。
-
-## 数据
-
-- `npm run data:update` 可重跑更新；数据来自 `tjliqy/5etools-cn`（cn2.0 分支，CC BY-NC-SA 4.0），存储在 `data/db/`。
-- 怪物头像默认从 `https://5e.tools` 下载，可用 `DND_IMAGE_BASE` 环境变量换源。
-- 下载失败自动用首字母占位 token。
-
-## 环境变量
-
-| 变量 | 默认 | 说明 |
-|---|---|---|
-| `PORT` | `3001` | 服务端口 |
-| `HOST` | `0.0.0.0` | 监听地址（局域网联机需保持 0.0.0.0） |
-| `DND_IMAGE_BASE` | `https://5e.tools` | 怪物肖像图源 |
-| `DND_PASSWORD` | 未设置 | DM 口令；玩家输入后获得 DM 权限。不设则仅 localhost 是 DM |
-
-## 测试
+需要 Node.js 22 或更高版本。
 
 ```bash
-npm test        # 全部单元 + 集成测试
-npx tsc --noEmit  # 类型检查
+npm install
+npm run cf:types
+npm run db:migrate:local
+npm run dev
 ```
+
+访问 `http://localhost:5173` 进行带 HMR 的前端开发；它会把 `/api` 和房间 WebSocket 代理到本地 Wrangler 的 `http://localhost:8787`。也可以直接运行 `npm start` 后访问 `http://localhost:8787`。
+
+第一次打开首页会创建一个 HttpOnly 访客会话。创建房间后地址形如 `/r/friday-table-xxxxxx`；DM 从顶部“邀请玩家”生成链接，链接的随机令牌在 URL fragment 中，浏览器不会把它送进服务器日志或 Referer。
+
+## Cloudflare 部署
+
+`wrangler.jsonc` 已声明 Worker Static Assets、D1、两个私有 R2 bucket 和 SQLite Durable Object。Custom Domain 只从部署环境变量读取，不写入仓库。首次部署时 Wrangler 会创建未绑定 ID 的资源；在绑定了自定义域名或对外分享前，按以下顺序完成初始化：
+
+```bash
+npm run build
+npx wrangler login
+export PUBLIC_SITE_DOMAIN=<你的公开域名>
+npm run deploy:production           # 创建/协调 Cloudflare 资源与 Custom Domain
+npm run db:migrate:remote           # 应用 D1 控制面 schema
+npm run deploy:production           # 以完成迁移的数据库正式提供服务
+```
+
+`PUBLIC_SITE_DOMAIN` 必须是目标 Cloudflare account 中 zone 的单个 hostname，且不能预先存在冲突的 CNAME。部署会创建 Custom Domain 所需 DNS 和证书；这个 Worker 不公开 `workers.dev` 备用地址。所有用户只访问这个 HTTPS URL；前端会自动连到同源 `wss://<PUBLIC_SITE_DOMAIN>/api/rooms/<slug>/ws`。
+
+本仓库不含自动部署的 GitHub Actions。每次发布请在已登录目标 Cloudflare account 的终端中运行上面的命令；部署域名和备案信息均从环境变量读取，不会写进仓库：
+
+```bash
+export PUBLIC_SITE_DOMAIN=<你的公开域名>
+export PUBLIC_ICP_FILING=<可选的ICP备案号>
+export PUBLIC_PSB_FILING=<可选的公网安备号>
+npm run deploy:production
+```
+
+两个备案变量由 Worker 在运行时公开给页面页脚；未设置的项目不会显示。它们是公开信息，不能放 API token、OAuth secret 或其他敏感值。
+
+规则书资料是私有 R2 内容，不打包进 Worker：
+
+```bash
+npm run data:update
+R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run data:publish
+```
+
+自动创建的 R2 bucket 名称可在 Cloudflare Dashboard 或 `wrangler r2 bucket list` 中查看。请确认 5etools-cn 数据的 CC BY-NC-SA 许可与自己的公开/商业使用方式相符。
+
+## 验证
+
+```bash
+npm test
+npm run build
+```
+
+测试同时覆盖旧的纯领域逻辑，以及 Worker + D1 + Durable Object 的房间创建、邀请兑换和状态持久化。
+
+## 迁移说明
+
+旧的 Express/局域网服务保留在 `server/`，便于参考与离线数据构建，但不再是部署入口。不要迁移旧浏览器的 `sessionId`、DM 口令或 `localStorage` 身份；新版本全部使用服务器签发的 Cookie 会话和 D1 房间成员关系。

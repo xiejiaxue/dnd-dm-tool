@@ -1,3 +1,5 @@
+import type { EntryType } from './types';
+
 export function renderMarkup(s: string): string {
   return s
     .replace(/\{@([a-z]+)\s+([^}]*)\}/g, (_m, tag: string, inner: string) => {
@@ -148,4 +150,42 @@ export function formatSpell(s: any): StatBlock {
     ].filter(([, v]) => v) as [string, string][],
     body: (s.entries ?? []).map(renderMarkup),
   };
+}
+
+/**
+ * Monster and spell records have dedicated stat blocks. Other 5etools record
+ * kinds still deserve a readable drawer when they arrive from the online
+ * fallback, rather than being incorrectly rendered as a spell.
+ */
+export function formatCompendiumEntry(type: EntryType, entry: any): StatBlock {
+  if (type === 'monster') return formatMonster(entry);
+  if (type === 'spell') return formatSpell(entry);
+
+  const kind = type === 'item' ? '装备' : type === 'feat' ? '专长' : '状态';
+  const source = typeof entry.source === 'string' ? entry.source : '';
+  const page = typeof entry.page === 'number' ? `第 ${entry.page} 页` : '';
+  return {
+    name: typeof entry.name === 'string' ? entry.name : kind,
+    meta: [kind, source, page].filter(Boolean).join(' · '),
+    rows: [
+      ['来源', source],
+      ['稀有度', typeof entry.rarity === 'string' ? entry.rarity : ''],
+      ['类别', typeof entry.type === 'string' ? entry.type : ''],
+    ].filter(([, value]) => value) as [string, string][],
+    body: flattenCompendiumEntries(entry.entries),
+  };
+}
+
+function flattenCompendiumEntries(value: unknown): string[] {
+  if (typeof value === 'string') return [renderMarkup(value)];
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((part) => {
+    if (typeof part === 'string') return [renderMarkup(part)];
+    if (typeof part !== 'object' || part === null) return [];
+    const record = part as { name?: unknown; entries?: unknown };
+    const nested = flattenCompendiumEntries(record.entries);
+    const title = typeof record.name === 'string' ? renderMarkup(record.name) : '';
+    if (!title) return nested;
+    return nested.length ? [`**${title}。** ${nested.join(' ')}`] : [`**${title}。**`];
+  });
 }

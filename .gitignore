@@ -8,5 +8,9 @@ dist-server/
 # Local runtime data (5etools 数据包、场景存档、图片缓存、上传文件)
 data/
 
+# Wrangler's local D1/R2/Durable Object state and local-only secrets
+.wrangler/
+.dev.vars
+
 # OS
 .DS_Store

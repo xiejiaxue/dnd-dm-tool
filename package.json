@@ -3,16 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "dev": "concurrently -n server,client -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:server": "tsx watch server/src/index.ts",
+    "dev": "concurrently -n worker,client -c blue,green \"npm:dev:worker\" \"npm:dev:client\"",
+    "dev:worker": "npm run build:client && wrangler dev --local --port 8787 --persist-to .wrangler/state --compatibility-date=2026-08-08",
     "dev:client": "vite client",
-    "build": "npm run build:client",
+    "build": "npm run build:client && npm run check:worker",
     "build:client": "vite build client",
-    "start": "tsx server/src/index.ts",
-    "test": "vitest run",
+    "start": "wrangler dev --local --port 8787 --persist-to .wrangler/state --compatibility-date=2026-08-08",
+    "cf:types": "wrangler types worker/worker-configuration.d.ts && node scripts/normalize-worker-types.mjs worker/worker-configuration.d.ts",
+    "check:worker": "tsc --project tsconfig.worker.json --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply dnd-dm-tool --local",
+    "db:migrate:remote": "wrangler d1 migrations apply dnd-dm-tool --remote",
+    "deploy": "npm run build && npm run deploy:production",
+    "deploy:production": "node scripts/deploy-production.mjs",
+    "test": "npm run test:domain && npm run test:worker",
+    "test:domain": "vitest run --config vitest.config.ts",
+    "test:worker": "vitest run --config vitest.worker.config.ts",
     "test:watch": "vitest",
-    "data:update": "node scripts/data-update.mjs"
+    "data:update": "node scripts/data-update.mjs",
+    "data:publish": "node scripts/data-publish.mjs"
   },
   "dependencies": {
     "express": "^4.19.2",
@@ -22,7 +34,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-konva": "^18.2.10",
-    "sharp": "^0.33.4",
+    "sharp": "^0.35.3",
     "ws": "^8.18.0"
   },
   "devDependencies": {
@@ -33,6 +45,7 @@
     "@types/react-dom": "^18.3.0",
     "@types/supertest": "^6.0.2",
     "@types/ws": "^8.5.10",
+    "@cloudflare/vitest-pool-workers": "^0.20.3",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
     "concurrently": "^8.2.2",
@@ -41,7 +54,8 @@
     "tailwindcss": "^3.4.4",
     "tsx": "^4.15.0",
     "typescript": "^5.5.2",
-    "vite": "^5.3.1",
-    "vitest": "^1.6.0"
+    "vite": "^6.4.3",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.120.0"
   }
 }
