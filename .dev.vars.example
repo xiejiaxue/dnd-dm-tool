@@ -1,0 +1,13 @@
+# Local development only. Do not commit a real .dev.vars file.
+# OAuth can be added later without changing the anonymous guest-session flow.
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+
+# Required only for a remote deployment. Keep the hostname out of source and
+# pass it to Wrangler through scripts/deploy-production.mjs.
+# PUBLIC_SITE_DOMAIN=
+
+# Optional public legal filings. They are served by /api/public-config and the
+# page footer is omitted when either value is absent.
+# PUBLIC_ICP_FILING=
+# PUBLIC_PSB_FILING=

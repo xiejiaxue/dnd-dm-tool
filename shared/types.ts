@@ -25,8 +25,6 @@ export interface GridConfig {
   color: string;
   offset: [number, number];
   snap: boolean;
-  // Whether the grid overlay is visible (DM toggles it from the toolbar).
-  show: boolean;
 }
 
 export interface Token {
@@ -139,6 +137,9 @@ export interface IndexEntry {
   nameEn: string;
   source: string;
   bookFile: string;
+  // True only for the read-through online fallback.  Local R2 data remains
+  // the primary source so an offline/private deployment keeps working.
+  online?: boolean;
   cr?: string;
   level?: number;
 }

@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { connection, getMySessionId, useScene } from '../ws';
 import { uploadImage } from '../upload';
 import DetailDrawer from './DetailDrawer';
@@ -27,16 +27,50 @@ export default function EnemyList() {
   const mySessionId = getMySessionId();
   const myToken: PlayerToken | undefined = scene?.players.find(p => p.sessionId === mySessionId);
   const avatarRef = useRef<HTMLInputElement>(null);
+  const avatarUploadGeneration = useRef(0);
+  const avatarUploadTarget = useRef<string | null>(null);
+  const avatarPreviewCleanup = useRef<(() => void) | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  useEffect(() => () => { avatarPreviewCleanup.current?.(); }, []);
+  useEffect(() => () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+  }, [avatarPreview]);
+
+  // Once the R2-backed URL is reflected by the optimistic/authoritative scene,
+  // discard the local object URL. Until then the picker looks immediate even
+  // though the image bytes still need to upload securely.
+  useEffect(() => {
+    if (avatarPreview && avatarUploadTarget.current && myToken?.avatar === avatarUploadTarget.current) {
+      avatarUploadTarget.current = null;
+      setAvatarPreview(null);
+    }
+  }, [avatarPreview, myToken?.avatar]);
 
   const onAvatarPicked = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !myToken) return;
+    const uploadGeneration = ++avatarUploadGeneration.current;
+    avatarUploadTarget.current = null;
+    avatarPreviewCleanup.current?.();
+    const localUrl = URL.createObjectURL(file);
+    setAvatarPreview(localUrl);
+    avatarPreviewCleanup.current = connection.previewOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: localUrl } }]);
     try {
       const url = await uploadImage(file, 'token');
+      if (uploadGeneration !== avatarUploadGeneration.current) return;
+      avatarUploadTarget.current = url;
+      avatarPreviewCleanup.current?.();
+      avatarPreviewCleanup.current = null;
       connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: url } }]);
     } catch {
-      /* upload failed — keep the current avatar */
+      if (uploadGeneration === avatarUploadGeneration.current) {
+        avatarUploadTarget.current = null;
+        avatarPreviewCleanup.current?.();
+        avatarPreviewCleanup.current = null;
+        setAvatarPreview(null);
+      }
     }
   };
 
@@ -114,15 +148,22 @@ export default function EnemyList() {
             ))}
           </div>
           <div className="flex items-center gap-2 mt-1.5">
-            {myToken.avatar ? (
-              <img src={myToken.avatar} alt="" className="w-8 h-8 rounded-full object-cover bg-zinc-700 shrink-0" />
+            {avatarPreview || myToken.avatar ? (
+              <img src={avatarPreview ?? myToken.avatar} alt="" className="w-8 h-8 rounded-full object-cover bg-zinc-700 shrink-0" />
             ) : (
               <span className="w-8 h-8 rounded-full shrink-0" style={{ background: myToken.color }} />
             )}
             <button onClick={() => avatarRef.current?.click()}
               className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-xs">上传头像</button>
-            {myToken.avatar && (
-              <button onClick={() => connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: '' } }])}
+            {(avatarPreview || myToken.avatar) && (
+              <button onClick={() => {
+                avatarUploadGeneration.current += 1;
+                avatarUploadTarget.current = null;
+                avatarPreviewCleanup.current?.();
+                avatarPreviewCleanup.current = null;
+                setAvatarPreview(null);
+                connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: '' } }]);
+              }}
                 className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 hover:text-red-400 text-xs">移除</button>
             )}
             <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={onAvatarPicked} />

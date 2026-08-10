@@ -1,27 +1,15 @@
 import { Stage, Layer, Rect, Line, Image as KImage, Group } from 'react-konva';
 import Konva from 'konva';
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
 import { FOG_CELL, fogGridSize } from '../types';
 import TokenShape from './TokenShape';
 import type { PendingToken } from '../pending';
 
-// Layout offsets around the canvas: Toolbar (w-12) + EnemyList (w-52) +
-// QueryPanel (w-80 open / w-10 collapsed), TopBar (h-11) + InitiativePanel (h-14).
-const QUERY_OPEN = 320;
-const QUERY_CLOSED = 40;
-const ENEMY_LIST = 208;
-const OFFSET_Y = 44 + 56;
-
 // Fog overlay color by role: the DM sees a translucent amber veil (they can see
 // through it), players see near-opaque dark so unrevealed areas hide the map.
-const FOG_COLOR = { dm: 'rgba(245,158,11,0.35)', player: '#0f1115' } as const;
-
-function getStageSize(queryOpen: boolean) {
-  const offsetX = 48 + ENEMY_LIST + (queryOpen ? QUERY_OPEN : QUERY_CLOSED);
-  return { width: window.innerWidth - offsetX, height: window.innerHeight - OFFSET_Y };
-}
+const FOG_COLOR = { dm: 'rgba(245,158,11,0.35)', player: '#0f1115', spectator: '#0f1115' } as const;
 
 interface Props {
   tool: string;
@@ -29,17 +17,27 @@ interface Props {
   onClearPending: () => void;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  // Kept for the existing table shell. The board now measures its own content
+  // box, so it also reserves space for a visible filing footer.
   queryOpen: boolean;
   // Eraser brush radius in fog cells (0/1/2), used by the DM's erase tool.
   brushSize: number;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, queryOpen, brushSize }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize }: Props) {
   const { scene, role } = useScene();
   const mySessionId = getMySessionId();
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [stageSize, setStageSize] = useState(() => getStageSize(queryOpen));
+  // Wheel devices can emit far more events than the display refresh rate.
+  // Coalescing them keeps a large Konva layer from rebuilding for every tick.
+  const pendingViewRef = useRef<{ scale: number; pos: { x: number; y: number } } | null>(null);
+  const viewFrameRef = useRef<number | null>(null);
+  // Consecutive map-calibration clicks must compose locally instead of waiting
+  // for a server snapshot to update the callback's `scene` closure.
+  const [localMapScale, setLocalMapScale] = useState<number | null>(null);
+  const localMapScaleRef = useRef<number | null>(null);
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   // Live preview line while dragging the wall tool: [x1, y1, x2, y2].
   const [wallPreview, setWallPreview] = useState<[number, number, number, number] | null>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -51,14 +49,27 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const eraserBatchRef = useRef<number[]>([]);
   const eraserTimer = useRef<number | null>(null);
   const eraserDown = useRef(false);
+  const boardRef = useRef<HTMLDivElement>(null);
 
-  // Keep the Stage sized to the viewport when the window resizes or when the
-  // query panel toggles between open/collapsed.
-  useEffect(() => {
-    const onResize = () => setStageSize(getStageSize(queryOpen));
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [queryOpen]);
+  // Size the Konva surface from its actual flex item instead of subtracting
+  // hard-coded viewport chrome. This keeps the board above the filing footer
+  // (and handles panel/viewport changes without making the footer overlap).
+  useLayoutEffect(() => {
+    const element = boardRef.current;
+    if (!element) return;
+    const measure = () => {
+      const { width, height } = element.getBoundingClientRect();
+      setStageSize({ width: Math.max(0, Math.floor(width)), height: Math.max(0, Math.floor(height)) });
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(element);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   // Leaving wall mode cancels any in-progress wall line.
   useEffect(() => {
@@ -84,10 +95,19 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   useEffect(() => {
     return () => {
       if (eraserTimer.current) clearTimeout(eraserTimer.current);
+      if (viewFrameRef.current !== null) cancelAnimationFrame(viewFrameRef.current);
     };
   }, []);
 
   const map = useImage(scene?.mapImage ? scene.mapImage : null);
+
+  useEffect(() => {
+    const authoritative = scene?.mapScale ?? 1;
+    const local = localMapScaleRef.current;
+    if (local === null || Math.abs(local - authoritative) > 0.0001) return;
+    localMapScaleRef.current = null;
+    setLocalMapScale(null);
+  }, [scene?.mapScale]);
 
   // Convert a container-space pointer to world coordinates (unaffected by pan/zoom).
   const worldPos = useCallback((): { x: number; y: number } | null => {
@@ -155,18 +175,32 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const MIN_SCALE = 0.1;
   const MAX_SCALE = 8;
 
+  const scheduleView = useCallback((nextScale: number, nextPos: { x: number; y: number }) => {
+    pendingViewRef.current = { scale: nextScale, pos: nextPos };
+    if (viewFrameRef.current !== null) return;
+    viewFrameRef.current = requestAnimationFrame(() => {
+      const next = pendingViewRef.current;
+      pendingViewRef.current = null;
+      viewFrameRef.current = null;
+      if (!next) return;
+      setScale(next.scale);
+      setPos(next.pos);
+    });
+  }, []);
+
   // Zoom by a factor around a pointer position (container coordinates), keeping
   // the world point under the cursor fixed — the standard "free zoom" behavior.
   const zoomAt = useCallback((pointer: { x: number; y: number }, factor: number) => {
     const stage = stageRef.current;
     if (!stage) return;
-    const oldScale = stage.scaleX();
+    const pending = pendingViewRef.current;
+    const oldScale = pending?.scale ?? stage.scaleX();
+    const oldPos = pending?.pos ?? { x: stage.x(), y: stage.y() };
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, oldScale * factor));
     if (newScale === oldScale) return;
-    const mousePointTo = { x: (pointer.x - stage.x()) / oldScale, y: (pointer.y - stage.y()) / oldScale };
-    setScale(newScale);
-    setPos({ x: pointer.x - mousePointTo.x * newScale, y: pointer.y - mousePointTo.y * newScale });
-  }, []);
+    const mousePointTo = { x: (pointer.x - oldPos.x) / oldScale, y: (pointer.y - oldPos.y) / oldScale };
+    scheduleView(newScale, { x: pointer.x - mousePointTo.x * newScale, y: pointer.y - mousePointTo.y * newScale });
+  }, [scheduleView]);
 
   // Zoom around the visible canvas centre (used by the +/- buttons).
   const zoomCenter = useCallback((factor: number) => {
@@ -176,23 +210,30 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }, [zoomAt]);
 
   const resetView = useCallback(() => {
-    setScale(1);
-    setPos({ x: 0, y: 0 });
-  }, []);
+    scheduleView(1, { x: 0, y: 0 });
+  }, [scheduleView]);
 
   // Map-image calibration: scale the map (NOT the tokens/grid) so a hand-drawn
   // map's cells line up with the grid. Sent as an op so it persists per scene.
   const adjustMapScale = useCallback((factor: number) => {
     if (!scene) return;
-    const cur = scene.mapScale ?? 1;
+    const cur = localMapScaleRef.current ?? scene.mapScale ?? 1;
     const next = Math.min(8, Math.max(0.1, Math.round(cur * factor * 100) / 100));
-    if (next !== cur) connection.sendOps([{ op: 'updateMapScale', mapScale: next }]);
+    if (next !== cur) {
+      localMapScaleRef.current = next;
+      setLocalMapScale(next);
+      connection.sendOps([{ op: 'updateMapScale', mapScale: next }]);
+    }
   }, [scene]);
 
   const setMapScale = useCallback((value: number) => {
     if (!scene) return;
     const clamped = Math.min(8, Math.max(0.1, value));
-    if (clamped !== (scene.mapScale ?? 1)) connection.sendOps([{ op: 'updateMapScale', mapScale: clamped }]);
+    if (clamped !== (localMapScaleRef.current ?? scene.mapScale ?? 1)) {
+      localMapScaleRef.current = clamped;
+      setLocalMapScale(clamped);
+      connection.sendOps([{ op: 'updateMapScale', mapScale: clamped }]);
+    }
   }, [scene]);
 
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -330,19 +371,33 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // Name/HP/avatar patches preserve the fog reference. Avoid iterating every
+  // fog cell (and recreating thousands of Konva Rects) for those tiny edits.
+  const fogOverlay = useMemo(() => {
+    if (!scene) return null;
+    const fog = scene.fog;
+    const { cols, rows } = fogGridSize(scene);
+    const color = FOG_COLOR[role];
+    const allCovered = !fog || fog.every(x => !x);
+    if (allCovered) {
+      return <Rect x={0} y={0} width={cols * FOG_CELL} height={rows * FOG_CELL} fill={color} listening={false} />;
+    }
+    const cells: { key: string; x: number; y: number }[] = [];
+    for (let i = 0; i < cols * rows; i++) {
+      if (!fog[i]) cells.push({ key: `f${i}`, x: (i % cols) * FOG_CELL, y: Math.floor(i / cols) * FOG_CELL });
+    }
+    return <Group listening={false}>{cells.map(c => <Rect key={c.key} x={c.x} y={c.y} width={FOG_CELL} height={FOG_CELL} fill={color} />)}</Group>;
+  }, [scene?.fog, scene?.mapImage, scene?.mapSize, scene?.mapScale, scene?.playArea, role]);
+
   if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-zinc-600">连接中…</div>;
 
   const grid = scene.grid;
-  const vLines: { key: string; x: number }[] = [];
-  const hLines: { key: string; y: number }[] = [];
   const area = scene.playArea;
-  if (grid.size > 0) {
-    for (let x = grid.offset[0]; x <= area.w; x += grid.size) vLines.push({ key: `v${x}`, x });
-    for (let y = grid.offset[1]; y <= area.h; y += grid.size) hLines.push({ key: `h${y}`, y });
-  }
+  const displayedMapScale = localMapScale ?? scene.mapScale ?? 1;
+  const tokenInteractionKey = `${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
 
   return (
-    <div className="relative h-full w-full">
+    <div ref={boardRef} className="relative h-full min-h-0 w-full overflow-hidden">
     <Stage
       ref={stageRef}
       width={stageSize.width}
@@ -369,18 +424,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           <KImage
             image={map}
             x={0} y={0}
-            width={scene.mapSize[0] * (scene.mapScale ?? 1)}
-            height={scene.mapSize[1] * (scene.mapScale ?? 1)}
+            width={scene.mapSize[0] * displayedMapScale}
+            height={scene.mapSize[1] * displayedMapScale}
             listening={false}
           />
         )}
         {scene.mapImage && !map && <Rect width={area.w} height={area.h} fill="#262932" listening={false} />}
-        {(grid.show ?? true) && (
-          <Group listening={false}>
-            {vLines.map(l => <Line key={l.key} points={[l.x, 0, l.x, area.h]} stroke={grid.color} strokeWidth={1} />)}
-            {hLines.map(l => <Line key={l.key} points={[0, l.y, area.w, l.y]} stroke={grid.color} strokeWidth={1} />)}
-          </Group>
-        )}
         {/* Existing walls: thick dark lines. */}
         {scene.walls.map(w => (
           <Line key={w.id} points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke="#111827" strokeWidth={10} lineCap="round" lineJoin="round" listening={false} />
@@ -396,6 +445,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id}
             draggable={role === 'dm' && tool !== 'wall' && tool !== 'erase'}
+            interactionKey={tokenInteractionKey}
             onSelect={() => onSelect(t.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
@@ -411,7 +461,8 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             token={p}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
-            draggable={tool !== 'wall' && tool !== 'erase' && (role === 'dm' || p.sessionId === mySessionId)}
+            draggable={tool !== 'wall' && tool !== 'erase' && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}
+            interactionKey={tokenInteractionKey}
             onSelect={() => onSelect(p.id)}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
@@ -421,34 +472,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(p.id)}
           />
         ))}
-        {/* 战争迷雾：未揭示格子按角色配色渲染（盖住地图与 token）。无 fog 字段
-            的旧场景视为全遮挡，即每个格子都渲染为迷雾。 */}
-        {(() => {
-          const fog = scene.fog;
-          // Grid spans the whole rendered map (mapSize * mapScale), or playArea
-          // without a map — fog must cover the entire board, not just the play
-          // area, even when the map is scaled up for calibration.
-          const { cols, rows } = fogGridSize(scene);
-          const color = FOG_COLOR[role];
-          // Fully-covered boards (common: fresh scenes, players before the DM
-          // erases) render as ONE rect — avoids thousands of Konva nodes when
-          // the map is large (e.g. a 5000px map at 50px cells = 6600 cells).
-          const allCovered = !fog || fog.every(x => !x);
-          if (allCovered) {
-            return <Rect x={0} y={0} width={cols * FOG_CELL} height={rows * FOG_CELL} fill={color} listening={false} />;
-          }
-          const cells: { key: string; x: number; y: number }[] = [];
-          for (let i = 0; i < cols * rows; i++) {
-            if (!fog[i]) {
-              cells.push({ key: `f${i}`, x: (i % cols) * FOG_CELL, y: Math.floor(i / cols) * FOG_CELL });
-            }
-          }
-          return (
-            <Group listening={false}>
-              {cells.map(c => <Rect key={c.key} x={c.x} y={c.y} width={FOG_CELL} height={FOG_CELL} fill={color} />)}
-            </Group>
-          );
-        })()}
+        {/* Cosmetic fog is memoized above so unrelated small patches do not
+            rebuild a large Konva node list. */}
+        {fogOverlay}
       </Layer>
     </Stage>
     {/* Selected-token action popup (DM only). Must be OUTSIDE the Konva Stage
@@ -500,7 +526,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         <button onClick={() => adjustMapScale(1.1)} title="地图放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
         <button onClick={() => adjustMapScale(0.9)} title="地图缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
         <button onClick={() => setMapScale(1)} title="地图重置为 100%" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-sm leading-none">⟲</button>
-        <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round((scene.mapScale ?? 1) * 100)}%</span>
+        <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round(displayedMapScale * 100)}%</span>
       </div>
     )}
   </div>

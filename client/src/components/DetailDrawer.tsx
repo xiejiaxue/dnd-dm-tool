@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { connection } from '../ws';
 import { useScene } from '../ws';
-import { formatMonster, formatSpell, StatBlock } from '../format';
+import { formatCompendiumEntry, StatBlock } from '../format';
 import { setPending } from '../pending';
 import type { EntryType } from '../types';
 
@@ -17,7 +17,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
     setLoading(true);
     api.entry(entry.type, entry.id)
       .then(e => {
-        if (!cancelled) setStat(entry.type === 'monster' ? formatMonster(e) : formatSpell(e));
+        if (!cancelled) setStat(formatCompendiumEntry(entry.type, e));
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -47,10 +47,12 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
         </>
       )}
       <div className="mt-3 flex gap-2">
-        <button
-          onClick={() => connection.sendOps([{ op: 'addFavorite', favorite: { type: entry.type, entryId: entry.id } }])}
-          className="flex-1 rounded bg-zinc-800 py-1.5 hover:bg-zinc-700"
-        >{fav ? '已收藏' : '★ 收藏'}</button>
+        {role !== 'spectator' && (
+          <button
+            onClick={() => connection.sendOps([{ op: 'addFavorite', favorite: { type: entry.type, entryId: entry.id } }])}
+            className="flex-1 rounded bg-zinc-800 py-1.5 hover:bg-zinc-700"
+          >{fav ? '已收藏' : '★ 收藏'}</button>
+        )}
         {role === 'dm' && entry.type === 'monster' && (
           <button
             onClick={() => setPending({

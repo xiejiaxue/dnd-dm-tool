@@ -71,12 +71,10 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
         <button
           onClick={() => {
             if (name.trim()) {
-              api.createScene(name.trim()).then(async s => {
-                if (campaign) {
-                  await api.assignSceneToCampaign(campaign.id, s.id);
-                  // 强制服务端重载当前战役并广播，让新场景立即出现在切换器与所有客户端
-                  connection.sendControl({ type: 'switchCampaign', campaignId: campaign.id });
-                }
+              api.createScene(name.trim()).then(s => {
+                // A room has one fixed campaign. The room service adds a new
+                // scene to it atomically, then this command selects it.
+                connection.sendControl({ type: 'switchScene', sceneId: s.id });
                 reload();
               });
             }

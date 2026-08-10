@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "dnd-dm-tool",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-08-10",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The deploy script supplies the Custom Domain from PUBLIC_SITE_DOMAIN.
+  // Keeping the hostname out of source also allows the same config to serve
+  // production and a separately owned staging domain.
+  "workers_dev": false,
+
+  // The app is one public origin.  Static Assets serves the React build while
+  // the Worker remains first in line for application and WebSocket routes.
+  "assets": {
+    "directory": "./client/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Omit resource IDs for a new project. Wrangler provisions these bindings on
+  // first deploy; use the generated IDs only when pinning an existing account.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dnd-dm-tool",
+      "migrations_dir": "./worker/migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "ROOM_ASSETS" },
+    { "binding": "REFERENCE_DATA" }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOMS", "class_name": "RoomDurableObject" },
+      { "name": "COMPENDIUM_RATE_LIMIT", "class_name": "OnlineCompendiumRateLimitDurableObject" }
+    ]
+  },
+  "exports": {
+    "RoomDurableObject": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    },
+    "OnlineCompendiumRateLimitDurableObject": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  }
+}
