@@ -53,7 +53,9 @@ describe('online 5etools compendium index', () => {
   it('limits and validates public query parameters before the rate limiter is consulted', () => {
     expect(parseOnlineSearchRequest(new URL('https://table.test/api/search/online?q=%E5%9C%B0%E7%B2%BE&type=monster')))
       .toEqual({ query: '地精', type: 'monster' });
-    expect(() => parseOnlineSearchRequest(new URL('https://table.test/api/search/online?q=ok&type=class'))).toThrow('资料类型无效');
+    expect(parseOnlineSearchRequest(new URL('https://table.test/api/search/online?q=ok&type=class')))
+      .toEqual({ query: 'ok', type: 'class' });
+    expect(() => parseOnlineSearchRequest(new URL('https://table.test/api/search/online?q=ok&type=unknown'))).toThrow('资料类型无效');
     expect(() => parseOnlineSearchRequest(new URL(`https://table.test/api/search/online?q=${'a'.repeat(101)}`))).toThrow('查询关键词过长');
   });
 

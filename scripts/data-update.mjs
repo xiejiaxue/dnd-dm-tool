@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawn } from 'node:child_process';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DB = path.join(ROOT, 'data', 'db');
@@ -12,31 +13,16 @@ const FILES = [
   ...['MM','XMM','MPMM','PHB','XPHB','VGM','MTF','TCE','EGW','FTD','IDRotF','CoS','WDH','WDMM'].map(s => `bestiary/bestiary-${s.toLowerCase().replace(/[^a-z0-9]/g, '')}.json`),
   ...['PHB','XPHB','XGE','TCE','AI','EGW','FTD','IDRotF','CoS','WDH','WDMM'].map(s => `spells/spells-${s.toLowerCase().replace(/[^a-z0-9]/g, '')}.json`),
   'items.json', 'feats.json', 'conditionsdiseases.json',
+  'races.json', 'backgrounds.json', 'optionalfeatures.json', 'rewards.json',
+  'languages.json', 'actions.json', 'vehicles.json',
 ];
-
-const https = await import('node:https');
-const http = await import('node:http');
 
 function download(url, dest) {
   return new Promise((resolve, reject) => {
-    const u = new URL(url);
-    const mod = u.protocol === 'https:' ? https : http;
-    const req = mod.get(u, { headers: UA }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        res.resume();
-        resolve(download(new URL(res.headers.location, url), dest));
-        return;
-      }
-      if (res.statusCode !== 200) { res.resume(); reject(new Error(`${url} -> ${res.statusCode}`)); return; }
-      const chunks = [];
-      res.on('data', c => chunks.push(c));
-      res.on('end', () => {
-        fs.mkdirSync(path.dirname(dest), { recursive: true });
-        fs.writeFileSync(dest, Buffer.concat(chunks));
-        resolve();
-      });
-    });
-    req.on('error', reject);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    const child = spawn('curl', ['-fL', '--retry', '3', '--user-agent', UA['User-Agent'], '--output', dest, url], { stdio: 'ignore' });
+    child.once('error', reject);
+    child.once('exit', code => code === 0 ? resolve() : reject(new Error(`${url} -> curl ${code ?? 'unknown'}`)));
   });
 }
 
@@ -58,6 +44,7 @@ async function fetchIndexMap(sub) {
 
 const bestiaryIndex = await fetchIndexMap('bestiary');
 const spellsIndex = await fetchIndexMap('spells');
+const classIndex = await fetchIndexMap('class');
 
 const targets = new Set();
 for (const src of DEFAULT_BESTIARY_SOURCES) {
@@ -68,7 +55,10 @@ for (const src of DEFAULT_SPELL_SOURCES) {
   const f = spellsIndex[src];
   if (f) targets.add(`spells/${f}`);
 }
-for (const f of ['items.json', 'feats.json', 'conditionsdiseases.json']) targets.add(f);
+for (const f of FILES.filter(file => !file.includes('/'))) targets.add(f);
+for (const file of Object.values(classIndex)) {
+  if (typeof file === 'string' && /^class-[a-z0-9-]+\.json$/u.test(file)) targets.add(`class/${file}`);
+}
 
 let ok = 0, fail = 0;
 for (const f of targets) {

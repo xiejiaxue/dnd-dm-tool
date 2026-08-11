@@ -58,6 +58,9 @@ export interface CampaignCharacterSummary {
   maxHp: number;
   updatedAt?: number;
 }
+export interface CharacterCompendiumEntry { id: string; type: EntryType; entryId: string; name: string; source: string; quantity: number; prepared: boolean }
+export interface CharacterSheet { character: CampaignCharacterSummary; entries: CharacterCompendiumEntry[] }
+export interface CampaignJournal { id: string; title: string; content: string; visibility: 'dm' | 'players'; updatedAt: number }
 
 export interface InviteResult {
   token?: string;
@@ -183,6 +186,18 @@ export const api = {
     json<CampaignCharacterSummary>(roomPath('/characters'), jsonRequest('POST', input)),
   selectCharacter: (campaignId: string, characterId: string) =>
     json<CampaignCharacterSummary>(roomPath(`/characters/${encodeURIComponent(characterId)}/select`), jsonRequest('POST', { campaignId })),
+
+  characterSheet: () => json<CharacterSheet>(roomPath('/character-sheet')),
+  addCharacterEntry: (entry: { type: EntryType; entryId: string; name: string; source: string }) =>
+    json<CharacterCompendiumEntry>(roomPath('/character-sheet/entries'), jsonRequest('POST', entry)),
+  removeCharacterEntry: (id: string) =>
+    json<{ ok: boolean }>(roomPath(`/character-sheet/entries/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
+
+  journals: () => json<CampaignJournal[]>(roomPath('/journals')),
+  createJournal: (input: { title: string; content: string; visibility: 'dm' | 'players' }) =>
+    json<CampaignJournal>(roomPath('/journals'), jsonRequest('POST', input)),
+  updateJournal: (id: string, input: { title: string; content: string; visibility: 'dm' | 'players' }) =>
+    json<CampaignJournal>(roomPath(`/journals/${encodeURIComponent(id)}`), jsonRequest('POST', input)),
 
   async uploadAsset(file: File, kind: 'map' | 'token'): Promise<{ url: string }> {
     const body = new FormData();

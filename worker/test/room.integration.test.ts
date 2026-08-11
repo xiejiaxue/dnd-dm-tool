@@ -3,11 +3,12 @@ import { SELF, reset } from 'cloudflare:test';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import controlPlaneMigration from '../migrations/0001_control_plane.sql?raw';
 import campaignSavesMigration from '../migrations/0002_campaign_saves.sql?raw';
+import worldDocumentsMigration from '../migrations/0003_world_documents.sql?raw';
 
 // D1Database#exec accepts a multi-statement script but its local parser does
 // not accept a leading comment-only statement. Wrangler's migration command
 // does; removing comments here keeps this an integration test of the exact SQL.
-const migrationSql = `${controlPlaneMigration}\n${campaignSavesMigration}`
+const migrationSql = `${controlPlaneMigration}\n${campaignSavesMigration}\n${worldDocumentsMigration}`
   .split('\n')
   .filter(line => !line.trimStart().startsWith('--'))
   .join('\n');
@@ -153,5 +154,12 @@ describe('Cloudflare room control plane', () => {
     const resumedBody = await resumed.json() as { activeCampaign: { id: string }; selectedCharacter: { name: string } };
     expect(resumedBody.activeCampaign.id).toBe(saveBody.id);
     expect(resumedBody.selectedCharacter.name).toBe('莱拉');
+
+    const journal = await api(`/api/rooms/${room.slug}/journals`, {
+      method: 'POST', headers, body: JSON.stringify({ title: '第一章', content: '矿坑入口', visibility: 'players' }),
+    });
+    expect(journal.status).toBe(201);
+    const journals = await api(`/api/rooms/${room.slug}/journals`, { headers: { cookie } });
+    expect(await journals.json()).toEqual([expect.objectContaining({ title: '第一章', content: '矿坑入口', visibility: 'players' })]);
   });
 });

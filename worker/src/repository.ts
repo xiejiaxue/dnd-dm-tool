@@ -41,6 +41,24 @@ export interface CampaignCharacterSummary {
   updatedAt: number;
 }
 
+export interface CharacterCompendiumEntry {
+  id: string;
+  type: string;
+  entryId: string;
+  name: string;
+  source: string;
+  quantity: number;
+  prepared: boolean;
+}
+
+export interface CampaignJournalSummary {
+  id: string;
+  title: string;
+  content: string;
+  visibility: 'dm' | 'players';
+  updatedAt: number;
+}
+
 export interface RoomSummary {
   slug: string;
   name: string;
@@ -69,6 +87,7 @@ interface RoomAccessRow {
   character_color: string | null;
   character_avatar: string | null;
   character_sheet_json: string | null;
+  display_name: string;
 }
 
 interface AssetRow {
@@ -94,10 +113,12 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
             rm.id AS room_member_id, rm.role AS room_role,
             rm.access_epoch AS member_access_epoch, rm.campaign_member_id,
             cc.id AS character_id, cc.name AS character_name, cc.color AS character_color,
-            cc.avatar_url AS character_avatar, cc.sheet_json AS character_sheet_json
+            cc.avatar_url AS character_avatar, cc.sheet_json AS character_sheet_json,
+            u.display_name
        FROM rooms r
        JOIN campaigns c ON c.id = r.campaign_id AND c.deleted_at IS NULL
        JOIN room_members rm ON rm.room_id = r.id
+       JOIN users u ON u.id = rm.user_id
        LEFT JOIN room_character_selections rcs
          ON rcs.room_id = r.id AND rcs.campaign_id = c.id AND rcs.user_id = rm.user_id
        LEFT JOIN campaign_characters cc
@@ -127,6 +148,7 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
     accessEpoch: row.member_access_epoch,
     campaignMemberId: row.campaign_member_id,
     campaignConfigured: campaignIsConfigured(row.campaign_settings_json),
+    displayName: row.character_name ?? row.display_name,
     ...(row.character_id ? {
       characterId: row.character_id,
       characterName: row.character_name ?? '冒险者',
@@ -368,6 +390,111 @@ export async function selectCampaignCharacter(env: Env, access: RoomAccess, camp
   return characterSummary(row);
 }
 
+export async function getSelectedCharacterSheet(env: Env, access: RoomAccess): Promise<{ character: CampaignCharacterSummary; entries: CharacterCompendiumEntry[] }> {
+  if (!access.characterId) throw new HttpError(404, 'CHARACTER_NOT_SELECTED', '当前战役尚未选择角色');
+  const character = await env.DB.prepare(
+    `SELECT id, campaign_id, name, color, avatar_url, sheet_json, updated_at
+       FROM campaign_characters
+      WHERE id = ?1 AND campaign_id = ?2 AND owner_user_id = ?3 AND deleted_at IS NULL`,
+  ).bind(access.characterId, access.campaignId, access.userId).first<{ id: string; campaign_id: string; name: string; color: string; avatar_url: string; sheet_json: string; updated_at: number }>();
+  if (!character) throw new HttpError(404, 'CHARACTER_NOT_FOUND', '找不到当前角色');
+  const entries = await env.DB.prepare(
+    `SELECT id, entry_type, entry_id, display_name, source, quantity, prepared
+       FROM campaign_character_entries WHERE character_id = ?1
+      ORDER BY entry_type, display_name COLLATE NOCASE`,
+  ).bind(access.characterId).all<{ id: string; entry_type: string; entry_id: string; display_name: string; source: string; quantity: number; prepared: number }>();
+  return {
+    character: characterSummary(character),
+    entries: entries.results.map((entry) => ({
+      id: entry.id, type: entry.entry_type, entryId: entry.entry_id, name: entry.display_name,
+      source: entry.source, quantity: entry.quantity, prepared: entry.prepared === 1,
+    })),
+  };
+}
+
+export async function addSelectedCharacterEntry(
+  env: Env,
+  access: RoomAccess,
+  input: { type: string; entryId: string; name: string; source?: string },
+): Promise<CharacterCompendiumEntry> {
+  if (!access.characterId || access.role !== 'player') throw new HttpError(403, 'FORBIDDEN', '请先选择玩家角色');
+  const type = compendiumEntryType(input.type);
+  const entryId = nonEmptyText(input.entryId, '资料 ID', 300);
+  const name = nonEmptyText(input.name, '资料名称', 160);
+  const source = (input.source ?? '').trim().slice(0, 64);
+  const now = Date.now();
+  const id = crypto.randomUUID();
+  await env.DB.prepare(
+    `INSERT INTO campaign_character_entries
+      (id, character_id, entry_type, entry_id, display_name, source, created_at, updated_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)
+     ON CONFLICT(character_id, entry_type, entry_id)
+     DO UPDATE SET display_name = excluded.display_name, source = excluded.source, updated_at = excluded.updated_at`,
+  ).bind(id, access.characterId, type, entryId, name, source, now).run();
+  const row = await env.DB.prepare(
+    `SELECT id, entry_type, entry_id, display_name, source, quantity, prepared
+       FROM campaign_character_entries WHERE character_id = ?1 AND entry_type = ?2 AND entry_id = ?3`,
+  ).bind(access.characterId, type, entryId).first<{ id: string; entry_type: string; entry_id: string; display_name: string; source: string; quantity: number; prepared: number }>();
+  if (!row) throw new HttpError(500, 'INTERNAL', '无法保存角色资料');
+  return { id: row.id, type: row.entry_type, entryId: row.entry_id, name: row.display_name, source: row.source, quantity: row.quantity, prepared: row.prepared === 1 };
+}
+
+export async function removeSelectedCharacterEntry(env: Env, access: RoomAccess, entryId: string): Promise<void> {
+  if (!access.characterId || access.role !== 'player') throw new HttpError(403, 'FORBIDDEN', '请先选择玩家角色');
+  const result = await env.DB.prepare(
+    'DELETE FROM campaign_character_entries WHERE id = ?1 AND character_id = ?2',
+  ).bind(entryId, access.characterId).run();
+  if (result.meta.changes !== 1) throw new HttpError(404, 'ENTRY_NOT_FOUND', '找不到角色资料');
+}
+
+export async function listCampaignJournals(env: Env, access: RoomAccess): Promise<CampaignJournalSummary[]> {
+  const moderator = isRoomModerator(access.role);
+  const result = await env.DB.prepare(
+    `SELECT id, title, content, visibility, updated_at FROM campaign_journals
+      WHERE campaign_id = ?1 AND deleted_at IS NULL
+        AND (?2 = 1 OR visibility = 'players')
+      ORDER BY updated_at DESC`,
+  ).bind(access.campaignId, moderator ? 1 : 0).all<{ id: string; title: string; content: string; visibility: 'dm' | 'players'; updated_at: number }>();
+  return result.results.map((entry) => ({ id: entry.id, title: entry.title, content: entry.content, visibility: entry.visibility, updatedAt: entry.updated_at }));
+}
+
+export async function createCampaignJournal(
+  env: Env,
+  access: RoomAccess,
+  input: { title: string; content?: string; visibility?: string },
+): Promise<CampaignJournalSummary> {
+  requireRoomModerator(access);
+  const title = nonEmptyText(input.title, '日志标题', 160);
+  const content = (input.content ?? '').trim().slice(0, 50_000);
+  const visibility = input.visibility === 'players' ? 'players' : 'dm';
+  const id = crypto.randomUUID();
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO campaign_journals (id, campaign_id, created_by_user_id, title, content, visibility, created_at, updated_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)`,
+  ).bind(id, access.campaignId, access.userId, title, content, visibility, now).run();
+  return { id, title, content, visibility, updatedAt: now };
+}
+
+export async function updateCampaignJournal(
+  env: Env,
+  access: RoomAccess,
+  journalId: string,
+  input: { title: string; content?: string; visibility?: string },
+): Promise<CampaignJournalSummary> {
+  requireRoomModerator(access);
+  const title = nonEmptyText(input.title, '日志标题', 160);
+  const content = (input.content ?? '').trim().slice(0, 50_000);
+  const visibility = input.visibility === 'players' ? 'players' : 'dm';
+  const now = Date.now();
+  const result = await env.DB.prepare(
+    `UPDATE campaign_journals SET title = ?3, content = ?4, visibility = ?5, updated_at = ?6
+      WHERE id = ?1 AND campaign_id = ?2 AND deleted_at IS NULL`,
+  ).bind(journalId, access.campaignId, title, content, visibility, now).run();
+  if (result.meta.changes !== 1) throw new HttpError(404, 'JOURNAL_NOT_FOUND', '找不到战役日志');
+  return { id: journalId, title, content, visibility, updatedAt: now };
+}
+
 export async function createRoomInvite(env: Env, access: RoomAccess, input: { role: unknown; maxUses?: unknown }): Promise<{ inviteUrl: string; expiresAt: number }> {
   requireRoomModerator(access);
   const role = input.role === 'spectator' ? 'spectator' : input.role === 'player' || input.role === undefined ? 'player' : null;
@@ -505,6 +632,7 @@ export function internalRoomHeaders(access: RoomAccess): Headers {
   headers.set('x-dnd-member-id', access.memberId);
   headers.set('x-dnd-room-role', access.role);
   headers.set('x-dnd-access-epoch', String(access.accessEpoch));
+  if (access.displayName) headers.set('x-dnd-display-name', encodeURIComponent(access.displayName));
   if (access.characterId) headers.set('x-dnd-character-id', access.characterId);
   if (access.characterName) headers.set('x-dnd-character-name', encodeURIComponent(access.characterName));
   if (access.characterColor) headers.set('x-dnd-character-color', access.characterColor);
@@ -598,6 +726,15 @@ function moduleFirstScene(templateJson: string | null): string {
   } catch {
     return '起始场景';
   }
+}
+
+function compendiumEntryType(value: string): string {
+  const allowed = new Set([
+    'monster', 'spell', 'item', 'feat', 'condition', 'race', 'subrace', 'background', 'class', 'subclass',
+    'classFeature', 'subclassFeature', 'optionalFeature', 'language', 'vehicle', 'action', 'reward',
+  ]);
+  if (!allowed.has(value)) throw new HttpError(400, 'INVALID_INPUT', '资料类型无效');
+  return value;
 }
 
 function boundedInteger(value: unknown, minimum: number, maximum: number, label: string): number {

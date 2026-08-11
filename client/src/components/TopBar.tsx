@@ -5,6 +5,7 @@ import { uploadImage } from '../upload';
 import BackupTransfer from './BackupTransfer';
 import SceneSwitcher from './SceneSwitcher';
 import CampaignSwitcher from './CampaignSwitcher';
+import CharacterSheetPanel from './CharacterSheetPanel';
 
 interface Props {
   roomName?: string;
@@ -26,6 +27,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom }: Props) {
   const { scene, role, roomRole, online, campaign } = useScene();
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [campaignSwitcherOpen, setCampaignSwitcherOpen] = useState(false);
+  const [characterSheetOpen, setCharacterSheetOpen] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [uploadingMap, setUploadingMap] = useState(false);
@@ -124,6 +126,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom }: Props) {
       <div className="ml-auto flex items-center gap-3 text-zinc-400">
         <span className="hidden lg:inline">角色: <span className={isDm ? 'text-amber-400' : 'text-emerald-400'}>{roleLabel[roomRole] ?? roomRole}</span></span>
         <span>在线: <span className="text-emerald-400">{online}</span></span>
+        {roomRole === 'player' && <button onClick={() => setCharacterSheetOpen(open => !open)} className="px-2 py-1 rounded bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30">角色卡</button>}
         {isDm && (
           <>
             <button
@@ -161,6 +164,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom }: Props) {
 
       {switcherOpen && <SceneSwitcher onClose={() => setSwitcherOpen(false)} />}
       {campaignSwitcherOpen && <CampaignSwitcher onClose={() => setCampaignSwitcherOpen(false)} />}
+      {characterSheetOpen && <CharacterSheetPanel onClose={() => setCharacterSheetOpen(false)} />}
       {inviteMessage && (
         <div className="absolute top-12 right-3 z-30 max-w-md rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs shadow-xl text-zinc-200">
           <button onClick={() => setInviteMessage(null)} className="float-right ml-3 text-zinc-500 hover:text-white" aria-label="关闭">✕</button>

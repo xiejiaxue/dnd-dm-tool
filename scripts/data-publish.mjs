@@ -28,10 +28,16 @@ const uploads = [
     })),
 ];
 
-for (const [position, upload] of uploads.entries()) {
-  await putObject(bucket, upload.key, upload.file);
-  console.log(`[data-publish] ${position + 1}/${uploads.length} ${upload.key}`);
-}
+let nextUpload = 0;
+let completedUploads = 0;
+await Promise.all(Array.from({ length: Math.min(4, uploads.length) }, async () => {
+  while (nextUpload < uploads.length) {
+    const upload = uploads[nextUpload++];
+    await putObject(bucket, upload.key, upload.file);
+    completedUploads += 1;
+    console.log(`[data-publish] ${completedUploads}/${uploads.length} ${upload.key}`);
+  }
+}));
 console.log(`[data-publish] 已发布 ${uploads.length} 个资料文件到 ${bucket}`);
 
 async function jsonFiles(directory) {
@@ -46,7 +52,7 @@ async function jsonFiles(directory) {
 
 function putObject(targetBucket, key, file) {
   return new Promise((resolve, reject) => {
-    const child = spawn('npx', ['wrangler', 'r2', 'object', 'put', `${targetBucket}/${key}`, '--file', file, '--content-type', 'application/json'], {
+    const child = spawn('npx', ['wrangler', 'r2', 'object', 'put', `${targetBucket}/${key}`, '--file', file, '--content-type', 'application/json', '--remote', '--config', 'wrangler.jsonc'], {
       cwd: ROOT,
       stdio: 'inherit',
       shell: process.platform === 'win32',

@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Campaign, Op, PlayerToken, Scene } from '../../shared/types';
+import type { ChatMessage } from '../../shared/types';
 import {
   activeCampaign,
   activeScene,
@@ -164,6 +165,18 @@ export class RoomDurableObject extends DurableObject<Env> {
         }
         return;
       }
+      if (data.type === 'chat') {
+        const textValue = text(data.text, '消息', 1_000);
+        const visibility = data.visibility === 'gm' || data.visibility === 'self' ? data.visibility : 'public';
+        const result = this.mutate(actor, clientCommandId(data.id), 'chat.create', (next) => {
+          const message = createChatMessage(next.currentCampaignId, actor, textValue, visibility);
+          next.messages = [...(next.messages ?? []), message].slice(-500);
+          return { messageId: message.id };
+        });
+        this.safeSend(ws, { type: 'ack', revision: result.revision });
+        this.broadcastState();
+        return;
+      }
       if (data.type === 'renameScene') {
         this.requireModerator(actor);
         const sceneId = text(data.sceneId, '场景 ID', 180);
@@ -269,6 +282,12 @@ export class RoomDurableObject extends DurableObject<Env> {
       memberId: actor.memberId,
       role: actor.role,
       accessEpoch: actor.accessEpoch,
+      ...(actor.displayName ? { displayName: actor.displayName } : {}),
+      ...(actor.characterId ? { characterId: actor.characterId } : {}),
+      ...(actor.characterName ? { characterName: actor.characterName } : {}),
+      ...(actor.characterColor ? { characterColor: actor.characterColor } : {}),
+      ...(actor.characterAvatar ? { characterAvatar: actor.characterAvatar } : {}),
+      ...(actor.characterMaxHp ? { characterMaxHp: actor.characterMaxHp } : {}),
       commandWindowStartedAt: Date.now(),
       commandCount: 0,
     } satisfies SocketAttachment);
@@ -493,6 +512,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (!row) return null;
     const state = JSON.parse(row.data_json) as PersistedRoomState;
     if (state.schemaVersion !== 1 || typeof state.revision !== 'number') throw new Error('Unsupported room state');
+    if (!Array.isArray(state.messages)) state.messages = [];
     return state;
   }
 
@@ -705,7 +725,41 @@ function actorFromHeaders(headers: Headers): RoomActor {
     ...(headers.get('x-dnd-character-color') ? { characterColor: headers.get('x-dnd-character-color')! } : {}),
     ...(headers.get('x-dnd-character-avatar') ? { characterAvatar: decodeURIComponent(headers.get('x-dnd-character-avatar')!) } : {}),
     ...(Number.isFinite(characterMaxHp) && characterMaxHp > 0 ? { characterMaxHp } : {}),
+    ...(headers.get('x-dnd-display-name') ? { displayName: decodeURIComponent(headers.get('x-dnd-display-name')!) } : {}),
   };
+}
+
+function createChatMessage(
+  campaignId: string,
+  actor: RoomActor,
+  input: string,
+  visibility: ChatMessage['visibility'],
+): ChatMessage {
+  const rollMatch = /^\/(?:r|roll)\s+(\d{1,2})d(\d{1,4})(?:\s*([+-])\s*(\d{1,4}))?$/iu.exec(input.trim());
+  if (!rollMatch) {
+    return {
+      id: crypto.randomUUID(), campaignId, userId: actor.userId, author: actor.displayName || '冒险者',
+      kind: 'chat', text: input, visibility, createdAt: Date.now(),
+    };
+  }
+  const count = Math.min(50, Number(rollMatch[1]));
+  const faces = Math.min(10_000, Number(rollMatch[2]));
+  if (count < 1 || faces < 2) throw new DomainError('INVALID', '骰子公式无效');
+  const modifier = rollMatch[4] ? Number(rollMatch[4]) * (rollMatch[3] === '-' ? -1 : 1) : 0;
+  const rolls = Array.from({ length: count }, () => randomDie(faces));
+  const total = rolls.reduce((sum, value) => sum + value, modifier);
+  return {
+    id: crypto.randomUUID(), campaignId, userId: actor.userId, author: actor.displayName || '冒险者',
+    kind: 'roll', text: input, formula: `${count}d${faces}${modifier ? modifier > 0 ? `+${modifier}` : modifier : ''}`,
+    rolls, total, visibility, createdAt: Date.now(),
+  };
+}
+
+function randomDie(faces: number): number {
+  const limit = Math.floor(0x1_0000_0000 / faces) * faces;
+  const bytes = new Uint32Array(1);
+  do crypto.getRandomValues(bytes); while (bytes[0] >= limit);
+  return bytes[0] % faces + 1;
 }
 
 function socketActor(socket: WebSocket): SocketAttachment | null {

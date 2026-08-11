@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { applyOptimisticOps, type OptimisticSnapshot } from './optimistic';
-import type { Campaign, Op, Role, Scene } from './types';
+import type { Campaign, ChatMessage, Op, Role, Scene } from './types';
 
 /** Identity comes from the same-origin HttpOnly session used for WebSocket auth. */
 export interface Viewer {
@@ -21,6 +21,7 @@ export interface SceneState {
   online: number;
   connected: boolean;
   campaign: Campaign | null;
+  messages: ChatMessage[];
 }
 
 type RoomSnapshot = {
@@ -28,6 +29,7 @@ type RoomSnapshot = {
   role: RoomViewRole;
   roomRole: string;
   campaign: Campaign | null;
+  messages: ChatMessage[];
   viewer: Viewer | null;
   revision: number | null;
 };
@@ -44,6 +46,7 @@ type SocketMessage = {
   message?: unknown;
   commandId?: unknown;
   ops?: unknown;
+  messages?: ChatMessage[];
 };
 
 type Listener = (msg: SocketMessage) => void;
@@ -229,6 +232,7 @@ class Connection {
       role: uiRole(effectiveRole),
       roomRole: rawRole(effectiveRole),
       campaign: msg.campaign ?? null,
+      messages: Array.isArray(msg.messages) ? msg.messages : [],
       viewer,
       revision: typeof msg.revision === 'number' ? msg.revision : null,
     };
@@ -298,6 +302,7 @@ class Connection {
       role: this.lastState.role,
       roomRole: this.lastState.roomRole,
       campaign: this.lastState.campaign,
+      messages: this.lastState.messages,
       viewer: this.lastState.viewer,
       revision: this.lastState.revision,
     });
@@ -361,6 +366,7 @@ class Connection {
         role: this.lastState.role,
         roomRole: this.lastState.roomRole,
         campaign: this.lastState.campaign,
+        messages: this.lastState.messages,
         viewer: this.lastState.viewer,
         revision: this.lastState.revision,
       });
@@ -386,6 +392,7 @@ export function useScene(): SceneState {
     online: connection.lastOnline,
     connected: connection.connected,
     campaign: connection.lastState?.campaign ?? null,
+    messages: connection.lastState?.messages ?? [],
   }));
   useEffect(() => connection.onMessage((msg) => {
     if (msg.type === 'state' && msg.scene) {
@@ -399,6 +406,7 @@ export function useScene(): SceneState {
         viewer,
         revision: typeof msg.revision === 'number' ? msg.revision : null,
         campaign: msg.campaign ?? null,
+        messages: Array.isArray(msg.messages) ? msg.messages : [],
         connected: true,
       }));
     } else if (msg.type === 'meta') {
@@ -413,6 +421,7 @@ export function useScene(): SceneState {
         online: 0,
         connected: false,
         campaign: null,
+        messages: [],
       });
     } else if (msg.type === 'error') {
       console.warn('[ws]', typeof msg.message === 'string' ? msg.message : 'Room WebSocket error');

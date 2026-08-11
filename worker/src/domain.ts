@@ -1,5 +1,6 @@
 import {
   type Campaign,
+  type ChatMessage,
   type EntryType,
   type Favorite,
   FOG_CELL,
@@ -28,6 +29,7 @@ export interface RoomActor {
   characterColor?: string;
   characterAvatar?: string;
   characterMaxHp?: number;
+  displayName?: string;
 }
 
 export interface PersistedRoomState {
@@ -37,6 +39,7 @@ export interface PersistedRoomState {
   currentSceneId: string;
   campaigns: Record<string, Campaign>;
   scenes: Record<string, Scene>;
+  messages: ChatMessage[];
 }
 
 export interface RoomProjection {
@@ -51,6 +54,7 @@ export interface RoomProjection {
     roomRole: RoomRole;
     canManage: boolean;
   };
+  messages: ChatMessage[];
 }
 
 const DEFAULT_GRID: GridConfig = {
@@ -112,6 +116,7 @@ export function createInitialRoomState(roomName: string, campaignName: string, c
     currentSceneId: scene.id,
     campaigns: { [campaign.id]: campaign },
     scenes: { [scene.id]: scene },
+    messages: [],
   };
 }
 
@@ -121,6 +126,12 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
   if (!scene || !campaign) throw new Error('Room state has no active scene or campaign');
 
   const canManage = isRoomModerator(actor.role);
+  const messages = (state.messages ?? []).filter((message) => {
+    if (message.campaignId !== state.currentCampaignId) return false;
+    if (message.visibility === 'public') return true;
+    if (message.visibility === 'self') return message.userId === actor.userId;
+    return canManage || message.userId === actor.userId;
+  });
   if (canManage) {
     return {
       type: 'state',
@@ -129,6 +140,7 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
       scene: structuredClone(scene),
       campaign: structuredClone(campaign),
       viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage },
+      messages: structuredClone(messages),
     };
   }
 
@@ -154,6 +166,7 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
     // scene ids are enough for the existing player board.
     campaign: { ...structuredClone(campaign), enemies: [] },
     viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage: false },
+    messages: structuredClone(messages),
   };
 }
 

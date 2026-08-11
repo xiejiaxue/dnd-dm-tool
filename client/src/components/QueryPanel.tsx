@@ -5,8 +5,10 @@ import { useScene } from '../ws';
 import { setPending } from '../pending';
 import DetailDrawer from './DetailDrawer';
 import type { EntryType, IndexEntry, Scene } from '../types';
+import ChatPanel from './ChatPanel';
+import JournalPanel from './JournalPanel';
 
-type Tab = 'query' | 'camp' | 'fav';
+type Tab = 'chat' | 'query' | 'camp' | 'journal' | 'fav';
 
 interface Props {
   collapsed: boolean;
@@ -132,10 +134,10 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   return (
     <aside className="w-80 border-l border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
       <div className="flex items-center border-b border-zinc-800">
-        {(['query', 'camp', 'fav'] as Tab[]).map(t => (
+        {(['chat', 'query', 'camp', 'journal', 'fav'] as Tab[]).map(t => (
           <button key={t} onClick={() => { setTab(t); setDetail(null); }}
             className={`flex-1 py-2 text-center ${tab === t ? 'text-amber-400 border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
-            {t === 'query' ? '查询' : t === 'camp' ? '战役库' : '收藏夹'}
+            {t === 'chat' ? '聊天' : t === 'query' ? '查询' : t === 'camp' ? '战役库' : t === 'journal' ? '日志' : '收藏'}
           </button>
         ))}
         <button
@@ -145,12 +147,12 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
         >⇤</button>
       </div>
 
-      {detail ? (
+      {tab === 'chat' ? <ChatPanel /> : tab === 'journal' ? <JournalPanel /> : detail ? (
         <DetailDrawer entry={detail} onBack={() => setDetail(null)} />
       ) : (
         <>
           <div className="p-2 flex gap-1">
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="搜索怪物 / 法术 / 装备…"
+            <input value={q} onChange={e => setQ(e.target.value)} placeholder="搜索全部 5e 资料…"
               className="flex-1 bg-zinc-800 rounded px-2 py-1 outline-none focus:ring-1 ring-amber-500" />
             <select value={type} onChange={e => setType(e.target.value as EntryType | 'all')} className="bg-zinc-800 rounded px-1">
               <option value="all">全部</option>
@@ -158,6 +160,18 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
               <option value="spell">法术</option>
               <option value="item">装备</option>
               <option value="feat">专长</option>
+              <option value="condition">状态</option>
+              <option value="race">种族</option>
+              <option value="subrace">亚种</option>
+              <option value="background">背景</option>
+              <option value="class">职业</option>
+              <option value="subclass">子职</option>
+              <option value="classFeature">职业特性</option>
+              <option value="optionalFeature">可选能力</option>
+              <option value="language">语言</option>
+              <option value="vehicle">载具</option>
+              <option value="action">动作</option>
+              <option value="reward">奖励</option>
             </select>
           </div>
           {tab === 'query' && (

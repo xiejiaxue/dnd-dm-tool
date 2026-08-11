@@ -140,6 +140,9 @@ async function onlineFileForReference(ctx: ExecutionContext, reference: OnlineEn
   if (reference.type === 'item') return 'data/items.json';
   if (reference.type === 'feat') return 'data/feats.json';
   if (reference.type === 'condition') return 'data/conditionsdiseases.json';
+  if (reference.type !== 'monster' && reference.type !== 'spell') {
+    throw new HttpError(404, 'NOT_FOUND', '该分类请使用已同步的云端资料库');
+  }
 
   const indexPath = reference.type === 'monster' ? ONLINE_BESTIARY_INDEX_PATH : ONLINE_SPELL_INDEX_PATH;
   const sourceIndex = await loadOnlineJson(ctx, indexPath, MAX_INDEX_BYTES);

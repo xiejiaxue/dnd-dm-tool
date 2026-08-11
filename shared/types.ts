@@ -18,7 +18,11 @@ export function fogGridSize(scene: {
   return { cols: Math.ceil(w / FOG_CELL), rows: Math.ceil(h / FOG_CELL) };
 }
 
-export type EntryType = 'monster' | 'spell' | 'item' | 'feat' | 'condition';
+export type EntryType =
+  | 'monster' | 'spell' | 'item' | 'feat' | 'condition'
+  | 'race' | 'subrace' | 'background' | 'class' | 'subclass'
+  | 'classFeature' | 'subclassFeature' | 'optionalFeature'
+  | 'language' | 'vehicle' | 'action' | 'reward';
 
 export interface GridConfig {
   size: number;
@@ -103,6 +107,20 @@ export interface Campaign {
   enemies: EnemyTemplate[];  // 按 entryId 去重，保持加入顺序
 }
 
+export interface ChatMessage {
+  id: string;
+  campaignId: string;
+  userId: string;
+  author: string;
+  kind: 'chat' | 'roll';
+  text: string;
+  formula?: string;
+  rolls?: number[];
+  total?: number;
+  visibility: 'public' | 'gm' | 'self';
+  createdAt: number;
+}
+
 export type Op =
   | { op: 'moveToken'; tokenId: string; x: number; y: number }
   | { op: 'addToken'; token: Token }
@@ -137,6 +155,7 @@ export interface IndexEntry {
   nameEn: string;
   source: string;
   bookFile: string;
+  lookupKey?: string;
   // True only for the read-through online fallback.  Local R2 data remains
   // the primary source so an offline/private deployment keeps working.
   online?: boolean;

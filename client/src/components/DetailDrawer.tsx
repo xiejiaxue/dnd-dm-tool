@@ -10,11 +10,13 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
   const { scene, role } = useScene();
   const [stat, setStat] = useState<StatBlock | null>(null);
   const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     if (!entry) { setStat(null); return; }
     let cancelled = false;
     setLoading(true);
+    setAdded(false);
     api.entry(entry.type, entry.id)
       .then(e => {
         if (!cancelled) setStat(formatCompendiumEntry(entry.type, e));
@@ -61,6 +63,12 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
             })}
             className="flex-1 rounded bg-amber-600/20 text-amber-400 py-1.5 hover:bg-amber-600/30"
           >✋ 拿起</button>
+        )}
+        {role === 'player' && entry.type !== 'monster' && (
+          <button
+            onClick={() => { void api.addCharacterEntry({ type: entry.type, entryId: entry.id, name: entry.nameZh, source: stat?.meta ?? '' }).then(() => setAdded(true)); }}
+            className="flex-1 rounded bg-emerald-600/20 text-emerald-300 py-1.5 hover:bg-emerald-600/30"
+          >{added ? '已加入角色卡' : '＋ 加入角色卡'}</button>
         )}
       </div>
     </div>

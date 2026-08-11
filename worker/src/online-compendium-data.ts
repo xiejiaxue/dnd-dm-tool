@@ -171,7 +171,8 @@ function normalize(value: string): string {
 }
 
 function isEntryType(value: string): value is EntryType {
-  return value === 'monster' || value === 'spell' || value === 'item' || value === 'feat' || value === 'condition';
+  return ['monster', 'spell', 'item', 'feat', 'condition', 'race', 'subrace', 'background', 'class', 'subclass',
+    'classFeature', 'subclassFeature', 'optionalFeature', 'language', 'vehicle', 'action', 'reward'].includes(value);
 }
 
 function isSafeSource(value: string): boolean {

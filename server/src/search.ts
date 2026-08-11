@@ -8,8 +8,22 @@ export interface SourceMap { [source: string]: string }
 export const DEFAULT_BOOKS = {
   bestiary: ['MM', 'XMM', 'MPMM', 'PHB', 'XPHB', 'VGM', 'MTF', 'TCE', 'EGW', 'FTD', 'IDRotF', 'CoS', 'WDH', 'WDMM'],
   spells: ['PHB', 'XPHB', 'XGE', 'TCE', 'AI', 'EGW', 'FTD', 'IDRotF', 'CoS', 'WDH', 'WDMM'],
-  singles: ['items.json', 'feats.json', 'conditionsdiseases.json'],
+  singles: ['items.json', 'feats.json', 'conditionsdiseases.json', 'races.json', 'backgrounds.json',
+    'optionalfeatures.json', 'rewards.json', 'languages.json', 'actions.json', 'vehicles.json'],
 };
+
+const SINGLE_DATASETS: Array<{ file: string; keys: Array<[string, EntryType]> }> = [
+  { file: 'items.json', keys: [['item', 'item']] },
+  { file: 'feats.json', keys: [['feat', 'feat']] },
+  { file: 'conditionsdiseases.json', keys: [['condition', 'condition']] },
+  { file: 'races.json', keys: [['race', 'race'], ['subrace', 'subrace']] },
+  { file: 'backgrounds.json', keys: [['background', 'background']] },
+  { file: 'optionalfeatures.json', keys: [['optionalfeature', 'optionalFeature']] },
+  { file: 'rewards.json', keys: [['reward', 'reward']] },
+  { file: 'languages.json', keys: [['language', 'language']] },
+  { file: 'actions.json', keys: [['action', 'action']] },
+  { file: 'vehicles.json', keys: [['vehicle', 'vehicle']] },
+];
 
 function loadJson(p: string): any {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; }
@@ -66,13 +80,12 @@ async function buildSpellIndex(dbDir: string, sourceMap: SourceMap, out: IndexEn
   }
 }
 
-async function buildSingleIndex(dbDir: string, fileName: string, type: EntryType, out: IndexEntry[]) {
+async function buildSingleIndex(dbDir: string, fileName: string, key: string, type: EntryType, out: IndexEntry[]) {
   const p = path.join(dbDir, fileName);
   if (!fs.existsSync(p)) return;
   const data = loadJson(p);
-  const key = findArrayKey(data);
-  if (!key) return;
-  for (const it of data[key] ?? []) {
+  if (!Array.isArray(data?.[key])) return;
+  for (const it of data[key]) {
     if (typeof it !== 'object' || it == null) continue;
     out.push({
       type,
@@ -85,6 +98,36 @@ async function buildSingleIndex(dbDir: string, fileName: string, type: EntryType
   }
 }
 
+async function buildClassIndex(dbDir: string, out: IndexEntry[]) {
+  const sourceMap = readSourceMap(dbDir, 'class');
+  for (const fileName of Object.values(sourceMap)) {
+    const data = loadJson(path.join(dbDir, 'class', fileName));
+    if (!data) continue;
+    for (const [key, type] of [
+      ['class', 'class'], ['subclass', 'subclass'], ['classFeature', 'classFeature'], ['subclassFeature', 'subclassFeature'],
+    ] as Array<[string, EntryType]>) {
+      for (const entry of Array.isArray(data[key]) ? data[key] : []) {
+        if (typeof entry !== 'object' || entry == null) continue;
+        const nameEn = entry.ENG_name ?? entry.name ?? entry.className ?? '';
+        const nameZh = entry.name ?? entry.className ?? nameEn;
+        if (!nameEn) continue;
+        out.push({
+          type,
+          id: `${entry.source ?? entry.classSource ?? 'PHB'}__${type === 'classFeature' || type === 'subclassFeature' ? `${entry.className ?? ''}|${nameEn}|${entry.level ?? ''}` : nameEn}`,
+          nameZh,
+          nameEn,
+          source: entry.source ?? entry.classSource ?? 'PHB',
+          bookFile: `class/${fileName}`,
+          ...(type === 'classFeature' || type === 'subclassFeature'
+            ? { lookupKey: `${entry.className ?? ''}|${nameEn}|${entry.level ?? ''}` }
+            : {}),
+          level: typeof entry.level === 'number' ? entry.level : undefined,
+        });
+      }
+    }
+  }
+}
+
 export async function buildIndexFromDir(dbDir: string): Promise<IndexEntry[]> {
   const out: IndexEntry[] = [];
   const bestiaryMap = readSourceMap(dbDir, 'bestiary');
@@ -92,10 +135,10 @@ export async function buildIndexFromDir(dbDir: string): Promise<IndexEntry[]> {
 
   await buildBestiaryIndex(dbDir, bestiaryMap, out);
   await buildSpellIndex(dbDir, spellMap, out);
-  for (const f of ['items.json', 'feats.json', 'conditionsdiseases.json']) {
-    const type = f.startsWith('items') ? 'item' : f.startsWith('feats') ? 'feat' : 'condition';
-    await buildSingleIndex(dbDir, f, type, out);
+  for (const dataset of SINGLE_DATASETS) {
+    for (const [key, type] of dataset.keys) await buildSingleIndex(dbDir, dataset.file, key, type, out);
   }
+  await buildClassIndex(dbDir, out);
   return out;
 }
 

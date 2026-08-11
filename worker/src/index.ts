@@ -11,6 +11,8 @@ import {
 import { parseOnlineSearchRequest } from './online-compendium-data';
 import {
   callRoom,
+  addSelectedCharacterEntry,
+  createCampaignJournal,
   createCampaignCharacter,
   createCampaignSave,
   createAsset,
@@ -18,15 +20,19 @@ import {
   createRoomInvite,
   forwardRoomWebSocket,
   getAsset,
+  getSelectedCharacterSheet,
   initializeRoom,
   listCampaignCharacters,
   listCampaignModules,
   listCampaignSaves,
+  listCampaignJournals,
   listRooms,
   redeemRoomInvite,
+  removeSelectedCharacterEntry,
   requireRoomAccess,
   selectCampaignCharacter,
   selectCampaignSave,
+  updateCampaignJournal,
   type RoomAccess,
 } from './repository';
 
@@ -42,6 +48,7 @@ interface CompendiumIndexRow {
   bookFile: string;
   cr?: string;
   level?: number;
+  lookupKey?: string;
 }
 
 const worker: ExportedHandler<Env> = {
@@ -236,6 +243,42 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
   if (rest.length === 1 && rest[0] === 'modules' && request.method === 'GET') {
     return json(await listCampaignModules(env, access));
   }
+  if (rest[0] === 'journals') {
+    if (rest.length === 1 && request.method === 'GET') return json(await listCampaignJournals(env, access));
+    if (rest.length === 1 && request.method === 'POST') {
+      const body = await readJsonObject(request);
+      const journal = await createCampaignJournal(env, access, {
+        title: nonEmptyText(body.title, '日志标题', 160),
+        content: typeof body.content === 'string' ? body.content : undefined,
+        visibility: typeof body.visibility === 'string' ? body.visibility : undefined,
+      });
+      return json(journal, { status: 201 });
+    }
+    if (rest.length === 2 && request.method === 'POST') {
+      const body = await readJsonObject(request);
+      return json(await updateCampaignJournal(env, access, rest[1], {
+        title: nonEmptyText(body.title, '日志标题', 160),
+        content: typeof body.content === 'string' ? body.content : undefined,
+        visibility: typeof body.visibility === 'string' ? body.visibility : undefined,
+      }));
+    }
+  }
+  if (rest[0] === 'character-sheet') {
+    if (rest.length === 1 && request.method === 'GET') return json(await getSelectedCharacterSheet(env, access));
+    if (rest.length === 2 && rest[1] === 'entries' && request.method === 'POST') {
+      const body = await readJsonObject(request);
+      return json(await addSelectedCharacterEntry(env, access, {
+        type: nonEmptyText(body.type, '资料类型', 40),
+        entryId: nonEmptyText(body.entryId, '资料 ID', 300),
+        name: nonEmptyText(body.name, '资料名称', 160),
+        source: typeof body.source === 'string' ? body.source : undefined,
+      }), { status: 201 });
+    }
+    if (rest.length === 3 && rest[1] === 'entries' && request.method === 'DELETE') {
+      await removeSelectedCharacterEntry(env, access, rest[2]);
+      return json({ ok: true });
+    }
+  }
   if (rest[0] === 'characters') {
     if (rest.length === 1 && request.method === 'GET') {
       const campaignId = new URL(request.url).searchParams.get('campaignId') ?? access.campaignId;
@@ -313,11 +356,14 @@ async function getCompendiumEntry(env: Env, type: string, id: string): Promise<R
   const book = await env.REFERENCE_DATA.get(`compendium/books/${safeBookPath}`);
   if (!book) throw new HttpError(404, 'NOT_FOUND', '找不到资料条目');
   const source: unknown = await book.json();
-  const records = firstObjectArray(source);
+  const records = compendiumRecords(source, type);
   const entry = records.find((record) => {
     if (!isRecord(record)) return false;
     const name = typeof record.ENG_name === 'string' ? record.ENG_name : record.name;
-    return name === match.nameEn && record.source === match.source;
+    const key = match.lookupKey
+      ? `${typeof record.className === 'string' ? record.className : ''}|${name ?? ''}|${typeof record.level === 'number' ? record.level : ''}`
+      : name;
+    return key === (match.lookupKey ?? match.nameEn) && (record.source === match.source || record.classSource === match.source);
   });
   if (!entry) throw new HttpError(404, 'NOT_FOUND', '找不到资料条目');
   return json(entry, { headers: { 'cache-control': 'public, max-age=300', 'x-content-type-options': 'nosniff' } });
@@ -344,17 +390,25 @@ function asCompendiumIndexRow(value: unknown): CompendiumIndexRow | null {
     bookFile: value.bookFile,
     ...(typeof value.cr === 'string' ? { cr: value.cr } : {}),
     ...(typeof value.level === 'number' ? { level: value.level } : {}),
+    ...(typeof value.lookupKey === 'string' ? { lookupKey: value.lookupKey } : {}),
   };
 }
 
 function isCompendiumType(value: string): boolean {
-  return value === 'monster' || value === 'spell' || value === 'item' || value === 'feat' || value === 'condition';
+  return ['monster', 'spell', 'item', 'feat', 'condition', 'race', 'subrace', 'background', 'class', 'subclass',
+    'classFeature', 'subclassFeature', 'optionalFeature', 'language', 'vehicle', 'action', 'reward'].includes(value);
 }
 
-function firstObjectArray(value: unknown): unknown[] {
+function compendiumRecords(value: unknown, type: string): unknown[] {
   if (!isRecord(value)) return [];
-  for (const candidate of Object.values(value)) if (Array.isArray(candidate)) return candidate;
-  return [];
+  const keyByType: Record<string, string> = {
+    monster: 'monster', spell: 'spell', item: 'item', feat: 'feat', condition: 'condition',
+    race: 'race', subrace: 'subrace', background: 'background', class: 'class', subclass: 'subclass',
+    classFeature: 'classFeature', subclassFeature: 'subclassFeature', optionalFeature: 'optionalfeature',
+    language: 'language', vehicle: 'vehicle', action: 'action', reward: 'reward',
+  };
+  const candidate = value[keyByType[type] ?? type];
+  return Array.isArray(candidate) ? candidate : [];
 }
 
 function escapeXml(value: string): string {
