@@ -99,7 +99,8 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
 }
 
 function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => void }) {
-  const { role } = useScene();
+  const { role, roomRole, campaign } = useScene();
+  const observedCampaignId = useRef<string | null>(null);
   const [tool, setTool] = useState('select');
   const [pending, setPendingState] = useState<PendingToken | null>(null);
   // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
@@ -112,6 +113,21 @@ function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => 
     setPendingState(pickedUp);
     if (pickedUp && role === 'dm') setTool('add');
   }), [role]);
+
+  useEffect(() => {
+    if (!campaign?.id) return;
+    if (observedCampaignId.current === null) {
+      observedCampaignId.current = campaign.id;
+      return;
+    }
+    if (observedCampaignId.current !== campaign.id && roomRole === 'player') {
+      // The DM moved the whole room to another save. Reload the D1 bootstrap
+      // so this player must select that campaign's isolated character before
+      // reconnecting to its board.
+      location.reload();
+    }
+    observedCampaignId.current = campaign.id;
+  }, [campaign?.id, roomRole]);
 
   return (
     <div className="h-full flex flex-col">
