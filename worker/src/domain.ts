@@ -23,6 +23,11 @@ export interface RoomActor {
   memberId: string;
   role: RoomRole;
   accessEpoch: number;
+  characterId?: string;
+  characterName?: string;
+  characterColor?: string;
+  characterAvatar?: string;
+  characterMaxHp?: number;
 }
 
 export interface PersistedRoomState {
@@ -88,18 +93,18 @@ export function createScene(name: string): Scene {
   };
 }
 
-export function createCampaign(name: string, firstSceneId: string): Campaign {
+export function createCampaign(name: string, firstSceneId: string, campaignId = newOpaqueId('campaign')): Campaign {
   return {
-    id: newOpaqueId('campaign'),
+    id: campaignId,
     name: normalizeName(name, '未命名战役'),
     sceneIds: [firstSceneId],
     enemies: [],
   };
 }
 
-export function createInitialRoomState(roomName: string, campaignName: string): PersistedRoomState {
-  const scene = createScene(`${roomName} 场景`);
-  const campaign = createCampaign(campaignName, scene.id);
+export function createInitialRoomState(roomName: string, campaignName: string, campaignId?: string, firstSceneName?: string): PersistedRoomState {
+  const scene = createScene(firstSceneName || `${roomName} 场景`);
+  const campaign = createCampaign(campaignName, scene.id, campaignId);
   return {
     schemaVersion: 1,
     revision: 0,
@@ -157,18 +162,43 @@ export function ensurePlayerToken(state: PersistedRoomState, actor: RoomActor): 
   const scene = activeScene(state);
   if (scene.players.some((player) => player.sessionId === actor.userId)) return false;
   scene.players.push({
-    id: newOpaqueId('player'),
+    id: actor.characterId ? `character-${actor.characterId}` : newOpaqueId('player'),
     kind: 'player',
-    name: '新玩家',
+    name: actor.characterName || '新玩家',
     entryId: null,
     x: 200 + scene.players.length * 60,
     y: 200,
     size: 48,
-    avatar: '',
-    color: '#38a169',
+    avatar: actor.characterAvatar || '',
+    color: actor.characterColor || '#38a169',
     sessionId: actor.userId,
+    ...(actor.characterMaxHp ? { hp: { current: actor.characterMaxHp, max: actor.characterMaxHp } } : {}),
   });
   return true;
+}
+
+export function ensureCampaign(
+  state: PersistedRoomState,
+  campaignId: string,
+  campaignName: string,
+  firstSceneName = '起始场景',
+): Campaign {
+  const existing = state.campaigns[campaignId];
+  if (existing) return existing;
+  const scene = createScene(firstSceneName);
+  const campaign = createCampaign(campaignName, scene.id, campaignId);
+  state.scenes[scene.id] = scene;
+  state.campaigns[campaign.id] = campaign;
+  return campaign;
+}
+
+export function selectCampaign(state: PersistedRoomState, campaignId: string): void {
+  const campaign = state.campaigns[campaignId];
+  if (!campaign) throw new DomainError('NOT_FOUND', '找不到战役存档');
+  const sceneId = campaign.sceneIds.find((id) => Boolean(state.scenes[id]));
+  if (!sceneId) throw new DomainError('CORRUPT_STATE', '战役存档没有可用场景');
+  state.currentCampaignId = campaignId;
+  state.currentSceneId = sceneId;
 }
 
 /**

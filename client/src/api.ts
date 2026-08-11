@@ -32,7 +32,31 @@ export interface RoomSummary {
 
 export interface RoomBootstrap {
   room: RoomSummary;
-  membership?: { role?: string; roomRole?: string };
+  membership?: { role?: string; roomRole?: string; canManage?: boolean };
+  modules: CampaignModuleSummary[];
+  campaigns: CampaignSaveSummary[];
+  activeCampaign: { id: string; name: string } | null;
+  selectedCharacter: CampaignCharacterSummary | null;
+}
+
+export interface CampaignModuleSummary { id: string; name: string; description: string }
+export interface CampaignSaveSummary {
+  id: string;
+  name: string;
+  moduleId: string | null;
+  moduleName: string;
+  updatedAt: number;
+  lastPlayedAt: number | null;
+  active: boolean;
+}
+export interface CampaignCharacterSummary {
+  id: string;
+  campaignId: string;
+  name: string;
+  color: string;
+  avatarUrl: string;
+  maxHp: number;
+  updatedAt?: number;
 }
 
 export interface InviteResult {
@@ -143,12 +167,22 @@ export const api = {
     json<Scene>(roomPath('/scenes'), jsonRequest('POST', { name })),
   deleteScene: (id: string) => json<{ ok: boolean }>(roomPath(`/scenes/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
 
-  campaigns: () => json<{ id: string; name: string }[]>(roomPath('/campaigns')),
-  createCampaign: (name: string) =>
-    json<Campaign>(roomPath('/campaigns'), jsonRequest('POST', { name })),
+  modules: () => json<CampaignModuleSummary[]>(roomPath('/modules')),
+  campaigns: () => json<CampaignSaveSummary[]>(roomPath('/campaigns')),
+  createCampaign: (name: string, moduleId: string) =>
+    json<CampaignSaveSummary>(roomPath('/campaigns'), jsonRequest('POST', { name, moduleId })),
+  selectCampaign: (id: string) =>
+    json<CampaignSaveSummary>(roomPath(`/campaigns/${encodeURIComponent(id)}/select`), jsonRequest('POST')),
   deleteCampaign: (id: string) => json<{ ok: boolean }>(roomPath(`/campaigns/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
   assignSceneToCampaign: (campaignId: string, sceneId: string) =>
     json<{ ok: boolean }>(roomPath(`/campaigns/${encodeURIComponent(campaignId)}/scenes`), jsonRequest('POST', { sceneId })),
+
+  characters: (campaignId: string) =>
+    json<CampaignCharacterSummary[]>(roomPath(`/characters?campaignId=${encodeURIComponent(campaignId)}`)),
+  createCharacter: (input: { campaignId: string; name: string; color: string; maxHp: number }) =>
+    json<CampaignCharacterSummary>(roomPath('/characters'), jsonRequest('POST', input)),
+  selectCharacter: (campaignId: string, characterId: string) =>
+    json<CampaignCharacterSummary>(roomPath(`/characters/${encodeURIComponent(characterId)}/select`), jsonRequest('POST', { campaignId })),
 
   async uploadAsset(file: File, kind: 'map' | 'token'): Promise<{ url: string }> {
     const body = new FormData();

@@ -8,7 +8,7 @@
   // The deploy script supplies the Custom Domain from PUBLIC_SITE_DOMAIN.
   // Keeping the hostname out of source also allows the same config to serve
   // production and a separately owned staging domain.
-  "workers_dev": false,
+  "workers_dev": true,
 
   // The app is one public origin.  Static Assets serves the React build while
   // the Worker remains first in line for application and WebSocket routes.

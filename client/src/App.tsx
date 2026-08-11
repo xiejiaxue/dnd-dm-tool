@@ -8,6 +8,7 @@ import InitiativePanel from './components/InitiativePanel';
 import QueryPanel from './components/QueryPanel';
 import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
+import CampaignPortal from './components/CampaignPortal';
 import { useScene, connection } from './ws';
 import { subscribe } from './pending';
 import type { PendingToken } from './pending';
@@ -28,11 +29,13 @@ function RoomLoading({ message }: { message: string }) {
 function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => void }) {
   const [bootstrap, setBootstrap] = useState<RoomBootstrap | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setBootstrap(null);
     setError(null);
+    setReady(false);
     setCurrentRoomSlug(slug);
 
     void (async () => {
@@ -44,7 +47,14 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
         const data = await api.bootstrap();
         if (cancelled) return;
         setBootstrap(data);
-        connection.connect(slug);
+        const role = data.membership?.roomRole ?? data.membership?.role;
+        const canEnter = !data.membership?.canManage
+          && Boolean(data.activeCampaign)
+          && (role !== 'player' || Boolean(data.selectedCharacter));
+        if (canEnter) {
+          setReady(true);
+          connection.connect(slug);
+        }
       } catch (cause) {
         if (!cancelled) setError(cause instanceof Error ? cause : new Error('无法进入这个房间'));
       }
@@ -73,6 +83,17 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
     );
   }
   if (!bootstrap) return <RoomLoading message="正在验证房间权限…" />;
+
+  const enterSelectedCampaign = async () => {
+    const data = await api.bootstrap();
+    setBootstrap(data);
+    setReady(true);
+    connection.connect(slug);
+  };
+
+  if (!ready) {
+    return <CampaignPortal room={bootstrap} onReady={enterSelectedCampaign} onLeave={onLeaveRoom} />;
+  }
 
   return <Table key={slug} room={bootstrap} onLeaveRoom={onLeaveRoom} />;
 }

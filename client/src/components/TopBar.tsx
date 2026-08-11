@@ -4,6 +4,7 @@ import { connection, useScene } from '../ws';
 import { uploadImage } from '../upload';
 import BackupTransfer from './BackupTransfer';
 import SceneSwitcher from './SceneSwitcher';
+import CampaignSwitcher from './CampaignSwitcher';
 
 interface Props {
   roomName?: string;
@@ -24,6 +25,7 @@ const roleLabel: Record<string, string> = {
 export default function TopBar({ roomName, roomSlug, onLeaveRoom }: Props) {
   const { scene, role, roomRole, online, campaign } = useScene();
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [campaignSwitcherOpen, setCampaignSwitcherOpen] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [uploadingMap, setUploadingMap] = useState(false);
@@ -139,6 +141,10 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom }: Props) {
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onMapPicked} />
             <BackupTransfer />
             <button
+              onClick={() => setCampaignSwitcherOpen(open => !open)}
+              className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+            >切换战役▾</button>
+            <button
               onClick={() => setSwitcherOpen(open => !open)}
               className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
             >切换场景▾</button>
@@ -154,6 +160,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom }: Props) {
       </div>
 
       {switcherOpen && <SceneSwitcher onClose={() => setSwitcherOpen(false)} />}
+      {campaignSwitcherOpen && <CampaignSwitcher onClose={() => setCampaignSwitcherOpen(false)} />}
       {inviteMessage && (
         <div className="absolute top-12 right-3 z-30 max-w-md rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs shadow-xl text-zinc-200">
           <button onClick={() => setInviteMessage(null)} className="float-right ml-3 text-zinc-500 hover:text-white" aria-label="关闭">✕</button>

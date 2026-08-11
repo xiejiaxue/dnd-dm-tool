@@ -11,15 +11,22 @@ import {
 import { parseOnlineSearchRequest } from './online-compendium-data';
 import {
   callRoom,
+  createCampaignCharacter,
+  createCampaignSave,
   createAsset,
   createRoom,
   createRoomInvite,
   forwardRoomWebSocket,
   getAsset,
   initializeRoom,
+  listCampaignCharacters,
+  listCampaignModules,
+  listCampaignSaves,
   listRooms,
   redeemRoomInvite,
   requireRoomAccess,
+  selectCampaignCharacter,
+  selectCampaignSave,
   type RoomAccess,
 } from './repository';
 
@@ -143,6 +150,17 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
       room: roomSummary(access),
       membership: { role: access.role, roomRole: access.role, canManage: access.role === 'host' || access.role === 'dm' || access.role === 'assistant_dm' },
       state: payload.state,
+      modules: await listCampaignModules(env, access),
+      campaigns: await listCampaignSaves(env, access),
+      activeCampaign: access.campaignConfigured ? { id: access.campaignId, name: access.campaignName } : null,
+      selectedCharacter: access.characterId ? {
+        id: access.characterId,
+        campaignId: access.campaignId,
+        name: access.characterName,
+        color: access.characterColor,
+        avatarUrl: access.characterAvatar,
+        maxHp: access.characterMaxHp,
+      } : null,
     });
   }
   if (rest.length === 1 && rest[0] === 'ws' && request.method === 'GET') {
@@ -189,10 +207,60 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
     }
   }
   if (rest[0] === 'campaigns') {
-    if (rest.length === 1 && request.method === 'GET') return callRoom(env, access, 'GET', '/campaigns');
+    if (rest.length === 1 && request.method === 'GET') return json(await listCampaignSaves(env, access));
+    if (rest.length === 1 && request.method === 'POST') {
+      const body = await readJsonObject(request);
+      const campaign = await createCampaignSave(env, access, {
+        name: nonEmptyText(body.name, '战役名称'),
+        moduleId: nonEmptyText(body.moduleId, '模组 ID', 180),
+      });
+      ctx.waitUntil(writeAudit(env, access, 'campaign.create', 'campaign', campaign.id));
+      return json(campaign, { status: 201 });
+    }
+    if (rest.length === 3 && rest[2] === 'select' && request.method === 'POST') {
+      const selected = await selectCampaignSave(env, access, rest[1]);
+      const response = await callRoom(env, access, 'POST', '/campaigns/select', {
+        campaignId: selected.campaign.id,
+        campaignName: selected.campaign.name,
+        firstSceneName: selected.firstSceneName,
+      });
+      if (!response.ok) return response;
+      ctx.waitUntil(writeAudit(env, access, 'campaign.select', 'campaign', selected.campaign.id));
+      return json(selected.campaign);
+    }
     if (rest.length === 3 && rest[2] === 'scenes' && request.method === 'POST') {
       const body = await readJsonObject(request);
       return callRoom(env, access, 'POST', '/campaigns/assign-scene', { ...body, campaignId: rest[1] });
+    }
+  }
+  if (rest.length === 1 && rest[0] === 'modules' && request.method === 'GET') {
+    return json(await listCampaignModules(env, access));
+  }
+  if (rest[0] === 'characters') {
+    if (rest.length === 1 && request.method === 'GET') {
+      const campaignId = new URL(request.url).searchParams.get('campaignId') ?? access.campaignId;
+      return json(await listCampaignCharacters(env, access, campaignId));
+    }
+    if (rest.length === 1 && request.method === 'POST') {
+      const body = await readJsonObject(request);
+      const character = await createCampaignCharacter(env, access, {
+        campaignId: nonEmptyText(body.campaignId, '战役 ID', 180),
+        name: nonEmptyText(body.name, '角色名称'),
+        color: optionalText(body.color, '角色颜色'),
+        maxHp: typeof body.maxHp === 'number' ? body.maxHp : undefined,
+      });
+      return json(character, { status: 201 });
+    }
+    if (rest.length === 3 && rest[2] === 'select' && request.method === 'POST') {
+      const body = await readJsonObject(request);
+      const campaignId = nonEmptyText(body.campaignId, '战役 ID', 180);
+      const character = await selectCampaignCharacter(env, access, campaignId, rest[1]);
+      const refreshed = await requireRoomAccess(env, access.userId, access.roomSlug);
+      if (campaignId === refreshed.campaignId && refreshed.role === 'player') {
+        const response = await callRoom(env, refreshed, 'POST', '/characters/provision');
+        if (!response.ok) return response;
+      }
+      return json(character);
     }
   }
   throw new HttpError(404, 'NOT_FOUND', '找不到房间接口');

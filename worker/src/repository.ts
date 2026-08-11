@@ -12,6 +12,33 @@ export interface RoomAccess extends RoomActor {
   campaignName: string;
   workspaceId: string;
   campaignMemberId: string | null;
+  campaignConfigured: boolean;
+}
+
+export interface CampaignModuleSummary {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface CampaignSaveSummary {
+  id: string;
+  name: string;
+  moduleId: string | null;
+  moduleName: string;
+  updatedAt: number;
+  lastPlayedAt: number | null;
+  active: boolean;
+}
+
+export interface CampaignCharacterSummary {
+  id: string;
+  campaignId: string;
+  name: string;
+  color: string;
+  avatarUrl: string;
+  maxHp: number;
+  updatedAt: number;
 }
 
 export interface RoomSummary {
@@ -36,6 +63,12 @@ interface RoomAccessRow {
   room_role: string;
   member_access_epoch: number;
   campaign_member_id: string | null;
+  campaign_settings_json: string;
+  character_id: string | null;
+  character_name: string | null;
+  character_color: string | null;
+  character_avatar: string | null;
+  character_sheet_json: string | null;
 }
 
 interface AssetRow {
@@ -57,11 +90,18 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
     `SELECT r.id AS room_id, r.slug AS room_slug, r.name AS room_name,
             r.status AS room_status, r.access_epoch AS room_access_epoch,
             c.id AS campaign_id, c.name AS campaign_name, c.workspace_id,
+            c.settings_json AS campaign_settings_json,
             rm.id AS room_member_id, rm.role AS room_role,
-            rm.access_epoch AS member_access_epoch, rm.campaign_member_id
+            rm.access_epoch AS member_access_epoch, rm.campaign_member_id,
+            cc.id AS character_id, cc.name AS character_name, cc.color AS character_color,
+            cc.avatar_url AS character_avatar, cc.sheet_json AS character_sheet_json
        FROM rooms r
        JOIN campaigns c ON c.id = r.campaign_id AND c.deleted_at IS NULL
        JOIN room_members rm ON rm.room_id = r.id
+       LEFT JOIN room_character_selections rcs
+         ON rcs.room_id = r.id AND rcs.campaign_id = c.id AND rcs.user_id = rm.user_id
+       LEFT JOIN campaign_characters cc
+         ON cc.id = rcs.character_id AND cc.campaign_id = c.id AND cc.deleted_at IS NULL
       WHERE r.slug = ?1
         AND r.deleted_at IS NULL
         AND rm.user_id = ?2
@@ -86,6 +126,14 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
     role: row.room_role,
     accessEpoch: row.member_access_epoch,
     campaignMemberId: row.campaign_member_id,
+    campaignConfigured: campaignIsConfigured(row.campaign_settings_json),
+    ...(row.character_id ? {
+      characterId: row.character_id,
+      characterName: row.character_name ?? '冒险者',
+      characterColor: row.character_color ?? '#38a169',
+      characterAvatar: row.character_avatar ?? '',
+      characterMaxHp: characterMaxHp(row.character_sheet_json),
+    } : {}),
   };
 }
 
@@ -125,6 +173,7 @@ export async function createRoom(env: Env, session: Session, input: { roomName: 
   const roomId = crypto.randomUUID();
   const roomMemberId = crypto.randomUUID();
   const workspaceSlug = `table-${randomToken(8).toLowerCase()}`;
+  const moduleId = `blank-${workspaceId}`;
 
   await env.DB.batch([
     env.DB.prepare(
@@ -136,9 +185,17 @@ export async function createRoom(env: Env, session: Session, input: { roomName: 
        VALUES (?1, ?2, 'owner', ?3)`,
     ).bind(workspaceId, session.userId, now),
     env.DB.prepare(
+      `INSERT INTO campaign_modules
+        (id, workspace_id, created_by_user_id, name, description, template_json, created_at, updated_at)
+       VALUES (?1, ?2, ?3, '空白冒险', '从空白场景开始的通用模组', '{"firstSceneName":"起始场景"}', ?4, ?4)`,
+    ).bind(moduleId, workspaceId, session.userId, now),
+    env.DB.prepare(
       `INSERT INTO campaigns (id, workspace_id, created_by_user_id, name, created_at, updated_at)
        VALUES (?1, ?2, ?3, ?4, ?5, ?5)`,
     ).bind(campaignId, workspaceId, session.userId, campaignName, now),
+    env.DB.prepare(
+      `UPDATE campaigns SET module_id = ?2, settings_json = '{"configured":false}' WHERE id = ?1`,
+    ).bind(campaignId, moduleId),
     env.DB.prepare(
       `INSERT INTO campaign_members (id, campaign_id, user_id, role, status, joined_at)
        VALUES (?1, ?2, ?3, 'owner', 'active', ?4)`,
@@ -152,6 +209,9 @@ export async function createRoom(env: Env, session: Session, input: { roomName: 
         (id, room_id, user_id, campaign_member_id, role, status, access_epoch, grant_source, joined_at)
        VALUES (?1, ?2, ?3, ?4, 'host', 'active', 1, 'manual', ?5)`,
     ).bind(roomMemberId, roomId, session.userId, campaignMemberId, now),
+    env.DB.prepare(
+      `INSERT INTO room_campaigns (room_id, campaign_id, added_at, last_played_at) VALUES (?1, ?2, ?3, ?3)`,
+    ).bind(roomId, campaignId, now),
   ]);
 
   return {
@@ -168,7 +228,144 @@ export async function createRoom(env: Env, session: Session, input: { roomName: 
     role: 'host',
     accessEpoch: 1,
     campaignMemberId,
+    campaignConfigured: false,
   };
+}
+
+export async function listCampaignModules(env: Env, access: RoomAccess): Promise<CampaignModuleSummary[]> {
+  const result = await env.DB.prepare(
+    `SELECT id, name, description FROM campaign_modules
+      WHERE workspace_id = ?1 AND status = 'active' AND deleted_at IS NULL
+      ORDER BY created_at ASC`,
+  ).bind(access.workspaceId).all<{ id: string; name: string; description: string }>();
+  return result.results;
+}
+
+export async function listCampaignSaves(env: Env, access: RoomAccess): Promise<CampaignSaveSummary[]> {
+  const result = await env.DB.prepare(
+    `SELECT c.id, c.name, c.module_id, c.updated_at, rc.last_played_at,
+            COALESCE(m.name, '未知模组') AS module_name
+       FROM room_campaigns rc
+       JOIN campaigns c ON c.id = rc.campaign_id AND c.deleted_at IS NULL
+       LEFT JOIN campaign_modules m ON m.id = c.module_id AND m.deleted_at IS NULL
+      WHERE rc.room_id = ?1
+        AND COALESCE(json_extract(c.settings_json, '$.configured'), 1) != 0
+      ORDER BY COALESCE(rc.last_played_at, rc.added_at) DESC`,
+  ).bind(access.roomId).all<{ id: string; name: string; module_id: string | null; module_name: string; updated_at: number; last_played_at: number | null }>();
+  return result.results.map((row) => ({
+    id: row.id,
+    name: row.name,
+    moduleId: row.module_id,
+    moduleName: row.module_name,
+    updatedAt: row.updated_at,
+    lastPlayedAt: row.last_played_at,
+    active: row.id === access.campaignId && access.campaignConfigured,
+  }));
+}
+
+export async function createCampaignSave(
+  env: Env,
+  access: RoomAccess,
+  input: { name: string; moduleId: string },
+): Promise<CampaignSaveSummary> {
+  requireRoomModerator(access);
+  const name = nonEmptyText(input.name, '战役名称');
+  const moduleRow = await env.DB.prepare(
+    `SELECT id, name FROM campaign_modules WHERE id = ?1 AND workspace_id = ?2 AND status = 'active' AND deleted_at IS NULL`,
+  ).bind(input.moduleId, access.workspaceId).first<{ id: string; name: string }>();
+  if (!moduleRow) throw new HttpError(404, 'MODULE_NOT_FOUND', '找不到该模组');
+  const id = crypto.randomUUID();
+  const memberId = crypto.randomUUID();
+  const now = Date.now();
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO campaigns
+        (id, workspace_id, created_by_user_id, name, settings_json, module_id, created_at, updated_at)
+       VALUES (?1, ?2, ?3, ?4, '{"configured":true}', ?5, ?6, ?6)`,
+    ).bind(id, access.workspaceId, access.userId, name, moduleRow.id, now),
+    env.DB.prepare(
+      `INSERT INTO campaign_members (id, campaign_id, user_id, role, status, joined_at)
+       VALUES (?1, ?2, ?3, 'owner', 'active', ?4)`,
+    ).bind(memberId, id, access.userId, now),
+    env.DB.prepare(
+      `INSERT INTO room_campaigns (room_id, campaign_id, added_at, last_played_at) VALUES (?1, ?2, ?3, ?3)`,
+    ).bind(access.roomId, id, now),
+  ]);
+  return { id, name, moduleId: moduleRow.id, moduleName: moduleRow.name, updatedAt: now, lastPlayedAt: now, active: false };
+}
+
+export async function selectCampaignSave(
+  env: Env,
+  access: RoomAccess,
+  campaignId: string,
+): Promise<{ campaign: CampaignSaveSummary; firstSceneName: string }> {
+  requireRoomModerator(access);
+  const row = await env.DB.prepare(
+    `SELECT c.id, c.name, c.module_id, c.updated_at, m.name AS module_name, m.template_json
+       FROM room_campaigns rc
+       JOIN campaigns c ON c.id = rc.campaign_id AND c.deleted_at IS NULL
+       LEFT JOIN campaign_modules m ON m.id = c.module_id
+      WHERE rc.room_id = ?1 AND c.id = ?2
+        AND COALESCE(json_extract(c.settings_json, '$.configured'), 1) != 0`,
+  ).bind(access.roomId, campaignId).first<{ id: string; name: string; module_id: string | null; updated_at: number; module_name: string | null; template_json: string | null }>();
+  if (!row) throw new HttpError(404, 'CAMPAIGN_NOT_FOUND', '找不到该战役存档');
+  const now = Date.now();
+  await env.DB.batch([
+    env.DB.prepare('UPDATE rooms SET campaign_id = ?2, updated_at = ?3 WHERE id = ?1').bind(access.roomId, row.id, now),
+    env.DB.prepare('UPDATE room_campaigns SET last_played_at = ?3 WHERE room_id = ?1 AND campaign_id = ?2').bind(access.roomId, row.id, now),
+  ]);
+  return {
+    campaign: { id: row.id, name: row.name, moduleId: row.module_id, moduleName: row.module_name ?? '未知模组', updatedAt: row.updated_at, lastPlayedAt: now, active: true },
+    firstSceneName: moduleFirstScene(row.template_json),
+  };
+}
+
+export async function listCampaignCharacters(env: Env, access: RoomAccess, campaignId: string): Promise<CampaignCharacterSummary[]> {
+  await requireRoomCampaign(env, access, campaignId);
+  const result = await env.DB.prepare(
+    `SELECT id, campaign_id, name, color, avatar_url, sheet_json, updated_at
+       FROM campaign_characters
+      WHERE campaign_id = ?1 AND owner_user_id = ?2 AND status = 'active' AND deleted_at IS NULL
+      ORDER BY updated_at DESC`,
+  ).bind(campaignId, access.userId).all<{ id: string; campaign_id: string; name: string; color: string; avatar_url: string; sheet_json: string; updated_at: number }>();
+  return result.results.map(characterSummary);
+}
+
+export async function createCampaignCharacter(
+  env: Env,
+  access: RoomAccess,
+  input: { campaignId: string; name: string; color?: string; maxHp?: number },
+): Promise<CampaignCharacterSummary> {
+  await requireRoomCampaign(env, access, input.campaignId);
+  const name = nonEmptyText(input.name, '角色名称');
+  const color = /^#[0-9a-f]{6}$/iu.test(input.color ?? '') ? input.color! : '#38a169';
+  const maxHp = Math.max(1, Math.min(9999, Number.isFinite(input.maxHp) ? Math.round(input.maxHp!) : 10));
+  const id = crypto.randomUUID();
+  const now = Date.now();
+  const sheet = JSON.stringify({ maxHp });
+  await env.DB.prepare(
+    `INSERT INTO campaign_characters
+      (id, campaign_id, owner_user_id, name, color, sheet_json, created_at, updated_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)`,
+  ).bind(id, input.campaignId, access.userId, name, color, sheet, now).run();
+  return { id, campaignId: input.campaignId, name, color, avatarUrl: '', maxHp, updatedAt: now };
+}
+
+export async function selectCampaignCharacter(env: Env, access: RoomAccess, campaignId: string, characterId: string): Promise<CampaignCharacterSummary> {
+  await requireRoomCampaign(env, access, campaignId);
+  const row = await env.DB.prepare(
+    `SELECT id, campaign_id, name, color, avatar_url, sheet_json, updated_at
+       FROM campaign_characters
+      WHERE id = ?1 AND campaign_id = ?2 AND owner_user_id = ?3 AND status = 'active' AND deleted_at IS NULL`,
+  ).bind(characterId, campaignId, access.userId).first<{ id: string; campaign_id: string; name: string; color: string; avatar_url: string; sheet_json: string; updated_at: number }>();
+  if (!row) throw new HttpError(404, 'CHARACTER_NOT_FOUND', '找不到该角色');
+  await env.DB.prepare(
+    `INSERT INTO room_character_selections (room_id, campaign_id, user_id, character_id, selected_at)
+     VALUES (?1, ?2, ?3, ?4, ?5)
+     ON CONFLICT(room_id, campaign_id, user_id)
+     DO UPDATE SET character_id = excluded.character_id, selected_at = excluded.selected_at`,
+  ).bind(access.roomId, campaignId, access.userId, characterId, Date.now()).run();
+  return characterSummary(row);
 }
 
 export async function createRoomInvite(env: Env, access: RoomAccess, input: { role: unknown; maxUses?: unknown }): Promise<{ inviteUrl: string; expiresAt: number }> {
@@ -308,6 +505,11 @@ export function internalRoomHeaders(access: RoomAccess): Headers {
   headers.set('x-dnd-member-id', access.memberId);
   headers.set('x-dnd-room-role', access.role);
   headers.set('x-dnd-access-epoch', String(access.accessEpoch));
+  if (access.characterId) headers.set('x-dnd-character-id', access.characterId);
+  if (access.characterName) headers.set('x-dnd-character-name', encodeURIComponent(access.characterName));
+  if (access.characterColor) headers.set('x-dnd-character-color', access.characterColor);
+  if (access.characterAvatar) headers.set('x-dnd-character-avatar', encodeURIComponent(access.characterAvatar));
+  if (access.characterMaxHp) headers.set('x-dnd-character-max-hp', String(access.characterMaxHp));
   return headers;
 }
 
@@ -318,7 +520,7 @@ export async function initializeRoom(env: Env, access: RoomAccess): Promise<void
     new Request('https://room.internal/initialize', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ roomName: access.roomName, campaignName: access.campaignName }),
+      body: JSON.stringify({ roomName: access.roomName, campaignId: access.campaignId, campaignName: access.campaignName }),
     }),
   );
   if (!response.ok) throw new HttpError(502, 'ROOM_UNAVAILABLE', '房间服务暂时不可用');
@@ -350,6 +552,52 @@ function isRoomRole(value: string): value is RoomRole {
 
 function isInviteRole(value: string): value is 'player' | 'spectator' {
   return value === 'player' || value === 'spectator';
+}
+
+async function requireRoomCampaign(env: Env, access: RoomAccess, campaignId: string): Promise<void> {
+  const row = await env.DB.prepare(
+    'SELECT 1 AS present FROM room_campaigns WHERE room_id = ?1 AND campaign_id = ?2',
+  ).bind(access.roomId, campaignId).first<{ present: number }>();
+  if (!row) throw new HttpError(404, 'CAMPAIGN_NOT_FOUND', '找不到该战役存档');
+}
+
+function campaignIsConfigured(settingsJson: string): boolean {
+  try {
+    const value = JSON.parse(settingsJson) as { configured?: unknown };
+    return value.configured !== false;
+  } catch {
+    return true;
+  }
+}
+
+function characterMaxHp(sheetJson: string | null): number {
+  try {
+    const value = JSON.parse(sheetJson ?? '{}') as { maxHp?: unknown };
+    return typeof value.maxHp === 'number' && Number.isFinite(value.maxHp) ? Math.max(1, Math.round(value.maxHp)) : 10;
+  } catch {
+    return 10;
+  }
+}
+
+function characterSummary(row: { id: string; campaign_id: string; name: string; color: string; avatar_url: string; sheet_json: string; updated_at: number }): CampaignCharacterSummary {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    name: row.name,
+    color: row.color,
+    avatarUrl: row.avatar_url,
+    maxHp: characterMaxHp(row.sheet_json),
+    updatedAt: row.updated_at,
+  };
+}
+
+function moduleFirstScene(templateJson: string | null): string {
+  try {
+    const value = JSON.parse(templateJson ?? '{}') as { firstSceneName?: unknown };
+    return typeof value.firstSceneName === 'string' && value.firstSceneName.trim() ? value.firstSceneName.trim().slice(0, 120) : '起始场景';
+  } catch {
+    return '起始场景';
+  }
 }
 
 function boundedInteger(value: unknown, minimum: number, maximum: number, label: string): number {

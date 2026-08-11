@@ -9,10 +9,12 @@ import {
   createInitialRoomState,
   deleteScene,
   DomainError,
+  ensureCampaign,
   ensurePlayerToken,
   isRoomModerator,
   projectRoomState,
   renameScene,
+  selectCampaign,
   selectScene,
   setSceneUnlocked,
   type PersistedRoomState,
@@ -90,9 +92,11 @@ export class RoomDurableObject extends DurableObject<Env> {
       if (request.method === 'DELETE') return this.deleteSceneRoute(actor, sceneId);
     }
     if (url.pathname === '/campaigns' && request.method === 'GET') {
-      return this.respondJson([{ id: activeCampaign(this.requireState()).id, name: activeCampaign(this.requireState()).name }]);
+      return this.respondJson(Object.values(this.requireState().campaigns).map(({ id, name }) => ({ id, name })));
     }
+    if (url.pathname === '/campaigns/select' && request.method === 'POST') return this.selectCampaignRoute(request, actor);
     if (url.pathname === '/campaigns/assign-scene' && request.method === 'POST') return this.assignSceneRoute(request, actor);
+    if (url.pathname === '/characters/provision' && request.method === 'POST') return this.provisionCharacterRoute(actor);
     if (url.pathname === '/disconnect-member' && request.method === 'POST') return this.disconnectMemberRoute(request, actor);
     return this.respondJson({ error: { code: 'NOT_FOUND', message: '未知房间操作' } }, 404);
   }
@@ -215,11 +219,17 @@ export class RoomDurableObject extends DurableObject<Env> {
     this.requireModerator(actor);
     const body = await objectBody(request);
     const roomName = text(body.roomName, '房间名称');
+    const campaignId = text(body.campaignId, '战役 ID', 180);
     const campaignName = text(body.campaignName, '战役名称');
     if (!this.state) {
-      const next = createInitialRoomState(roomName, campaignName);
+      const next = createInitialRoomState(roomName, campaignName, campaignId);
       this.persistInitialState(next);
       this.state = next;
+    } else if (!this.state.campaigns[campaignId]) {
+      this.mutate(actor, crypto.randomUUID(), 'campaign.initialize', (next) => {
+        ensureCampaign(next, campaignId, campaignName);
+        return { campaignId };
+      });
     }
     return this.respondJson({ ok: true, revision: this.requireState().revision });
   }
@@ -305,6 +315,39 @@ export class RoomDurableObject extends DurableObject<Env> {
     });
     this.broadcastState();
     return this.respondJson({ ok: true, revision: result.revision });
+  }
+
+  private async selectCampaignRoute(request: Request, actor: RoomActor): Promise<Response> {
+    this.requireModerator(actor);
+    const body = await objectBody(request);
+    const campaignId = text(body.campaignId, '战役 ID', 180);
+    const campaignName = text(body.campaignName, '战役名称');
+    const firstSceneName = typeof body.firstSceneName === 'string' && body.firstSceneName.trim()
+      ? body.firstSceneName.trim().slice(0, 120)
+      : '起始场景';
+    const result = this.mutate(actor, clientCommandId(body.id), 'campaign.select', (next) => {
+      ensureCampaign(next, campaignId, campaignName, firstSceneName);
+      selectCampaign(next, campaignId);
+      return { campaignId };
+    });
+    this.broadcastState();
+    return this.respondJson({ ok: true, revision: result.revision });
+  }
+
+  private provisionCharacterRoute(actor: RoomActor): Response {
+    if (actor.role !== 'player' || !actor.characterId) {
+      throw new DomainError('FORBIDDEN', '请先为当前战役选择角色');
+    }
+    let player: PlayerToken | null = null;
+    const result = this.mutate(actor, crypto.randomUUID(), 'player.character.select', (next) => {
+      const scene = activeScene(next);
+      scene.players = scene.players.filter((candidate) => candidate.sessionId !== actor.userId);
+      ensurePlayerToken(next, actor);
+      player = scene.players.find((candidate) => candidate.sessionId === actor.userId) ?? null;
+      return { characterId: actor.characterId };
+    });
+    this.broadcastState();
+    return this.respondJson({ ok: true, revision: result.revision, player });
   }
 
   private getScene(actor: RoomActor, sceneId: string): Response {
@@ -651,7 +694,18 @@ function actorFromHeaders(headers: Headers): RoomActor {
   if (!userId || !memberId || !isRoomRole(role) || !Number.isInteger(accessEpoch) || accessEpoch < 1) {
     throw new DomainError('FORBIDDEN', '无效的房间身份');
   }
-  return { userId, memberId, role, accessEpoch };
+  const characterMaxHp = Number(headers.get('x-dnd-character-max-hp'));
+  return {
+    userId,
+    memberId,
+    role,
+    accessEpoch,
+    ...(headers.get('x-dnd-character-id') ? { characterId: headers.get('x-dnd-character-id')! } : {}),
+    ...(headers.get('x-dnd-character-name') ? { characterName: decodeURIComponent(headers.get('x-dnd-character-name')!) } : {}),
+    ...(headers.get('x-dnd-character-color') ? { characterColor: headers.get('x-dnd-character-color')! } : {}),
+    ...(headers.get('x-dnd-character-avatar') ? { characterAvatar: decodeURIComponent(headers.get('x-dnd-character-avatar')!) } : {}),
+    ...(Number.isFinite(characterMaxHp) && characterMaxHp > 0 ? { characterMaxHp } : {}),
+  };
 }
 
 function socketActor(socket: WebSocket): SocketAttachment | null {

@@ -2,11 +2,12 @@ import { env } from 'cloudflare:workers';
 import { SELF, reset } from 'cloudflare:test';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import controlPlaneMigration from '../migrations/0001_control_plane.sql?raw';
+import campaignSavesMigration from '../migrations/0002_campaign_saves.sql?raw';
 
 // D1Database#exec accepts a multi-statement script but its local parser does
 // not accept a leading comment-only statement. Wrangler's migration command
 // does; removing comments here keeps this an integration test of the exact SQL.
-const migrationSql = controlPlaneMigration
+const migrationSql = `${controlPlaneMigration}\n${campaignSavesMigration}`
   .split('\n')
   .filter(line => !line.trimStart().startsWith('--'))
   .join('\n');
@@ -116,5 +117,41 @@ describe('Cloudflare room control plane', () => {
     expect(joinedBody.membership.role).toBe('player');
     expect(joinedBody.state.role).toBe('player');
     expect(joinedBody.state.campaign.enemies).toEqual([]);
+  });
+
+  it('creates and resumes isolated campaign saves with campaign-owned characters', async () => {
+    const me = await api('/api/me');
+    const cookie = sessionCookie(me);
+    const headers = { cookie, origin: 'https://table.test', 'content-type': 'application/json' };
+    const created = await api('/api/rooms', { method: 'POST', headers, body: JSON.stringify({ roomName: 'Save table' }) });
+    const { room } = await created.json() as RoomResponse;
+    const initial = await api(`/api/rooms/${room.slug}`, { headers: { cookie } });
+    const initialBody = await initial.json() as { modules: { id: string }[]; campaigns: unknown[]; activeCampaign: unknown };
+    expect(initialBody.modules).toHaveLength(1);
+    expect(initialBody.campaigns).toEqual([]);
+    expect(initialBody.activeCampaign).toBeNull();
+
+    const save = await api(`/api/rooms/${room.slug}/campaigns`, {
+      method: 'POST', headers, body: JSON.stringify({ name: '失落矿坑', moduleId: initialBody.modules[0].id }),
+    });
+    expect(save.status).toBe(201);
+    const saveBody = await save.json() as { id: string };
+    const selected = await api(`/api/rooms/${room.slug}/campaigns/${saveBody.id}/select`, { method: 'POST', headers });
+    expect(selected.status).toBe(200);
+
+    const character = await api(`/api/rooms/${room.slug}/characters`, {
+      method: 'POST', headers, body: JSON.stringify({ campaignId: saveBody.id, name: '莱拉', color: '#112233', maxHp: 18 }),
+    });
+    expect(character.status).toBe(201);
+    const characterBody = await character.json() as { id: string; maxHp: number };
+    expect(characterBody.maxHp).toBe(18);
+    const picked = await api(`/api/rooms/${room.slug}/characters/${characterBody.id}/select`, {
+      method: 'POST', headers, body: JSON.stringify({ campaignId: saveBody.id }),
+    });
+    expect(picked.status).toBe(200);
+    const resumed = await api(`/api/rooms/${room.slug}`, { headers: { cookie } });
+    const resumedBody = await resumed.json() as { activeCampaign: { id: string }; selectedCharacter: { name: string } };
+    expect(resumedBody.activeCampaign.id).toBe(saveBody.id);
+    expect(resumedBody.selectedCharacter.name).toBe('莱拉');
   });
 });
