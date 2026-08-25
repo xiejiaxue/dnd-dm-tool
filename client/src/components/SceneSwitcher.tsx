@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api';
+import { api, type SceneSummary } from '../api';
 import { connection, useScene } from '../ws';
+import { preloadDecodedImage, waitForDecodedImage } from '../features/assets/imageCache';
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
-  const { campaign } = useScene();
-  const [scenes, setScenes] = useState<{ id: string; name: string; unlocked: boolean }[]>([]);
+  const { campaign, scene } = useScene();
+  const [scenes, setScenes] = useState<SceneSummary[]>([]);
   const [name, setName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [loadingMapId, setLoadingMapId] = useState<string | null>(null);
 
   const reload = () => api.scenes().then(setScenes);
   useEffect(() => { reload(); }, []);
@@ -19,6 +21,22 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
     setRenamingId(null);
     setRenameValue('');
     reload();
+  };
+
+  const warm = (candidate: SceneSummary) => {
+    if (candidate.mapImage) void preloadDecodedImage(candidate.mapImage).catch(() => {});
+  };
+
+  const switchScene = async (candidate: SceneSummary) => {
+    if (loadingMapId) return;
+    if (candidate.id === scene?.id) { onClose(); return; }
+    if (candidate.mapImage) {
+      setLoadingMapId(candidate.id);
+      try { await waitForDecodedImage(candidate.mapImage); } catch { /* Switch and let the board retry. */ }
+      setLoadingMapId(null);
+    }
+    connection.sendControl({ type: 'switchScene', sceneId: candidate.id });
+    onClose();
   };
 
   return (
@@ -41,8 +59,11 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
           ) : (
             <button
               className="flex-1 min-w-0 text-left truncate"
-              onClick={() => { connection.sendControl({ type: 'switchScene', sceneId: s.id }); onClose(); }}
-            >{s.name}</button>
+              onPointerEnter={() => warm(s)}
+              onFocus={() => warm(s)}
+              onClick={() => { void switchScene(s); }}
+              title={s.name}
+            >{s.name}{loadingMapId === s.id ? ' · 地图加载中…' : ''}</button>
           )}
           <button
             title={s.unlocked ? '锁定场景（玩家不可见）' : '解锁场景（玩家可见）'}

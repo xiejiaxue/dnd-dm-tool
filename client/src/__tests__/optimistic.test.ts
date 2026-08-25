@@ -37,4 +37,75 @@ describe('optimistic room projection', () => {
       op: 'addToInitiative', name: 'Goblin', value: 13, source: 'dm', tokenId: 'goblin',
     }])).toBeNull();
   });
+
+  it('predicts synchronized deletion from either the enemy list or initiative strip', () => {
+    const linkedScene: Scene = {
+      ...scene,
+      tokens: [
+        scene.tokens[0],
+        { ...scene.tokens[0], id: 'goblin-2', x: 220 },
+      ],
+      initiative: [
+        { id: 'ini-1', name: 'Goblin #1', value: 15, source: 'dm', sessionId: null, tokenId: 'goblin', active: false },
+        { id: 'ini-2', name: 'Goblin #2', value: 12, source: 'dm', sessionId: null, tokenId: 'goblin-2', active: false },
+      ],
+    };
+
+    const fromEnemyList = applyOptimisticOps({ scene: linkedScene, campaign: null }, [
+      { op: 'removeToken', tokenId: 'goblin' },
+    ]);
+    expect(fromEnemyList?.scene.tokens.map(token => token.id)).toEqual(['goblin-2']);
+    expect(fromEnemyList?.scene.initiative.map(entry => entry.id)).toEqual(['ini-2']);
+
+    const fromInitiative = applyOptimisticOps({ scene: linkedScene, campaign: null }, [
+      { op: 'removeFromInitiative', entryId: 'ini-2' },
+    ]);
+    expect(fromInitiative?.scene.tokens.map(token => token.id)).toEqual(['goblin']);
+    expect(fromInitiative?.scene.initiative.map(entry => entry.id)).toEqual(['ini-1']);
+  });
+
+  it('predicts the same initiative deletion cascade for NPC combatants', () => {
+    const npcScene: Scene = {
+      ...scene,
+      tokens: [{ ...scene.tokens[0], id: 'npc-token', kind: 'npc', name: '老乔', entryId: 'npc:npc-joe' }],
+      initiative: [{ id: 'npc-initiative', name: '老乔 #1', value: 14, source: 'dm', sessionId: null, tokenId: 'npc-token', active: false }],
+    };
+    const result = applyOptimisticOps({ scene: npcScene, campaign: null }, [
+      { op: 'removeFromInitiative', entryId: 'npc-initiative' },
+    ]);
+    expect(result?.scene.tokens).toEqual([]);
+    expect(result?.scene.initiative).toEqual([]);
+  });
+
+  it('removes only an unlinked manual initiative entry', () => {
+    const manualScene: Scene = {
+      ...scene,
+      initiative: [{ id: 'manual', name: 'Lair action', value: 20, source: 'dm', sessionId: null, tokenId: null, active: false }],
+    };
+    const result = applyOptimisticOps({ scene: manualScene, campaign: null }, [
+      { op: 'removeFromInitiative', entryId: 'manual' },
+    ]);
+    expect(result?.scene.tokens).toBe(manualScene.tokens);
+    expect(result?.scene.initiative).toEqual([]);
+  });
+
+  it('projects a pixel-precise fog reveal box without changing the legacy grid', () => {
+    const rect = { x: 12.5, y: 27.25, w: 83.75, h: 46.5 };
+    const result = applyOptimisticOps({ scene, campaign: null }, [{ op: 'revealFogRect', rect }]);
+
+    expect(result?.scene.fogReveals).toEqual([rect]);
+    expect(result?.scene.fog).toBe(scene.fog);
+  });
+
+  it('predicts campaign NPC archive updates and removal', () => {
+    const campaign = { id: 'campaign', name: 'NPC campaign', sceneIds: [scene.id], enemies: [], npcs: [] };
+    const npc = {
+      id: 'npc-1', name: '老乔', aliases: [], role: '老板', location: '旅店', status: 'active' as const,
+      notesMarkdown: '知道密道。', sourceFile: 'npc.md', updatedAt: 1,
+    };
+    const added = applyOptimisticOps({ scene, campaign }, [{ op: 'upsertNpc', npc }]);
+    expect(added?.campaign?.npcs).toEqual([npc]);
+    const removed = applyOptimisticOps(added!, [{ op: 'removeNpc', npcId: npc.id }]);
+    expect(removed?.campaign?.npcs).toEqual([]);
+  });
 });

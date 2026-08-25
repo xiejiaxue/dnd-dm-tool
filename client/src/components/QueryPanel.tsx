@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
-import { api } from '../api';
+import { useState } from 'react';
 import { connection } from '../ws';
 import { useScene } from '../ws';
 import { setPending } from '../pending';
 import DetailDrawer from './DetailDrawer';
-import type { EntryType, IndexEntry, Scene } from '../types';
+import { type EntryType, type IndexEntry, type Scene } from '../types';
+import { useCompendiumSearch } from '../features/compendium/useCompendiumSearch';
+import { useFavoriteNames } from '../features/compendium/useFavoriteNames';
+import { createMonsterToken } from '../features/compendium/monsterToken';
+import { useSceneCatalog } from '../features/campaign/useSceneCatalog';
+import CampaignSceneLibrary from '../features/campaign/CampaignSceneLibrary';
+import NpcPanel from '../features/npc/NpcPanel';
 
-type Tab = 'query' | 'camp' | 'fav';
+type Tab = 'query' | 'camp' | 'npc' | 'fav';
 
 interface Props {
   collapsed: boolean;
@@ -17,104 +22,37 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   const [tab, setTab] = useState<Tab>('query');
   const [q, setQ] = useState('');
   const [type, setType] = useState<EntryType | 'all'>('all');
-  const [results, setResults] = useState<IndexEntry[]>([]);
-  const [resultSource, setResultSource] = useState<'local' | 'online' | 'unavailable' | null>(null);
+  const { results, source: resultSource } = useCompendiumSearch(q, type);
   // DetailDrawer only needs the id trio; both search results and favorites fit it.
   const [detail, setDetail] = useState<{ type: EntryType; id: string; nameZh: string } | null>(null);
   const { scene, role, campaign } = useScene();
   // Favorites tab: resolve the Chinese name for each favorited entryId.
-  const [favNames, setFavNames] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const favs = scene?.favorites ?? [];
-    const missing = favs.filter(f => !(f.entryId in favNames));
-    if (missing.length === 0) return;
-    let alive = true;
-    for (const f of missing) {
-      api.entry(f.type, f.entryId)
-        .then(e => { if (alive) setFavNames(prev => ({ ...prev, [f.entryId]: e.name ?? f.entryId })); })
-        .catch(() => {});
-    }
-    return () => { alive = false; };
-  }, [scene?.favorites, favNames]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const t = setTimeout(() => {
-      const search = async () => {
-        if (!q.trim()) {
-          if (!cancelled) {
-            setResults([]);
-            setResultSource(null);
-          }
-          return;
-        }
-        try {
-          const local = await api.search(q, type);
-          if (cancelled) return;
-          if (local.length > 0) {
-            setResults(local);
-            setResultSource('local');
-            return;
-          }
-          // R2 stays the default source. Only a miss reaches the limited,
-          // cached same-origin Worker proxy for the online 5e 不全书 data.
-          const online = await api.searchOnline(q, type);
-          if (cancelled) return;
-          setResults(online);
-          setResultSource('online');
-        } catch {
-          if (!cancelled) {
-            setResults([]);
-            setResultSource('unavailable');
-          }
-        }
-      };
-      void search();
-    }, 250);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [q, type]);
+  const favorites = scene?.favorites ?? [];
+  const favNames = useFavoriteNames(favorites);
 
   // Resolve the scene id -> {name, unlocked} mapping for the campaign tab's scene
   // list. Players only see DM-unlocked scenes (read-only preview); DMs switch.
-  const [sceneNames, setSceneNames] = useState<Record<string, { name: string; unlocked: boolean }>>({});
-  // Re-fetch the scene id -> {name, unlocked} mapping whenever the campaign's
-  // scene list changes, so a scene the DM unlocks mid-session shows up in the
-  // player's campaign library without a reload.
-  useEffect(() => {
-    api.scenes().then(list => setSceneNames(Object.fromEntries(list.map(s => [s.id, { name: s.name, unlocked: s.unlocked }])))).catch(() => {});
-  }, [campaign?.sceneIds]);
+  const sceneNames = useSceneCatalog(campaign?.sceneIds ?? []);
   // Read-only scene preview for players (map thumbnail + token list).
   const [preview, setPreview] = useState<Scene | null>(null);
 
-  // Directly add a monster token to the scene, tiled in a grid around the
-  // play-area centre so repeated adds don't stack exactly on top of each other.
-  const spawnEnemy = (entryId: string, nameZh: string) => {
+  // Directly add a monster token to a predictable visible spawn zone. Counting
+  // every token prevents different monster types from stacking on each other.
+  const spawnEnemy = (entryId: string, nameZh: string, maximumHitPoints?: number) => {
     if (!scene) return;
-    const area = scene.playArea;
-    const i = scene.tokens.filter(t => t.entryId === entryId).length;
-    const x = area.x + area.w / 2 + (i % 4 - 1) * 100;
-    const y = area.y + area.h / 2 + (Math.floor(i / 4) - 1) * 100;
     connection.sendOps([{
       op: 'addToken',
-      token: {
-        id: `t${Date.now()}-${i}`,
-        kind: 'monster',
-        name: nameZh,
-        entryId,
-        x, y, size: 100,
-        avatar: `/api/token/${entryId}`,
-        color: '#fff',
-      },
+      token: createMonsterToken(
+        scene,
+        { id: entryId, nameZh, hitPoints: maximumHitPoints },
+        `t${Date.now()}-${scene.tokens.length}`,
+      ),
     }]);
   };
-  const addMonsterToScene = (r: IndexEntry) => spawnEnemy(r.id, r.nameZh);
+  const addMonsterToScene = (r: IndexEntry) => spawnEnemy(r.id, r.nameZh, r.hitPoints);
   const isInLibrary = (entryId: string) => (campaign?.enemies ?? []).some(e => e.entryId === entryId);
 
-  const favorites = scene?.favorites ?? [];
-  // Scenes the DM has unlocked for players; rendered once instead of filtering
-  // the sceneIds array twice.
-  const unlockedScenes = (campaign?.sceneIds ?? []).filter(sid => sceneNames[sid]?.unlocked ?? false);
+  const tabs: Tab[] = role === 'dm' ? ['query', 'camp', 'npc', 'fav'] : ['query', 'camp', 'fav'];
 
   // Collapsed: a thin vertical bar so players can reclaim board space.
   if (collapsed) {
@@ -132,10 +70,10 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   return (
     <aside className="w-80 border-l border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
       <div className="flex items-center border-b border-zinc-800">
-        {(['query', 'camp', 'fav'] as Tab[]).map(t => (
+        {tabs.map(t => (
           <button key={t} onClick={() => { setTab(t); setDetail(null); }}
             className={`flex-1 py-2 text-center ${tab === t ? 'text-amber-400 border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
-            {t === 'query' ? '查询' : t === 'camp' ? '战役库' : '收藏夹'}
+            {t === 'query' ? '查询' : t === 'camp' ? '战役库' : t === 'npc' ? 'NPC' : '收藏夹'}
           </button>
         ))}
         <button
@@ -149,7 +87,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
         <DetailDrawer entry={detail} onBack={() => setDetail(null)} />
       ) : (
         <>
-          <div className="p-2 flex gap-1">
+          {tab === 'query' && <div className="p-2 flex gap-1">
             <input value={q} onChange={e => setQ(e.target.value)} placeholder="搜索怪物 / 法术 / 装备…"
               className="flex-1 bg-zinc-800 rounded px-2 py-1 outline-none focus:ring-1 ring-amber-500" />
             <select value={type} onChange={e => setType(e.target.value as EntryType | 'all')} className="bg-zinc-800 rounded px-1">
@@ -159,7 +97,17 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
               <option value="item">装备</option>
               <option value="feat">专长</option>
             </select>
-          </div>
+          </div>}
+          {tab === 'query' && (
+            <div className="px-3 pb-2 text-[10px] text-zinc-600">
+              资料：
+              <a href="https://github.com/tjliqy/5etools-cn" target="_blank" rel="noreferrer" className="hover:text-zinc-400 underline">DND5E 不全书</a>
+              {' + '}
+              <a href="https://github.com/5etools-mirror-3/5etools-src" target="_blank" rel="noreferrer" className="hover:text-zinc-400 underline">5etools</a>
+              {' · 中文数据 '}
+              <a href="https://github.com/tjliqy/5etools-cn/blob/cn2.0/LICENSE.md" target="_blank" rel="noreferrer" className="hover:text-zinc-400 underline">CC BY-NC-SA 4.0</a>
+            </div>
+          )}
           {tab === 'query' && (
             <div className="flex-1 overflow-y-auto">
               {q.trim() && resultSource === 'online' && (
@@ -198,7 +146,12 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
                   )}
                 </div>
               ))}
-              {q.trim() && results.length === 0 && resultSource !== 'unavailable' && <div className="p-3 text-zinc-500 text-xs">无结果</div>}
+              {q.trim() && results.length === 0 && resultSource !== 'unavailable' && (
+                <div className="p-3 text-zinc-500 text-xs">
+                  <span>无结果</span>
+                  {role === 'dm' && <button onClick={() => setTab('npc')} className="ml-2 text-sky-400 hover:text-sky-300">归档为 NPC →</button>}
+                </div>
+              )}
             </div>
           )}
           {tab === 'fav' && (
@@ -223,6 +176,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
               })}
             </div>
           )}
+          {tab === 'npc' && role === 'dm' && <NpcPanel />}
           {tab === 'camp' && (
             <div className="flex-1 overflow-y-auto">
               {role === 'dm' && (
@@ -241,29 +195,15 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
                     </div>
                   ))}
                   {(campaign?.enemies.length ?? 0) === 0 && <div className="p-3 text-zinc-500 text-xs">战役库为空，搜索怪物后点「加入战役库」</div>}
-                  <div className="px-3 py-1.5 text-xs text-zinc-500 bg-zinc-800/40 mt-2">场景 ({campaign?.sceneIds.length ?? 0})</div>
-                  {(campaign?.sceneIds ?? []).map(sid => (
-                    <button key={sid} onClick={() => connection.sendControl({ type: 'switchScene', sceneId: sid })}
-                      className="w-full text-left px-3 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800 text-zinc-200">
-                      {sceneNames[sid]?.name ?? sid}
-                    </button>
-                  ))}
                 </>
               )}
-              {role === 'player' && (
-                <>
-                  <div className="px-3 py-1.5 text-xs text-zinc-500 bg-zinc-800/40">DM 解锁的场景</div>
-                  {unlockedScenes.map(sid => (
-                    <button key={sid} onClick={() => api.scene(sid).then(setPreview).catch(() => {})}
-                      className="w-full text-left px-3 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800 text-zinc-200">
-                      {sceneNames[sid]?.name ?? sid}
-                    </button>
-                  ))}
-                  {unlockedScenes.length === 0 && (
-                    <div className="p-3 text-zinc-500 text-xs">暂无 DM 解锁的场景</div>
-                  )}
-                </>
-              )}
+              <CampaignSceneLibrary
+                role={role}
+                campaign={campaign}
+                catalog={sceneNames}
+                currentSceneId={scene?.id}
+                onPreview={setPreview}
+              />
               {preview && (
                 <div className="absolute inset-0 z-20 bg-zinc-900/95 overflow-y-auto p-3">
                   <div className="flex items-center gap-2 mb-2">

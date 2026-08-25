@@ -12,6 +12,7 @@ export interface RoomAccess extends RoomActor {
   campaignName: string;
   workspaceId: string;
   campaignMemberId: string | null;
+  templateId?: string | null;
 }
 
 export interface RoomSummary {
@@ -36,6 +37,7 @@ interface RoomAccessRow {
   room_role: string;
   member_access_epoch: number;
   campaign_member_id: string | null;
+  template_id: string | null;
 }
 
 interface AssetRow {
@@ -52,11 +54,24 @@ interface InviteRow {
   room_slug: string;
 }
 
+interface PersistentInviteRow {
+  invite_code: string;
+}
+
+export interface RoomInvite {
+  inviteUrl: string;
+  /** Present for the new reusable player invitation, absent for legacy links. */
+  inviteCode?: string;
+  expiresAt: number | null;
+  maxUses: number | null;
+}
+
 export async function requireRoomAccess(env: Env, userId: string, roomSlug: string): Promise<RoomAccess> {
   const row = await env.DB.prepare(
     `SELECT r.id AS room_id, r.slug AS room_slug, r.name AS room_name,
             r.status AS room_status, r.access_epoch AS room_access_epoch,
             c.id AS campaign_id, c.name AS campaign_name, c.workspace_id,
+            json_extract(c.settings_json, '$.roomTemplateId') AS template_id,
             rm.id AS room_member_id, rm.role AS room_role,
             rm.access_epoch AS member_access_epoch, rm.campaign_member_id
        FROM rooms r
@@ -86,11 +101,16 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
     role: row.room_role,
     accessEpoch: row.member_access_epoch,
     campaignMemberId: row.campaign_member_id,
+    templateId: row.template_id,
   };
 }
 
 export function requireRoomModerator(access: RoomAccess): void {
   if (!isRoomModerator(access.role)) throw new HttpError(403, 'FORBIDDEN', '只有主持人或 DM 可以执行此操作');
+}
+
+export function requireRoomHost(access: RoomAccess): void {
+  if (access.role !== 'host') throw new HttpError(403, 'FORBIDDEN', '只有房主可以删除房间');
 }
 
 export async function listRooms(env: Env, userId: string): Promise<RoomSummary[]> {
@@ -114,7 +134,7 @@ export async function listRooms(env: Env, userId: string): Promise<RoomSummary[]
   }] : []);
 }
 
-export async function createRoom(env: Env, session: Session, input: { roomName: string; campaignName?: string }): Promise<RoomAccess> {
+export async function createRoom(env: Env, session: Session, input: { roomName: string; campaignName?: string; templateId?: string }): Promise<RoomAccess> {
   const roomName = nonEmptyText(input.roomName, '房间名称');
   const campaignName = input.campaignName ? nonEmptyText(input.campaignName, '战役名称') : roomName;
   const now = Date.now();
@@ -136,9 +156,9 @@ export async function createRoom(env: Env, session: Session, input: { roomName: 
        VALUES (?1, ?2, 'owner', ?3)`,
     ).bind(workspaceId, session.userId, now),
     env.DB.prepare(
-      `INSERT INTO campaigns (id, workspace_id, created_by_user_id, name, created_at, updated_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?5)`,
-    ).bind(campaignId, workspaceId, session.userId, campaignName, now),
+      `INSERT INTO campaigns (id, workspace_id, created_by_user_id, name, settings_json, created_at, updated_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)`,
+    ).bind(campaignId, workspaceId, session.userId, campaignName, JSON.stringify(input.templateId ? { roomTemplateId: input.templateId } : {}), now),
     env.DB.prepare(
       `INSERT INTO campaign_members (id, campaign_id, user_id, role, status, joined_at)
        VALUES (?1, ?2, ?3, 'owner', 'active', ?4)`,
@@ -168,14 +188,99 @@ export async function createRoom(env: Env, session: Session, input: { roomName: 
     role: 'host',
     accessEpoch: 1,
     campaignMemberId,
+    templateId: input.templateId ?? null,
   };
 }
 
-export async function createRoomInvite(env: Env, access: RoomAccess, input: { role: unknown; maxUses?: unknown }): Promise<{ inviteUrl: string; expiresAt: number }> {
+/**
+ * Makes a room immediately inaccessible while retaining its audit trail.
+ * Campaigns and workspaces are only retired when this was their last room, so
+ * the operation remains safe if the data model later exposes multi-room
+ * campaigns in the UI.
+ */
+export async function deleteRoom(env: Env, access: RoomAccess): Promise<void> {
+  requireRoomHost(access);
+  const now = Date.now();
+  const assetPrefix = roomAssetPrefix(access);
+  const results = await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE rooms
+          SET status = 'deleted', access_epoch = access_epoch + 1,
+              updated_at = ?1, ended_at = COALESCE(ended_at, ?1), deleted_at = ?1
+        WHERE id = ?2 AND deleted_at IS NULL`,
+    ).bind(now, access.roomId),
+    env.DB.prepare(
+      `UPDATE room_members
+          SET status = 'removed', access_epoch = access_epoch + 1, removed_at = COALESCE(removed_at, ?1)
+        WHERE room_id = ?2 AND status != 'removed'`,
+    ).bind(now, access.roomId),
+    env.DB.prepare(
+      `UPDATE invites
+          SET revoked_at = COALESCE(revoked_at, ?1), revoked_by_user_id = COALESCE(revoked_by_user_id, ?2)
+        WHERE room_id = ?3 AND revoked_at IS NULL`,
+    ).bind(now, access.userId, access.roomId),
+    env.DB.prepare(
+      `UPDATE assets SET deleted_at = ?1
+        WHERE workspace_id = ?2 AND campaign_id = ?3
+          AND substr(object_key, 1, length(?4)) = ?4 AND deleted_at IS NULL`,
+    ).bind(now, access.workspaceId, access.campaignId, assetPrefix),
+    env.DB.prepare(
+      `UPDATE campaigns
+          SET status = 'deleted', updated_at = ?1, deleted_at = ?1
+        WHERE id = ?2 AND deleted_at IS NULL
+          AND NOT EXISTS (SELECT 1 FROM rooms WHERE campaign_id = ?2 AND deleted_at IS NULL)`,
+    ).bind(now, access.campaignId),
+    env.DB.prepare(
+      `UPDATE campaign_members
+          SET status = 'removed', permission_epoch = permission_epoch + 1, removed_at = COALESCE(removed_at, ?1)
+        WHERE campaign_id = ?2 AND status != 'removed'
+          AND NOT EXISTS (SELECT 1 FROM campaigns WHERE id = ?2 AND deleted_at IS NULL)`,
+    ).bind(now, access.campaignId),
+    env.DB.prepare(
+      `UPDATE workspaces
+          SET status = 'deleted', updated_at = ?1, deleted_at = ?1
+        WHERE id = ?2 AND deleted_at IS NULL
+          AND NOT EXISTS (SELECT 1 FROM campaigns WHERE workspace_id = ?2 AND deleted_at IS NULL)`,
+    ).bind(now, access.workspaceId),
+    env.DB.prepare(
+      `UPDATE workspace_members
+          SET status = 'removed', removed_at = COALESCE(removed_at, ?1)
+        WHERE workspace_id = ?2 AND status != 'removed'
+          AND NOT EXISTS (SELECT 1 FROM workspaces WHERE id = ?2 AND deleted_at IS NULL)`,
+    ).bind(now, access.workspaceId),
+  ]);
+  if (results[0]?.meta.changes !== 1) throw new HttpError(409, 'ROOM_ALREADY_DELETED', '房间已被删除');
+}
+
+/** Delete private room images after the authorization records have gone away. */
+export async function deleteRoomAssets(env: Env, access: RoomAccess): Promise<void> {
+  const prefix = roomAssetPrefix(access);
+  let cursor: string | undefined;
+  do {
+    const page = await env.ROOM_ASSETS.list({ prefix, ...(cursor ? { cursor } : {}) });
+    if (page.objects.length > 0) await env.ROOM_ASSETS.delete(page.objects.map(object => object.key));
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+}
+
+/** Close active clients and erase the per-room realtime database. */
+export async function deleteRoomLiveState(env: Env, access: RoomAccess): Promise<void> {
+  const response = await callRoom(env, access, 'DELETE', '/destroy');
+  if (!response.ok) throw new Error(`Room state cleanup failed with ${response.status}`);
+}
+
+export async function createRoomInvite(env: Env, access: RoomAccess, input: { role: unknown; maxUses?: unknown }): Promise<RoomInvite> {
   requireRoomModerator(access);
   const role = input.role === 'spectator' ? 'spectator' : input.role === 'player' || input.role === undefined ? 'player' : null;
   if (!role) throw new HttpError(400, 'INVALID_INPUT', '邀请角色只能是玩家或旁观者');
-  const maxUses = input.maxUses === undefined ? 1 : boundedInteger(input.maxUses, 1, 50, '邀请次数');
+
+  // The normal player invitation is intentionally durable: every moderator
+  // receives the same code for this room, and any number of players can
+  // redeem it over time. Supplying maxUses preserves the old limited-link
+  // capability for API callers that explicitly need it.
+  if (input.maxUses === undefined) return getOrCreateReusableRoomInvite(env, access, role);
+
+  const maxUses = boundedInteger(input.maxUses, 1, 50, '邀请次数');
   const rawToken = randomToken(32);
   const now = Date.now();
   const expiresAt = now + 7 * 24 * 60 * 60 * 1_000;
@@ -185,20 +290,67 @@ export async function createRoomInvite(env: Env, access: RoomAccess, input: { ro
      VALUES (?1, 'room', ?2, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
   ).bind(crypto.randomUUID(), access.roomId, access.userId, role, await sha256Hex(rawToken), maxUses, now, expiresAt).run();
 
-  return { inviteUrl: `/r/${encodeURIComponent(access.roomSlug)}#invite=${rawToken}`, expiresAt };
+  return { inviteUrl: `/r/${encodeURIComponent(access.roomSlug)}#invite=${rawToken}`, expiresAt, maxUses };
+}
+
+async function getOrCreateReusableRoomInvite(env: Env, access: RoomAccess, role: 'player' | 'spectator'): Promise<RoomInvite> {
+  const existing = await reusableRoomInvite(env, access.roomId, role);
+  if (existing) return reusableInviteResponse(access.roomSlug, existing.invite_code);
+
+  // The code has 80 bits of entropy and excludes visually ambiguous symbols.
+  // INSERT OR IGNORE also makes concurrent moderator clicks converge on the
+  // single per-room code guaranteed by the partial unique index.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const inviteCode = randomInviteCode();
+    const now = Date.now();
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO invites
+        (id, scope_type, scope_id, room_id, created_by_user_id, grant_role, token_hash, invite_code, max_uses, created_at, expires_at)
+       VALUES (?1, 'room', ?2, ?2, ?3, ?4, ?5, ?6, NULL, ?7, NULL)`,
+    ).bind(
+      crypto.randomUUID(), access.roomId, access.userId, role,
+      await sha256Hex(inviteCode), inviteCode, now,
+    ).run();
+
+    const persisted = await reusableRoomInvite(env, access.roomId, role);
+    if (persisted) return reusableInviteResponse(access.roomSlug, persisted.invite_code);
+  }
+  throw new HttpError(503, 'INVITE_UNAVAILABLE', '暂时无法生成邀请码，请重试');
+}
+
+async function reusableRoomInvite(env: Env, roomId: string, role: 'player' | 'spectator'): Promise<PersistentInviteRow | null> {
+  return env.DB.prepare(
+    `SELECT invite_code
+       FROM invites
+      WHERE scope_type = 'room' AND scope_id = ?1 AND grant_role = ?2
+        AND invite_code IS NOT NULL
+        AND max_uses IS NULL AND expires_at IS NULL AND revoked_at IS NULL
+      ORDER BY created_at DESC
+      LIMIT 1`,
+  ).bind(roomId, role).first<PersistentInviteRow>();
+}
+
+function reusableInviteResponse(roomSlug: string, inviteCode: string): RoomInvite {
+  return {
+    inviteCode,
+    inviteUrl: `/r/${encodeURIComponent(roomSlug)}#invite=${encodeURIComponent(inviteCode)}`,
+    expiresAt: null,
+    maxUses: null,
+  };
 }
 
 export async function redeemRoomInvite(env: Env, session: Session, token: string): Promise<{ roomSlug: string }> {
   const now = Date.now();
+  const inviteCode = normalizeInviteCode(token);
   const invite = await env.DB.prepare(
     `SELECT i.id, i.room_id, i.grant_role, r.slug AS room_slug
        FROM invites i JOIN rooms r ON r.id = i.room_id AND r.deleted_at IS NULL
-      WHERE i.token_hash = ?1
+      WHERE (i.token_hash = ?1 OR i.invite_code = ?2 COLLATE NOCASE)
         AND i.scope_type = 'room'
         AND i.revoked_at IS NULL
-        AND (i.expires_at IS NULL OR i.expires_at > ?2)
+        AND (i.expires_at IS NULL OR i.expires_at > ?3)
         AND (i.max_uses IS NULL OR i.used_count < i.max_uses)`,
-  ).bind(await sha256Hex(token), now).first<InviteRow>();
+  ).bind(await sha256Hex(token), inviteCode, now).first<InviteRow>();
   if (!invite || !isInviteRole(invite.grant_role)) throw new HttpError(404, 'INVITE_NOT_FOUND', '邀请无效、已过期或已用完');
 
   const prior = await env.DB.prepare(
@@ -260,7 +412,7 @@ export async function createAsset(env: Env, access: RoomAccess, file: File, kind
   if (!looksLikeImage(bytes, file.type)) throw new HttpError(415, 'UNSUPPORTED_MEDIA', '文件内容不是声明的图片格式');
 
   const id = crypto.randomUUID();
-  const objectKey = `v1/workspaces/${access.workspaceId}/rooms/${access.roomId}/assets/${id}/source`;
+  const objectKey = `${roomAssetPrefix(access)}${id}/source`;
   const now = Date.now();
   await env.ROOM_ASSETS.put(objectKey, bytes, { httpMetadata: { contentType: file.type } });
   try {
@@ -286,6 +438,10 @@ export async function createAsset(env: Env, access: RoomAccess, file: File, kind
     throw error;
   }
   return { id, url: `/api/rooms/${encodeURIComponent(access.roomSlug)}/assets/${id}` };
+}
+
+function roomAssetPrefix(access: Pick<RoomAccess, 'workspaceId' | 'roomId'>): string {
+  return `v1/workspaces/${access.workspaceId}/rooms/${access.roomId}/assets/`;
 }
 
 export async function getAsset(env: Env, access: RoomAccess, assetId: string): Promise<{ metadata: AssetRow; object: R2ObjectBody }> {
@@ -318,7 +474,12 @@ export async function initializeRoom(env: Env, access: RoomAccess): Promise<void
     new Request('https://room.internal/initialize', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ roomName: access.roomName, campaignName: access.campaignName }),
+      body: JSON.stringify({
+        roomName: access.roomName,
+        campaignName: access.campaignName,
+        roomSlug: access.roomSlug,
+        templateId: access.templateId ?? null,
+      }),
     }),
   );
   if (!response.ok) throw new HttpError(502, 'ROOM_UNAVAILABLE', '房间服务暂时不可用');
@@ -350,6 +511,22 @@ function isRoomRole(value: string): value is RoomRole {
 
 function isInviteRole(value: string): value is 'player' | 'spectator' {
   return value === 'player' || value === 'spectator';
+}
+
+const INVITE_CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+const INVITE_CODE_LENGTH = 16;
+
+function randomInviteCode(): string {
+  const bytes = new Uint8Array(INVITE_CODE_LENGTH);
+  crypto.getRandomValues(bytes);
+  const compact = [...bytes].map(byte => INVITE_CODE_ALPHABET[byte & 31]).join('');
+  return compact.match(/.{1,4}/g)?.join('-') ?? compact;
+}
+
+function normalizeInviteCode(value: string): string | null {
+  const compact = value.trim().toUpperCase().replace(/[\s-]/gu, '');
+  if (!new RegExp(`^[${INVITE_CODE_ALPHABET}]{${INVITE_CODE_LENGTH}}$`, 'u').test(compact)) return null;
+  return compact.match(/.{1,4}/g)?.join('-') ?? compact;
 }
 
 function boundedInteger(value: unknown, minimum: number, maximum: number, label: string): number {

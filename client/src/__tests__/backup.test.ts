@@ -24,6 +24,7 @@ const scene: Scene = {
   }],
   favorites: [{ type: 'monster', entryId: 'MM__Goblin' }],
   fog: [true, false],
+  fogReveals: [{ x: 12.5, y: 27.25, w: 83.75, h: 46.5 }],
   unlocked: true,
 };
 
@@ -31,6 +32,7 @@ describe('scene backup', () => {
   it('creates a portable board backup without retired grid visibility or server-owned player state', async () => {
     const { backup } = await buildSceneBackup(scene, {
       id: 'campaign-live', name: '失落矿坑', sceneIds: ['scene-live'], enemies: [{ entryId: 'MM__Goblin', nameZh: '地精' }],
+      npcs: [{ id: 'npc-1', name: '老乔', aliases: [], role: '老板', location: '旅店', status: 'active', notesMarkdown: '知道密道。', sourceFile: 'npc.md', updatedAt: 1 }],
     });
 
     expect(backup.scene.name).toBe('地下水道');
@@ -38,6 +40,8 @@ describe('scene backup', () => {
     expect(backup.scene).not.toHaveProperty('players');
     expect(backup.scene).not.toHaveProperty('initiative');
     expect(backup.scene.grid).toEqual({ size: 100, offset: [0, 0], snap: true });
+    expect(backup.scene.fogReveals).toEqual(scene.fogReveals);
+    expect(backup.campaign?.npcs).toEqual([expect.objectContaining({ id: 'npc-1', name: '老乔' })]);
   });
 
   it('parses a supported local backup and rejects unsupported versions', () => {
@@ -59,6 +63,7 @@ describe('scene backup', () => {
         tokens: [],
         walls: [],
         favorites: [],
+        fogReveals: [{ x: 11.5, y: 22.25, w: 123.75, h: 87.5 }],
         unlocked: false,
       },
     };
@@ -66,6 +71,7 @@ describe('scene backup', () => {
     const parsed = parseSceneBackup(JSON.stringify(source));
     expect(parsed.scene.mapAssetId).toBe('asset-1');
     expect(parsed.scene.grid).toEqual({ size: 50, offset: [0, 0], snap: false });
+    expect(parsed.scene.fogReveals).toEqual(source.scene.fogReveals);
 
     expect(() => parseSceneBackup(JSON.stringify({ ...source, version: 99 }))).toThrow('不支持的备份文件版本');
   });

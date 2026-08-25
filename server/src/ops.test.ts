@@ -54,7 +54,7 @@ describe('applyOp token ops', () => {
     expect(s.tokens).toHaveLength(0);
   });
 
-  it('auto-numbers monster tokens per entryId', () => {
+  it('auto-numbers monster and NPC encounter tokens per entryId', () => {
     const s = freshScene();
     const mk = (id: string, entryId: string) => ({ id, kind: 'monster' as const, name: '地精', entryId, x: 0, y: 0, size: 100, avatar: '/api/token/x', color: '#fff' });
     applyOp(s, { op: 'addToken', token: mk('a', 'MM__Goblin') });
@@ -63,6 +63,9 @@ describe('applyOp token ops', () => {
     const goblins = s.tokens.filter(t => t.entryId === 'MM__Goblin');
     expect(goblins.map(t => t.number)).toEqual([1, 2]);
     expect(s.tokens.find(t => t.id === 'c')!.number).toBe(1);
+    applyOp(s, { op: 'addToken', token: { id: 'npc-a', kind: 'npc', name: '老乔', entryId: 'npc:joe', x: 0, y: 0, size: 100, avatar: '', color: '#0ea5e9' } });
+    applyOp(s, { op: 'addToken', token: { id: 'npc-b', kind: 'npc', name: '老乔', entryId: 'npc:joe', x: 0, y: 0, size: 100, avatar: '', color: '#0ea5e9' } });
+    expect(s.tokens.filter(t => t.kind === 'npc').map(t => t.number)).toEqual([1, 2]);
   });
 
   it('player tokens get no number', () => {
@@ -164,6 +167,41 @@ describe('applyOp initiative', () => {
     applyOp(s, { op: 'removeFromInitiative', entryId: s.initiative[1].id });
     expect(s.initiative).toHaveLength(1);
   });
+
+  it('upserts a DM initiative entry by token id when rerolling', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addToInitiative', name: 'A', value: 30, source: 'dm', tokenId: 't1' });
+    const existingId = s.initiative[0].id;
+    applyOp(s, { op: 'addToInitiative', name: 'A rerolled', value: 10, source: 'dm', tokenId: 't1' });
+    expect(s.initiative).toEqual([
+      expect.objectContaining({ id: existingId, name: 'A rerolled', value: 10, tokenId: 't1' }),
+    ]);
+  });
+
+  it('cascades deletes between monster tokens and linked initiative entries', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addToken', token: { id: 't1', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 0, y: 0, size: 100, avatar: '', color: '#fff' } });
+    applyOp(s, { op: 'addToken', token: { id: 't2', kind: 'monster', name: '地精', entryId: 'MM__Goblin', x: 100, y: 0, size: 100, avatar: '', color: '#fff' } });
+    applyOp(s, { op: 'addToInitiative', name: '地精 #1', value: 15, source: 'dm', tokenId: 't1' });
+    applyOp(s, { op: 'addToInitiative', name: '地精 #2', value: 12, source: 'dm', tokenId: 't2' });
+
+    applyOp(s, { op: 'removeToken', tokenId: 't1' });
+    expect(s.tokens.map(token => token.id)).toEqual(['t2']);
+    expect(s.initiative.map(entry => entry.tokenId)).toEqual(['t2']);
+
+    applyOp(s, { op: 'removeFromInitiative', entryId: s.initiative[0].id });
+    expect(s.tokens).toEqual([]);
+    expect(s.initiative).toEqual([]);
+  });
+
+  it('cascades initiative deletion to a linked NPC token', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'addToken', token: { id: 'npc-1', kind: 'npc', name: '老乔', entryId: 'npc:npc-joe', x: 0, y: 0, size: 100, avatar: '', color: '#0ea5e9' } });
+    applyOp(s, { op: 'addToInitiative', name: '老乔 #1', value: 11, source: 'dm', tokenId: 'npc-1' });
+    applyOp(s, { op: 'removeFromInitiative', entryId: s.initiative[0].id });
+    expect(s.tokens).toEqual([]);
+    expect(s.initiative).toEqual([]);
+  });
 });
 
 describe('applyOp favorites', () => {
@@ -194,9 +232,17 @@ describe('applyOp fog', () => {
   it('revealAllFog and coverAllFog', () => {
     const s = freshScene();
     applyOp(s, { op: 'revealAllFog' });
-    expect(s.fog!.every(Boolean)).toBe(true);
+    expect(s.fog).toBeUndefined();
+    expect(s.fogReveals).toEqual([{ x: 0, y: 0, w: 1600, h: 1200 }]);
     applyOp(s, { op: 'coverAllFog' });
-    expect(s.fog!.every(x => !x)).toBe(true);
+    expect(s.fog).toBeUndefined();
+    expect(s.fogReveals).toEqual([]);
+  });
+
+  it('reveals arbitrary fog rectangles without snapping to cells', () => {
+    const s = freshScene();
+    applyOp(s, { op: 'revealFogRect', rect: { x: 12.5, y: 27.25, w: 83.75, h: 46.5 } });
+    expect(s.fogReveals).toEqual([{ x: 12.5, y: 27.25, w: 83.75, h: 46.5 }]);
   });
 
   it('unlocked defaults to undefined for old scenes', () => {

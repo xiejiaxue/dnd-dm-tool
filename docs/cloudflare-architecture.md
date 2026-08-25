@@ -39,7 +39,7 @@ Workspace（桌团 / 租户边界）
 | 桌团、战役、成员、角色、队伍 | D1 | 稳定关系与租户隔离 |
 | 房间 slug、成员、邀请、权限 epoch | D1 | 连接前的权限判定 |
 | 当前棋盘、先攻、操作序号、命令回执 | 每房间 DO SQLite | 单写者、低延迟、断线恢复 |
-| 地图、头像、附件、规则书 JSON | 私有 R2 | 二进制对象不进入 SQL 行 |
+| 地图、头像、附件、规则书与跑团模板 | 私有 R2 | 二进制对象不进入 SQL 行 |
 
 `party_members.party_role` 只负责 roster 的“队长/成员”显示与角色组织；它永远不会自动变成 DM 或绕过 room membership。真正的最后授权边界是 `room_members`。
 
@@ -66,8 +66,8 @@ Workspace（桌团 / 租户边界）
 ## 房间、邀请与实时协议
 
 1. Host 创建房间：Worker 原子创建 workspace、campaign、room 和 host membership，然后初始化 `room:<id>` DO。
-2. Host 创建邀请：Worker 生成 256-bit 随机 token，D1 只保存摘要；默认一次使用、7 天到期、可设 Player/Spectator。
-3. 分享链接：`/r/<slug>#invite=<token>`。fragment 不会出现在 HTTP request 或 Referer；客户端兑换成功后立即清除 fragment。
+2. Host 创建邀请：默认生成一个永久、可重复使用的玩家邀请码；D1 同时保存规范化邀请码和摘要。显式提供 `maxUses` 的 API 调用仍可生成有限次数、7 天到期的临时邀请。
+3. 分享链接：`/r/<slug>#invite=<code>`。fragment 不会出现在 HTTP request 或 Referer；客户端兑换成功后立即清除 fragment。
 4. 兑换：D1 条件更新 `used_count`，创建 `room_members` 与 `invite_redemptions`。未兑换用户访问 room 返回泛化 404，不能枚举房间。
 5. WebSocket：Worker 从 Cookie + D1 派生 `userId/memberId/role/accessEpoch`，仅以内部 header 转给 DO。浏览器 payload 中没有角色、DM token、sessionId 或可信 userId。
 
@@ -82,7 +82,11 @@ Workspace（桌团 / 租户边界）
 
 ## 数据投影与迷雾
 
-DM 收到完整房间状态。Player/Spectator 投影会去掉敌人库，并将其他玩家的稳定身份 ID 置空；DO 不再像旧架构那样把一份完整原始状态无差别广播给所有 WebSocket。
+DM 收到完整房间状态。Player/Spectator 投影会去掉敌人库和 DM 的 NPC 档案，并将其他玩家的稳定身份 ID 置空；DO 不再像旧架构那样把一份完整原始状态无差别广播给所有 WebSocket。
+
+NPC 档案是战役级数据，跨场景保存名称、别名、身份、位置、状态、Markdown 备注和来源文件。浏览器只负责解析本地 Markdown；最终 `upsertNpc` 仍由 Worker 限制字段长度、档案数量和角色权限，再写入房间 DO。NPC Token 使用独立 `npc` 类型和档案关联 ID，因此不会进入敌人栏、怪物 HP 补全或怪物自动先攻。
+
+DM 的迷雾擦除采用地图原始坐标中的矩形区域：按下确定起点、拖动预览、松开提交 `revealFogRect`。矩形使用连续像素坐标，不吸附旧的 50px 迷雾格；客户端将旧格子与新矩形合并投影，因此历史房间和备份保持兼容。Worker 校验区域边界和数量后在 DO 事务中持久化并广播，地图校准缩放只影响渲染倍率，不改变已擦除区域的相对位置。
 
 不过“整图原图已经发送到浏览器”时，CSS/Konva 雾只能是视觉效果，不能保密。这一版明确把它称为 `cosmetic fog`。若游戏需要真正隐藏地图，下一阶段必须把地图切片/派生，并仅按可见格向玩家签发 tile；不要把 CSS 遮罩当作安全功能。
 
@@ -90,6 +94,7 @@ DM 收到完整房间状态。Player/Spectator 投影会去掉敌人库，并将
 
 - 房间上传：Worker 目前直接校验并写入最多 10 MiB 的 JPEG/PNG/WebP/AVIF，检查文件签名，并返回受鉴权的相对 URL。更大地图应升级为短期、单对象的 R2 直传 intent。
 - 规则书：`npm run data:update` 在 Node/CI 下载并生成索引；`npm run data:publish` 将 `index.json` 和各 book JSON 上传到 `REFERENCE_DATA`。Worker 搜索索引并按需读取一个 book，再返回单个条目。
+- 跑团模板：`output/room-templates/index.json` 是模板目录，每个模板在 `room-templates/<templateId>/manifest.json` 保存只读场景与 NPC 快照，地图使用带内容摘要的对象 ID。创建房间前 Worker 验证 manifest，并在对应 Room DO 中生成新的 campaign/scene ID；房间之间不共享可变状态。模板地图通过 `/api/rooms/:slug/template-assets/:templateId/:assetId` 返回，仍需 D1 房间成员权限。
 - 旧 `sharp` 图像裁剪没有进入 Worker；规则书 token 无 R2 缓存时会返回无害 SVG 占位图。
 
 ## 生产域名与公开配置

@@ -1,8 +1,6 @@
 import {
   type Campaign,
-  type EntryType,
-  type Favorite,
-  FOG_CELL,
+  DEFAULT_TOKEN_SIZE,
   fogGridSize,
   type GridConfig,
   type InitiativeEntry,
@@ -11,9 +9,10 @@ import {
   type PlayerToken,
   type Role,
   type Scene,
+  type SceneFolder,
   type Token,
-  type Wall,
 } from '../../shared/types';
+import { addFogReveal, fogExtent } from '../../shared/fog-rects';
 
 /** Roles are assigned by D1. They are never accepted from a browser payload. */
 export type RoomRole = 'host' | 'dm' | 'assistant_dm' | 'player' | 'spectator';
@@ -84,6 +83,8 @@ export function createScene(name: string): Scene {
     walls: [],
     initiative: [],
     favorites: [],
+    fogReveals: [],
+    fogVersion: 2,
     unlocked: true,
   };
 }
@@ -93,7 +94,11 @@ export function createCampaign(name: string, firstSceneId: string): Campaign {
     id: newOpaqueId('campaign'),
     name: normalizeName(name, '未命名战役'),
     sceneIds: [firstSceneId],
+    sceneFolders: [],
+    sceneFolderAssignments: {},
+    sceneFoldersInitialized: true,
     enemies: [],
+    npcs: [],
   };
 }
 
@@ -147,7 +152,7 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
     scene: playerScene,
     // Encounter-library contents are DM-only. The campaign name and unlocked
     // scene ids are enough for the existing player board.
-    campaign: { ...structuredClone(campaign), enemies: [] },
+    campaign: { ...structuredClone(campaign), enemies: [], npcs: [] },
     viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage: false },
   };
 }
@@ -163,7 +168,7 @@ export function ensurePlayerToken(state: PersistedRoomState, actor: RoomActor): 
     entryId: null,
     x: 200 + scene.players.length * 60,
     y: 200,
-    size: 48,
+    size: DEFAULT_TOKEN_SIZE,
     avatar: '',
     color: '#38a169',
     sessionId: actor.userId,
@@ -172,111 +177,21 @@ export function ensurePlayerToken(state: PersistedRoomState, actor: RoomActor): 
 }
 
 /**
- * Parse an untrusted legacy board operation and turn it into a server-owned
- * mutation. This compatibility layer keeps the current Konva UI working while
- * identity and permission decisions stay in the Durable Object.
+ * Upgrade player tokens created before the shared 100px token-size contract.
+ * This is deliberately server-owned: clients cannot resize characters through
+ * this migration path, but every active room converges as soon as it reconnects.
  */
-export function authorizeOperation(value: unknown, state: PersistedRoomState, actor: RoomActor): Op {
-  if (!isRecord(value) || typeof value.op !== 'string') throw new DomainError('INVALID', '操作格式无效');
-  const op = value.op;
-  const dm = isRoomModerator(actor.role);
-
-  if (!dm) return authorizePlayerOperation(value, state, actor);
-
-  switch (op) {
-    case 'moveToken':
-      return { op, tokenId: id(value.tokenId), x: coordinate(value.x), y: coordinate(value.y) };
-    case 'addToken':
-      return { op, token: token(value.token, 'monster') };
-    case 'removeToken':
-      return { op, tokenId: id(value.tokenId) };
-    case 'updateToken':
-      return { op, tokenId: id(value.tokenId), patch: tokenPatch(value.patch) };
-    case 'addPlayer':
-      return { op, player: playerToken(value.player, null) };
-    case 'removePlayer':
-      return { op, tokenId: id(value.tokenId) };
-    case 'updatePlayer':
-      return { op, tokenId: id(value.tokenId), patch: playerPatch(value.patch, true) };
-    case 'addWall':
-      return { op, wall: wall(value.wall) };
-    case 'removeWall':
-      return { op, wallId: id(value.wallId) };
-    case 'updateGrid':
-      return { op, patch: gridPatch(value.patch) };
-    case 'updateMap':
-      return { op, mapImage: mapUrl(value.mapImage), mapSize: sizePair(value.mapSize), playArea: playArea(value.playArea) };
-    case 'updateMapScale':
-      return { op, mapScale: boundedNumber(value.mapScale, 0.1, 8) };
-    case 'addEnemy':
-      return { op, entryId: shortText(value.entryId, 180), nameZh: shortText(value.nameZh, 120) };
-    case 'removeEnemy':
-      return { op, entryId: shortText(value.entryId, 180) };
-    case 'submitInitiative':
-      return {
-        op,
-        name: shortText(value.name, 120),
-        value: boundedNumber(value.value, -100, 100),
-        tokenId: nullableId(value.tokenId),
-        sessionId: null,
-      };
-    case 'addToInitiative':
-      return { op, name: shortText(value.name, 120), value: boundedNumber(value.value, -100, 100), source: 'dm', tokenId: nullableId(value.tokenId) };
-    case 'removeFromInitiative':
-      return { op, entryId: id(value.entryId) };
-    case 'advanceTurn':
-      return { op };
-    case 'reorderInitiative':
-      return { op, order: idList(value.order, 250) };
-    case 'addFavorite':
-      return { op, favorite: favorite(value.favorite) };
-    case 'removeFavorite':
-      return { op, type: entryType(value.type), entryId: shortText(value.entryId, 180) };
-    case 'setFog':
-      return { op, cells: integerList(value.cells, 2_000, 0, 2_000_000), revealed: value.revealed === true };
-    case 'revealAllFog':
-    case 'coverAllFog':
-      return { op };
-    // A room cannot switch to an arbitrary D1 campaign from a browser. This
-    // compatibility command only permits a campaign that already belongs to
-    // this room's persisted state.
-    case 'switchCampaign': {
-      const campaignId = id(value.campaignId);
-      if (!state.campaigns[campaignId]) throw new DomainError('INVALID', '战役不属于当前房间');
-      return { op, campaignId };
+export function normalizeLegacyPlayerTokenSizes(state: PersistedRoomState): PlayerToken[] {
+  const active = activeScene(state);
+  const changedActivePlayers: PlayerToken[] = [];
+  for (const scene of Object.values(state.scenes)) {
+    for (const player of scene.players) {
+      if (player.size === DEFAULT_TOKEN_SIZE) continue;
+      player.size = DEFAULT_TOKEN_SIZE;
+      if (scene.id === active.id) changedActivePlayers.push(structuredClone(player));
     }
-    default:
-      throw new DomainError('INVALID', '未知操作');
   }
-}
-
-function authorizePlayerOperation(value: Record<string, unknown>, state: PersistedRoomState, actor: RoomActor): Op {
-  const scene = activeScene(state);
-  const own = scene.players.find((player) => player.sessionId === actor.userId);
-  switch (value.op) {
-    case 'moveToken': {
-      const tokenId = id(value.tokenId);
-      if (!own || own.id !== tokenId) throw new DomainError('FORBIDDEN', '只能移动自己的角色');
-      return { op: 'moveToken', tokenId, x: coordinate(value.x), y: coordinate(value.y) };
-    }
-    case 'updatePlayer': {
-      const tokenId = id(value.tokenId);
-      if (!own || own.id !== tokenId) throw new DomainError('FORBIDDEN', '只能编辑自己的角色');
-      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, false) };
-    }
-    case 'submitInitiative': {
-      if (!own) throw new DomainError('FORBIDDEN', '尚未认领角色');
-      return {
-        op: 'submitInitiative',
-        name: own.name,
-        value: boundedNumber(value.value, -100, 100),
-        tokenId: own.id,
-        sessionId: actor.userId,
-      };
-    }
-    default:
-      throw new DomainError('FORBIDDEN', '当前身份不能执行此操作');
-  }
+  return changedActivePlayers;
 }
 
 export function applyOperation(state: PersistedRoomState, op: Op): void {
@@ -285,8 +200,8 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'addToken': {
       if (!scene.tokens.some((item) => item.id === op.token.id)) {
         const next = { ...op.token };
-        if (next.kind === 'monster' && next.entryId) {
-          const same = scene.tokens.filter((item) => item.kind === 'monster' && item.entryId === next.entryId);
+        if ((next.kind === 'monster' || next.kind === 'npc') && next.entryId) {
+          const same = scene.tokens.filter((item) => item.kind === next.kind && item.entryId === next.entryId);
           next.number = Math.max(0, ...same.map((item) => item.number ?? 0)) + 1;
         }
         scene.tokens.push(next);
@@ -300,6 +215,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     }
     case 'removeToken':
       scene.tokens = scene.tokens.filter((item) => item.id !== op.tokenId);
+      scene.initiative = scene.initiative.filter((entry) => entry.tokenId !== op.tokenId);
       return;
     case 'updateToken': {
       const target = scene.tokens.find((item) => item.id === op.tokenId);
@@ -332,6 +248,8 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       scene.playArea = op.playArea;
       scene.mapScale = 1;
       scene.fog = undefined;
+      scene.fogReveals = [];
+      scene.fogVersion = 2;
       return;
     case 'updateMapScale':
       scene.mapScale = op.mapScale;
@@ -346,6 +264,19 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'removeEnemy':
       activeCampaign(state).enemies = activeCampaign(state).enemies.filter((entry) => entry.entryId !== op.entryId);
       return;
+    case 'upsertNpc': {
+      const campaign = activeCampaign(state);
+      const npcs = campaign.npcs ?? (campaign.npcs = []);
+      const index = npcs.findIndex((npc) => npc.id === op.npc.id);
+      if (index >= 0) npcs[index] = structuredClone(op.npc);
+      else npcs.push(structuredClone(op.npc));
+      return;
+    }
+    case 'removeNpc': {
+      const campaign = activeCampaign(state);
+      campaign.npcs = (campaign.npcs ?? []).filter((npc) => npc.id !== op.npcId);
+      return;
+    }
     case 'switchCampaign': {
       const campaign = state.campaigns[op.campaignId];
       if (!campaign) return;
@@ -375,21 +306,36 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       scene.initiative = sortInitiative(scene.initiative);
       return;
     }
-    case 'addToInitiative':
-      scene.initiative.push({
-        id: newOpaqueId('initiative'),
-        name: op.name,
-        value: op.value,
-        source: 'dm',
-        sessionId: null,
-        tokenId: op.tokenId,
-        active: false,
-      });
+    case 'addToInitiative': {
+      const existing = op.tokenId
+        ? scene.initiative.find((entry) => entry.tokenId === op.tokenId)
+        : undefined;
+      if (existing) {
+        existing.name = op.name;
+        existing.value = op.value;
+        existing.source = 'dm';
+      } else {
+        scene.initiative.push({
+          id: newOpaqueId('initiative'),
+          name: op.name,
+          value: op.value,
+          source: 'dm',
+          sessionId: null,
+          tokenId: op.tokenId,
+          active: false,
+        });
+      }
       scene.initiative = sortInitiative(scene.initiative);
       return;
-    case 'removeFromInitiative':
+    }
+    case 'removeFromInitiative': {
+      const linkedCombatantTokenId = scene.initiative.find((entry) => entry.id === op.entryId)?.tokenId;
       scene.initiative = scene.initiative.filter((entry) => entry.id !== op.entryId);
+      if (linkedCombatantTokenId && scene.tokens.some((token) => token.id === linkedCombatantTokenId && (token.kind === 'monster' || token.kind === 'npc'))) {
+        scene.tokens = scene.tokens.filter((token) => token.id !== linkedCombatantTokenId);
+      }
       return;
+    }
     case 'advanceTurn':
       scene.initiative = advanceInitiative(scene.initiative);
       return;
@@ -416,11 +362,18 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       for (const cell of op.cells) if (cell >= 0 && cell < fog.length) fog[cell] = op.revealed;
       return;
     }
-    case 'revealAllFog':
-      ensureFog(scene).fill(true);
+    case 'revealFogRect':
+      scene.fogReveals = addFogReveal(scene.fogReveals ?? [], op.rect);
       return;
+    case 'revealAllFog': {
+      const { width, height } = fogExtent(scene);
+      scene.fog = undefined;
+      scene.fogReveals = [{ x: 0, y: 0, w: width, h: height }];
+      return;
+    }
     case 'coverAllFog':
-      ensureFog(scene).fill(false);
+      scene.fog = undefined;
+      scene.fogReveals = [];
       return;
   }
 }
@@ -448,9 +401,65 @@ export function deleteScene(state: PersistedRoomState, sceneId: string): boolean
   const campaign = activeCampaign(state);
   if (!campaign.sceneIds.includes(sceneId) || campaign.sceneIds.length <= 1) return false;
   campaign.sceneIds = campaign.sceneIds.filter((id) => id !== sceneId);
+  if (campaign.sceneFolderAssignments) delete campaign.sceneFolderAssignments[sceneId];
   delete state.scenes[sceneId];
   if (state.currentSceneId === sceneId) state.currentSceneId = campaign.sceneIds[0];
   return true;
+}
+
+export function createSceneFolder(state: PersistedRoomState, name: string): SceneFolder {
+  const campaign = activeCampaign(state);
+  const normalized = normalizeName(name, '未命名章节');
+  const folders = campaign.sceneFolders ??= [];
+  if (folders.length >= 100) throw new DomainError('INVALID', '一个战役最多创建 100 个场景文件夹');
+  if (folders.some(folder => folder.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) {
+    throw new DomainError('INVALID', '同名场景文件夹已存在');
+  }
+  const folder = { id: newOpaqueId('folder'), name: normalized };
+  folders.push(folder);
+  campaign.sceneFolderAssignments ??= {};
+  campaign.sceneFoldersInitialized = true;
+  return folder;
+}
+
+export function renameSceneFolder(state: PersistedRoomState, folderId: string, name: string): void {
+  const campaign = activeCampaign(state);
+  const folder = campaign.sceneFolders?.find(candidate => candidate.id === folderId);
+  if (!folder) throw new DomainError('NOT_FOUND', '找不到场景文件夹');
+  const normalized = normalizeName(name, folder.name);
+  if (campaign.sceneFolders?.some(candidate => candidate.id !== folderId
+    && candidate.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) {
+    throw new DomainError('INVALID', '同名场景文件夹已存在');
+  }
+  folder.name = normalized;
+}
+
+/** Deleting organization never deletes maps; affected scenes become ungrouped. */
+export function deleteSceneFolder(state: PersistedRoomState, folderId: string): void {
+  const campaign = activeCampaign(state);
+  if (!campaign.sceneFolders?.some(folder => folder.id === folderId)) {
+    throw new DomainError('NOT_FOUND', '找不到场景文件夹');
+  }
+  campaign.sceneFolders = campaign.sceneFolders.filter(folder => folder.id !== folderId);
+  const assignments = campaign.sceneFolderAssignments ??= {};
+  for (const [sceneId, assignedFolderId] of Object.entries(assignments)) {
+    if (assignedFolderId === folderId) delete assignments[sceneId];
+  }
+  campaign.sceneFoldersInitialized = true;
+}
+
+export function moveSceneToFolder(state: PersistedRoomState, sceneId: string, folderId: string | null): void {
+  const campaign = activeCampaign(state);
+  if (!campaign.sceneIds.includes(sceneId) || !state.scenes[sceneId]) {
+    throw new DomainError('NOT_FOUND', '找不到场景');
+  }
+  if (folderId && !campaign.sceneFolders?.some(folder => folder.id === folderId)) {
+    throw new DomainError('NOT_FOUND', '找不到场景文件夹');
+  }
+  const assignments = campaign.sceneFolderAssignments ??= {};
+  if (folderId) assignments[sceneId] = folderId;
+  else delete assignments[sceneId];
+  campaign.sceneFoldersInitialized = true;
 }
 
 export function renameScene(state: PersistedRoomState, sceneId: string, name: string): void {
@@ -482,6 +491,7 @@ function ensureFog(scene: Scene): boolean[] {
   const { cols, rows } = fogGridSize(scene);
   const length = cols * rows;
   if (!scene.fog || scene.fog.length !== length) scene.fog = new Array(length).fill(false);
+  scene.fogVersion = 2;
   return scene.fog;
 }
 
@@ -502,178 +512,7 @@ function advanceInitiative(entries: InitiativeEntry[]): InitiativeEntry[] {
   return next;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function id(value: unknown): string {
-  return shortText(value, 180);
-}
-
-function nullableId(value: unknown): string | null {
-  return value === null ? null : id(value);
-}
-
-function shortText(value: unknown, maxLength: number): string {
-  if (typeof value !== 'string') throw new DomainError('INVALID', '需要文本字段');
-  const normalized = value.trim();
-  if (normalized.length === 0 || normalized.length > maxLength) throw new DomainError('INVALID', '文本长度无效');
-  return normalized;
-}
-
 function normalizeName(value: string, fallback: string): string {
   const normalized = value.trim().slice(0, 120);
   return normalized || fallback;
 }
-
-function boundedNumber(value: unknown, min: number, max: number): number {
-  if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) {
-    throw new DomainError('INVALID', '数值超出允许范围');
-  }
-  return value;
-}
-
-function coordinate(value: unknown): number {
-  return boundedNumber(value, -100_000, 100_000);
-}
-
-function integerList(value: unknown, maxItems: number, min: number, max: number): number[] {
-  if (!Array.isArray(value) || value.length > maxItems) throw new DomainError('INVALID', '数组长度无效');
-  return [...new Set(value.map((item) => {
-    if (!Number.isInteger(item) || typeof item !== 'number' || item < min || item > max) {
-      throw new DomainError('INVALID', '数组元素无效');
-    }
-    return item;
-  }))];
-}
-
-function idList(value: unknown, maxItems: number): string[] {
-  if (!Array.isArray(value) || value.length > maxItems) throw new DomainError('INVALID', '数组长度无效');
-  return [...new Set(value.map((item) => id(item)))];
-}
-
-function sizePair(value: unknown): [number, number] {
-  if (!Array.isArray(value) || value.length !== 2) throw new DomainError('INVALID', '尺寸无效');
-  return [boundedNumber(value[0], 1, 20_000), boundedNumber(value[1], 1, 20_000)];
-}
-
-function point(value: unknown): [number, number] {
-  if (!Array.isArray(value) || value.length !== 2) throw new DomainError('INVALID', '坐标无效');
-  return [coordinate(value[0]), coordinate(value[1])];
-}
-
-function playArea(value: unknown): PlayArea {
-  if (!isRecord(value)) throw new DomainError('INVALID', '区域无效');
-  return {
-    x: coordinate(value.x),
-    y: coordinate(value.y),
-    w: boundedNumber(value.w, 1, 20_000),
-    h: boundedNumber(value.h, 1, 20_000),
-  };
-}
-
-function mapUrl(value: unknown): string | null {
-  if (value === null) return null;
-  const url = shortText(value, 500);
-  // Room assets are always served through an authenticated same-origin route.
-  if (!url.startsWith('/api/rooms/')) throw new DomainError('INVALID', '地图必须引用当前房间的私有素材');
-  return url;
-}
-
-function token(value: unknown, requiredKind: 'monster' | 'player'): Token {
-  if (!isRecord(value)) throw new DomainError('INVALID', 'Token 无效');
-  const entry = value.entryId === null ? null : shortText(value.entryId, 180);
-  return {
-    id: newOpaqueId('token'),
-    kind: requiredKind,
-    name: shortText(value.name, 120),
-    entryId: entry,
-    x: coordinate(value.x),
-    y: coordinate(value.y),
-    size: boundedNumber(value.size, 12, 500),
-    avatar: optionalAssetUrl(value.avatar),
-    color: color(value.color),
-    hp: hp(value.hp),
-  };
-}
-
-function playerToken(value: unknown, sessionId: string | null): PlayerToken {
-  const base = token(value, 'player');
-  return { ...base, sessionId };
-}
-
-function wall(value: unknown): Wall {
-  if (!isRecord(value)) throw new DomainError('INVALID', '墙体无效');
-  return { id: newOpaqueId('wall'), p1: point(value.p1), p2: point(value.p2) };
-}
-
-function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> {
-  if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> = {};
-  if (value.name !== undefined) patch.name = shortText(value.name, 120);
-  if (value.size !== undefined) patch.size = boundedNumber(value.size, 12, 500);
-  if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
-  if (value.color !== undefined) patch.color = color(value.color);
-  if (value.hp !== undefined) patch.hp = hp(value.hp);
-  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
-  return patch;
-}
-
-function playerPatch(value: unknown, maySetHp: boolean): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> {
-  if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> = {};
-  if (value.name !== undefined) patch.name = shortText(value.name, 120);
-  if (value.color !== undefined) patch.color = color(value.color);
-  if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
-  if (maySetHp && value.hp !== undefined) patch.hp = hp(value.hp);
-  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
-  return patch;
-}
-
-function gridPatch(value: unknown): Partial<GridConfig> {
-  if (!isRecord(value)) throw new DomainError('INVALID', '网格设置无效');
-  const patch: Partial<GridConfig> = {};
-  if (value.size !== undefined) patch.size = boundedNumber(value.size, 10, 500);
-  if (value.color !== undefined) patch.color = color(value.color);
-  if (value.offset !== undefined) patch.offset = point(value.offset);
-  if (value.snap !== undefined) {
-    if (typeof value.snap !== 'boolean') throw new DomainError('INVALID', '网格设置无效');
-    patch.snap = value.snap;
-  }
-  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
-  return patch;
-}
-
-function optionalAssetUrl(value: unknown): string {
-  if (typeof value !== 'string') throw new DomainError('INVALID', '素材地址无效');
-  if (value === '') return '';
-  return mapUrl(value) ?? '';
-}
-
-function color(value: unknown): string {
-  const candidate = shortText(value, 32);
-  if (!/^#[0-9a-fA-F]{3,8}$|^rgba?\([0-9.,\s%]+\)$/.test(candidate)) {
-    throw new DomainError('INVALID', '颜色格式无效');
-  }
-  return candidate;
-}
-
-function hp(value: unknown): { current: number; max: number } | undefined {
-  if (value === undefined) return undefined;
-  if (!isRecord(value)) throw new DomainError('INVALID', '生命值无效');
-  return { current: boundedNumber(value.current, -10_000, 100_000), max: boundedNumber(value.max, 1, 100_000) };
-}
-
-function entryType(value: unknown): EntryType {
-  if (value === 'monster' || value === 'spell' || value === 'item' || value === 'feat' || value === 'condition') return value;
-  throw new DomainError('INVALID', '条目类型无效');
-}
-
-function favorite(value: unknown): Favorite {
-  if (!isRecord(value)) throw new DomainError('INVALID', '收藏无效');
-  return { type: entryType(value.type), entryId: shortText(value.entryId, 180) };
-}
-
-// Keep the value referenced so Tree Shaking cannot accidentally erase the
-// fog-cell contract from the worker bundle while the client still imports it.
-void FOG_CELL;

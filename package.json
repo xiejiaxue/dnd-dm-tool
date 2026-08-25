@@ -24,7 +24,10 @@
     "test:worker": "vitest run --config vitest.worker.config.ts",
     "test:watch": "vitest",
     "data:update": "node scripts/data-update.mjs",
-    "data:publish": "node scripts/data-publish.mjs"
+    "data:publish": "node scripts/data-publish.mjs",
+    "template:build:waterdeep": "node scripts/build-waterdeep-template.mjs",
+    "template:build:waterdeep-remix": "node scripts/build-waterdeep-remix-template.mjs",
+    "template:publish": "node scripts/publish-room-templates.mjs"
   },
   "dependencies": {
     "express": "^4.19.2",

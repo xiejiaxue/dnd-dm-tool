@@ -1,4 +1,5 @@
-import type { Campaign, Favorite, Scene, Token } from './types';
+import { MAX_FOG_REVEAL_RECTS } from '../../shared/fog-rects';
+import type { Campaign, Favorite, FogRect, NpcRecord, NpcStatus, Scene, Token } from './types';
 
 export const SCENE_BACKUP_FORMAT = 'dnd-dm-tool.scene-backup';
 export const SCENE_BACKUP_VERSION = 1;
@@ -19,6 +20,7 @@ export interface BackupAsset {
 }
 
 export interface BackupToken {
+  kind?: 'monster' | 'npc';
   name: string;
   entryId: string | null;
   x: number;
@@ -46,10 +48,11 @@ export interface SceneBackup {
     walls: Array<{ p1: [number, number]; p2: [number, number] }>;
     favorites: Favorite[];
     fog?: boolean[];
+    fogReveals?: FogRect[];
     unlocked: boolean;
   };
   assets: Record<string, BackupAsset>;
-  campaign?: { name: string; enemies: Array<{ entryId: string; nameZh: string }> };
+  campaign?: { name: string; enemies: Array<{ entryId: string; nameZh: string }>; npcs?: NpcRecord[] };
 }
 
 export interface BuiltSceneBackup {
@@ -134,6 +137,7 @@ export async function buildSceneBackup(scene: Scene, campaign: Campaign | null):
   for (const [index, token] of scene.tokens.entries()) {
     const avatarAssetId = token.avatar ? await assetIdFor(token.avatar, `token-${index + 1}`) : undefined;
     tokens.push({
+      kind: token.kind === 'npc' ? 'npc' : 'monster',
       name: token.name,
       entryId: token.entryId,
       x: token.x,
@@ -158,9 +162,13 @@ export async function buildSceneBackup(scene: Scene, campaign: Campaign | null):
         grid: { size: scene.grid.size, offset: [...scene.grid.offset] as [number, number], snap: scene.grid.snap },
         playArea: { ...scene.playArea },
         tokens,
-        walls: scene.walls.map(wall => ({ p1: [...wall.p1] as [number, number], p2: [...wall.p2] as [number, number] })),
+        walls: scene.walls.map(wall => ({
+          p1: [...wall.p1] as [number, number],
+          p2: [...wall.p2] as [number, number],
+        })),
         favorites: scene.favorites.map(favorite => ({ ...favorite })),
         ...(scene.fog ? { fog: [...scene.fog] } : {}),
+        ...(scene.fogReveals ? { fogReveals: scene.fogReveals.map(rect => ({ ...rect })) } : {}),
         unlocked: Boolean(scene.unlocked),
       },
       assets,
@@ -168,6 +176,12 @@ export async function buildSceneBackup(scene: Scene, campaign: Campaign | null):
         campaign: {
           name: campaign.name,
           enemies: campaign.enemies.map(enemy => ({ ...enemy })),
+          npcs: (campaign.npcs ?? []).map(npc => ({
+            ...npc,
+            aliases: [...npc.aliases],
+            groupPath: [...(npc.groupPath ?? [])],
+            statReference: npc.statReference ? { ...npc.statReference } : undefined,
+          })),
         },
       } : {}),
     },
@@ -189,6 +203,14 @@ function text(value: unknown, label: string, maxLength: number): string {
 
 function optionalText(value: unknown, label: string, maxLength: number): string | undefined {
   return value === undefined ? undefined : text(value, label, maxLength);
+}
+
+function looseText(value: unknown, label: string, maxLength: number): string {
+  if (value === undefined || value === null || value === '') return '';
+  if (typeof value !== 'string') throw new Error(`${label}必须是文本`);
+  const trimmed = value.trim();
+  if (trimmed.length > maxLength) throw new Error(`${label}长度无效`);
+  return trimmed;
 }
 
 function numberIn(value: unknown, label: string, min: number, max: number): number {
@@ -240,7 +262,10 @@ function parseToken(value: unknown, assets: Record<string, BackupAsset>): Backup
   if (rawEntryId !== null && typeof rawEntryId !== 'string') throw new Error('条目 ID 无效');
   const entryId = rawEntryId === null ? null : text(rawEntryId, '条目 ID', 180);
   const avatarAssetId = assetId(input.avatarAssetId, assets, '头像素材');
+  const kind = input.kind === undefined || input.kind === 'monster' ? 'monster' : input.kind === 'npc' ? 'npc' : null;
+  if (!kind) throw new Error('Token 类型无效');
   return {
+    kind,
     name: text(input.name, 'Token 名称', 120),
     entryId,
     x: numberIn(input.x, 'Token X 坐标', -100_000, 100_000),
@@ -250,6 +275,45 @@ function parseToken(value: unknown, assets: Record<string, BackupAsset>): Backup
     ...(hp ? { hp } : {}),
     ...(avatarAssetId ? { avatarAssetId } : {}),
   };
+}
+
+function parseNpc(value: unknown): NpcRecord {
+  const input = record(value, 'NPC 档案');
+  if (!Array.isArray(input.aliases) || input.aliases.length > 12) throw new Error('NPC 别名列表无效');
+  const status = input.status;
+  if (status !== 'active' && status !== 'missing' && status !== 'inactive' && status !== 'dead') throw new Error('NPC 状态无效');
+  const groupPath = input.groupPath === undefined ? [] : input.groupPath;
+  if (!Array.isArray(groupPath) || groupPath.length > 6) throw new Error('NPC 分组路径无效');
+  return {
+    id: text(input.id, 'NPC ID', 180),
+    name: text(input.name, 'NPC 名称', 120),
+    aliases: input.aliases.map(alias => text(alias, 'NPC 别名', 80)),
+    role: looseText(input.role, 'NPC 身份', 120),
+    location: looseText(input.location, 'NPC 地点', 120),
+    status: status as NpcStatus,
+    faction: looseText(input.faction, 'NPC 阵营', 120) || '未分类',
+    groupPath: groupPath.map(part => text(part, 'NPC 分组', 80)),
+    statReference: parseNpcStatReference(input.statReference),
+    notesMarkdown: looseText(input.notesMarkdown, 'NPC 备注', 16_000),
+    sourceFile: input.sourceFile === null || input.sourceFile === undefined ? null : text(input.sourceFile, 'NPC 来源文件', 180),
+    updatedAt: numberIn(input.updatedAt, 'NPC 更新时间', 0, 10_000_000_000_000),
+  };
+}
+
+function parseNpcStatReference(value: unknown): NpcRecord['statReference'] {
+  if (value === undefined || value === null) return undefined;
+  const input = record(value, 'NPC 数据来源');
+  if (input.kind === 'custom') return { kind: 'custom' };
+  if (input.kind === 'compendium') {
+    return {
+      kind: 'compendium', entryId: text(input.entryId, '资料 ID', 180),
+      nameZh: text(input.nameZh, '资料中文名', 120), nameEn: text(input.nameEn, '资料英文名', 120),
+    };
+  }
+  if (input.kind === 'npc') {
+    return { kind: 'npc', npcId: text(input.npcId, 'NPC 数据 ID', 180), name: text(input.name, 'NPC 数据名称', 120) };
+  }
+  throw new Error('NPC 数据来源无效');
 }
 
 /** Parse an untrusted local backup before it is allowed to issue room ops. */
@@ -301,6 +365,21 @@ export function parseSceneBackup(source: string): SceneBackup {
     if (!Array.isArray(inputScene.fog) || inputScene.fog.length > MAX_FOG_CELLS) throw new Error('迷雾数据无效');
     fog = inputScene.fog.map(value => bool(value, '迷雾单元'));
   }
+  let fogReveals: FogRect[] | undefined;
+  if (inputScene.fogReveals !== undefined) {
+    if (!Array.isArray(inputScene.fogReveals) || inputScene.fogReveals.length > MAX_FOG_REVEAL_RECTS) {
+      throw new Error('迷雾框选区域列表无效');
+    }
+    fogReveals = inputScene.fogReveals.map(value => {
+      const rect = record(value, '迷雾框选区域');
+      return {
+        x: numberIn(rect.x, '迷雾框选 X 坐标', 0, 20_000),
+        y: numberIn(rect.y, '迷雾框选 Y 坐标', 0, 20_000),
+        w: numberIn(rect.w, '迷雾框选宽度', 1, 20_000),
+        h: numberIn(rect.h, '迷雾框选高度', 1, 20_000),
+      };
+    });
+  }
 
   let campaign: SceneBackup['campaign'];
   if (root.campaign !== undefined) {
@@ -312,19 +391,38 @@ export function parseSceneBackup(source: string): SceneBackup {
         const enemy = record(value, '战役敌人');
         return { entryId: text(enemy.entryId, '敌人条目 ID', 180), nameZh: text(enemy.nameZh, '敌人名称', 120) };
       }),
+      ...(inputCampaign.npcs === undefined ? {} : {
+        npcs: (() => {
+          if (!Array.isArray(inputCampaign.npcs) || inputCampaign.npcs.length > 250) throw new Error('NPC 档案列表无效');
+          return inputCampaign.npcs.map(parseNpc);
+        })(),
+      }),
     };
   }
-  const totalRoomOps = rawTokens.length + rawWalls.length + rawFavorites.length + (campaign?.enemies.length ?? 0) + 3;
+  const totalRoomOps = rawTokens.length + rawWalls.length + rawFavorites.length + (campaign?.enemies.length ?? 0)
+    + (campaign?.npcs?.length ?? 0) + (fogReveals?.length ?? 0) + 3;
   if (totalRoomOps > 3_000) throw new Error('备份包含过多实时操作，无法安全导入');
 
   const mapAssetId = assetId(inputScene.mapAssetId, assets, '地图素材');
+  const mapSize = pair(inputScene.mapSize, '地图尺寸', 1, 20_000);
+  const playArea = {
+    x: numberIn(inputArea.x, '区域 X 坐标', -100_000, 100_000),
+    y: numberIn(inputArea.y, '区域 Y 坐标', -100_000, 100_000),
+    w: numberIn(inputArea.w, '区域宽度', 1, 20_000),
+    h: numberIn(inputArea.h, '区域高度', 1, 20_000),
+  };
+  const fogWidth = mapAssetId ? mapSize[0] : playArea.w;
+  const fogHeight = mapAssetId ? mapSize[1] : playArea.h;
+  if (fogReveals?.some(rect => rect.x + rect.w > fogWidth + 0.001 || rect.y + rect.h > fogHeight + 0.001)) {
+    throw new Error('迷雾框选区域超出地图范围');
+  }
   return {
     format: SCENE_BACKUP_FORMAT,
     version: SCENE_BACKUP_VERSION,
     exportedAt: text(root.exportedAt, '导出时间', 80),
     scene: {
       name: text(inputScene.name, '场景名称', 120),
-      mapSize: pair(inputScene.mapSize, '地图尺寸', 1, 20_000),
+      mapSize,
       mapScale: numberIn(inputScene.mapScale, '地图缩放', 0.1, 8),
       ...(mapAssetId ? { mapAssetId } : {}),
       grid: {
@@ -332,16 +430,12 @@ export function parseSceneBackup(source: string): SceneBackup {
         offset: pair(inputGrid.offset, '坐标吸附偏移', -100_000, 100_000),
         snap: bool(inputGrid.snap, '坐标吸附开关'),
       },
-      playArea: {
-        x: numberIn(inputArea.x, '区域 X 坐标', -100_000, 100_000),
-        y: numberIn(inputArea.y, '区域 Y 坐标', -100_000, 100_000),
-        w: numberIn(inputArea.w, '区域宽度', 1, 20_000),
-        h: numberIn(inputArea.h, '区域高度', 1, 20_000),
-      },
+      playArea,
       tokens: rawTokens.map(value => parseToken(value, assets)),
       walls,
       favorites,
       ...(fog ? { fog } : {}),
+      ...(fogReveals ? { fogReveals } : {}),
       unlocked: bool(inputScene.unlocked, '场景公开状态'),
     },
     assets,
@@ -377,7 +471,7 @@ export function downloadSceneBackup(backup: SceneBackup): void {
 export function importedToken(token: BackupToken, avatar: string, index: number): Token {
   return {
     id: `import-${index + 1}`,
-    kind: 'monster',
+    kind: token.kind === 'npc' ? 'npc' : 'monster',
     name: token.name,
     entryId: token.entryId,
     x: token.x,

@@ -17,36 +17,49 @@ if (!existsSync(path.join(DB, 'index.json'))) {
   throw new Error('未找到 data/db/index.json；请先运行 npm run data:update');
 }
 
-const files = await jsonFiles(DB);
+const files = await matchingFiles(DB, file => file.endsWith('.json'));
+const tokenDirectory = path.join(DB, 'tokens');
+const tokenFiles = existsSync(tokenDirectory)
+  ? await matchingFiles(tokenDirectory, file => file.endsWith('.webp'))
+  : [];
 const uploads = [
-  { file: path.join(DB, 'index.json'), key: 'compendium/index.json' },
+  { file: path.join(DB, 'index.json'), key: 'compendium/index.json', contentType: 'application/json' },
   ...files
     .filter(file => path.relative(DB, file) !== 'index.json')
     .map(file => ({
       file,
       key: `compendium/books/${path.relative(DB, file).split(path.sep).map(encodeURIComponent).join('/')}`,
+      contentType: 'application/json',
     })),
+  ...tokenFiles.map(file => ({
+    file,
+    key: `compendium/tokens/${path.basename(file)}`,
+    contentType: 'image/webp',
+  })),
 ];
 
 for (const [position, upload] of uploads.entries()) {
-  await putObject(bucket, upload.key, upload.file);
+  await putObject(bucket, upload.key, upload.file, upload.contentType);
   console.log(`[data-publish] ${position + 1}/${uploads.length} ${upload.key}`);
 }
 console.log(`[data-publish] 已发布 ${uploads.length} 个资料文件到 ${bucket}`);
 
-async function jsonFiles(directory) {
+async function matchingFiles(directory, predicate) {
   const entries = await readdir(directory, { withFileTypes: true });
   const nested = await Promise.all(entries.map(async entry => {
     const target = path.join(directory, entry.name);
-    if (entry.isDirectory()) return jsonFiles(target);
-    return entry.isFile() && entry.name.endsWith('.json') ? [target] : [];
+    if (entry.isDirectory()) return matchingFiles(target, predicate);
+    return entry.isFile() && predicate(target) ? [target] : [];
   }));
   return nested.flat();
 }
 
-function putObject(targetBucket, key, file) {
+function putObject(targetBucket, key, file, contentType) {
   return new Promise((resolve, reject) => {
-    const child = spawn('npx', ['wrangler', 'r2', 'object', 'put', `${targetBucket}/${key}`, '--file', file, '--content-type', 'application/json'], {
+    // Wrangler 4 defaults R2 object commands to the local simulator. Reference
+    // data publication is explicitly a production operation, so never leave
+    // the destination implicit.
+    const child = spawn('npx', ['wrangler', 'r2', 'object', 'put', `${targetBucket}/${key}`, '--remote', '--file', file, '--content-type', contentType], {
       cwd: ROOT,
       stdio: 'inherit',
       shell: process.platform === 'win32',

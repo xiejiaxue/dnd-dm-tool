@@ -7,5 +7,6 @@ export function createCampaign(name: string): Campaign {
     name,
     sceneIds: [],
     enemies: [],
+    npcs: [],
   };
 }

@@ -14,6 +14,7 @@ Cloudflare Worker ── D1：身份、桌团、战役、房间、成员、邀�
 ```
 
 详细的权限、组队、房间与部署设计见 [Cloudflare 架构说明](docs/cloudflare-architecture.md)。
+代码模块职责、依赖方向与新增功能落点见 [项目结构与模块边界](docs/project-structure.md)。
 
 ## 本地开发
 
@@ -28,7 +29,7 @@ npm run dev
 
 访问 `http://localhost:5173` 进行带 HMR 的前端开发；它会把 `/api` 和房间 WebSocket 代理到本地 Wrangler 的 `http://localhost:8787`。也可以直接运行 `npm start` 后访问 `http://localhost:8787`。
 
-第一次打开首页会创建一个 HttpOnly 访客会话。创建房间后地址形如 `/r/friday-table-xxxxxx`；DM 从顶部“邀请玩家”生成链接，链接的随机令牌在 URL fragment 中，浏览器不会把它送进服务器日志或 Referer。
+第一次打开首页会创建一个 HttpOnly 访客会话。创建房间后地址形如 `/r/friday-table-xxxxxx`；DM 从顶部“邀请玩家”生成可重复使用的邀请码与链接，邀请码位于 URL fragment 中，浏览器不会把它送进服务器日志或 Referer。
 
 ## Cloudflare 部署
 
@@ -64,6 +65,22 @@ R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run data:publish
 ```
 
 自动创建的 R2 bucket 名称可在 Cloudflare Dashboard 或 `wrangler r2 bucket list` 中查看。请确认 5etools-cn 数据的 CC BY-NC-SA 许可与自己的公开/商业使用方式相符。
+
+跑团模板同样保存在私有 `REFERENCE_DATA` R2 中。以下命令把本地“深水城：龙金劫”目录整理为 21 个章节场景和 NPC 档案，再发布模板清单、模板快照和地图资源：
+
+```bash
+MODULE_SOURCE_DIR='/绝对路径/深水城：龙金劫' npm run template:build:waterdeep
+R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run template:publish
+```
+
+发布后，首页“创建房间 → 跑团模板”会出现“深水城：龙金劫”。每次选择它都会创建一套新的场景、迷雾与 NPC 状态；地图图片只读共享，不重复占用每个房间的 R2 空间。
+
+Alexandrian 重置版使用独立模板 ID，不会覆盖原版模板。它按资料目录生成 8 个可折叠场景分组，并把 NPC 按阵营归档：
+
+```bash
+MODULE_SOURCE_DIR='/绝对路径/龙金劫重置版' npm run template:build:waterdeep-remix
+ROOM_TEMPLATE_ID=waterdeep-dragon-heist-remix R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run template:publish
+```
 
 ## 验证
 

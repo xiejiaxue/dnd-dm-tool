@@ -12,5 +12,15 @@ data/
 .wrangler/
 .dev.vars
 
+# Local browser diagnostics and generated deployment artifacts
+.playwright-cli/
+output/
+outputs/
+
+# Locally prepared Waterdeep map sources; templates publish these directly to R2
+pinterest-map*.jpg
+pinterest-map*.png
+pinterest-map*.translations.json
+
 # OS
 .DS_Store

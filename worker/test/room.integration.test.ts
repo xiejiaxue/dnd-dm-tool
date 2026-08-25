@@ -2,18 +2,74 @@ import { env } from 'cloudflare:workers';
 import { SELF, reset } from 'cloudflare:test';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import controlPlaneMigration from '../migrations/0001_control_plane.sql?raw';
+import persistentInviteMigration from '../migrations/0002_persistent_room_invite_codes.sql?raw';
+import { callRoom, requireRoomAccess } from '../src/repository';
 
 // D1Database#exec accepts a multi-statement script but its local parser does
 // not accept a leading comment-only statement. Wrangler's migration command
 // does; removing comments here keeps this an integration test of the exact SQL.
-const migrationSql = controlPlaneMigration
-  .split('\n')
-  .filter(line => !line.trimStart().startsWith('--'))
+const migrationSql = [controlPlaneMigration, persistentInviteMigration]
+  .map(migration => migration
+    .split('\n')
+    .filter(line => !line.trimStart().startsWith('--'))
+    .join('\n'))
   .join('\n');
 const migrationStatements = migrationSql.split(';').map(statement => statement.trim()).filter(Boolean);
 
 interface RoomResponse {
   room: { id: string; slug: string; name: string; role: string };
+}
+
+const tinyPng = Uint8Array.from(atob(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL2JwAAAABJRU5ErkJggg=='
+), char => char.charCodeAt(0));
+const tinyWebp = Uint8Array.from([
+  0x52, 0x49, 0x46, 0x46, 0x04, 0x00, 0x00, 0x00,
+  0x57, 0x45, 0x42, 0x50,
+]);
+
+const roomTemplateSummary = {
+  id: 'waterdeep-dragon-heist',
+  name: '深水城：龙金劫',
+  description: '测试模板',
+  version: 1,
+  sceneCount: 2,
+  npcCount: 1,
+};
+
+async function putRoomTemplate(): Promise<void> {
+  await env.REFERENCE_DATA.put('room-templates/index.json', JSON.stringify({
+    schemaVersion: 1,
+    templates: [roomTemplateSummary],
+  }));
+  await env.REFERENCE_DATA.put('room-templates/waterdeep-dragon-heist/manifest.json', JSON.stringify({
+    schemaVersion: 1,
+    ...roomTemplateSummary,
+    scenes: [
+      {
+        key: 'scene-001', name: '第一章 · 入口', chapter: '第一章', unlocked: true,
+        map: { assetId: 'map-001', width: 1200, height: 800, contentType: 'image/png', mapScale: 3 },
+        tokens: [{
+          key: 'template-token-001', kind: 'npc', name: '珊娜萨', entryId: 'npc:npc-xanathar',
+          x: 100, y: 200, size: 100, avatar: '/api/token/MM__Beholder', color: '#8b5cf6',
+          number: 1, hp: { current: 180, max: 180 },
+        }],
+      },
+      {
+        key: 'scene-002', name: '第二章 · 巨魔颅巷', chapter: '第二章', unlocked: false,
+        map: { assetId: 'map-002', width: 900, height: 1400, contentType: 'image/png', mapScale: 3 },
+      },
+    ],
+    npcs: [{
+      id: 'npc-xanathar', name: '珊娜萨', aliases: ['XANATHAR'], role: '散塔林会', location: '',
+      status: 'active', notesMarkdown: '观察者是一只眼魔。', sourceFile: '散塔林会/珊娜萨.md', updatedAt: 0,
+    }],
+  }));
+  await Promise.all(['map-001', 'map-002'].map(assetId => env.REFERENCE_DATA.put(
+    `room-templates/waterdeep-dragon-heist/assets/${assetId}`,
+    tinyPng,
+    { httpMetadata: { contentType: 'image/png' } },
+  )));
 }
 
 async function api(path: string, init: RequestInit = {}): Promise<Response> {
@@ -77,7 +133,214 @@ describe('Cloudflare room control plane', () => {
     expect(afterBody.state.campaign.sceneIds).toContain(sceneBody.id);
   });
 
-  it('uses a fragment token as a one-time player invitation without exposing a room before redemption', async () => {
+  it('lists templates and clones independent Dragon Heist rooms with protected shared maps', async () => {
+    await putRoomTemplate();
+    const me = await api('/api/me');
+    const hostCookie = sessionCookie(me);
+
+    const listed = await api('/api/room-templates', { headers: { cookie: hostCookie } });
+    expect(listed.status).toBe(200);
+    expect(await listed.json()).toEqual({ templates: [roomTemplateSummary] });
+
+    const createFromTemplate = (roomName: string) => api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName, templateId: roomTemplateSummary.id }),
+    });
+    const firstCreated = await createFromTemplate('龙金劫 A 团');
+    const secondCreated = await createFromTemplate('龙金劫 B 团');
+    expect(firstCreated.status).toBe(201);
+    expect(secondCreated.status).toBe(201);
+    const first = (await firstCreated.json() as RoomResponse).room;
+    const second = (await secondCreated.json() as RoomResponse).room;
+
+    const firstBootstrap = await api(`/api/rooms/${first.slug}`, { headers: { cookie: hostCookie } });
+    const secondBootstrap = await api(`/api/rooms/${second.slug}`, { headers: { cookie: hostCookie } });
+    const firstState = (await firstBootstrap.json() as {
+      state: { scene: { id: string; mapImage: string; mapSize: number[]; mapScale: number; fogReveals: unknown[]; tokens: { id: string; name: string; hp?: { current: number; max: number } }[] }; campaign: { name: string; templateId: string; sceneIds: string[]; sceneFolders: { id: string; name: string }[]; sceneFolderAssignments: Record<string, string>; npcs: unknown[] } };
+    }).state;
+    const secondState = (await secondBootstrap.json() as {
+      state: { scene: { id: string; tokens: { id: string }[] }; campaign: { sceneIds: string[]; npcs: unknown[] } };
+    }).state;
+
+    expect(firstState.campaign).toMatchObject({ name: '深水城：龙金劫', templateId: roomTemplateSummary.id });
+    expect(firstState.campaign.sceneIds).toHaveLength(2);
+    expect(firstState.campaign.sceneFolders.map(folder => folder.name)).toEqual(['第一章', '第二章']);
+    expect(firstState.campaign.sceneFolderAssignments[firstState.campaign.sceneIds[0]]).toBe(firstState.campaign.sceneFolders[0].id);
+    expect(firstState.campaign.sceneFolderAssignments[firstState.campaign.sceneIds[1]]).toBe(firstState.campaign.sceneFolders[1].id);
+    expect(firstState.campaign.npcs).toHaveLength(1);
+    expect(firstState.scene).toMatchObject({ mapSize: [1200, 800], mapScale: 3, fogReveals: [] });
+    expect(firstState.scene.tokens).toEqual([
+      expect.objectContaining({ name: '珊娜萨', hp: { current: 180, max: 180 } }),
+    ]);
+    expect(firstState.scene.mapImage).toBe(`/api/rooms/${first.slug}/template-assets/${roomTemplateSummary.id}/map-001`);
+    expect(secondState.campaign.sceneIds).toHaveLength(2);
+    expect(secondState.campaign.npcs).toHaveLength(1);
+    expect(secondState.campaign.sceneIds).not.toEqual(firstState.campaign.sceneIds);
+    expect(secondState.scene.id).not.toBe(firstState.scene.id);
+    expect(secondState.scene.tokens[0].id).not.toBe(firstState.scene.tokens[0].id);
+
+    const sceneCatalog = await api(`/api/rooms/${first.slug}/scenes`, { headers: { cookie: hostCookie } });
+    expect(sceneCatalog.status).toBe(200);
+    expect(await sceneCatalog.json()).toEqual([
+      expect.objectContaining({ id: firstState.campaign.sceneIds[0], mapImage: firstState.scene.mapImage, folderId: firstState.campaign.sceneFolders[0].id }),
+      expect.objectContaining({ id: firstState.campaign.sceneIds[1], mapImage: expect.stringContaining('/map-002'), folderId: firstState.campaign.sceneFolders[1].id }),
+    ]);
+
+    const map = await api(firstState.scene.mapImage, { headers: { cookie: hostCookie } });
+    expect(map.status).toBe(200);
+    expect(map.headers.get('content-type')).toBe('image/png');
+    expect(map.headers.get('cache-control')).toBe('private, max-age=31536000, immutable');
+    expect(new Uint8Array(await map.arrayBuffer())).toEqual(tinyPng);
+
+    const stranger = await api('/api/me');
+    const strangerCookie = sessionCookie(stranger);
+    const denied = await api(firstState.scene.mapImage, { headers: { cookie: strangerCookie } });
+    expect(denied.status).toBe(404);
+  });
+
+  it('uploads a map image, persists it on the active scene, and serves it through the private asset route', async () => {
+    const me = await api('/api/me');
+    const hostCookie = sessionCookie(me);
+    const created = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Map upload table' }),
+    });
+    const { room } = await created.json() as RoomResponse;
+
+    const form = new FormData();
+    form.append('file', new File([tinyPng], 'map.png', { type: 'image/png' }));
+    form.append('width', '640');
+    form.append('height', '480');
+    const uploaded = await api(`/api/rooms/${room.slug}/map`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test' },
+      body: form,
+    });
+    expect(uploaded.status).toBe(201);
+    const asset = await uploaded.json() as { id: string; url: string };
+    expect(asset.url).toBe(`/api/rooms/${room.slug}/assets/${asset.id}`);
+
+    const bootstrap = await api(`/api/rooms/${room.slug}`, { headers: { cookie: hostCookie } });
+    const state = await bootstrap.json() as { state: { scene: { mapImage: string | null; mapSize: [number, number] } } };
+    expect(state.state.scene.mapImage).toBe(asset.url);
+    expect(state.state.scene.mapSize).toEqual([640, 480]);
+
+    const image = await api(asset.url, { headers: { cookie: hostCookie } });
+    expect(image.status).toBe(200);
+    expect(image.headers.get('content-type')).toBe('image/png');
+    expect(image.headers.get('cache-control')).toBe('private, max-age=31536000, immutable');
+    expect(image.headers.get('etag')).toBeTruthy();
+    expect(new Uint8Array(await image.arrayBuffer())).toEqual(tinyPng);
+  });
+
+  it('serves a monster portrait from the private R2 compendium', async () => {
+    await env.REFERENCE_DATA.put('compendium/index.json', JSON.stringify([{
+      type: 'monster', id: 'MM__Goblin', nameZh: '地精', nameEn: 'Goblin',
+      source: 'MM', bookFile: 'bestiary/bestiary-mm.json', hasToken: true,
+    }]));
+    await env.REFERENCE_DATA.put('compendium/tokens/MM__Goblin.webp', tinyWebp, {
+      httpMetadata: { contentType: 'image/webp' },
+      customMetadata: { source: '5etools-img' },
+    });
+
+    const response = await api('/api/token/MM__Goblin');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('image/webp');
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(tinyWebp);
+
+    const stored = await env.REFERENCE_DATA.get('compendium/tokens/MM__Goblin.webp');
+    expect(stored?.customMetadata).toMatchObject({ source: '5etools-img' });
+  });
+
+  it('automatically rolls monster and NPC initiative and upserts rerolls', async () => {
+    const me = await api('/api/me');
+    const hostCookie = sessionCookie(me);
+    const created = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Initiative table' }),
+    });
+    const { room } = await created.json() as RoomResponse;
+    const member = await env.DB.prepare(
+      'SELECT user_id FROM room_members WHERE room_id = ?1 AND role = ?2',
+    ).bind(room.id, 'host').first<{ user_id: string }>();
+    if (!member) throw new Error('expected room host');
+    const access = await requireRoomAccess(env, member.user_id, room.slug);
+
+    await env.REFERENCE_DATA.put('compendium/index.json', JSON.stringify([{
+      type: 'monster', id: 'MM__Goblin', nameZh: '地精', nameEn: 'Goblin',
+      source: 'MM', bookFile: 'bestiary/bestiary-mm.json', initiativeModifier: 2,
+    }]));
+    const added = await callRoom(env, access, 'POST', '/ops', {
+      id: crypto.randomUUID(),
+      ops: [
+        {
+          op: 'upsertNpc',
+          npc: {
+            id: 'npc-linked', name: '泽姆克', aliases: [], role: '灰矮人守卫', location: '', status: 'active',
+            faction: '珊娜萨公会', groupPath: ['珊娜萨公会'],
+            statReference: { kind: 'compendium', entryId: 'MM__Goblin', nameZh: '地精', nameEn: 'Goblin' },
+            notesMarkdown: '', sourceFile: null, updatedAt: 1,
+          },
+        },
+        {
+          op: 'upsertNpc',
+          npc: {
+            id: 'npc-custom', name: '阿迈戈', aliases: [], role: '管家', location: '', status: 'active',
+            faction: '珊娜萨公会', groupPath: ['珊娜萨公会'], statReference: { kind: 'custom' },
+            notesMarkdown: '| 护甲等级 | 18 |\n| 生命值 | 143 |\n| 力量/敏捷/体质 | 20（+5）/ 16（+3）/ 14（+2） |',
+            sourceFile: null, updatedAt: 1,
+          },
+        },
+        {
+          op: 'addToken',
+          token: {
+            id: 'browser-monster', kind: 'monster', name: '地精', entryId: 'MM__Goblin',
+            x: 100, y: 100, size: 100, avatar: '/api/token/MM__Goblin', color: '#fff',
+          },
+        },
+        {
+          op: 'addToken',
+          token: {
+            id: 'browser-linked-npc', kind: 'npc', name: '泽姆克', entryId: 'npc:npc-linked',
+            x: 200, y: 100, size: 100, avatar: '/api/token/MM__Goblin', color: '#0ea5e9',
+          },
+        },
+        {
+          op: 'addToken',
+          token: {
+            id: 'browser-custom-npc', kind: 'npc', name: '阿迈戈', entryId: 'npc:npc-custom',
+            x: 300, y: 100, size: 100, avatar: '', color: '#0ea5e9',
+          },
+        },
+      ],
+    });
+    expect(added.status).toBe(200);
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const rolled = await api(`/api/rooms/${room.slug}/initiative/roll`, {
+        method: 'POST', headers: { cookie: hostCookie, origin: 'https://table.test' },
+      });
+      expect(rolled.status).toBe(200);
+      const body = await rolled.json() as { rolls: { name: string; value: number; modifier: number }[] };
+      expect(body.rolls).toHaveLength(3);
+      expect(body.rolls.map(result => result.modifier)).toEqual([2, 2, 3]);
+      for (const result of body.rolls) {
+        expect(result.value).toBeGreaterThanOrEqual(1 + result.modifier);
+        expect(result.value).toBeLessThanOrEqual(20 + result.modifier);
+      }
+    }
+
+    const bootstrap = await api(`/api/rooms/${room.slug}`, { headers: { cookie: hostCookie } });
+    const state = await bootstrap.json() as { state: { scene: { initiative: { name: string; tokenId: string }[] } } };
+    expect(state.state.scene.initiative).toHaveLength(3);
+    expect(state.state.scene.initiative.map(entry => entry.name).sort()).toEqual(['地精 #1', '泽姆克 #1', '阿迈戈 #1'].sort());
+    expect(state.state.scene.initiative.every(entry => typeof entry.tokenId === 'string')).toBe(true);
+  });
+
+  it('keeps one reusable player invite code for a room and lets multiple players redeem it', async () => {
     const hostMe = await api('/api/me');
     const hostCookie = sessionCookie(hostMe);
     const created = await api('/api/rooms', {
@@ -93,9 +356,19 @@ describe('Cloudflare room control plane', () => {
       body: JSON.stringify({ role: 'player' }),
     });
     expect(inviteResponse.status).toBe(201);
-    const invite = await inviteResponse.json() as { inviteUrl: string };
+    const invite = await inviteResponse.json() as { inviteUrl: string; inviteCode: string; expiresAt: number | null; maxUses: number | null };
     const token = new URL(`https://table.test${invite.inviteUrl}`).hash.replace('#invite=', '');
-    expect(token.length).toBeGreaterThan(30);
+    expect(invite.inviteCode).toMatch(/^(?:[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}-){3}[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/u);
+    expect(token).toBe(invite.inviteCode);
+    expect(invite.expiresAt).toBeNull();
+    expect(invite.maxUses).toBeNull();
+
+    const sameInviteResponse = await api(`/api/rooms/${room.slug}/invites`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ role: 'player' }),
+    });
+    expect(await sameInviteResponse.json()).toMatchObject({ inviteCode: invite.inviteCode, inviteUrl: invite.inviteUrl });
 
     const playerMe = await api('/api/me');
     const playerCookie = sessionCookie(playerMe);
@@ -116,5 +389,115 @@ describe('Cloudflare room control plane', () => {
     expect(joinedBody.membership.role).toBe('player');
     expect(joinedBody.state.role).toBe('player');
     expect(joinedBody.state.campaign.enemies).toEqual([]);
+
+    const secondPlayerMe = await api('/api/me');
+    const secondPlayerCookie = sessionCookie(secondPlayerMe);
+    const secondRedemption = await api('/api/invites/redeem', {
+      method: 'POST',
+      headers: { cookie: secondPlayerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      // Players can enter the code in lower case without the displayed dashes.
+      body: JSON.stringify({ token: invite.inviteCode.replaceAll('-', '').toLowerCase() }),
+    });
+    expect(secondRedemption.status).toBe(200);
+    expect(await secondRedemption.json()).toEqual({ roomSlug: room.slug });
+
+    const secondJoined = await api(`/api/rooms/${room.slug}`, { headers: { cookie: secondPlayerCookie } });
+    expect(secondJoined.status).toBe(200);
+  });
+
+  it('lets only the host delete a room and revokes its members, invites, assets, and live state', async () => {
+    const hostMe = await api('/api/me');
+    const hostCookie = sessionCookie(hostMe);
+    const created = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Disposable room' }),
+    });
+    const { room } = await created.json() as RoomResponse;
+    const keptCreated = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Room to keep' }),
+    });
+    const keptRoom = (await keptCreated.json() as RoomResponse).room;
+
+    const inviteResponse = await api(`/api/rooms/${room.slug}/invites`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ role: 'player' }),
+    });
+    const invite = await inviteResponse.json() as { inviteCode: string };
+
+    const playerMe = await api('/api/me');
+    const playerCookie = sessionCookie(playerMe);
+    const redemption = await api('/api/invites/redeem', {
+      method: 'POST',
+      headers: { cookie: playerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ token: invite.inviteCode }),
+    });
+    expect(redemption.status).toBe(200);
+
+    const form = new FormData();
+    form.append('file', new File([tinyPng], 'room-map.png', { type: 'image/png' }));
+    form.append('kind', 'map');
+    const uploaded = await api(`/api/rooms/${room.slug}/assets`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test' },
+      body: form,
+    });
+    expect(uploaded.status).toBe(201);
+    const asset = await uploaded.json() as { id: string; url: string };
+    const storedAsset = await env.DB.prepare('SELECT object_key FROM assets WHERE id = ?1')
+      .bind(asset.id).first<{ object_key: string }>();
+    expect(storedAsset).not.toBeNull();
+
+    const playerDelete = await api(`/api/rooms/${room.slug}`, {
+      method: 'DELETE',
+      headers: { cookie: playerCookie, origin: 'https://table.test' },
+    });
+    expect(playerDelete.status).toBe(403);
+
+    const deleted = await api(`/api/rooms/${room.slug}`, {
+      method: 'DELETE',
+      headers: { cookie: hostCookie, origin: 'https://table.test' },
+    });
+    expect(deleted.status).toBe(200);
+    expect(await deleted.json()).toEqual({ ok: true });
+
+    const hostRooms = await api('/api/rooms', { headers: { cookie: hostCookie } });
+    expect(await hostRooms.json()).toEqual({ rooms: [expect.objectContaining({ slug: keptRoom.slug })] });
+    expect((await api(`/api/rooms/${room.slug}`, { headers: { cookie: hostCookie } })).status).toBe(404);
+    expect((await api(`/api/rooms/${room.slug}`, { headers: { cookie: playerCookie } })).status).toBe(404);
+    expect((await api(`/api/rooms/${keptRoom.slug}`, { headers: { cookie: hostCookie } })).status).toBe(200);
+
+    const reuseInvite = await api('/api/invites/redeem', {
+      method: 'POST',
+      headers: { cookie: sessionCookie(await api('/api/me')), origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ token: invite.inviteCode }),
+    });
+    expect(reuseInvite.status).toBe(404);
+
+    const records = await env.DB.prepare(
+      `SELECT r.deleted_at, r.status,
+              (SELECT COUNT(*) FROM room_members WHERE room_id = r.id AND status = 'active') AS active_members,
+              (SELECT COUNT(*) FROM invites WHERE room_id = r.id AND revoked_at IS NULL) AS active_invites,
+              (SELECT COUNT(*) FROM assets WHERE object_key = ?2 AND deleted_at IS NULL) AS active_assets
+         FROM rooms r WHERE r.id = ?1`,
+    ).bind(room.id, storedAsset?.object_key).first<{
+      deleted_at: number | null;
+      status: string;
+      active_members: number;
+      active_invites: number;
+      active_assets: number;
+    }>();
+    expect(records).toMatchObject({ status: 'deleted', active_members: 0, active_invites: 0, active_assets: 0 });
+    expect(records?.deleted_at).toEqual(expect.any(Number));
+    expect(await env.ROOM_ASSETS.head(storedAsset!.object_key)).toBeNull();
+
+    const audit = await env.DB.prepare(
+      `SELECT action, actor_user_id, target_id FROM audit_events
+        WHERE room_id = ?1 AND action = 'room.delete'`,
+    ).bind(room.id).first<{ action: string; actor_user_id: string; target_id: string }>();
+    expect(audit).toMatchObject({ action: 'room.delete', target_id: room.id });
   });
 });

@@ -1,48 +1,52 @@
 import { DurableObject } from 'cloudflare:workers';
-import type { Campaign, Op, PlayerToken, Scene } from '../../shared/types';
+import { DEFAULT_TOKEN_SIZE, type Op } from '../../shared/types';
 import {
   activeCampaign,
   activeScene,
   addScene,
   applyOperation,
-  authorizeOperation,
   createInitialRoomState,
+  createSceneFolder,
+  deleteSceneFolder,
   deleteScene,
   DomainError,
   ensurePlayerToken,
   isRoomModerator,
+  normalizeLegacyPlayerTokenSizes,
+  moveSceneToFolder,
   projectRoomState,
   renameScene,
+  renameSceneFolder,
   selectScene,
   setSceneUnlocked,
   type PersistedRoomState,
   type RoomActor,
   type RoomRole,
 } from './domain';
-
-const INTERNAL_REQUEST_HEADER = 'x-dnd-internal-request';
-const MAX_WS_MESSAGE_BYTES = 64 * 1024;
-const MAX_COMMANDS_PER_MINUTE = 180;
-
-interface SocketAttachment extends RoomActor {
-  version: 1;
-  commandWindowStartedAt: number;
-  commandCount: number;
-  /** New clients opt in after receiving their initial full-state snapshot. */
-  supportsPatches?: boolean;
-}
-
-interface StateRow {
-  [key: string]: string | number | null | ArrayBuffer;
-  revision: number;
-  data_json: string;
-}
-
-interface ReceiptRow {
-  [key: string]: string | number | null | ArrayBuffer;
-  revision: number;
-  result_json: string;
-}
+import { authorizeOperation } from './board/operation-authorization';
+import { projectPatchOperations } from './board/patch-projection';
+import {
+  createRoomSchema,
+  findCommandReceipt,
+  loadRoomState,
+  writeInitialRoomState,
+  writeNormalizedRoomState,
+  writeRoomMutation,
+} from './board/persistence';
+import { normalizePersistedRoomState } from './board/state-normalization';
+import {
+  actorFromHeaders,
+  clientCommandId,
+  INTERNAL_REQUEST_HEADER,
+  isRecord,
+  MAX_COMMANDS_PER_MINUTE,
+  MAX_WS_MESSAGE_BYTES,
+  objectBody,
+  socketActor,
+  text,
+  type SocketAttachment,
+} from './board/protocol';
+import { instantiateRoomTemplate, loadRoomTemplate } from './room-templates';
 
 /**
  * One instance exists for each `room:<roomId>` name. It is the only process
@@ -56,8 +60,11 @@ export class RoomDurableObject extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.ready = ctx.blockConcurrencyWhile(async () => {
-      this.createSchema();
-      this.state = this.loadState();
+      createRoomSchema(this.ctx.storage.sql);
+      this.state = loadRoomState(this.ctx.storage.sql);
+      if (this.state && normalizePersistedRoomState(this.state)) {
+        this.ctx.storage.transactionSync(() => writeNormalizedRoomState(this.ctx.storage.sql, this.state!, Date.now()));
+      }
     });
   }
 
@@ -77,6 +84,7 @@ export class RoomDurableObject extends DurableObject<Env> {
 
     if (url.pathname === '/connect') return this.connectWebSocket(request, actor);
     if (url.pathname === '/initialize' && request.method === 'POST') return this.initialize(request, actor);
+    if (url.pathname === '/destroy' && request.method === 'DELETE') return this.destroy(actor);
     if (url.pathname === '/bootstrap' && request.method === 'GET') return this.respondJson(this.bootstrap(actor));
 
     if (url.pathname === '/scenes') {
@@ -92,6 +100,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (url.pathname === '/campaigns' && request.method === 'GET') {
       return this.respondJson([{ id: activeCampaign(this.requireState()).id, name: activeCampaign(this.requireState()).name }]);
     }
+    if (url.pathname === '/ops' && request.method === 'POST') return this.applyOperationsRoute(request, actor);
     if (url.pathname === '/campaigns/assign-scene' && request.method === 'POST') return this.assignSceneRoute(request, actor);
     if (url.pathname === '/disconnect-member' && request.method === 'POST') return this.disconnectMemberRoute(request, actor);
     return this.respondJson({ error: { code: 'NOT_FOUND', message: '未知房间操作' } }, 404);
@@ -135,20 +144,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     try {
       if (data.type === 'op') {
         commandId = clientCommandId(data.id);
-        const operations = data.ops;
-        if (!Array.isArray(operations) || operations.length === 0 || operations.length > 20) {
-          throw new DomainError('INVALID', '一次最多提交 20 个操作');
-        }
-        let appliedOperations: Op[] = [];
-        const result = this.mutate(actor, commandId, 'board.ops', (next) => {
-          appliedOperations = [];
-          for (const operation of operations) {
-            const authorized = authorizeOperation(operation, next, actor);
-            applyOperation(next, authorized);
-            appliedOperations.push(authorized);
-          }
-          return { operationCount: appliedOperations.length };
-        });
+        const { result, appliedOperations } = this.applyOperations(actor, commandId, data.ops);
         this.safeSend(ws, { type: 'ack', commandId, revision: result.revision });
         if (result.duplicate) {
           // A reconnect can safely retry the same command ID. Its receipt
@@ -167,6 +163,51 @@ export class RoomDurableObject extends DurableObject<Env> {
         const result = this.mutate(actor, clientCommandId(data.id), 'scene.rename', (next) => {
           renameScene(next, sceneId, name);
           return { sceneId };
+        });
+        this.safeSend(ws, { type: 'ack', revision: result.revision });
+        this.broadcastState();
+        return;
+      }
+      if (data.type === 'createSceneFolder') {
+        this.requireModerator(actor);
+        const name = text(data.name, '文件夹名称', 80);
+        const result = this.mutate(actor, clientCommandId(data.id), 'scene-folder.create', (next) => ({
+          folder: createSceneFolder(next, name),
+        }));
+        this.safeSend(ws, { type: 'ack', revision: result.revision });
+        this.broadcastState();
+        return;
+      }
+      if (data.type === 'renameSceneFolder') {
+        this.requireModerator(actor);
+        const folderId = text(data.folderId, '文件夹 ID', 180);
+        const name = text(data.name, '文件夹名称', 80);
+        const result = this.mutate(actor, clientCommandId(data.id), 'scene-folder.rename', (next) => {
+          renameSceneFolder(next, folderId, name);
+          return { folderId, name };
+        });
+        this.safeSend(ws, { type: 'ack', revision: result.revision });
+        this.broadcastState();
+        return;
+      }
+      if (data.type === 'deleteSceneFolder') {
+        this.requireModerator(actor);
+        const folderId = text(data.folderId, '文件夹 ID', 180);
+        const result = this.mutate(actor, clientCommandId(data.id), 'scene-folder.delete', (next) => {
+          deleteSceneFolder(next, folderId);
+          return { folderId };
+        });
+        this.safeSend(ws, { type: 'ack', revision: result.revision });
+        this.broadcastState();
+        return;
+      }
+      if (data.type === 'moveSceneToFolder') {
+        this.requireModerator(actor);
+        const sceneId = text(data.sceneId, '场景 ID', 180);
+        const folderId = data.folderId === null ? null : text(data.folderId, '文件夹 ID', 180);
+        const result = this.mutate(actor, clientCommandId(data.id), 'scene-folder.move', (next) => {
+          moveSceneToFolder(next, sceneId, folderId);
+          return { sceneId, folderId };
         });
         this.safeSend(ws, { type: 'ack', revision: result.revision });
         this.broadcastState();
@@ -217,11 +258,53 @@ export class RoomDurableObject extends DurableObject<Env> {
     const roomName = text(body.roomName, '房间名称');
     const campaignName = text(body.campaignName, '战役名称');
     if (!this.state) {
-      const next = createInitialRoomState(roomName, campaignName);
-      this.persistInitialState(next);
+      const templateId = typeof body.templateId === 'string' ? text(body.templateId, '模板 ID', 64) : null;
+      const roomSlug = typeof body.roomSlug === 'string' ? text(body.roomSlug, '房间编号', 180) : '';
+      const next = templateId
+        ? instantiateRoomTemplate(roomName, campaignName, roomSlug, await loadRoomTemplate(this.env, templateId))
+        : createInitialRoomState(roomName, campaignName);
+      normalizePersistedRoomState(next);
+      const now = Date.now();
+      this.ctx.storage.transactionSync(() => writeInitialRoomState(this.ctx.storage.sql, next, now));
       this.state = next;
     }
     return this.respondJson({ ok: true, revision: this.requireState().revision });
+  }
+
+  private async destroy(actor: RoomActor): Promise<Response> {
+    if (actor.role !== 'host') throw new DomainError('FORBIDDEN', '只有房主可以删除房间');
+    for (const socket of this.ctx.getWebSockets()) socket.close(4004, 'Room deleted');
+    this.state = null;
+    await this.ctx.storage.deleteAll();
+    return this.respondJson({ ok: true });
+  }
+
+  private async applyOperationsRoute(request: Request, actor: RoomActor): Promise<Response> {
+    const body = await objectBody(request);
+    const commandId = clientCommandId(body.id);
+    const { result, appliedOperations } = this.applyOperations(actor, commandId, body.ops);
+    if (!result.duplicate) this.broadcastOperations(appliedOperations, result.revision);
+    return this.respondJson({ ok: true, revision: result.revision });
+  }
+
+  private applyOperations(actor: RoomActor, commandId: string, operations: unknown): {
+    result: { revision: number; payload: { operationCount: number }; duplicate: boolean };
+    appliedOperations: Op[];
+  } {
+    if (!Array.isArray(operations) || operations.length === 0 || operations.length > 20) {
+      throw new DomainError('INVALID', '一次最多提交 20 个操作');
+    }
+    let appliedOperations: Op[] = [];
+    const result = this.mutate(actor, commandId, 'board.ops', (next) => {
+      appliedOperations = [];
+      for (const operation of operations) {
+        const authorized = authorizeOperation(operation, next, actor);
+        applyOperation(next, authorized);
+        appliedOperations.push(authorized);
+      }
+      return { operationCount: appliedOperations.length };
+    });
+    return { result, appliedOperations };
   }
 
   private async connectWebSocket(request: Request, actor: RoomActor): Promise<Response> {
@@ -233,19 +316,37 @@ export class RoomDurableObject extends DurableObject<Env> {
     // Guests receive a server-created, account-bound starter token. The
     // browser never chooses its controller ID; a future character-claim UI can
     // replace this onboarding record without weakening authorization.
+    const currentScene = activeScene(this.requireState());
+    const currentPlayer = currentScene.players.find((player) => player.sessionId === actor.userId);
     const needsProvision = actor.role === 'player'
-      && !activeScene(this.requireState()).players.some((player) => player.sessionId === actor.userId);
-    if (needsProvision) {
+      && !currentPlayer;
+    const needsTokenSizeMigration = Object.values(this.requireState().scenes)
+      .some((scene) => scene.players.some((player) => player.size !== DEFAULT_TOKEN_SIZE));
+    if (needsProvision || needsTokenSizeMigration) {
       const result = this.mutate(actor, crypto.randomUUID(), 'player.provision', (next) => {
+        const resizedPlayers = normalizeLegacyPlayerTokenSizes(next);
         const provisioned = ensurePlayerToken(next, actor);
-        const player = activeScene(next).players.find((candidate) => candidate.sessionId === actor.userId) ?? null;
-        return { provisioned, player: player ? structuredClone(player) : null };
+        const player = provisioned
+          ? activeScene(next).players.find((candidate) => candidate.sessionId === actor.userId) ?? null
+          : null;
+        return { provisioned, player: player ? structuredClone(player) : null, resizedPlayers };
       });
       // The joining socket does not exist yet, so this reaches only the room's
-      // existing members. They see a newly provisioned player immediately,
-      // through the same role-aware patch path as every other board update.
-      if (!result.duplicate && result.payload.provisioned && result.payload.player) {
-        this.broadcastOperations([{ op: 'addPlayer', player: result.payload.player }], result.revision);
+      // existing members. They see both one-time size migrations and newly
+      // provisioned players through the same role-aware patch path as normal
+      // board updates.
+      if (!result.duplicate) {
+        const operations: Op[] = result.payload.resizedPlayers.map((player) => ({
+          op: 'updatePlayer', tokenId: player.id, patch: { size: DEFAULT_TOKEN_SIZE },
+        }));
+        if (result.payload.provisioned && result.payload.player) {
+          operations.push({ op: 'addPlayer', player: result.payload.player });
+        }
+        // A migration in a non-active scene has no safe small patch for the
+        // current board. Send a snapshot so existing sockets still advance to
+        // the persisted revision instead of detecting a later revision gap.
+        if (operations.length > 0) this.broadcastOperations(operations, result.revision);
+        else this.broadcastState();
       }
     }
 
@@ -318,12 +419,18 @@ export class RoomDurableObject extends DurableObject<Env> {
     return this.respondJson(copy);
   }
 
-  private listScenes(actor: RoomActor): Array<{ id: string; name: string; unlocked: boolean }> {
+  private listScenes(actor: RoomActor): Array<{ id: string; name: string; unlocked: boolean; mapImage: string | null; folderId: string | null }> {
     const campaign = activeCampaign(this.requireState());
     return campaign.sceneIds.flatMap((id) => {
       const scene = this.requireState().scenes[id];
       if (!scene || (!isRoomModerator(actor.role) && !scene.unlocked)) return [];
-      return [{ id: scene.id, name: scene.name, unlocked: Boolean(scene.unlocked) }];
+      return [{
+        id: scene.id,
+        name: scene.name,
+        unlocked: Boolean(scene.unlocked),
+        mapImage: scene.mapImage,
+        folderId: campaign.sceneFolderAssignments?.[scene.id] ?? null,
+      }];
     });
   }
 
@@ -347,11 +454,7 @@ export class RoomDurableObject extends DurableObject<Env> {
   }
 
   private mutate<T>(actor: RoomActor, commandId: string, action: string, update: (next: PersistedRoomState) => T): { revision: number; payload: T; duplicate: boolean } {
-    const prior = this.ctx.storage.sql.exec<ReceiptRow>(
-      'SELECT revision, result_json FROM room_command_receipts WHERE actor_member_id = ?1 AND command_id = ?2',
-      actor.memberId,
-      commandId,
-    ).toArray()[0];
+    const prior = findCommandReceipt(this.ctx.storage.sql, actor.memberId, commandId);
     if (prior) {
       return { revision: prior.revision, payload: JSON.parse(prior.result_json) as T, duplicate: true };
     }
@@ -363,94 +466,18 @@ export class RoomDurableObject extends DurableObject<Env> {
     const now = Date.now();
     const event = { action, actorMemberId: actor.memberId, revision: next.revision, occurredAt: now };
     this.ctx.storage.transactionSync(() => {
-      this.ctx.storage.sql.exec(
-        `INSERT INTO room_state (singleton, revision, data_json, updated_at)
-         VALUES (1, ?1, ?2, ?3)
-         ON CONFLICT(singleton) DO UPDATE SET revision = excluded.revision, data_json = excluded.data_json, updated_at = excluded.updated_at`,
-        next.revision,
-        JSON.stringify(next),
-        now,
-      );
-      this.ctx.storage.sql.exec(
-        'INSERT INTO room_events (actor_member_id, command_id, action, payload_json, created_at) VALUES (?1, ?2, ?3, ?4, ?5)',
-        actor.memberId,
+      writeRoomMutation(this.ctx.storage.sql, {
+        state: next,
+        actorMemberId: actor.memberId,
         commandId,
         action,
-        JSON.stringify(event),
+        event,
+        result: payload,
         now,
-      );
-      this.ctx.storage.sql.exec(
-        `INSERT INTO room_command_receipts (actor_member_id, command_id, revision, result_json, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5)`,
-        actor.memberId,
-        commandId,
-        next.revision,
-        JSON.stringify(payload),
-        now,
-      );
+      });
     });
     this.state = next;
     return { revision: next.revision, payload, duplicate: false };
-  }
-
-  private persistInitialState(state: PersistedRoomState): void {
-    const now = Date.now();
-    this.ctx.storage.transactionSync(() => {
-      this.ctx.storage.sql.exec(
-        'INSERT INTO room_state (singleton, revision, data_json, updated_at) VALUES (1, ?1, ?2, ?3)',
-        state.revision,
-        JSON.stringify(state),
-        now,
-      );
-      this.ctx.storage.sql.exec(
-        'INSERT INTO room_events (actor_member_id, command_id, action, payload_json, created_at) VALUES (?1, ?2, ?3, ?4, ?5)',
-        'system',
-        'room.initialize',
-        'room.initialize',
-        JSON.stringify({ revision: state.revision, occurredAt: now }),
-        now,
-      );
-    });
-  }
-
-  private createSchema(): void {
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS room_state (
-        singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-        revision INTEGER NOT NULL,
-        data_json TEXT NOT NULL,
-        updated_at INTEGER NOT NULL
-      )
-    `);
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS room_events (
-        seq INTEGER PRIMARY KEY AUTOINCREMENT,
-        actor_member_id TEXT NOT NULL,
-        command_id TEXT NOT NULL,
-        action TEXT NOT NULL,
-        payload_json TEXT NOT NULL,
-        created_at INTEGER NOT NULL,
-        UNIQUE (actor_member_id, command_id)
-      )
-    `);
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS room_command_receipts (
-        actor_member_id TEXT NOT NULL,
-        command_id TEXT NOT NULL,
-        revision INTEGER NOT NULL,
-        result_json TEXT NOT NULL,
-        created_at INTEGER NOT NULL,
-        PRIMARY KEY (actor_member_id, command_id)
-      )
-    `);
-  }
-
-  private loadState(): PersistedRoomState | null {
-    const row = this.ctx.storage.sql.exec<StateRow>('SELECT revision, data_json FROM room_state WHERE singleton = 1').toArray()[0];
-    if (!row) return null;
-    const state = JSON.parse(row.data_json) as PersistedRoomState;
-    if (state.schemaVersion !== 1 || typeof state.revision !== 'number') throw new Error('Unsupported room state');
-    return state;
   }
 
   private requireState(): PersistedRoomState {
@@ -560,139 +587,3 @@ export class RoomDurableObject extends DurableObject<Env> {
     this.safeSend(socket, { type: 'error', code, message, ...(commandId ? { commandId } : {}) });
   }
 }
-
-/**
- * Turn a server-authorized operation into the smallest operation a particular
- * viewer may apply.  Returning null deliberately falls back to the existing
- * full projection for commands whose result contains generated IDs or a scene
- * switch.  This keeps patching a performance optimization, never a new trust
- * boundary.
- */
-export function projectPatchOperations(state: PersistedRoomState, operations: Op[], actor: RoomActor): Op[] | null {
-  const scene = activeScene(state);
-  const canManage = isRoomModerator(actor.role);
-  const projected: Op[] = [];
-  for (const operation of operations) {
-    switch (operation.op) {
-      case 'moveToken':
-      case 'removeToken':
-      case 'updateToken':
-      case 'removePlayer':
-      case 'addWall':
-      case 'removeWall':
-      case 'updateGrid':
-      case 'updateMap':
-      case 'updateMapScale':
-      case 'addFavorite':
-      case 'removeFavorite':
-      case 'setFog':
-      case 'revealAllFog':
-      case 'coverAllFog':
-        projected.push(structuredClone(operation));
-        break;
-      case 'addToken': {
-        // Monster numbering is assigned by applyOperation, so use the durable
-        // record rather than the browser's pre-authorization payload.
-        const token = scene.tokens.find((candidate) => candidate.id === operation.token.id);
-        if (!token) return null;
-        projected.push({ op: 'addToken', token: structuredClone(token) });
-        break;
-      }
-      case 'addPlayer': {
-        const player = scene.players.find((candidate) => candidate.id === operation.player.id);
-        if (!player) return null;
-        projected.push({ op: 'addPlayer', player: projectPlayerToken(player, actor, canManage) });
-        break;
-      }
-      case 'updatePlayer': {
-        const player = scene.players.find((candidate) => candidate.id === operation.tokenId);
-        if (!player) return null;
-        const patch = structuredClone(operation.patch);
-        if ('sessionId' in patch) {
-          patch.sessionId = canManage || player.sessionId === actor.userId ? player.sessionId : null;
-        }
-        projected.push({ op: 'updatePlayer', tokenId: operation.tokenId, patch });
-        break;
-      }
-      case 'addEnemy':
-      case 'removeEnemy':
-        // Player projections intentionally omit the DM's encounter library.
-        if (canManage) projected.push(structuredClone(operation));
-        break;
-      // Initiative additions can get a server-created ID; scene/campaign
-      // switching changes more than one projection field. Retain snapshots
-      // for those infrequent operations rather than inventing a lossy patch.
-      case 'switchCampaign':
-      case 'submitInitiative':
-      case 'addToInitiative':
-        return null;
-      case 'removeFromInitiative':
-      case 'advanceTurn':
-      case 'reorderInitiative':
-        projected.push(structuredClone(operation));
-        break;
-    }
-  }
-  return projected;
-}
-
-function projectPlayerToken(player: PlayerToken, actor: RoomActor, canManage: boolean): PlayerToken {
-  return {
-    ...structuredClone(player),
-    sessionId: canManage || player.sessionId === actor.userId ? player.sessionId : null,
-  };
-}
-
-function actorFromHeaders(headers: Headers): RoomActor {
-  const userId = headers.get('x-dnd-user-id');
-  const memberId = headers.get('x-dnd-member-id');
-  const role = headers.get('x-dnd-room-role');
-  const accessEpoch = Number(headers.get('x-dnd-access-epoch'));
-  if (!userId || !memberId || !isRoomRole(role) || !Number.isInteger(accessEpoch) || accessEpoch < 1) {
-    throw new DomainError('FORBIDDEN', '无效的房间身份');
-  }
-  return { userId, memberId, role, accessEpoch };
-}
-
-function socketActor(socket: WebSocket): SocketAttachment | null {
-  const value: unknown = socket.deserializeAttachment();
-  if (!isRecord(value) || value.version !== 1 || typeof value.userId !== 'string' || typeof value.memberId !== 'string' || !isRoomRole(value.role)
-    || typeof value.accessEpoch !== 'number' || typeof value.commandWindowStartedAt !== 'number' || typeof value.commandCount !== 'number') return null;
-  return value as unknown as SocketAttachment;
-}
-
-function isRoomRole(value: unknown): value is RoomRole {
-  return value === 'host' || value === 'dm' || value === 'assistant_dm' || value === 'player' || value === 'spectator';
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-async function objectBody(request: Request): Promise<Record<string, unknown>> {
-  let value: unknown;
-  try {
-    value = await request.json();
-  } catch {
-    throw new DomainError('INVALID', '请求必须是 JSON 对象');
-  }
-  if (!isRecord(value)) throw new DomainError('INVALID', '请求必须是 JSON 对象');
-  return value;
-}
-
-function text(value: unknown, label: string, maximumLength = 120): string {
-  if (typeof value !== 'string') throw new DomainError('INVALID', `${label}无效`);
-  const normalized = value.trim();
-  if (!normalized || normalized.length > maximumLength) throw new DomainError('INVALID', `${label}长度无效`);
-  return normalized;
-}
-
-function clientCommandId(value: unknown): string {
-  if (typeof value === 'string' && value.length > 0 && value.length <= 180) return value;
-  return crypto.randomUUID();
-}
-
-// Keep imported shared types present in generated declaration output. They are
-// used structurally by the persistent state but this explicit reference makes
-// the room-state boundary easy to locate in IDE navigation.
-void ({} as Campaign | Scene);

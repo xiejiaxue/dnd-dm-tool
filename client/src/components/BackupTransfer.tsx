@@ -22,36 +22,49 @@ type Notice = { tone: 'info' | 'success' | 'error'; text: string };
 const MAX_REVEALED_FOG_CELLS = 20_000;
 
 function sendInBatches(operations: Op[], perMessage = 20): void {
-  for (let start = 0; start < operations.length; start += perMessage) {
-    connection.sendOps(operations.slice(start, start + perMessage));
+  let batch: Op[] = [];
+  let bytes = 0;
+  for (const operation of operations) {
+    const operationBytes = new TextEncoder().encode(JSON.stringify(operation)).byteLength;
+    if (batch.length > 0 && (batch.length >= perMessage || bytes + operationBytes > 48 * 1024)) {
+      connection.sendOps(batch);
+      batch = [];
+      bytes = 0;
+    }
+    batch.push(operation);
+    bytes += operationBytes;
   }
+  if (batch.length > 0) connection.sendOps(batch);
 }
 
 /** The room accepts large `setFog` cell lists, but small command batches keep
  * each WebSocket frame comfortably below the protocol's byte ceiling. */
-function restoreFog(fog: boolean[] | undefined): boolean {
-  if (!fog) return true;
+function restoreFog(fog: boolean[] | undefined, fogReveals: SceneBackup['scene']['fogReveals']): boolean {
+  let restored = true;
   const revealed: number[] = [];
-  fog.forEach((isRevealed, index) => { if (isRevealed) revealed.push(index); });
-  if (fog.length === 0) {
+  fog?.forEach((isRevealed, index) => { if (isRevealed) revealed.push(index); });
+  if (fog?.length === 0 || (!fog && fogReveals?.length)) {
     connection.sendOps([{ op: 'coverAllFog' }]);
-    return true;
-  }
-  if (revealed.length === fog.length) {
+  } else if (fog && revealed.length === fog.length) {
     connection.sendOps([{ op: 'revealAllFog' }]);
-    return true;
+  } else if (fog) {
+    // The room intentionally rate-limits WebSocket commands. Avoid a giant
+    // sparse-fog import disconnecting the moderator; the file still preserves
+    // that fog data for a future server-side bulk-import endpoint.
+    if (revealed.length > MAX_REVEALED_FOG_CELLS) restored = false;
+    else {
+      connection.sendOps([{ op: 'coverAllFog' }]);
+      const cellOperations: Op[] = [];
+      for (let start = 0; start < revealed.length; start += 1_000) {
+        cellOperations.push({ op: 'setFog', cells: revealed.slice(start, start + 1_000), revealed: true });
+      }
+      sendInBatches(cellOperations, 4);
+    }
   }
-  // The room intentionally rate-limits WebSocket commands. Avoid a giant
-  // sparse-fog import disconnecting the moderator; the file still preserves
-  // that fog data for a future server-side bulk-import endpoint.
-  if (revealed.length > MAX_REVEALED_FOG_CELLS) return false;
-  connection.sendOps([{ op: 'coverAllFog' }]);
-  const operations: Op[] = [];
-  for (let start = 0; start < revealed.length; start += 1_000) {
-    operations.push({ op: 'setFog', cells: revealed.slice(start, start + 1_000), revealed: true });
+  if (fogReveals?.length) {
+    sendInBatches(fogReveals.map(rect => ({ op: 'revealFogRect' as const, rect })), 20);
   }
-  sendInBatches(operations, 4);
-  return true;
+  return restored;
 }
 
 async function restoreIntoNewScene(backup: SceneBackup, sceneId: string): Promise<string[]> {
@@ -94,12 +107,16 @@ async function restoreIntoNewScene(backup: SceneBackup, sceneId: string): Promis
     // bringing the retired grid overlay back into the imported scene.
     { op: 'updateGrid', patch: { size: scene.grid.size, offset: scene.grid.offset, snap: scene.grid.snap } },
     ...scene.tokens.map((token, index) => ({ op: 'addToken' as const, token: importedToken(token, avatarUrls[index], index) })),
-    ...scene.walls.map((wall, index) => ({ op: 'addWall' as const, wall: { id: `import-wall-${index + 1}`, p1: wall.p1, p2: wall.p2 } })),
+    ...scene.walls.map((wall, index) => ({
+      op: 'addWall' as const,
+      wall: { id: `import-wall-${index + 1}`, p1: wall.p1, p2: wall.p2 },
+    })),
     ...scene.favorites.map(favorite => ({ op: 'addFavorite' as const, favorite })),
     ...(backup.campaign?.enemies ?? []).map(enemy => ({ op: 'addEnemy' as const, entryId: enemy.entryId, nameZh: enemy.nameZh })),
+    ...(backup.campaign?.npcs ?? []).map(npc => ({ op: 'upsertNpc' as const, npc })),
   ];
   sendInBatches(setup);
-  if (!restoreFog(scene.fog)) warnings.push('迷雾数据过大，已保留在备份文件中但未自动恢复');
+  if (!restoreFog(scene.fog, scene.fogReveals)) warnings.push('迷雾数据过大，已保留在备份文件中但未自动恢复');
   connection.sendControl({ type: 'updateSceneUnlock', sceneId, unlocked: scene.unlocked });
   return warnings;
 }
@@ -193,7 +210,7 @@ export default function BackupTransfer() {
       <button
         type="button"
         onClick={() => setOpen(value => !value)}
-        className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 disabled:opacity-50"
+        className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 disabled:opacity-50 whitespace-nowrap"
         title="导入或导出当前场景的本地备份文件"
         aria-expanded={open}
         disabled={busy}

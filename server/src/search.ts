@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Fuse from 'fuse.js';
 import { EntryType, IndexEntry } from './types';
+import { monsterHasToken, monsterHitPoints, monsterInitiativeModifier } from '../../shared/compendium';
 
 export interface SourceMap { [source: string]: string }
 
@@ -39,6 +40,9 @@ async function buildBestiaryIndex(dbDir: string, sourceMap: SourceMap, out: Inde
         source,
         bookFile: `bestiary/${fileName}`,
         cr: m.cr != null ? String(m.cr) : undefined,
+        initiativeModifier: monsterInitiativeModifier(m),
+        hitPoints: monsterHitPoints(m),
+        hasToken: monsterHasToken(m),
       });
     }
   }

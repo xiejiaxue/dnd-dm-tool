@@ -1,4 +1,5 @@
-import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
+import { fogGridSize, type Campaign, type InitiativeEntry, type NpcRecord, type Op, type PlayerToken, type Scene, type Token } from './types';
+import { addFogReveal, fogExtent } from '../../shared/fog-rects';
 
 /** The active-room projection that may be predicted locally. */
 export interface OptimisticSnapshot {
@@ -45,7 +46,14 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         ? { scene, campaign }
         : { scene: { ...scene, tokens: [...scene.tokens, cloneToken(operation.token)] }, campaign };
     case 'removeToken':
-      return { scene: { ...scene, tokens: scene.tokens.filter((token) => token.id !== operation.tokenId) }, campaign };
+      return {
+        scene: {
+          ...scene,
+          tokens: scene.tokens.filter((token) => token.id !== operation.tokenId),
+          initiative: scene.initiative.filter((entry) => entry.tokenId !== operation.tokenId),
+        },
+        campaign,
+      };
     case 'updateToken': {
       const index = scene.tokens.findIndex((token) => token.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
@@ -81,11 +89,16 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
           playArea: { ...operation.playArea },
           mapScale: 1,
           fog: undefined,
+          fogReveals: [],
+          fogVersion: 2,
         },
         campaign,
       };
     case 'updateMapScale':
-      return { scene: scene.mapScale === operation.mapScale ? scene : { ...scene, mapScale: operation.mapScale }, campaign };
+      return {
+        scene: scene.mapScale === operation.mapScale ? scene : { ...scene, mapScale: operation.mapScale },
+        campaign,
+      };
     case 'addEnemy':
       if (!campaign) return null;
       return campaign.enemies.some((entry) => entry.entryId === operation.entryId)
@@ -94,12 +107,35 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     case 'removeEnemy':
       if (!campaign) return null;
       return { scene, campaign: { ...campaign, enemies: campaign.enemies.filter((entry) => entry.entryId !== operation.entryId) } };
+    case 'upsertNpc': {
+      if (!campaign) return null;
+      const npcs = campaign.npcs ?? [];
+      const index = npcs.findIndex((npc) => npc.id === operation.npc.id);
+      const nextNpcs = index >= 0
+        ? replaceAt(npcs, index, cloneNpc(operation.npc))
+        : [...npcs, cloneNpc(operation.npc)];
+      return { scene, campaign: { ...campaign, npcs: nextNpcs } };
+    }
+    case 'removeNpc':
+      if (!campaign) return null;
+      return { scene, campaign: { ...campaign, npcs: (campaign.npcs ?? []).filter((npc) => npc.id !== operation.npcId) } };
     case 'switchCampaign':
     case 'submitInitiative':
     case 'addToInitiative':
       return null;
-    case 'removeFromInitiative':
-      return { scene: { ...scene, initiative: scene.initiative.filter((entry) => entry.id !== operation.entryId) }, campaign };
+    case 'removeFromInitiative': {
+      const linkedCombatantTokenId = scene.initiative.find((entry) => entry.id === operation.entryId)?.tokenId;
+      return {
+        scene: {
+          ...scene,
+          initiative: scene.initiative.filter((entry) => entry.id !== operation.entryId),
+          tokens: linkedCombatantTokenId && scene.tokens.some((token) => token.id === linkedCombatantTokenId && (token.kind === 'monster' || token.kind === 'npc'))
+            ? scene.tokens.filter((token) => token.id !== linkedCombatantTokenId)
+            : scene.tokens,
+        },
+        campaign,
+      };
+    }
     case 'advanceTurn':
       return { scene: { ...scene, initiative: advanceInitiative(scene.initiative) }, campaign };
     case 'reorderInitiative':
@@ -121,19 +157,24 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
       }
       return changed || !scene.fog ? { scene: { ...scene, fog }, campaign } : { scene, campaign };
     }
+    case 'revealFogRect':
+      return { scene: { ...scene, fogReveals: addFogReveal(scene.fogReveals ?? [], operation.rect) }, campaign };
     case 'revealAllFog': {
-      const fog = editableFog(scene);
-      if (fog.every(Boolean)) return { scene, campaign };
-      fog.fill(true);
-      return { scene: { ...scene, fog }, campaign };
+      const { width, height } = fogExtent(scene);
+      return { scene: { ...scene, fog: undefined, fogReveals: [{ x: 0, y: 0, w: width, h: height }] }, campaign };
     }
-    case 'coverAllFog': {
-      const fog = editableFog(scene);
-      if (fog.every((cell) => !cell)) return { scene, campaign };
-      fog.fill(false);
-      return { scene: { ...scene, fog }, campaign };
-    }
+    case 'coverAllFog':
+      return { scene: { ...scene, fog: undefined, fogReveals: [] }, campaign };
   }
+}
+
+function cloneNpc(npc: NpcRecord): NpcRecord {
+  return {
+    ...npc,
+    aliases: [...npc.aliases],
+    ...(npc.groupPath ? { groupPath: [...npc.groupPath] } : {}),
+    ...(npc.statReference ? { statReference: { ...npc.statReference } } : {}),
+  };
 }
 
 function replaceAt<T>(items: readonly T[], index: number, value: T): T[] {

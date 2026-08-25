@@ -73,7 +73,7 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
         />
       )}
       {/* 怪物编号徽章（右上角） */}
-      {token.kind === 'monster' && token.number != null && (() => {
+      {(token.kind === 'monster' || token.kind === 'npc') && token.number != null && (() => {
         const r = token.size * 0.17;
         const cx = token.size * 0.78;
         const cy = token.size * 0.22;
@@ -91,7 +91,7 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
         );
       })()}
       <Text text={token.name} y={token.size / 2 + 2} width={token.size} align="center"
-        fill={token.kind === 'monster' ? '#ef4444' : '#22c55e'} fontSize={12} fontStyle="bold" />
+        fill={token.kind === 'monster' ? '#ef4444' : token.kind === 'npc' ? '#38bdf8' : '#22c55e'} fontSize={12} fontStyle="bold" />
     </Group>
   );
 }

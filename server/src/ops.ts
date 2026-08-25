@@ -1,5 +1,6 @@
 import { Op, Role, Scene, InitiativeEntry, FOG_CELL, fogGridSize } from './types';
 import { sortInitiative, advanceInitiative } from './initiative';
+import { addFogReveal, fogExtent } from '../../shared/fog-rects';
 
 export function isPlayerOp(op: Op): boolean {
   return op.op === 'moveToken' || op.op === 'submitInitiative' || op.op === 'updatePlayer' || op.op === 'updateToken';
@@ -15,10 +16,10 @@ export function applyOp(scene: Scene, op: Op): void {
     case 'addToken': {
       if (!scene.tokens.some(t => t.id === op.token.id)) {
         const token = { ...op.token };
-        // Auto-number monster tokens by entryId so same-type monsters are
-        // distinguishable on the board (哥布林 1, 哥布林 2, …).
-        if (token.kind === 'monster' && token.entryId) {
-          const same = scene.tokens.filter(t => t.kind === 'monster' && t.entryId === token.entryId);
+        // Auto-number repeated encounter tokens by entryId so they stay
+        // distinguishable in the map, list, and initiative strip.
+        if ((token.kind === 'monster' || token.kind === 'npc') && token.entryId) {
+          const same = scene.tokens.filter(t => t.kind === token.kind && t.entryId === token.entryId);
           token.number = Math.max(0, ...same.map(t => t.number ?? 0)) + 1;
         }
         scene.tokens.push(token);
@@ -27,11 +28,15 @@ export function applyOp(scene: Scene, op: Op): void {
     }
     case 'moveToken': {
       const t = findToken(scene, op.tokenId);
-      if (t) { t.x = op.x; t.y = op.y; }
+      if (t) {
+        t.x = op.x;
+        t.y = op.y;
+      }
       return;
     }
     case 'removeToken': {
       scene.tokens = scene.tokens.filter(t => t.id !== op.tokenId);
+      scene.initiative = scene.initiative.filter(entry => entry.tokenId !== op.tokenId);
       return;
     }
     case 'updateToken': {
@@ -70,6 +75,8 @@ export function applyOp(scene: Scene, op: Op): void {
       scene.playArea = op.playArea;
       scene.mapScale = 1; // a new map starts at natural scale for fresh calibration
       scene.fog = undefined; // 换图后旧 fog 按新 playArea 错位，重置以便按新尺寸重建
+      scene.fogReveals = [];
+      scene.fogVersion = 2;
       return;
     }
     case 'updateMapScale': {
@@ -99,20 +106,33 @@ export function applyOp(scene: Scene, op: Op): void {
       return;
     }
     case 'addToInitiative': {
-      scene.initiative.push({
-        id: genEntryId(scene),
-        name: op.name,
-        value: op.value,
-        source: op.source,
-        sessionId: null,
-        tokenId: op.tokenId,
-        active: false,
-      });
+      const existing = op.tokenId
+        ? scene.initiative.find(entry => entry.tokenId === op.tokenId)
+        : undefined;
+      if (existing) {
+        existing.name = op.name;
+        existing.value = op.value;
+        existing.source = op.source;
+      } else {
+        scene.initiative.push({
+          id: genEntryId(scene),
+          name: op.name,
+          value: op.value,
+          source: op.source,
+          sessionId: null,
+          tokenId: op.tokenId,
+          active: false,
+        });
+      }
       scene.initiative = sortInitiative(scene.initiative);
       return;
     }
     case 'removeFromInitiative': {
+      const linkedCombatantTokenId = scene.initiative.find(entry => entry.id === op.entryId)?.tokenId;
       scene.initiative = scene.initiative.filter(e => e.id !== op.entryId);
+      if (linkedCombatantTokenId && scene.tokens.some(token => token.id === linkedCombatantTokenId && (token.kind === 'monster' || token.kind === 'npc'))) {
+        scene.tokens = scene.tokens.filter(token => token.id !== linkedCombatantTokenId);
+      }
       return;
     }
     case 'advanceTurn': {
@@ -149,12 +169,19 @@ export function applyOp(scene: Scene, op: Op): void {
       }
       return;
     }
+    case 'revealFogRect': {
+      scene.fogReveals = addFogReveal(scene.fogReveals ?? [], op.rect);
+      return;
+    }
     case 'revealAllFog': {
-      ensureFog(scene).fill(true);
+      const { width, height } = fogExtent(scene);
+      scene.fog = undefined;
+      scene.fogReveals = [{ x: 0, y: 0, w: width, h: height }];
       return;
     }
     case 'coverAllFog': {
-      ensureFog(scene).fill(false);
+      scene.fog = undefined;
+      scene.fogReveals = [];
       return;
     }
   }
@@ -169,6 +196,7 @@ function ensureFog(scene: Scene): boolean[] {
   if (!scene.fog || scene.fog.length !== len) {
     scene.fog = new Array(len).fill(false);
   }
+  scene.fogVersion = 2;
   return scene.fog;
 }
 

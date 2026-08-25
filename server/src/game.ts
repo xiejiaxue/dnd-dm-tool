@@ -6,6 +6,8 @@ import { applyCampaignOp, isCampaignOp, CampaignOp } from './campaign-ops';
 import { applyOp, canOp } from './ops';
 import { sortInitiative } from './initiative';
 import { newId } from './scene';
+import { monsterInitiativeModifier } from '../../shared/compendium';
+import { resolveNpcInitiativeSource } from '../../shared/npc-metadata';
 
 interface Client {
   ws: WebSocket;
@@ -328,20 +330,29 @@ export class GameServer {
     this.store.save(scene);
   }
 
-  // D&D 5e initiative for every monster in the scene: d20 + dex modifier
-  // (modifier from the stat block's dex score). Re-rolling updates existing
-  // entries by tokenId; new monsters get appended. All clients see the roll.
+  // D&D 5e initiative for every monster and NPC in the scene: d20 + the
+  // referenced/custom Dexterity modifier. Re-rolling upserts by token id.
   private async rollInitiative(): Promise<void> {
     const rolls: { tokenId: string; name: string; value: number }[] = [];
     for (const t of this.current.tokens) {
-      if (t.kind !== 'monster') continue;
+      if (t.kind !== 'monster' && t.kind !== 'npc') continue;
       let mod = 0;
-      if (this.entries && t.entryId) {
+      let compendiumEntryId = t.kind === 'monster' ? t.entryId : null;
+      if (t.kind === 'npc') {
+        const npcId = t.entryId?.startsWith('npc:') ? t.entryId.slice(4) : '';
+        const records = this.currentCampaign.npcs ?? [];
+        const npc = records.find(record => record.id === npcId);
+        if (npc) {
+          const source = resolveNpcInitiativeSource(npc, records);
+          compendiumEntryId = source.entryId;
+          mod = source.modifier ?? 0;
+        }
+      }
+      if (this.entries && compendiumEntryId) {
         try {
-          const e = await this.entries.get('monster', t.entryId);
-          const dex = Number(e?.dex);
-          if (Number.isFinite(dex)) mod = Math.floor((dex - 10) / 2);
-        } catch { /* unknown monster → +0 */ }
+          const entry = await this.entries.get('monster', compendiumEntryId);
+          mod = monsterInitiativeModifier(entry);
+        } catch { /* unknown compendium entry keeps the resolved/default modifier */ }
       }
       rolls.push({
         tokenId: t.id,

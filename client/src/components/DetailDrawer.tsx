@@ -5,6 +5,7 @@ import { useScene } from '../ws';
 import { formatCompendiumEntry, StatBlock } from '../format';
 import { setPending } from '../pending';
 import type { EntryType } from '../types';
+import StatBlockView from './StatBlockView';
 
 export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryType; id: string; nameZh: string } | null; onBack: () => void }) {
   const { scene, role } = useScene();
@@ -33,19 +34,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
         <h2 className="font-bold text-base">{entry.nameZh}</h2>
       </div>
       {loading && <div className="text-zinc-500">加载中…</div>}
-      {stat && (
-        <>
-          <div className="text-zinc-400 text-xs mb-2">{stat.meta}</div>
-          <table className="w-full text-xs mb-3">
-            <tbody>
-              {stat.rows.map(([k, v]) => (
-                <tr key={k}><td className="text-zinc-500 pr-2 align-top">{k}</td><td>{v}</td></tr>
-              ))}
-            </tbody>
-          </table>
-          {stat.body.map((p, i) => <p key={i} className="mb-2 whitespace-pre-wrap">{p}</p>)}
-        </>
-      )}
+      {stat && <StatBlockView stat={stat} />}
       <div className="mt-3 flex gap-2">
         {role !== 'spectator' && (
           <button

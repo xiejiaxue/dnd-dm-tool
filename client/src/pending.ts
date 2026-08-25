@@ -3,11 +3,12 @@
 // The board consumes it in `add` mode: click empty canvas -> addToken op.
 
 export interface PendingToken {
-  kind: 'monster' | 'player';
+  kind: 'monster' | 'npc' | 'player';
   name: string;
   entryId: string | null;
   avatar: string;
   color: string;
+  hp?: { current: number; max: number };
 }
 
 type Listener = (pending: PendingToken | null) => void;
