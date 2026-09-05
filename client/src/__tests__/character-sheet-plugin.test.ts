@@ -55,6 +55,18 @@ describe('D&D 5e character sheet plugin', () => {
     expect(normalized.combat.hitPoints.max).toBe(1);
   });
 
+  it('strips gear slots whose item comes from a disabled rule source', () => {
+    const sheet = emptyDnd5eCharacterSheet();
+    sheet.rules.enabledSources = ['PHB', 'TCE'];
+    sheet.gear.armor = { id: 'item:PHB:Leather Armor', kind: 'item', name: '皮甲', nameEn: 'Leather Armor', source: 'PHB' };
+    sheet.gear.offHand = { reference: { id: 'item:TCE:Repulsion Shield', kind: 'item', name: '斥力之盾', nameEn: 'Repulsion Shield', source: 'TCE' }, hitAdjust: 0, damageAdjust: 0 };
+
+    const result = setRuleSource(sheet, 'TCE', false);
+
+    expect(result.gear.armor).toMatchObject({ nameEn: 'Leather Armor' });
+    expect(result.gear.offHand).toBeNull();
+  });
+
   it('filters catalog options through the character-owned rule selection', () => {
     const catalog = fallbackCharacterRuleCatalog();
     catalog.options.push({ id: 'race:VGM:Aasimar', kind: 'race', name: '阿斯莫', nameEn: 'Aasimar', source: 'VGM' });
