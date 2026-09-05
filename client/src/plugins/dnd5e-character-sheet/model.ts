@@ -72,6 +72,24 @@ export function splitFeatOptions(
   return { selected, available };
 }
 
+const isShieldItem = (option: CharacterRuleOption) => option.item?.category.startsWith('S') ?? false;
+
+export function gearOptionsForSheet(catalog: CharacterRuleCatalog, sheet: Dnd5eCharacterSheet): {
+  armorOptions: CharacterRuleOption[];
+  weaponOptions: CharacterRuleOption[];
+  offHandOptions: CharacterRuleOption[];
+} {
+  const items = optionsForSheet(catalog, sheet, 'item').filter(option => option.item);
+  const armorOptions = items.filter(option => option.item!.armorBase !== null && !isShieldItem(option));
+  const weaponOptions = items.filter(option => Boolean(option.item!.damage));
+  const shieldOptions = items.filter(isShieldItem);
+  return { armorOptions, weaponOptions, offHandOptions: [...weaponOptions, ...shieldOptions] };
+}
+
+export function resolveGearOption(catalog: CharacterRuleCatalog, reference: CharacterRuleReference | null | undefined): CharacterRuleOption | null {
+  return reference ? catalog.options.find(option => option.id === reference.id && option.kind === 'item') ?? null : null;
+}
+
 export function setRuleSource(
   sheet: Dnd5eCharacterSheet,
   source: string,

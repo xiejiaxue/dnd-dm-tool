@@ -9,7 +9,7 @@ import {
   pointBuyCost,
   recalculateDnd5eCharacterSheet,
 } from '../types';
-import { abilityBonusChoiceSlots, optionsForSheet, setRuleSource, splitFeatOptions } from '../plugins/dnd5e-character-sheet/model';
+import { abilityBonusChoiceSlots, gearOptionsForSheet, optionsForSheet, resolveGearOption, setRuleSource, splitFeatOptions } from '../plugins/dnd5e-character-sheet/model';
 
 describe('D&D 5e character sheet plugin', () => {
   it('disables PHB 2024 and enables every other rule source for a new character by default', () => {
@@ -88,6 +88,25 @@ describe('D&D 5e character sheet plugin', () => {
 
     const enabled = splitFeatOptions(catalog, setRuleSource(sheet, 'TCE', true));
     expect(enabled.available.map(feat => feat.id)).toEqual(['feat:TCE:Chef']);
+  });
+
+  it('filters gear slot options and resolves stale references', () => {
+    const catalog = fallbackCharacterRuleCatalog();
+    catalog.options.push(
+      { id: 'item:PHB:Longsword', kind: 'item', name: '长剑', nameEn: 'Longsword', source: 'PHB', item: { category: 'M', weight: 3, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d8', damageType: 'S', range: '', description: '' } },
+      { id: 'item:PHB:Shield', kind: 'item', name: '盾牌', nameEn: 'Shield', source: 'PHB', item: { category: 'S', weight: 6, armorBase: 2, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
+      { id: 'item:PHB:Leather Armor', kind: 'item', name: '皮甲', nameEn: 'Leather Armor', source: 'PHB', item: { category: 'LA', weight: 10, armorBase: 11, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
+      { id: 'item:TCE:Chef', kind: 'item', name: '厨师用具', nameEn: 'Chef', source: 'TCE', item: { category: 'T', weight: 1, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
+    );
+    const sheet = emptyDnd5eCharacterSheet();
+    sheet.rules.enabledSources = ['PHB'];
+
+    const slots = gearOptionsForSheet(catalog, sheet);
+    expect(slots.armorOptions.map(option => option.nameEn)).toEqual(['Leather Armor']);
+    expect(slots.weaponOptions.map(option => option.nameEn)).toEqual(['Longsword']);
+    expect(slots.offHandOptions.map(option => option.nameEn)).toEqual(['Longsword', 'Shield']);
+    expect(resolveGearOption(catalog, sheet.gear.armor)).toBeNull();
+    expect(resolveGearOption(catalog, { id: 'item:PHB:Longsword', kind: 'item', name: '长剑', nameEn: 'Longsword', source: 'PHB' })?.nameEn).toBe('Longsword');
   });
 
   it('uses the official 27-point cost curve and applies racial bonuses after point buy', () => {
