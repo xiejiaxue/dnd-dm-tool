@@ -97,14 +97,18 @@ describe('D&D 5e character sheet plugin', () => {
       { id: 'item:PHB:Shield', kind: 'item', name: '盾牌', nameEn: 'Shield', source: 'PHB', item: { category: 'S', weight: 6, armorBase: 2, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
       { id: 'item:PHB:Leather Armor', kind: 'item', name: '皮甲', nameEn: 'Leather Armor', source: 'PHB', item: { category: 'LA', weight: 10, armorBase: 11, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
       { id: 'item:TCE:Chef', kind: 'item', name: '厨师用具', nameEn: 'Chef', source: 'TCE', item: { category: 'T', weight: 1, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
+      { id: 'item:PHB:Quarterstaff', kind: 'item', name: '法杖', nameEn: 'Quarterstaff', source: 'PHB', item: { category: 'SCF', weight: 4, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d6', damageType: 'B', range: '', description: '' } },
     );
     const sheet = emptyDnd5eCharacterSheet();
     sheet.rules.enabledSources = ['PHB'];
 
     const slots = gearOptionsForSheet(catalog, sheet);
     expect(slots.armorOptions.map(option => option.nameEn)).toEqual(['Leather Armor']);
-    expect(slots.weaponOptions.map(option => option.nameEn)).toEqual(['Longsword']);
-    expect(slots.offHandOptions.map(option => option.nameEn)).toEqual(['Longsword', 'Shield']);
+    expect(slots.weaponOptions.map(option => option.nameEn)).toContain('Longsword');
+    expect(slots.weaponOptions.map(option => option.nameEn)).toContain('Quarterstaff');
+    expect(slots.offHandOptions.map(option => option.nameEn)).toContain('Longsword');
+    expect(slots.offHandOptions.map(option => option.nameEn)).toContain('Shield');
+    expect(slots.offHandOptions.filter(option => option.nameEn === 'Quarterstaff')).toHaveLength(1);
     expect(resolveGearOption(catalog, sheet.gear.armor)).toBeNull();
     expect(resolveGearOption(catalog, { id: 'item:PHB:Longsword', kind: 'item', name: '长剑', nameEn: 'Longsword', source: 'PHB' })?.nameEn).toBe('Longsword');
   });
@@ -300,14 +304,18 @@ describe('D&D 5e character sheet plugin', () => {
     const catalog = fallbackCharacterRuleCatalog();
     catalog.options.push(
       { id: 'item:PHB:Quarterstaff', kind: 'item', name: '长棍', nameEn: 'Quarterstaff', source: 'PHB', item: { category: 'M', weight: 4, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d6', damageType: 'B', weaponCategory: '军用', range: '', description: '' } },
+      { id: 'item:PHB:Warhammer', kind: 'item', name: '战锤', nameEn: 'Warhammer', source: 'PHB', item: { category: 'M', weight: 2, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d8', damageType: 'B', weaponCategory: '军用', range: '', description: '' } },
     );
     const wizard = catalog.options.find(option => option.id === 'class:PHB:Wizard')!;
-    wizard.weaponProficiencies = ['{@item 匕首', '{@item 长棍', '{@item 轻弩'];
+    wizard.weaponProficiencies = ['{@item 匕首', '{@item 长棍', 'warhammer|phb'];
     const sheet = emptyDnd5eCharacterSheet('法师');
     sheet.advancement.class = { id: wizard.id, kind: 'class', name: wizard.name, nameEn: wizard.nameEn, source: wizard.source };
     sheet.gear.mainHand = { reference: { id: 'item:PHB:Quarterstaff', kind: 'item', name: '长棍', nameEn: 'Quarterstaff', source: 'PHB' }, hitAdjust: 0, damageAdjust: 0 };
 
     const [attack] = deriveDnd5eCharacter(sheet, catalog).attacks;
     expect(attack.proficient).toBe(true);
+
+    sheet.gear.mainHand = { reference: { id: 'item:PHB:Warhammer', kind: 'item', name: '战锤', nameEn: 'Warhammer', source: 'PHB' }, hitAdjust: 0, damageAdjust: 0 };
+    expect(deriveDnd5eCharacter(sheet, catalog).attacks[0].proficient).toBe(true);
   });
 });

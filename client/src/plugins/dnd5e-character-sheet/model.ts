@@ -72,7 +72,7 @@ export function splitFeatOptions(
   return { selected, available };
 }
 
-const isShieldItem = (option: CharacterRuleOption) => option.item?.category.startsWith('S') ?? false;
+const isShieldItem = (option: CharacterRuleOption) => option.item !== undefined && option.item.armorBase !== null && option.item.category.startsWith('S');
 
 export function gearOptionsForSheet(catalog: CharacterRuleCatalog, sheet: Dnd5eCharacterSheet): {
   armorOptions: CharacterRuleOption[];
@@ -117,7 +117,7 @@ export function toggleRuleReference(
 }
 
 function removeDisabledReferences(sheet: Dnd5eCharacterSheet, enabled: ReadonlySet<string>): Dnd5eCharacterSheet {
-  const allowed = (reference: CharacterRuleReference | null) => !reference || enabled.has(reference.source);
+  const allowed = (reference: CharacterRuleReference | null | undefined) => !reference || enabled.has(reference.source);
   const characterClass = allowed(sheet.advancement.class) ? sheet.advancement.class : null;
   const subclass = characterClass && allowed(sheet.advancement.subclass) ? sheet.advancement.subclass : null;
   return {
@@ -132,6 +132,11 @@ function removeDisabledReferences(sheet: Dnd5eCharacterSheet, enabled: ReadonlyS
     feats: sheet.feats.filter(allowed),
     spells: sheet.spells.filter(allowed),
     inventory: sheet.inventory.filter(entry => !entry.item || allowed(entry.item)),
+    gear: {
+      armor: allowed(sheet.gear.armor) ? sheet.gear.armor : null,
+      mainHand: allowed(sheet.gear.mainHand?.reference) ? sheet.gear.mainHand : null,
+      offHand: allowed(sheet.gear.offHand?.reference) ? sheet.gear.offHand : null,
+    },
   };
 }
 

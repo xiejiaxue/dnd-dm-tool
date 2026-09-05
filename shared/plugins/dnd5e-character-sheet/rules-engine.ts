@@ -288,14 +288,16 @@ function deriveAttacks(
 }
 
 function cleanProficiencyName(value: string): string {
-  return value.replace(/^\{\@item\s*/, '').replace(/\}$/, '').trim();
+  return value.replace(/^\{\@item\s*/, '').split('|')[0].replace(/\}$/, '').trim().toLocaleLowerCase();
 }
 
 function weaponProficiency(profile: { weaponCategory?: string; name: string; nameEn: string }, proficiencyNames: readonly string[]): boolean | null {
   if (!proficiencyNames.length) return null;
   const category = profile.weaponCategory === '简易' || profile.weaponCategory === '军用' ? profile.weaponCategory : null;
   if (category && proficiencyNames.includes(category)) return true;
-  if (proficiencyNames.some(name => name && ((profile.name && (profile.name.includes(name) || name.includes(profile.name))) || (profile.nameEn && (profile.nameEn.includes(name) || name.includes(profile.nameEn)))))) return true;
+  const name = profile.name.toLocaleLowerCase();
+  const nameEn = profile.nameEn.toLocaleLowerCase();
+  if (proficiencyNames.some(p => p && ((name && (name.includes(p) || p.includes(name))) || (nameEn && (nameEn.includes(p) || p.includes(nameEn)))))) return true;
   return false;
 }
 
