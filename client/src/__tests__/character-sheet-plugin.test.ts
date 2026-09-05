@@ -191,4 +191,25 @@ describe('D&D 5e character sheet plugin', () => {
     expect(actor.items).toContainEqual(expect.objectContaining({ name: '回气', itemType: 'feat', description: '恢复生命值。' }));
     expect(actor.resources).toContainEqual(expect.objectContaining({ id: 'hit-dice', max: 1 }));
   });
+
+  it('normalizes gear slots and keeps legacy sheets working', () => {
+    const migrated = normalizeDnd5eCharacterSheet({
+      schemaVersion: 1,
+      identity: { characterName: '旧角色' },
+      abilities: { str: 15, dex: 12, con: 14, int: 9, wis: 11, cha: 8 },
+    });
+    expect(migrated.gear).toEqual({ armor: null, mainHand: null, offHand: null });
+
+    const sheet = normalizeDnd5eCharacterSheet({
+      rules: { enabledSources: ['PHB'] },
+      gear: {
+        armor: { id: 'item:PHB:Leather Armor', kind: 'item', name: '皮甲', nameEn: 'Leather Armor', source: 'PHB' },
+        mainHand: { reference: { id: 'item:PHB:Longsword', kind: 'item', name: '长剑', nameEn: 'Longsword', source: 'PHB' }, hitAdjust: 99, damageAdjust: -3 },
+        offHand: { reference: { id: 'item:TCE:Chef', kind: 'item', name: '厨师', nameEn: 'Chef', source: 'TCE' }, hitAdjust: 0, damageAdjust: 0 },
+      },
+    });
+    expect(sheet.gear.armor).toMatchObject({ nameEn: 'Leather Armor' });
+    expect(sheet.gear.mainHand).toMatchObject({ hitAdjust: 20, damageAdjust: -3 });
+    expect(sheet.gear.offHand).toBeNull();
+  });
 });
