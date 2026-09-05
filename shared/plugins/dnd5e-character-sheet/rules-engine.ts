@@ -5,8 +5,10 @@ import {
   type CharacterItemProfile,
   type CharacterRuleCatalog,
   type CharacterRuleOption,
+  type CharacterWeaponSlot,
   type Dnd5eCharacterSheet,
   type Dnd5eDerivedCharacter,
+  type DerivedAttack,
   type DerivedCharacterEquipment,
   type DerivedCharacterFeature,
   type DerivedSkill,
@@ -74,6 +76,7 @@ export function deriveDnd5eCharacter(sheet: Dnd5eCharacterSheet, catalog: Charac
   const modifiers = Object.fromEntries(DND5E_ABILITIES.map(key => [key, characterAbilityModifier(abilities[key])])) as Record<AbilityKey, number>;
   const level = sheet.advancement.level;
   const proficiency = proficiencyBonus(level);
+  const weaponProficiencyList = unique([...(race?.weaponProficiencies ?? []), ...(characterClass?.weaponProficiencies ?? []), ...sheet.training.weapons]);
   const savingProficiencies = unique(characterClass?.savingThrowProficiencies ?? []) as AbilityKey[];
   const savingThrows = Object.fromEntries(DND5E_ABILITIES.map(key => [
     key,
@@ -95,6 +98,7 @@ export function deriveDnd5eCharacter(sheet: Dnd5eCharacterSheet, catalog: Charac
 
   const equipment = deriveEquipment(sheet, options, characterClass, background);
   const armorClass = deriveArmorClass(sheet, modifiers.dex, options);
+  const attacks = deriveAttacks(sheet, options, modifiers, proficiency, weaponProficiencyList);
   const hitDie = characterClass?.hitDie ?? 8;
   const defaultHitPoints = Math.max(1, hitDie + modifiers.con + Math.max(0, level - 1) * (Math.floor(hitDie / 2) + 1 + modifiers.con));
   const hitPointsMaximum = sheet.combat.hitPoints.maximumOverride ?? defaultHitPoints;
@@ -124,6 +128,7 @@ export function deriveDnd5eCharacter(sheet: Dnd5eCharacterSheet, catalog: Charac
     passiveInsight: 10 + skillModifier('insight'),
     passiveInvestigation: 10 + skillModifier('investigation'),
     armorClass,
+    attacks,
     speed: sheet.combat.speedOverride ?? race?.speed ?? 30,
     hitDie,
     hitPointsMaximum,
@@ -136,7 +141,7 @@ export function deriveDnd5eCharacter(sheet: Dnd5eCharacterSheet, catalog: Charac
     },
     proficiencies: {
       armor: unique([...(characterClass?.armorProficiencies ?? []), ...sheet.training.armor]),
-      weapons: unique([...(race?.weaponProficiencies ?? []), ...(characterClass?.weaponProficiencies ?? []), ...sheet.training.weapons]),
+      weapons: weaponProficiencyList,
       tools: unique([...(race?.toolProficiencies ?? []), ...(characterClass?.toolProficiencies ?? []), ...(background?.toolProficiencies ?? []), ...sheet.training.tools]),
       languages: unique([...(race?.languageProficiencies ?? []), ...(background?.languageProficiencies ?? []), ...sheet.training.languages]),
     },
@@ -235,6 +240,63 @@ function deriveEquipment(
     weight: entry.item ? options.get(entry.item.id)?.item?.weight ?? entry.weight : entry.weight,
   }));
   return [...automatic, ...manual];
+}
+
+function deriveAttacks(
+  sheet: Dnd5eCharacterSheet,
+  options: ReadonlyMap<string, CharacterRuleOption>,
+  modifiers: Record<AbilityKey, number>,
+  proficiency: number,
+  weaponProficiencies: readonly string[],
+): DerivedAttack[] {
+  const proficiencyNames = unique(weaponProficiencies.map(cleanProficiencyName));
+  const attacks: DerivedAttack[] = [];
+  for (const slotName of ['mainHand', 'offHand'] as const) {
+    const slot: CharacterWeaponSlot | null = sheet.gear[slotName];
+    const profile = optionFor(options, slot?.reference.id)?.item;
+    if (!slot || !profile?.damage) continue;
+    const ranged = profile.category.startsWith('R');
+    const abilityUsed: AbilityKey = profile.finesse
+      ? (modifiers.str >= modifiers.dex ? 'str' : 'dex')
+      : ranged ? 'dex' : 'str';
+    const offHandReference = sheet.gear.offHand?.reference ?? null;
+    const versatile = slotName === 'mainHand' && !offHandReference && profile.damageVersatile;
+    const magic = profile.bonusWeapon ?? 0;
+    const proficient = weaponProficiency({ weaponCategory: profile.weaponCategory, name: slot.reference.name, nameEn: slot.reference.nameEn }, proficiencyNames);
+    const notes = [
+      profile.finesse ? '灵巧' : '',
+      ranged ? '远程' : '',
+      versatile ? `两用 ${profile.damageVersatile}` : '',
+      profile.weaponCategory && /^[简易军用]{2}$/.test(profile.weaponCategory) ? profile.weaponCategory : '',
+      slotName === 'offHand' && !profile.light ? '非轻武器' : '',
+      slotName === 'offHand' && profile.light ? '轻武器' : '',
+      slotName === 'mainHand' && profile.twoHanded && offHandReference ? '双手武器' : '',
+    ].filter(Boolean);
+    attacks.push({
+      slot: slotName,
+      name: slot.reference.name,
+      abilityUsed,
+      proficient,
+      attackBonus: proficiency + modifiers[abilityUsed] + magic + slot.hitAdjust,
+      damage: versatile ? profile.damageVersatile! : profile.damage,
+      damageBonus: (slotName === 'offHand' ? 0 : modifiers[abilityUsed]) + magic + slot.damageAdjust,
+      damageType: profile.damageType,
+      notes,
+    });
+  }
+  return attacks;
+}
+
+function cleanProficiencyName(value: string): string {
+  return value.replace(/^\{\@item\s*/, '').replace(/\}$/, '').trim();
+}
+
+function weaponProficiency(profile: { weaponCategory?: string; name: string; nameEn: string }, proficiencyNames: readonly string[]): boolean | null {
+  if (!proficiencyNames.length) return null;
+  const category = profile.weaponCategory === '简易' || profile.weaponCategory === '军用' ? profile.weaponCategory : null;
+  if (category && proficiencyNames.includes(category)) return true;
+  if (proficiencyNames.some(name => name && ((profile.name && (profile.name.includes(name) || name.includes(profile.name))) || (profile.nameEn && (profile.nameEn.includes(name) || name.includes(profile.nameEn)))))) return true;
+  return false;
 }
 
 function deriveArmorClass(sheet: Dnd5eCharacterSheet, dexterityModifier: number, options: ReadonlyMap<string, CharacterRuleOption>): number {

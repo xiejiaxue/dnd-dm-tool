@@ -234,4 +234,61 @@ describe('D&D 5e character sheet plugin', () => {
     sheet.combat.armorClassOverride = 18;
     expect(deriveDnd5eCharacter(sheet, catalog).armorClass).toBe(18);
   });
+
+  it('derives weapon attacks with ability choice, offhand and versatile rules', () => {
+    const catalog = fallbackCharacterRuleCatalog();
+    catalog.options.push(
+      { id: 'item:PHB:Longsword', kind: 'item', name: '长剑', nameEn: 'Longsword', source: 'PHB', item: { category: 'M', weight: 3, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d8', damageType: 'S', damageVersatile: '1d10', weaponCategory: '军用', range: '', description: '' } },
+      { id: 'item:PHB:Dagger', kind: 'item', name: '匕首', nameEn: 'Dagger', source: 'PHB', item: { category: 'M', weight: 2, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d4', damageType: 'P', finesse: true, light: true, thrown: true, weaponCategory: '简易', range: '20/60', description: '' } },
+      { id: 'item:PHB:Shortbow', kind: 'item', name: '短弓', nameEn: 'Shortbow', source: 'PHB', item: { category: 'R', weight: 2, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d6', damageType: 'P', ammunition: true, twoHanded: true, weaponCategory: '简易', range: '80/320', description: '' } },
+      { id: 'item:TCE:Moon Sickle', kind: 'item', name: '+1 月镰', nameEn: '+1 Moon Sickle', source: 'TCE', item: { category: 'M', weight: 2, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d4', damageType: 'S', finesse: true, light: true, weaponCategory: 'simple', bonusWeapon: 1, range: '', description: '' } },
+    );
+    const fighter = catalog.options.find(option => option.id === 'class:PHB:Fighter')!;
+    fighter.weaponProficiencies = ['简易', '军用'];
+    const sheet = emptyDnd5eCharacterSheet('战士');
+    sheet.advancement.class = { id: fighter.id, kind: 'class', name: fighter.name, nameEn: fighter.nameEn, source: fighter.source };
+    sheet.abilityGeneration.base = { str: 15, dex: 14, con: 10, int: 8, wis: 12, cha: 10 };
+    const reference = (id: string) => catalog.options.find(option => option.id === id)!.name;
+
+    sheet.gear.mainHand = { reference: { id: 'item:PHB:Longsword', kind: 'item', name: reference('item:PHB:Longsword'), nameEn: 'Longsword', source: 'PHB' }, hitAdjust: 0, damageAdjust: 0 };
+    let attacks = deriveDnd5eCharacter(sheet, catalog).attacks;
+    expect(attacks).toHaveLength(1);
+    // 副手为空槽 → 两用武器用两用骰（设计文档：副手空且带 damageVersatile 时用两用骰）
+    expect(attacks[0]).toMatchObject({ slot: 'mainHand', abilityUsed: 'str', proficient: true, attackBonus: 4, damage: '1d10', damageBonus: 2, damageType: 'S' });
+
+    sheet.gear.offHand = { reference: { id: 'item:PHB:Dagger', kind: 'item', name: reference('item:PHB:Dagger'), nameEn: 'Dagger', source: 'PHB' }, hitAdjust: 0, damageAdjust: 0 };
+    attacks = deriveDnd5eCharacter(sheet, catalog).attacks;
+    expect(attacks[0].damage).toBe('1d8');
+    expect(attacks[0].abilityUsed).toBe('str');
+    expect(attacks[1]).toMatchObject({ slot: 'offHand', abilityUsed: 'str', proficient: true, attackBonus: 4, damage: '1d4', damageBonus: 0 });
+    expect(attacks[1].notes).toContain('轻武器');
+
+    sheet.gear.offHand = null;
+    attacks = deriveDnd5eCharacter(sheet, catalog).attacks;
+    expect(attacks[0].damage).toBe('1d10');
+
+    sheet.gear.mainHand = { reference: { id: 'item:PHB:Shortbow', kind: 'item', name: reference('item:PHB:Shortbow'), nameEn: 'Shortbow', source: 'PHB' }, hitAdjust: 0, damageAdjust: 0 };
+    attacks = deriveDnd5eCharacter(sheet, catalog).attacks;
+    expect(attacks[0]).toMatchObject({ abilityUsed: 'dex', attackBonus: 4, damageBonus: 2, proficient: true });
+
+    sheet.gear.mainHand = { reference: { id: 'item:TCE:Moon Sickle', kind: 'item', name: reference('item:TCE:Moon Sickle'), nameEn: '+1 Moon Sickle', source: 'TCE' }, hitAdjust: 1, damageAdjust: 2 };
+    attacks = deriveDnd5eCharacter(sheet, catalog).attacks;
+    // 灵巧取力敏较高者，力敏同为 +2 时按实现取 str（与上方匕首副手断言一致）
+    expect(attacks[0]).toMatchObject({ abilityUsed: 'str', proficient: false, attackBonus: 2 + 2 + 1 + 1, damageBonus: 2 + 1 + 2 });
+  });
+
+  it('labels weapon proficiency from cleaned class proficiencies', () => {
+    const catalog = fallbackCharacterRuleCatalog();
+    catalog.options.push(
+      { id: 'item:PHB:Quarterstaff', kind: 'item', name: '长棍', nameEn: 'Quarterstaff', source: 'PHB', item: { category: 'M', weight: 4, armorBase: null, armorDexCap: null, armorBonus: 0, damage: '1d6', damageType: 'B', weaponCategory: '军用', range: '', description: '' } },
+    );
+    const wizard = catalog.options.find(option => option.id === 'class:PHB:Wizard')!;
+    wizard.weaponProficiencies = ['{@item 匕首', '{@item 长棍', '{@item 轻弩'];
+    const sheet = emptyDnd5eCharacterSheet('法师');
+    sheet.advancement.class = { id: wizard.id, kind: 'class', name: wizard.name, nameEn: wizard.nameEn, source: wizard.source };
+    sheet.gear.mainHand = { reference: { id: 'item:PHB:Quarterstaff', kind: 'item', name: '长棍', nameEn: 'Quarterstaff', source: 'PHB' }, hitAdjust: 0, damageAdjust: 0 };
+
+    const [attack] = deriveDnd5eCharacter(sheet, catalog).attacks;
+    expect(attack.proficient).toBe(true);
+  });
 });
