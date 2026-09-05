@@ -25,6 +25,13 @@ describe('character rule catalog builder', () => {
         { name: '自制种族', ENG_name: 'Homebrew Race', source: 'HB' },
       ],
     }));
+    writeFileSync(path.join(directory, 'items-base.json'), JSON.stringify({
+      baseitem: [
+        { name: '长剑', ENG_name: 'Longsword', source: 'PHB', type: 'M', weaponCategory: 'martial', dmg1: '1d8', dmg2: '1d10', dmgType: 'S', property: ['V'], weight: 3 },
+        { name: '匕首', ENG_name: 'Dagger', source: 'PHB', type: 'M', weaponCategory: 'simple', dmg1: '1d4', dmgType: 'P', property: ['F', 'L', 'T'], weight: 2 },
+        { name: '盾牌', ENG_name: 'Shield', source: 'PHB', type: 'S', ac: 2, weight: 6 },
+      ],
+    }));
     writeFileSync(path.join(directory, 'class', 'class-wizard.json'), JSON.stringify({
       class: [{ name: '法师', ENG_name: 'Wizard', source: 'PHB' }],
       subclass: [{ name: '预言学派', ENG_name: 'School of Divination', source: 'PHB', className: '法师' }],
@@ -64,5 +71,20 @@ describe('character rule catalog builder', () => {
     }));
     expect(stored.options.find(option => option.kind === 'race' && option.source === 'XPHB')).not.toHaveProperty('abilityBonusChoices');
     expect(stored.options.find(option => option.kind === 'spell')?.spell?.description).toContain('该正文不应进入角色选项索引');
+    expect(stored.options).toContainEqual(expect.objectContaining({
+      kind: 'item', nameEn: 'Longsword',
+      item: expect.objectContaining({ category: 'M', damage: '1d8', damageVersatile: '1d10', weaponCategory: '军用' }),
+    }));
+    const longswordItem = stored.options.find(option => option.kind === 'item' && option.nameEn === 'Longsword')?.item;
+    expect(longswordItem).not.toHaveProperty('finesse');
+    expect(longswordItem).not.toHaveProperty('twoHanded');
+    expect(stored.options).toContainEqual(expect.objectContaining({
+      kind: 'item', nameEn: 'Dagger',
+      item: expect.objectContaining({ damage: '1d4', weaponCategory: '简易', finesse: true, light: true, thrown: true }),
+    }));
+    expect(stored.options).toContainEqual(expect.objectContaining({
+      kind: 'item', nameEn: 'Shield',
+      item: expect.objectContaining({ category: 'S', armorBase: 2 }),
+    }));
   });
 });

@@ -61,6 +61,7 @@ export function buildCharacterRuleCatalog(databaseDirectory = DB, outputFile = O
     appendEntries(options, document.feat, 'feat', bookFile, spellSourceLookup, document);
     appendEntries(options, document.spell, 'spell', bookFile, spellSourceLookup, document);
     appendEntries(options, document.item, 'item', bookFile, spellSourceLookup, document);
+    appendEntries(options, document.baseitem, 'item', bookFile, spellSourceLookup, document);
   }
 
   for (const [kind, fallback] of Object.entries(FALLBACK_OPTIONS)) {
@@ -301,8 +302,12 @@ function spellProfile(entry) {
 
 function itemProfile(entry) {
   const type = firstText(entry.type, entry.weaponCategory, entry.rarity, 'equipment');
+  const rawWeaponCategory = firstText(entry.weaponCategory);
+  const weaponCategory = rawWeaponCategory === 'simple' ? '简易' : rawWeaponCategory === 'martial' ? '军用' : rawWeaponCategory;
+  const properties = Array.isArray(entry.property) ? entry.property.filter(value => typeof value === 'string') : [];
   const armorBase = Number.isFinite(entry.ac) ? integer(entry.ac, 10, 0, 100) : null;
   const armorDexCap = type === 'MA' ? 2 : type === 'HA' ? 0 : armorBase === null ? null : null;
+  const damageVersatile = firstText(entry.dmg2).slice(0, 80);
   return {
     category: type.slice(0, 80),
     weight: number(entry.weight, 0, 0, 100000),
@@ -311,6 +316,15 @@ function itemProfile(entry) {
     armorBonus: signedNumber(entry.bonusAc),
     damage: firstText(entry.dmg1).slice(0, 80),
     damageType: firstText(entry.dmgType).slice(0, 80),
+    ...(damageVersatile ? { damageVersatile } : {}),
+    ...(weaponCategory ? { weaponCategory } : {}),
+    ...(properties.includes('F') ? { finesse: true } : {}),
+    ...(properties.includes('L') ? { light: true } : {}),
+    ...(properties.includes('2H') ? { twoHanded: true } : {}),
+    ...(properties.includes('T') ? { thrown: true } : {}),
+    ...(properties.includes('A') ? { ammunition: true } : {}),
+    ...(properties.includes('R') ? { reach: true } : {}),
+    ...(() => { const bonus = signedNumber(entry.bonusWeapon); return bonus ? { bonusWeapon: bonus } : {}; })(),
     range: firstText(entry.range).slice(0, 80),
     description: plainText(entry.entries).slice(0, 2400),
   };

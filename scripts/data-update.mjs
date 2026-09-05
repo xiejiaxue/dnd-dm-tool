@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { EnvHttpProxyAgent, fetch as proxyAwareFetch } from 'undici';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DB = path.join(ROOT, 'data', 'db');
@@ -12,32 +13,17 @@ const DND5E_CN_BASE = 'https://raw.githubusercontent.com/tjliqy/5etools-cn/cn2.0
 const FIVETOOLS_BASE = 'https://raw.githubusercontent.com/5etools-mirror-3/5etools-src/main/data';
 const UA = { 'User-Agent': 'Mozilla/5.0 (dnd-dm-tool)' };
 
-const FILES = [
-  ...['MM','XMM','MPMM','PHB','XPHB','VGM','MTF','TCE','EGW','FTD','IDRotF','CoS','WDH','WDMM'].map(s => `bestiary/bestiary-${s.toLowerCase().replace(/[^a-z0-9]/g, '')}.json`),
-  ...['PHB','XPHB','XGE','TCE','AI','EGW','FTD','IDRotF','CoS','WDH','WDMM'].map(s => `spells/spells-${s.toLowerCase().replace(/[^a-z0-9]/g, '')}.json`),
-  'items.json', 'feats.json', 'conditionsdiseases.json',
-];
+const networkDispatcher = new EnvHttpProxyAgent();
 
-const https = await import('node:https');
-const http = await import('node:http');
-
-function fetchBytes(url) {
-  return new Promise((resolve, reject) => {
-    const u = new URL(url);
-    const mod = u.protocol === 'https:' ? https : http;
-    const req = mod.get(u, { headers: UA }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        res.resume();
-        resolve(fetchBytes(new URL(res.headers.location, url)));
-        return;
-      }
-      if (res.statusCode !== 200) { res.resume(); reject(new Error(`${url} -> ${res.statusCode}`)); return; }
-      const chunks = [];
-      res.on('data', c => chunks.push(c));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-    });
-    req.on('error', reject);
+async function fetchBytes(url) {
+  const response = await proxyAwareFetch(url, {
+    headers: UA,
+    redirect: 'follow',
+    dispatcher: networkDispatcher,
+    signal: AbortSignal.timeout(30_000),
   });
+  if (!response.ok) throw new Error(`${url} -> ${response.status}`);
+  return Buffer.from(await response.arrayBuffer());
 }
 
 async function fetchJson(url) {
@@ -49,21 +35,27 @@ function writeJson(dest, value) {
   fs.writeFileSync(dest, JSON.stringify(value));
 }
 
-const DEFAULT_BESTIARY_SOURCES = ['MM', 'XMM', 'MPMM', 'PHB', 'XPHB', 'VGM', 'MTF', 'TCE', 'EGW', 'FTD', 'IDRotF', 'CoS', 'WDH', 'WDMM'];
-const DEFAULT_SPELL_SOURCES = ['PHB', 'XPHB', 'XGE', 'TCE', 'AI', 'EGW', 'FTD', 'IDRotF', 'CoS', 'WDH', 'WDMM'];
+const DEFAULT_BESTIARY_SOURCES = ['MM', 'XMM', 'MPMM', 'PHB', 'XPHB', 'VGM', 'MTF', 'TCE', 'EGW', 'FTD', 'ERLW', 'EFA', 'IDRotF', 'CoS', 'WDH', 'WDMM'];
+const DEFAULT_SPELL_SOURCES = ['PHB', 'XPHB', 'XGE', 'TCE', 'AI', 'EGW', 'FTD', 'EFA', 'IDRotF', 'CoS', 'WDH', 'WDMM'];
 
 async function fetchIndexMap(sub) {
+  const target = path.join(DB, sub, 'index.json');
+  const existing = readJsonFileOrEmpty(target);
   const localized = await fetchJsonOrNull(`${DND5E_CN_BASE}/${sub}/index.json`, `DND5E 不全书 ${sub} 索引`);
   const upstream = await fetchJsonOrNull(`${FIVETOOLS_BASE}/${sub}/index.json`, `5etools ${sub} 索引`);
-  const merged = { ...(upstream ?? {}), ...(localized ?? {}) };
+  const merged = { ...existing, ...(upstream ?? {}), ...(localized ?? {}) };
+  if (!localized && !upstream && Object.keys(existing).length) {
+    console.warn(`[data-update] ${sub} 索引下载失败，保留已有 ${Object.keys(existing).length} 条来源映射`);
+  }
   // Persist index.json at its final location so buildIndexFromDir's
   // readSourceMap() can find it later.
-  writeJson(path.join(DB, sub, 'index.json'), merged);
+  writeJson(target, merged);
   return merged;
 }
 
 const bestiaryIndex = await fetchIndexMap('bestiary');
 const spellsIndex = await fetchIndexMap('spells');
+const classIndex = await fetchIndexMap('class');
 
 const targets = new Set();
 for (const src of DEFAULT_BESTIARY_SOURCES) {
@@ -74,7 +66,13 @@ for (const src of DEFAULT_SPELL_SOURCES) {
   const f = spellsIndex[src];
   if (f) targets.add(`spells/${f}`);
 }
-for (const f of ['items.json', 'feats.json', 'conditionsdiseases.json']) targets.add(f);
+for (const file of Object.values(classIndex)) {
+  if (typeof file === 'string' && file.endsWith('.json')) targets.add(`class/${file}`);
+}
+for (const f of [
+  'items.json', 'items-base.json', 'feats.json', 'races.json', 'backgrounds.json', 'conditionsdiseases.json',
+  'generated/gendata-spell-source-lookup.json',
+]) targets.add(f);
 
 let ok = 0, fail = 0;
 for (const f of targets) {
@@ -96,6 +94,10 @@ const { buildIndexFromDir, writeIndex } = await import('../server/src/search.ts'
 const idx = await buildIndexFromDir(DB);
 writeIndex(DB, idx);
 
+const { buildCharacterRuleCatalog } = await import('./build-character-rules.mjs');
+buildCharacterRuleCatalog(DB, path.join(DB, 'character-options.json'));
+
+await networkDispatcher.close();
 console.log(`[data-update] done: ${ok} files ok, ${fail} skipped, index entries: ${idx.length}`);
 console.log(`[data-update] 已合并 DND5E 不全书中文数据与 5etools 英文元数据，数据位于 ${DB}。`);
 
@@ -105,6 +107,15 @@ async function fetchJsonOrNull(url, label) {
   } catch (error) {
     console.warn(`[data-update] ${label} 不可用：${error.message}`);
     return null;
+  }
+}
+
+function readJsonFileOrEmpty(file) {
+  try {
+    const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return isRecord(value) ? value : {};
+  } catch {
+    return {};
   }
 }
 
