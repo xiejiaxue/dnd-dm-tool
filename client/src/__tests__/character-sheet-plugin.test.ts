@@ -212,4 +212,26 @@ describe('D&D 5e character sheet plugin', () => {
     expect(sheet.gear.mainHand).toMatchObject({ hitAdjust: 20, damageAdjust: -3 });
     expect(sheet.gear.offHand).toBeNull();
   });
+
+  it('derives armor class from gear slots with stacking shield bonus', () => {
+    const catalog = fallbackCharacterRuleCatalog();
+    catalog.options.push(
+      { id: 'item:PHB:Leather Armor', kind: 'item', name: '皮甲', nameEn: 'Leather Armor', source: 'PHB', item: { category: 'LA', weight: 10, armorBase: 11, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
+      { id: 'item:PHB:Shield', kind: 'item', name: '盾牌', nameEn: 'Shield', source: 'PHB', item: { category: 'S', weight: 6, armorBase: 2, armorDexCap: null, armorBonus: 0, damage: '', damageType: '', range: '', description: '' } },
+      { id: 'item:TCE:Repulsion Shield', kind: 'item', name: '斥力之盾', nameEn: 'Repulsion Shield', source: 'TCE', item: { category: 'S', weight: 6, armorBase: 2, armorDexCap: null, armorBonus: 1, damage: '', damageType: '', range: '', description: '' } },
+    );
+    const sheet = emptyDnd5eCharacterSheet('盾卫');
+    sheet.abilityGeneration.base = { str: 10, dex: 14, con: 10, int: 10, wis: 10, cha: 10 };
+
+    expect(deriveDnd5eCharacter(sheet, catalog).armorClass).toBe(12);
+
+    sheet.gear.armor = { id: 'item:PHB:Leather Armor', kind: 'item', name: '皮甲', nameEn: 'Leather Armor', source: 'PHB' };
+    expect(deriveDnd5eCharacter(sheet, catalog).armorClass).toBe(13);
+
+    sheet.gear.offHand = { reference: { id: 'item:TCE:Repulsion Shield', kind: 'item', name: '斥力之盾', nameEn: 'Repulsion Shield', source: 'TCE' }, hitAdjust: 0, damageAdjust: 0 };
+    expect(deriveDnd5eCharacter(sheet, catalog).armorClass).toBe(16);
+
+    sheet.combat.armorClassOverride = 18;
+    expect(deriveDnd5eCharacter(sheet, catalog).armorClass).toBe(18);
+  });
 });
