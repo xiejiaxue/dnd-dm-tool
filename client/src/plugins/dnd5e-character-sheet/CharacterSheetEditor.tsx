@@ -13,8 +13,10 @@ import {
 } from '../../types';
 import {
   abilityBonusChoiceSlots,
+  gearOptionsForSheet,
   itemsForSheet,
   optionsForSheet,
+  resolveGearOption,
   selectedReference,
   spellsForSheet,
   splitFeatOptions,
@@ -289,7 +291,7 @@ function InventoryTab({ catalog, sheet, derived, query, onQuery, onChange }: { c
   };
   const update = (id: string, patch: Partial<CharacterInventoryEntry>) => onChange({ ...sheet, inventory: sheet.inventory.map(item => item.id === id ? { ...item, ...patch } : item) });
   return <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
-    <div className="space-y-4"><Panel title="负重与货币"><div className="grid grid-cols-2 gap-3 sm:grid-cols-4"><StatBox label="当前负重" value={`${formatNumber(derived.equipmentWeight)} 磅`} /><StatBox label="负重上限" value={`${derived.carryingCapacity} 磅`} /><StatBox label="物品条目" value={derived.equipment.length} /><StatBox label="已同调" value={`${sheet.inventory.filter(item => item.attuned).length}/3`} /></div><div className="mt-3 grid grid-cols-5 gap-2">{(['cp', 'sp', 'ep', 'gp', 'pp'] as const).map(key => <LabeledNumber key={key} label={key.toUpperCase()} value={sheet.currency[key]} min={0} max={100000000} onChange={value => onChange({ ...sheet, currency: { ...sheet.currency, [key]: value } })} />)}</div></Panel>
+    <div className="space-y-4"><GearPanel catalog={catalog} sheet={sheet} derived={derived} onChange={onChange} /><Panel title="负重与货币"><div className="grid grid-cols-2 gap-3 sm:grid-cols-4"><StatBox label="当前负重" value={`${formatNumber(derived.equipmentWeight)} 磅`} /><StatBox label="负重上限" value={`${derived.carryingCapacity} 磅`} /><StatBox label="物品条目" value={derived.equipment.length} /><StatBox label="已同调" value={`${sheet.inventory.filter(item => item.attuned).length}/3`} /></div><div className="mt-3 grid grid-cols-5 gap-2">{(['cp', 'sp', 'ep', 'gp', 'pp'] as const).map(key => <LabeledNumber key={key} label={key.toUpperCase()} value={sheet.currency[key]} min={0} max={100000000} onChange={value => onChange({ ...sheet, currency: { ...sheet.currency, [key]: value } })} />)}</div></Panel>
       <Panel title="装备与物品"><div className="space-y-2">{derived.equipment.map(entry => <div key={entry.id} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-3"><div className="flex flex-wrap items-center gap-2"><div className="min-w-[140px] flex-1"><strong className="block text-sm">{entry.name}</strong><span className="text-[10px] text-zinc-600">{entry.automatic ? '职业/背景自动获得' : entry.item ? `${entry.item.source} · ${formatNumber(entry.weight)} 磅` : '自定义物品'}</span></div>{!entry.automatic && <><LabeledNumber compact label="数量" value={entry.quantity} min={0} max={100000} onChange={quantity => update(entry.id, { quantity })} /><label className="text-xs text-zinc-500"><input type="checkbox" checked={entry.equipped} onChange={event => update(entry.id, { equipped: event.target.checked })} /> 装备</label><label className="text-xs text-zinc-500"><input type="checkbox" checked={entry.attuned} onChange={event => update(entry.id, { attuned: event.target.checked })} /> 同调</label><button type="button" onClick={() => onChange({ ...sheet, inventory: sheet.inventory.filter(item => item.id !== entry.id) })} className="text-zinc-600 hover:text-red-300" title={`移除 ${entry.name}`}>×</button></>}</div></div>)}{derived.equipment.length === 0 && <Empty>选择职业、背景，或从右侧添加物品。</Empty>}</div></Panel></div>
     <Panel title="物品资料库"><label className="text-xs text-zinc-500">搜索物品<input value={query} onChange={event => onQuery(event.target.value)} placeholder="中文、英文或来源" className={inputClass()} /></label><button type="button" onClick={() => addItem()} className="mt-2 w-full rounded border border-dashed border-zinc-700 px-3 py-2 text-xs text-zinc-400 hover:border-amber-500/40 hover:text-amber-300">添加自定义物品</button><div className="mt-3 max-h-[60vh] overflow-y-auto">{visibleItems.map(option => <button key={option.id} type="button" onClick={() => addItem(option)} className="flex w-full items-center gap-2 border-b border-zinc-800/70 px-2 py-2 text-left hover:bg-zinc-800"><span className="min-w-0 flex-1"><strong className="block truncate text-sm">{option.name}</strong><span className="block truncate text-[10px] text-zinc-600">{option.nameEn} · {option.source}{option.item?.weight ? ` · ${option.item.weight} 磅` : ''}</span></span><span className="text-amber-300">添加</span></button>)}</div></Panel>
   </div>;
@@ -314,6 +316,44 @@ function FeatList({ title, count, emptyText, options, selectedIds, onToggle }: {
     <h3 className="mb-2 text-xs font-medium text-zinc-400">{title}（{count}）</h3>
     {options.length === 0 ? <Empty>{emptyText}</Empty> : <div className="grid gap-2">{options.map(option => <label key={option.id} className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${selectedIds.has(option.id) ? 'border-amber-500/40 bg-amber-500/10' : 'border-zinc-800 bg-zinc-950/50 hover:border-zinc-700'}`}><input type="checkbox" checked={selectedIds.has(option.id)} onChange={() => onToggle(option)} className="mt-0.5 accent-amber-500" /><span className="min-w-0"><strong className="block truncate text-sm text-zinc-200">{option.name}</strong><span className="block truncate text-[11px] text-zinc-500">{option.nameEn} · {option.source}</span></span></label>)}</div>}
   </section>;
+}
+
+function GearPanel({ catalog, sheet, derived, onChange }: { catalog: CharacterRuleCatalog; sheet: Dnd5eCharacterSheet; derived: Dnd5eDerivedCharacter; onChange(value: Dnd5eCharacterSheet): void }) {
+  const { armorOptions, weaponOptions, offHandOptions } = gearOptionsForSheet(catalog, sheet);
+  const setGear = (patch: Partial<Dnd5eCharacterSheet['gear']>) => onChange({ ...sheet, gear: { ...sheet.gear, ...patch } });
+  const weaponSlotView = (slotName: 'mainHand' | 'offHand') => {
+    const slot = sheet.gear[slotName];
+    const option = resolveGearOption(catalog, slot?.reference);
+    const attack = derived.attacks.find(entry => entry.slot === slotName);
+    const label = attack ? (attack.proficient === true ? '熟练' : attack.proficient === false ? '不熟练' : '?') : '';
+    return (
+      <div className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-3">
+        <label className="text-xs text-zinc-500">{slotName === 'mainHand' ? '主手武器' : '副手（武器或盾牌）'}<select
+          value={slot?.reference.id ?? ''}
+          onChange={event => setGear({ [slotName]: event.target.value ? { reference: characterRuleReference((slotName === 'mainHand' ? weaponOptions : offHandOptions).find(option => option.id === event.target.value)!), hitAdjust: slot?.hitAdjust ?? 0, damageAdjust: slot?.damageAdjust ?? 0 } : null } as Partial<Dnd5eCharacterSheet['gear']>)}
+          className={inputClass()}
+        ><option value="">空手</option>{(slotName === 'mainHand' ? weaponOptions : offHandOptions).map(option => <option key={option.id} value={option.id}>{option.name} · {option.source}</option>)}</select></label>
+        {slot && !option && <p className="mt-2 text-xs text-red-300">当前所选 {slot.reference.name} 不可用（来源未启用或目录变动）。<button type="button" className="ml-2 text-zinc-400 underline" onClick={() => setGear({ [slotName]: null } as Partial<Dnd5eCharacterSheet['gear']>)}>清空</button></p>}
+        {option && slot && !option.item?.damage && <p className="mt-2 text-xs text-zinc-500">盾牌：AC +{2 + (option.item?.armorBonus ?? 0)}</p>}
+        {attack && <p className="mt-2 text-sm text-amber-300"><span className="mr-1 rounded bg-zinc-800 px-1 text-[10px] text-zinc-300">{label}</span>命中 {signed(attack.attackBonus)} · 伤害 {attack.damage}{attack.damageBonus ? signed(attack.damageBonus) : ''}{attack.damageType ? `（${attack.damageType}）` : ''}{attack.notes.length ? ` · ${attack.notes.join('、')}` : ''}</p>}
+        {attack && <div className="mt-2 grid grid-cols-2 gap-2"><LabeledNumber compact label="命中微调" value={slot.hitAdjust} min={-20} max={20} onChange={value => setGear({ [slotName]: { ...slot, hitAdjust: value } } as Partial<Dnd5eCharacterSheet['gear']>)} /><LabeledNumber compact label="伤害微调" value={slot.damageAdjust} min={-20} max={20} onChange={value => setGear({ [slotName]: { ...slot, damageAdjust: value } } as Partial<Dnd5eCharacterSheet['gear']>)} /></div>}
+      </div>
+    );
+  };
+  const armorOption = resolveGearOption(catalog, sheet.gear.armor);
+  return <Panel title="战斗装备">
+    <div className="grid gap-3 sm:grid-cols-3">
+      <label className="text-xs text-zinc-500">护甲<select value={sheet.gear.armor?.id ?? ''} onChange={event => setGear({ armor: event.target.value ? characterRuleReference(armorOptions.find(option => option.id === event.target.value)!) : null })} className={inputClass()}><option value="">无护甲</option>{armorOptions.map(option => <option key={option.id} value={option.id}>{option.name} · {option.source}</option>)}</select></label>
+      {weaponSlotView('mainHand')}
+      {weaponSlotView('offHand')}
+    </div>
+    <div className="mt-3 grid grid-cols-3 gap-3">
+      <StatBox label="护甲等级 AC" value={derived.armorClass} />
+      <StatBox label="熟练加值" value={signed(derived.proficiencyBonus)} />
+      <StatBox label="先攻" value={signed(derived.initiative)} />
+    </div>
+    {sheet.gear.armor && !armorOption && <p className="mt-2 text-xs text-red-300">当前护甲 {sheet.gear.armor.name} 不可用。<button type="button" className="ml-2 text-zinc-400 underline" onClick={() => setGear({ armor: null })}>清空</button></p>}
+  </Panel>;
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"><h2 className="mb-3 text-sm font-semibold text-zinc-200">{title}</h2>{children}</section>; }
