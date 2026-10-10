@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Lobby from './Lobby';
-import { ApiError, api, setCurrentRoomSlug, type InviteResult, type RoomBootstrap } from './api';
+import ToolsPage from './components/ToolsPage';
+import { ApiError, api, setCurrentRoomSlug, type InviteResult, type CampaignBootstrap } from './api';
 import FilingFooter from './components/FilingFooter';
 import TopBar from './components/TopBar';
 import Toolbar from './components/Toolbar';
@@ -10,12 +11,12 @@ import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
 import CampaignPortal from './components/CampaignPortal';
 import { useScene, connection } from './ws';
-import { subscribe } from './pending';
+import { subscribe, setPending as clearPendingToken } from './pending';
 import type { PendingToken } from './pending';
 import { initialNavigation } from './routing';
 
 function roomSlugFromInvite(result: InviteResult): string | null {
-  return result.roomSlug ?? result.room?.slug ?? null;
+  return result.campaignSlug ?? null;
 }
 
 function RoomLoading({ message }: { message: string }) {
@@ -26,8 +27,8 @@ function RoomLoading({ message }: { message: string }) {
   );
 }
 
-function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => void }) {
-  const [bootstrap, setBootstrap] = useState<RoomBootstrap | null>(null);
+function CampaignSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => void }) {
+  const [bootstrap, setBootstrap] = useState<CampaignBootstrap | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -48,15 +49,13 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
         if (cancelled) return;
         setBootstrap(data);
         const role = data.membership?.roomRole ?? data.membership?.role;
-        const canEnter = !data.membership?.canManage
-          && Boolean(data.activeCampaign)
-          && (role !== 'player' || Boolean(data.selectedCharacter));
+        const canEnter = role !== 'player' || Boolean(data.selectedCharacter);
         if (canEnter) {
           setReady(true);
           connection.connect(slug);
         }
       } catch (cause) {
-        if (!cancelled) setError(cause instanceof Error ? cause : new Error('无法进入这个房间'));
+        if (!cancelled) setError(cause instanceof Error ? cause : new Error('无法进入这个战役'));
       }
     })();
 
@@ -67,14 +66,14 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
   }, [slug]);
 
   if (error) {
-    const needsInvite = error instanceof ApiError && error.code === 'ROOM_NOT_FOUND';
+    const needsInvite = error instanceof ApiError && error.code === 'CAMPAIGN_NOT_FOUND';
     return (
       <main className="h-full flex items-center justify-center bg-zinc-950 px-4">
         <div className="max-w-md rounded-lg border border-red-500/30 bg-zinc-900 p-6 text-center">
-          <h1 className="font-semibold text-red-300">{needsInvite ? '你还没有加入这个房间' : '无法进入房间'}</h1>
+          <h1 className="font-semibold text-red-300">{needsInvite ? '你还没有加入这个战役' : '无法进入战役'}</h1>
           <p className="mt-2 text-sm text-zinc-400">
             {needsInvite
-              ? '房间地址本身不会授予访问权限。请从大厅进入已加入的房间，或让主持人发送有效的邀请链接。'
+              ? '战役地址本身不会授予访问权限。请从大厅进入已加入的战役，或让主持人发送有效的邀请链接。'
               : error.message}
           </p>
           <button onClick={onLeaveRoom} className="mt-5 rounded bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700">返回大厅</button>
@@ -82,7 +81,7 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
       </main>
     );
   }
-  if (!bootstrap) return <RoomLoading message="正在验证房间权限…" />;
+  if (!bootstrap) return <RoomLoading message="正在验证战役权限…" />;
 
   const enterSelectedCampaign = async () => {
     const data = await api.bootstrap();
@@ -98,42 +97,37 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
   return <Table key={slug} room={bootstrap} onLeaveRoom={onLeaveRoom} />;
 }
 
-function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => void }) {
-  const { role, roomRole, campaign } = useScene();
-  const observedCampaignId = useRef<string | null>(null);
+function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: () => void }) {
+  const { scene, role } = useScene();
   const [tool, setTool] = useState('select');
   const [pending, setPendingState] = useState<PendingToken | null>(null);
   // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
   // token to the initiative order with its tokenId (enables the turn highlight).
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [queryCollapsed, setQueryCollapsed] = useState(false);
+  const [queryCollapsed, setQueryCollapsed] = useState(() => window.matchMedia('(max-width: 1100px)').matches);
+  const [encounterOpen, setEncounterOpen] = useState(() => !window.matchMedia('(max-width: 1100px)').matches);
+  const toggleEncounter = () => { setEncounterOpen(open => !open); if (window.matchMedia('(max-width: 1100px)').matches) setQueryCollapsed(true); };
+  const toggleQuery = () => { setQueryCollapsed(collapsed => !collapsed); if (window.matchMedia('(max-width: 1100px)').matches) setEncounterOpen(false); };
   const [brushSize, setBrushSize] = useState(1);
+
+  useLayoutEffect(() => {
+    clearPendingToken(null);
+    setPendingState(null);
+    setSelectedId(null);
+    setTool('select');
+  }, [scene?.id, role]);
 
   useEffect(() => subscribe((pickedUp) => {
     setPendingState(pickedUp);
     if (pickedUp && role === 'dm') setTool('add');
   }), [role]);
 
-  useEffect(() => {
-    if (!campaign?.id) return;
-    if (observedCampaignId.current === null) {
-      observedCampaignId.current = campaign.id;
-      return;
-    }
-    if (observedCampaignId.current !== campaign.id && roomRole === 'player') {
-      // The DM moved the whole room to another save. Reload the D1 bootstrap
-      // so this player must select that campaign's isolated character before
-      // reconnecting to its board.
-      location.reload();
-    }
-    observedCampaignId.current = campaign.id;
-  }, [campaign?.id, roomRole]);
 
   return (
-    <div className="h-full flex flex-col">
-      <TopBar roomName={room.room.name} roomSlug={room.room.slug} onLeaveRoom={onLeaveRoom} />
+    <div className="campaign-shell h-full flex flex-col">
+      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} />
       <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
-      <div className="flex-1 flex min-h-0">
+      <div className="campaign-workspace flex-1 flex min-h-0" data-role={role}>
         <Toolbar
           role={role}
           tool={tool}
@@ -142,19 +136,19 @@ function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => 
           brushSize={brushSize}
           onBrushSize={setBrushSize}
         />
-        <EnemyList />
-        <div className="flex-1 min-w-0 relative bg-zinc-900">
+        <div className="campaign-encounter-slot" data-open={encounterOpen}><EnemyList /></div>
+        <div className="campaign-board flex-1 min-w-0 relative bg-well">
           <BoardCanvas
             tool={tool}
             pending={pending}
-            onClearPending={() => setPendingState(null)}
+            onClearPending={() => { clearPendingToken(null); setTool('select'); }}
             selectedId={selectedId}
             onSelect={setSelectedId}
             queryOpen={!queryCollapsed}
             brushSize={brushSize}
           />
         </div>
-        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={() => setQueryCollapsed(collapsed => !collapsed)} />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} />
       </div>
     </div>
   );
@@ -170,7 +164,7 @@ export default function App() {
   const enterRoom = useCallback((slug: string, replace = false) => {
     const room = slug.trim();
     if (!room) return;
-    const target = `/r/${encodeURIComponent(room)}`;
+    const target = `/c/${encodeURIComponent(room)}`;
     if (replace) history.replaceState(null, '', target);
     else history.pushState(null, '', target);
     setCurrentRoomSlug(room);
@@ -207,7 +201,7 @@ export default function App() {
   }, []);
 
   // Invite credentials live in the URL fragment so browsers do not send them
-  // in Referer headers. Do not mount RoomSession until redemption succeeds:
+  // in Referer headers. Do not mount CampaignSession until redemption succeeds:
   // its D1 access check is intentionally denied for an as-yet-unjoined user.
   useEffect(() => {
     if (!inviteToken || redeemedInvite.current === inviteToken) return;
@@ -217,7 +211,7 @@ export default function App() {
       .then(() => api.redeemInvite(inviteToken))
       .then(result => {
         const slug = roomSlugFromInvite(result);
-        if (!slug) throw new Error('邀请响应没有包含房间地址');
+        if (!slug) throw new Error('邀请响应没有包含战役地址');
         // The fragment is cleared synchronously above, so this is the only
         // redemption request even when React StrictMode replays effects.
         enterRoom(slug, true);
@@ -228,14 +222,16 @@ export default function App() {
       });
   }, [enterRoom, inviteToken]);
 
+  if (location.pathname === '/calculator' || location.pathname === '/characters' || location.pathname === '/dice') return <ToolsPage page={location.pathname === '/dice' ? 'dice' : location.pathname === '/calculator' ? 'calculator' : 'characters'} />;
+
   return (
     <div className="h-full flex flex-col bg-zinc-950">
       <div className="min-h-0 flex-1">
         {inviteToken
-          ? <RoomLoading message="正在加入邀请房间…" />
+          ? <RoomLoading message="正在加入邀请战役…" />
           : roomSlug
-          ? <RoomSession key={roomSlug} slug={roomSlug} onLeaveRoom={leaveRoom} />
-          : <Lobby inviteError={inviteError} onOpenRoom={enterRoom} />}
+          ? <CampaignSession key={roomSlug} slug={roomSlug} onLeaveRoom={leaveRoom} />
+          : <Lobby inviteError={inviteError} onOpenCampaign={enterRoom} />}
       </div>
       <FilingFooter />
     </div>

@@ -65,8 +65,26 @@ describe('scene backup', () => {
 
     const parsed = parseSceneBackup(JSON.stringify(source));
     expect(parsed.scene.mapAssetId).toBe('asset-1');
+    expect(parseSceneBackup(JSON.stringify({ ...source, version: 1 })).scene.mapAssetId).toBe('asset-1');
     expect(parsed.scene.grid).toEqual({ size: 50, offset: [0, 0], snap: false });
 
     expect(() => parseSceneBackup(JSON.stringify({ ...source, version: 99 }))).toThrow('不支持的备份文件版本');
   });
+  it('round trips precise reveals without a raster and rejects invalid rectangle data', async () => {
+    const fogReveals=[{x:113.25,y:117.5,width:6.5,height:5.25}];
+    const {backup}=await buildSceneBackup({...scene,fog:undefined,fogReveals},null);
+    expect(parseSceneBackup(JSON.stringify(backup)).scene.fogReveals).toEqual(fogReveals);
+    expect(backup.scene.fog).toBeUndefined();
+    backup.scene.fogReveals![0].width=0;
+    expect(()=>parseSceneBackup(JSON.stringify(backup))).toThrow();
+    expect(fogReveals[0].width).toBe(6.5);
+  });
+  it('retains the fixed fog density through backup parsing', async () => {
+    const {backup} = await buildSceneBackup(scene, null);
+    backup.scene.fogBasisScale = 2;backup.scene.mapScale = 3;
+    const parsed = parseSceneBackup(JSON.stringify(backup));
+    expect(parsed.scene.fogBasisScale).toBe(2);expect(parsed.scene.mapScale).toBe(3);expect(parsed.scene.fog).toEqual(scene.fog);
+    expect(() => parseSceneBackup(JSON.stringify({...backup,scene:{...backup.scene,fogBasisScale:0}}))).toThrow();
+  });
+
 });

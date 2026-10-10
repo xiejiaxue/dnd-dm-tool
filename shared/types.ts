@@ -1,22 +1,7 @@
+import type { FogRectangle } from './fog';
 export type Role = 'dm' | 'player';
 
-// Fog cell size in px — denser than the main grid (grid.size, default 100) so
-// the DM's eraser can reveal the map at fine granularity.
-export const FOG_CELL = 50;
-
-// Fog grid dimensions: cover the WHOLE rendered map (mapSize * mapScale), or
-// the play area when there's no map, so fog never leaves a gap on the board.
-// Used by the server's ensureFog and the client's fog render/eraser.
-export function fogGridSize(scene: {
-  mapImage: string | null;
-  mapSize: [number, number];
-  mapScale?: number;
-  playArea: PlayArea;
-}): { cols: number; rows: number } {
-  const w = scene.mapImage ? scene.mapSize[0] * (scene.mapScale ?? 1) : scene.playArea.w;
-  const h = scene.mapImage ? scene.mapSize[1] * (scene.mapScale ?? 1) : scene.playArea.h;
-  return { cols: Math.ceil(w / FOG_CELL), rows: Math.ceil(h / FOG_CELL) };
-}
+export { FOG_CELL, fogGridSize, fogGeometry, resolveFogBasisScale } from './fog';
 
 export type EntryType =
   | 'monster' | 'spell' | 'item' | 'feat' | 'condition'
@@ -89,8 +74,11 @@ export interface Scene {
   walls: Wall[];
   initiative: InitiativeEntry[];
   favorites: Favorite[];
-  // Fog of war: per-cell "revealed" flags, index = row*cols+col (FOG_CELL px cells).
+  // Revealed flags in the frozen image-space raster: row * fogGridSize(scene).cols + col.
   fog?: boolean[];
+  // Frozen fog raster density in original-image coordinates; independent of mapScale.
+  fogBasisScale?: number;
+  fogReveals?: FogRectangle[];
   // DM unlocks a scene so players can view it in the campaign library.
   unlocked?: boolean;
 }
@@ -132,8 +120,8 @@ export type Op =
   | { op: 'addWall'; wall: Wall }
   | { op: 'removeWall'; wallId: string }
   | { op: 'updateGrid'; patch: Partial<GridConfig> }
-  | { op: 'updateMap'; mapImage: string | null; mapSize: [number, number]; playArea: PlayArea }
-  | { op: 'updateMapScale'; mapScale: number }
+  | { op: 'updateMap'; mapImage: string | null; mapSize: [number, number]; playArea: PlayArea; fogBasisScale?: number }
+  | { op: 'updateMapScale'; mapScale: number; fogBasisScale?: number }
   | { op: 'addEnemy'; entryId: string; nameZh: string }
   | { op: 'removeEnemy'; entryId: string }
   | { op: 'switchCampaign'; campaignId: string }
@@ -144,7 +132,8 @@ export type Op =
   | { op: 'reorderInitiative'; order: string[] }
   | { op: 'addFavorite'; favorite: Favorite }
   | { op: 'removeFavorite'; type: EntryType; entryId: string }
-  | { op: 'setFog'; cells: number[]; revealed: boolean }
+  | { op: 'setFog'; cells: number[]; revealed: boolean; basisScale?: number }
+  | { op: 'revealFogRect'; rect: FogRectangle }
   | { op: 'revealAllFog' }
   | { op: 'coverAllFog' };
 

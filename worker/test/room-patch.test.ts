@@ -20,7 +20,7 @@ describe('room operation patches', () => {
       op: 'updatePlayer', tokenId: 'other-player', patch: { name: 'Renamed', sessionId: null },
     }]);
     expect(projectPatchOperations(state, [{ op: 'updateMapScale', mapScale: 1.25 }], host)).toEqual([
-      { op: 'updateMapScale', mapScale: 1.25 },
+      { op: 'updateMapScale', mapScale: 1.25, fogBasisScale: 1 },
     ]);
   });
 

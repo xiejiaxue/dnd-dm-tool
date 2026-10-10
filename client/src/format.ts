@@ -95,8 +95,8 @@ export function formatMonster(m: any): StatBlock {
   const size = SIZE_ZH[String(m.size?.[0])] ?? m.size?.[0] ?? '';
   const type = TYPE_ZH[m.type?.type ?? m.type] ?? m.type?.type ?? (typeof m.type === 'string' ? m.type : '');
   const body = [
-    ...(m.trait ?? []).map((t: any) => `**${t.name}。** ${(t.entries ?? []).map(renderMarkup).join(' ')}`),
-    ...(m.action ?? []).map((a: any) => `**${a.name}。** ${(a.entries ?? []).map(renderMarkup).join(' ')}`),
+    ...(m.trait ?? []).map((t: any) => `**${t.name}。** ${flattenCompendiumEntries(t.entries).join(' ')}`),
+    ...(m.action ?? []).map((a: any) => `**${a.name}。** ${flattenCompendiumEntries(a.entries).join(' ')}`),
   ];
   return {
     name: m.name,
@@ -148,7 +148,7 @@ export function formatSpell(s: any): StatBlock {
       ['成分', comp],
       ['持续时间', dur],
     ].filter(([, v]) => v) as [string, string][],
-    body: (s.entries ?? []).map(renderMarkup),
+    body: [...flattenCompendiumEntries(s.entries), ...flattenCompendiumEntries(s.entriesHigherLevel)],
   };
 }
 
@@ -180,16 +180,20 @@ export function formatCompendiumEntry(type: EntryType, entry: any): StatBlock {
   };
 }
 
-function flattenCompendiumEntries(value: unknown): string[] {
+export function flattenCompendiumEntries(value: unknown): string[] {
   if (typeof value === 'string') return [renderMarkup(value)];
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((part) => {
-    if (typeof part === 'string') return [renderMarkup(part)];
-    if (typeof part !== 'object' || part === null) return [];
-    const record = part as { name?: unknown; entries?: unknown };
-    const nested = flattenCompendiumEntries(record.entries);
-    const title = typeof record.name === 'string' ? renderMarkup(record.name) : '';
-    if (!title) return nested;
-    return nested.length ? [`**${title}。** ${nested.join(' ')}`] : [`**${title}。**`];
-  });
+  if (typeof value === 'number') return [String(value)];
+  if (Array.isArray(value)) return value.flatMap(flattenCompendiumEntries);
+  if (!value || typeof value !== 'object') return [];
+  const record = value as Record<string, unknown>;
+  const title = typeof record.name === 'string' ? renderMarkup(record.name) : '';
+  const nested = [
+    ...flattenCompendiumEntries(record.entries),
+    ...flattenCompendiumEntries(record.entry),
+    ...flattenCompendiumEntries(record.items),
+  ];
+  if (Array.isArray(record.colLabels)) nested.push(record.colLabels.map(label => flattenCompendiumEntries(label).join(' ')).join(' | '));
+  if (Array.isArray(record.rows)) nested.push(...record.rows.map(row => Array.isArray(row) ? row.map(cell => flattenCompendiumEntries(cell).join(' ')).join(' | ') : flattenCompendiumEntries(row).join(' ')));
+  if (!title) return nested;
+  return nested.length ? [`**${title}。** ${nested[0]}`, ...nested.slice(1)] : [`**${title}。**`];
 }

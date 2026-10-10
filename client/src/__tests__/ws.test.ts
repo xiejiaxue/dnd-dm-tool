@@ -54,7 +54,7 @@ describe('Connection 竞态修复（订阅晚于初始 state）', () => {
     connection.connect('first-room');
     await new Promise(r => setTimeout(r, 10));
     expect(FakeWS.instances).toHaveLength(1);
-    expect(FakeWS.instances[0].url).toBe('wss://table.example/api/rooms/first-room/ws');
+    expect(FakeWS.instances[0].url).toBe('wss://table.example/api/campaigns/first-room/ws');
     connection.disconnect();
   });
 
@@ -72,7 +72,7 @@ describe('Connection 竞态修复（订阅晚于初始 state）', () => {
     expect(state).toBeTruthy();
     expect(state.scene.name).toBe('测试场景');
     expect(state.role).toBe('dm');
-    expect(ws.url).toBe('wss://table.example/api/rooms/test-room/ws');
+    expect(ws.url).toBe('wss://table.example/api/campaigns/test-room/ws');
     expect(ws.sent.map(frame => JSON.parse(frame))).toContainEqual({ type: 'capabilities', patches: 1 });
     connection.disconnect();
   });

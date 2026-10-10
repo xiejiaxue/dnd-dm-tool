@@ -14,3 +14,9 @@ data/
 
 # OS
 .DS_Store
+
+# Local verification artifacts
+output/
+
+# Browser verification output
+.playwright-cli/

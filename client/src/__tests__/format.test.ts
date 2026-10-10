@@ -151,3 +151,12 @@ describe('formatCompendiumEntry', () => {
     expect(item.body).toEqual(['这个袋子的内部空间比外观看起来大得多。', '**取出物品。** 取出物品需要一个动作。']);
   });
 });
+
+it('preserves nested spell lists, tables and higher-level text', () => {
+  const result = formatCompendiumEntry('spell', {
+    name:'测试法术', level:1, school:'V', entries:[{type:'list',items:['第一项',{name:'第二项',entry:'完整说明'}]},{type:'table',colLabels:['等级','效果'],rows:[[1,'基础效果']]}],entriesHigherLevel:[{name:'升环',entries:['每高一环增加伤害。']}],
+  });
+  expect(result.body.join('\n')).toContain('完整说明');
+  expect(result.body.join('\n')).toContain('1 | 基础效果');
+  expect(result.body.join('\n')).toContain('每高一环增加伤害。');
+});

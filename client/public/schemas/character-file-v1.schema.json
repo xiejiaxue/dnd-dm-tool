@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dnd.xiejiaxue.com/schemas/character-file-v1.schema.json",
+  "title": "DM 追踪角色文件 v1",
+  "description": "UTF-8 JSON，最大 1 MiB。上传到浏览器后校验；不支持 PDF 重新导入。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "ruleset",
+    "exportedAt",
+    "character"
+  ],
+  "properties": {
+    "format": {
+      "const": "dm-tracker-character"
+    },
+    "version": {
+      "const": 1
+    },
+    "ruleset": {
+      "const": "dnd5e-2014"
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time",
+      "maxLength": 40
+    },
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "species",
+        "className",
+        "background",
+        "alignment",
+        "experience",
+        "hitDice",
+        "level",
+        "maxHp",
+        "hp",
+        "temporaryHp",
+        "armorClass",
+        "speed",
+        "initiativeBonus",
+        "spellAbility",
+        "abilities",
+        "saves",
+        "ranks",
+        "details"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 160,
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "species": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "className": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "background": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "alignment": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "experience": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "hitDice": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "maxHp": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999
+        },
+        "hp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9999,
+          "description": "不得超过 maxHp；应用导入时执行交叉校验。"
+        },
+        "temporaryHp": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9999
+        },
+        "armorClass": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "speed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9999
+        },
+        "initiativeBonus": {
+          "type": "integer",
+          "minimum": -100,
+          "maximum": 100
+        },
+        "spellAbility": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 5,
+          "description": "-1 无；0–5 对应 abilities 顺序"
+        },
+        "abilities": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "description": "顺序：力量、敏捷、体质、智力、感知、魅力"
+        },
+        "saves": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "boolean"
+          },
+          "description": "顺序与 abilities 一致"
+        },
+        "ranks": {
+          "type": "array",
+          "minItems": 18,
+          "maxItems": 18,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "description": "0 未熟练，1 熟练，2 专精。顺序：运动、体操、巧手、隐匿、奥秘、历史、调查、自然、宗教、驯兽、洞悉、医药、察觉、求生、欺瞒、威吓、表演、游说"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "攻击与伤害": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "法术与施法说明": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "法术位与资源": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "装备与货币": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "职业与种族特性": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "语言与工具熟练": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "性格与背景故事": {
+              "type": "string",
+              "maxLength": 30000
+            },
+            "笔记": {
+              "type": "string",
+              "maxLength": 30000
+            }
+          }
+        }
+      }
+    }
+  }
+}

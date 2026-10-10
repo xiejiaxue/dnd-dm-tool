@@ -1,3 +1,4 @@
+import { resolveFogBasisScale, clipFogRectangle, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
 import {
   type Campaign,
   type ChatMessage,
@@ -24,6 +25,7 @@ export interface RoomActor {
   memberId: string;
   role: RoomRole;
   accessEpoch: number;
+  campaignId?: string;
   characterId?: string;
   characterName?: string;
   characterColor?: string;
@@ -33,11 +35,10 @@ export interface RoomActor {
 }
 
 export interface PersistedRoomState {
-  schemaVersion: 1;
+  schemaVersion: 2;
   revision: number;
-  currentCampaignId: string;
   currentSceneId: string;
-  campaigns: Record<string, Campaign>;
+  campaign: Campaign;
   scenes: Record<string, Scene>;
   messages: ChatMessage[];
 }
@@ -85,6 +86,7 @@ export function createScene(name: string): Scene {
     name: normalizeName(name, '未命名场景'),
     mapImage: null,
     mapSize: [1600, 1200],
+    fogBasisScale: 1,
     mapScale: 1,
     grid: { ...DEFAULT_GRID, offset: [...DEFAULT_GRID.offset] as [number, number] },
     playArea: { ...DEFAULT_PLAY },
@@ -110,11 +112,10 @@ export function createInitialRoomState(roomName: string, campaignName: string, c
   const scene = createScene(firstSceneName || `${roomName} 场景`);
   const campaign = createCampaign(campaignName, scene.id, campaignId);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     revision: 0,
-    currentCampaignId: campaign.id,
     currentSceneId: scene.id,
-    campaigns: { [campaign.id]: campaign },
+    campaign,
     scenes: { [scene.id]: scene },
     messages: [],
   };
@@ -122,12 +123,12 @@ export function createInitialRoomState(roomName: string, campaignName: string, c
 
 export function projectRoomState(state: PersistedRoomState, actor: RoomActor): RoomProjection {
   const scene = state.scenes[state.currentSceneId];
-  const campaign = state.campaigns[state.currentCampaignId];
+  const campaign = state.campaign;
   if (!scene || !campaign) throw new Error('Room state has no active scene or campaign');
 
   const canManage = isRoomModerator(actor.role);
   const messages = (state.messages ?? []).filter((message) => {
-    if (message.campaignId !== state.currentCampaignId) return false;
+    if (message.campaignId !== state.campaign.id) return false;
     if (message.visibility === 'public') return true;
     if (message.visibility === 'self') return message.userId === actor.userId;
     return canManage || message.userId === actor.userId;
@@ -190,30 +191,6 @@ export function ensurePlayerToken(state: PersistedRoomState, actor: RoomActor): 
   return true;
 }
 
-export function ensureCampaign(
-  state: PersistedRoomState,
-  campaignId: string,
-  campaignName: string,
-  firstSceneName = '起始场景',
-): Campaign {
-  const existing = state.campaigns[campaignId];
-  if (existing) return existing;
-  const scene = createScene(firstSceneName);
-  const campaign = createCampaign(campaignName, scene.id, campaignId);
-  state.scenes[scene.id] = scene;
-  state.campaigns[campaign.id] = campaign;
-  return campaign;
-}
-
-export function selectCampaign(state: PersistedRoomState, campaignId: string): void {
-  const campaign = state.campaigns[campaignId];
-  if (!campaign) throw new DomainError('NOT_FOUND', '找不到战役存档');
-  const sceneId = campaign.sceneIds.find((id) => Boolean(state.scenes[id]));
-  if (!sceneId) throw new DomainError('CORRUPT_STATE', '战役存档没有可用场景');
-  state.currentCampaignId = campaignId;
-  state.currentSceneId = sceneId;
-}
-
 /**
  * Parse an untrusted legacy board operation and turn it into a server-owned
  * mutation. This compatibility layer keeps the current Konva UI working while
@@ -248,7 +225,7 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
     case 'updateGrid':
       return { op, patch: gridPatch(value.patch) };
     case 'updateMap':
-      return { op, mapImage: mapUrl(value.mapImage), mapSize: sizePair(value.mapSize), playArea: playArea(value.playArea) };
+      return { op, mapImage: mapUrl(value.mapImage), mapSize: sizePair(value.mapSize), playArea: playArea(value.playArea), fogBasisScale: value.fogBasisScale === undefined ? 1 : boundedNumber(value.fogBasisScale, 0.1, 8) };
     case 'updateMapScale':
       return { op, mapScale: boundedNumber(value.mapScale, 0.1, 8) };
     case 'addEnemy':
@@ -275,19 +252,28 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
       return { op, favorite: favorite(value.favorite) };
     case 'removeFavorite':
       return { op, type: entryType(value.type), entryId: shortText(value.entryId, 180) };
-    case 'setFog':
-      return { op, cells: integerList(value.cells, 2_000, 0, 2_000_000), revealed: value.revealed === true };
+    case 'revealFogRect': {
+      if (!isRecord(value.rect)) throw new DomainError('INVALID', '迷雾选区无效');
+      const rect = clipFogRectangle(activeScene(state), {
+        x: boundedNumber(value.rect.x, -100_000, 100_000), y: boundedNumber(value.rect.y, -100_000, 100_000),
+        width: boundedNumber(value.rect.width, Number.MIN_VALUE, 100_000), height: boundedNumber(value.rect.height, Number.MIN_VALUE, 100_000),
+      });
+      if (!rect) throw new DomainError('INVALID', '迷雾选区不在地图内');
+      return { op, rect };
+    }
+    case 'setFog': {
+      const scene = activeScene(state), basisScale = resolveFogBasisScale(scene);
+      const incoming = value.basisScale === undefined ? (scene.mapImage ? scene.mapScale ?? 1 : 1) : boundedNumber(value.basisScale, 0.1, 8);
+      if (Math.abs(incoming - basisScale) > 0.000001) throw new DomainError('INVALID', '迷雾坐标已更新，请刷新页面后重试');
+      return { op, cells: integerList(value.cells, 2_000, 0, 2_000_000), revealed: value.revealed === true, basisScale };
+    }
     case 'revealAllFog':
     case 'coverAllFog':
       return { op };
     // A room cannot switch to an arbitrary D1 campaign from a browser. This
     // compatibility command only permits a campaign that already belongs to
     // this room's persisted state.
-    case 'switchCampaign': {
-      const campaignId = id(value.campaignId);
-      if (!state.campaigns[campaignId]) throw new DomainError('INVALID', '战役不属于当前房间');
-      return { op, campaignId };
-    }
+    case 'switchCampaign': { throw new DomainError('INVALID', '请从大厅进入其他战役'); }
     default:
       throw new DomainError('INVALID', '未知操作');
   }
@@ -374,9 +360,12 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       scene.mapSize = op.mapSize;
       scene.playArea = op.playArea;
       scene.mapScale = 1;
+      scene.fogBasisScale = op.fogBasisScale ?? 1;
       scene.fog = undefined;
+      scene.fogReveals = undefined;
       return;
     case 'updateMapScale':
+      scene.fogBasisScale = resolveFogBasisScale(scene);
       scene.mapScale = op.mapScale;
       return;
     case 'addEnemy': {
@@ -389,13 +378,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'removeEnemy':
       activeCampaign(state).enemies = activeCampaign(state).enemies.filter((entry) => entry.entryId !== op.entryId);
       return;
-    case 'switchCampaign': {
-      const campaign = state.campaigns[op.campaignId];
-      if (!campaign) return;
-      state.currentCampaignId = campaign.id;
-      state.currentSceneId = campaign.sceneIds[0] ?? state.currentSceneId;
-      return;
-    }
+    case 'switchCampaign': { throw new DomainError('INVALID', '请从大厅进入其他战役'); }
     case 'submitInitiative': {
       const existing = op.sessionId
         ? scene.initiative.find((entry) => entry.sessionId === op.sessionId)
@@ -454,16 +437,22 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'removeFavorite':
       scene.favorites = scene.favorites.filter((item) => item.type !== op.type || item.entryId !== op.entryId);
       return;
+    case 'revealFogRect':
+      scene.fogReveals = revealFogRectangle(scene, op.rect);
+      return;
     case 'setFog': {
+      if (!op.revealed) scene.fogReveals = coverFogRectangles(scene, op.cells);
       const fog = ensureFog(scene);
       for (const cell of op.cells) if (cell >= 0 && cell < fog.length) fog[cell] = op.revealed;
       return;
     }
     case 'revealAllFog':
       ensureFog(scene).fill(true);
+      scene.fogReveals = undefined;
       return;
     case 'coverAllFog':
       ensureFog(scene).fill(false);
+      scene.fogReveals = undefined;
       return;
   }
 }
@@ -475,7 +464,7 @@ export function activeScene(state: PersistedRoomState): Scene {
 }
 
 export function activeCampaign(state: PersistedRoomState): Campaign {
-  const campaign = state.campaigns[state.currentCampaignId];
+  const campaign = state.campaign;
   if (!campaign) throw new DomainError('CORRUPT_STATE', '找不到当前战役');
   return campaign;
 }
@@ -522,6 +511,7 @@ export class DomainError extends Error {
 }
 
 function ensureFog(scene: Scene): boolean[] {
+  scene.fogBasisScale = resolveFogBasisScale(scene);
   const { cols, rows } = fogGridSize(scene);
   const length = cols * rows;
   if (!scene.fog || scene.fog.length !== length) scene.fog = new Array(length).fill(false);
@@ -619,7 +609,7 @@ function mapUrl(value: unknown): string | null {
   if (value === null) return null;
   const url = shortText(value, 500);
   // Room assets are always served through an authenticated same-origin route.
-  if (!url.startsWith('/api/rooms/')) throw new DomainError('INVALID', '地图必须引用当前房间的私有素材');
+  if (!url.startsWith('/api/campaigns/')) throw new DomainError('INVALID', '地图必须引用战役的私有素材');
   return url;
 }
 
@@ -690,7 +680,9 @@ function gridPatch(value: unknown): Partial<GridConfig> {
 function optionalAssetUrl(value: unknown): string {
   if (typeof value !== 'string') throw new DomainError('INVALID', '素材地址无效');
   if (value === '') return '';
-  return mapUrl(value) ?? '';
+  const url = shortText(value, 500);
+  if (/^\/api\/token\/[^/?#\\]+$/u.test(url)) return url;
+  return mapUrl(url) ?? '';
 }
 
 function color(value: unknown): string {

@@ -1,7 +1,9 @@
+import type { FogRectangle } from '../../shared/fog';
+import { resolveFogBasisScale } from './types';
 import type { Campaign, Favorite, Scene, Token } from './types';
 
 export const SCENE_BACKUP_FORMAT = 'dnd-dm-tool.scene-backup';
-export const SCENE_BACKUP_VERSION = 1;
+export const SCENE_BACKUP_VERSION = 2;
 export const MAX_BACKUP_BYTES = 60 * 1024 * 1024;
 
 const MAX_ASSET_BYTES = 10 * 1024 * 1024;
@@ -46,6 +48,8 @@ export interface SceneBackup {
     walls: Array<{ p1: [number, number]; p2: [number, number] }>;
     favorites: Favorite[];
     fog?: boolean[];
+    fogBasisScale?: number;
+    fogReveals?: FogRectangle[];
     unlocked: boolean;
   };
   assets: Record<string, BackupAsset>;
@@ -160,7 +164,8 @@ export async function buildSceneBackup(scene: Scene, campaign: Campaign | null):
         tokens,
         walls: scene.walls.map(wall => ({ p1: [...wall.p1] as [number, number], p2: [...wall.p2] as [number, number] })),
         favorites: scene.favorites.map(favorite => ({ ...favorite })),
-        ...(scene.fog ? { fog: [...scene.fog] } : {}),
+        ...(scene.fogReveals?.length ? { fogReveals: scene.fogReveals.map(rect => ({ ...rect })) } : {}),
+        ...(scene.fog ? { fog: [...scene.fog], fogBasisScale: resolveFogBasisScale(scene) } : {}),
         unlocked: Boolean(scene.unlocked),
       },
       assets,
@@ -261,7 +266,7 @@ export function parseSceneBackup(source: string): SceneBackup {
     throw new Error('备份文件不是有效的 JSON');
   }
   const root = record(raw, '备份文件');
-  if (root.format !== SCENE_BACKUP_FORMAT || root.version !== SCENE_BACKUP_VERSION) {
+  if (root.format !== SCENE_BACKUP_FORMAT || (root.version !== 1 && root.version !== SCENE_BACKUP_VERSION)) {
     throw new Error('不支持的备份文件版本');
   }
 
@@ -302,6 +307,15 @@ export function parseSceneBackup(source: string): SceneBackup {
     fog = inputScene.fog.map(value => bool(value, '迷雾单元'));
   }
 
+  let fogReveals: FogRectangle[] | undefined;
+  if (inputScene.fogReveals !== undefined) {
+    if (!Array.isArray(inputScene.fogReveals) || inputScene.fogReveals.length > MAX_FOG_CELLS) throw new Error('迷雾选区数据无效');
+    fogReveals = inputScene.fogReveals.map(value => {
+      const rect = record(value, '迷雾选区');
+      return { x: numberIn(rect.x, '选区 X', 0, 20_000), y: numberIn(rect.y, '选区 Y', 0, 20_000), width: numberIn(rect.width, '选区宽度', Number.MIN_VALUE, 20_000), height: numberIn(rect.height, '选区高度', Number.MIN_VALUE, 20_000) };
+    });
+  }
+
   let campaign: SceneBackup['campaign'];
   if (root.campaign !== undefined) {
     const inputCampaign = record(root.campaign, '战役');
@@ -314,7 +328,7 @@ export function parseSceneBackup(source: string): SceneBackup {
       }),
     };
   }
-  const totalRoomOps = rawTokens.length + rawWalls.length + rawFavorites.length + (campaign?.enemies.length ?? 0) + 3;
+  const totalRoomOps = (fogReveals?.length ?? 0) + rawTokens.length + rawWalls.length + rawFavorites.length + (campaign?.enemies.length ?? 0) + 3;
   if (totalRoomOps > 3_000) throw new Error('备份包含过多实时操作，无法安全导入');
 
   const mapAssetId = assetId(inputScene.mapAssetId, assets, '地图素材');
@@ -342,6 +356,8 @@ export function parseSceneBackup(source: string): SceneBackup {
       walls,
       favorites,
       ...(fog ? { fog } : {}),
+      ...(fogReveals ? { fogReveals } : {}),
+      ...(inputScene.fogBasisScale === undefined ? {} : { fogBasisScale: numberIn(inputScene.fogBasisScale, '迷雾比例', 0.1, 8) }),
       unlocked: bool(inputScene.unlocked, '场景公开状态'),
     },
     assets,

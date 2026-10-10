@@ -22,33 +22,24 @@ export class ApiError extends Error {
   }
 }
 
-export interface RoomSummary {
+export interface CampaignSummary {
   id?: string;
   slug: string;
   name: string;
   role?: string;
-  updatedAt?: string;
+  updatedAt?: string | number;
+  status?: string;
+  moduleId?: string;
+  moduleName?: string;
 }
 
-export interface RoomBootstrap {
-  room: RoomSummary;
+export interface CampaignBootstrap {
+  campaign: CampaignSummary;
   membership?: { role?: string; roomRole?: string; canManage?: boolean };
-  modules: CampaignModuleSummary[];
-  campaigns: CampaignSaveSummary[];
-  activeCampaign: { id: string; name: string } | null;
   selectedCharacter: CampaignCharacterSummary | null;
 }
 
 export interface CampaignModuleSummary { id: string; name: string; description: string }
-export interface CampaignSaveSummary {
-  id: string;
-  name: string;
-  moduleId: string | null;
-  moduleName: string;
-  updatedAt: number;
-  lastPlayedAt: number | null;
-  active: boolean;
-}
 export interface CampaignCharacterSummary {
   id: string;
   campaignId: string;
@@ -63,11 +54,10 @@ export interface CharacterSheet { character: CampaignCharacterSummary; entries: 
 export interface CampaignJournal { id: string; title: string; content: string; visibility: 'dm' | 'players'; updatedAt: number }
 
 export interface InviteResult {
+  campaignSlug?: string;
   token?: string;
   url?: string;
   inviteUrl?: string;
-  roomSlug?: string;
-  room?: { slug?: string };
 }
 
 let currentRoomSlug: string | null = null;
@@ -84,7 +74,7 @@ export function getCurrentRoomSlug(): string | null {
 
 function roomPath(path = ''): string {
   if (!currentRoomSlug) throw new Error('请选择一个房间后再请求房间数据');
-  return `/api/rooms/${encodeURIComponent(currentRoomSlug)}${path}`;
+  return `/api/campaigns/${encodeURIComponent(currentRoomSlug)}${path}`;
 }
 
 async function json<T>(url: string, init?: RequestInit): Promise<T> {
@@ -145,9 +135,15 @@ function publicConfig(): Promise<PublicSiteConfig> {
 export const api = {
   me,
   publicConfig,
-  rooms: () => json<{ rooms: RoomSummary[] }>('/api/rooms').then(response => response.rooms),
-  createRoom: (name: string) => json<{ room: RoomSummary }>('/api/rooms', jsonRequest('POST', { roomName: name })).then(response => response.room),
-  bootstrap: () => json<RoomBootstrap>(roomPath()),
+  campaignList: (archived=false) => json<{campaigns:CampaignSummary[]}>(`/api/campaigns${archived?'?status=archived':''}`).then(response=>response.campaigns),
+  createCampaign: (name:string,moduleId?:string,copyMembersFrom?:string) => json<{campaign:CampaignSummary}>('/api/campaigns',jsonRequest('POST',{name,moduleId,copyMembersFrom})).then(response=>response.campaign),
+  modules: () => json<CampaignModuleSummary[]>('/api/modules'),
+  deleteCampaign: (slug:string) => json<{ok:boolean}>(`/api/campaigns/${encodeURIComponent(slug)}`,jsonRequest('DELETE')),
+  archiveCampaign: (slug:string) => json<{ok:boolean}>(`/api/campaigns/${encodeURIComponent(slug)}/archive`,jsonRequest('POST')),
+  restoreCampaign: (slug:string) => json<{ok:boolean}>(`/api/campaigns/${encodeURIComponent(slug)}/restore`,jsonRequest('POST')),
+  campaignMembers: () => json<{members:Array<{id:string;name:string;role:string;status:string}>}>(roomPath('/members')).then(response=>response.members),
+  removeMember: (id:string) => json<{ok:boolean}>(roomPath(`/members/${encodeURIComponent(id)}`),jsonRequest('DELETE')),
+  bootstrap: () => json<CampaignBootstrap>(roomPath()),
 
   createInvite: (input: { role?: 'player' | 'spectator'; maxUses?: number; expiresInHours?: number } = {}) =>
     json<InviteResult>(roomPath('/invites'), jsonRequest('POST', { role: 'player', ...input })),
@@ -169,16 +165,6 @@ export const api = {
   createScene: (name: string) =>
     json<Scene>(roomPath('/scenes'), jsonRequest('POST', { name })),
   deleteScene: (id: string) => json<{ ok: boolean }>(roomPath(`/scenes/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
-
-  modules: () => json<CampaignModuleSummary[]>(roomPath('/modules')),
-  campaigns: () => json<CampaignSaveSummary[]>(roomPath('/campaigns')),
-  createCampaign: (name: string, moduleId: string) =>
-    json<CampaignSaveSummary>(roomPath('/campaigns'), jsonRequest('POST', { name, moduleId })),
-  selectCampaign: (id: string) =>
-    json<CampaignSaveSummary>(roomPath(`/campaigns/${encodeURIComponent(id)}/select`), jsonRequest('POST')),
-  deleteCampaign: (id: string) => json<{ ok: boolean }>(roomPath(`/campaigns/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
-  assignSceneToCampaign: (campaignId: string, sceneId: string) =>
-    json<{ ok: boolean }>(roomPath(`/campaigns/${encodeURIComponent(campaignId)}/scenes`), jsonRequest('POST', { sceneId })),
 
   characters: (campaignId: string) =>
     json<CampaignCharacterSummary[]>(roomPath(`/characters?campaignId=${encodeURIComponent(campaignId)}`)),

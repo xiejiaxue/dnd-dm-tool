@@ -4,7 +4,7 @@ export interface InitialNavigation {
 }
 
 export function roomSlugFromPath(pathname: string): string | null {
-  const match = /^\/r\/([^/]+)\/?$/.exec(pathname);
+  const match = /^\/c\/([^/]+)\/?$/.exec(pathname);
   if (!match) return null;
   try {
     return decodeURIComponent(match[1]);

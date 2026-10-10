@@ -172,7 +172,7 @@ class Connection {
 
   private open(roomSlug: string, generation: number): void {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${proto}://${location.host}/api/rooms/${encodeURIComponent(roomSlug)}/ws`);
+    const ws = new WebSocket(`${proto}://${location.host}/api/campaigns/${encodeURIComponent(roomSlug)}/ws`);
     this.ws = ws;
 
     ws.onopen = () => {
@@ -209,11 +209,12 @@ class Connection {
       }
       this.emit(msg);
     };
-    ws.onclose = () => {
+    ws.onclose = (event) => {
       if (generation !== this.generation || this.ws !== ws) return;
       this.ws = null;
       this.connected = false;
       this.emit({ type: 'disconnected' });
+      if(event?.code===4003){this.emit({type:'error',message:'战役访问权限已变更，请返回大厅'});return;}
       if (this.activeRoomSlug !== roomSlug) return;
       const delay = Math.min(1000 * 2 ** this.retry, 10_000);
       this.retry += 1;
@@ -396,11 +397,12 @@ export function useScene(): SceneState {
   }));
   useEffect(() => connection.onMessage((msg) => {
     if (msg.type === 'state' && msg.scene) {
+      const scene = msg.scene;
       const viewer = asViewer(msg.viewer);
       const effectiveRole = viewer?.roomRole ?? msg.roomRole ?? msg.role;
       setState(current => ({
         ...current,
-        scene: msg.scene,
+        scene,
         role: uiRole(effectiveRole),
         roomRole: rawRole(effectiveRole),
         viewer,

@@ -1,3 +1,4 @@
+import { resolveFogBasisScale, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
 import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
 
 /** The active-room projection that may be predicted locally. */
@@ -80,12 +81,14 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
           mapSize: [...operation.mapSize] as [number, number],
           playArea: { ...operation.playArea },
           mapScale: 1,
+          fogBasisScale: operation.fogBasisScale ?? 1,
           fog: undefined,
+          fogReveals: undefined,
         },
         campaign,
       };
     case 'updateMapScale':
-      return { scene: scene.mapScale === operation.mapScale ? scene : { ...scene, mapScale: operation.mapScale }, campaign };
+      return { scene: scene.mapScale === operation.mapScale && scene.fogBasisScale !== undefined ? scene : { ...scene, mapScale: operation.mapScale, fogBasisScale: operation.fogBasisScale ?? resolveFogBasisScale(scene) }, campaign };
     case 'addEnemy':
       if (!campaign) return null;
       return campaign.enemies.some((entry) => entry.entryId === operation.entryId)
@@ -110,28 +113,32 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         : { scene: { ...scene, favorites: [...scene.favorites, { ...operation.favorite }] }, campaign };
     case 'removeFavorite':
       return { scene: { ...scene, favorites: scene.favorites.filter((item) => item.type !== operation.type || item.entryId !== operation.entryId) }, campaign };
+    case 'revealFogRect':
+      return { scene: { ...scene, fogReveals: revealFogRectangle(scene, operation.rect) }, campaign };
     case 'setFog': {
+      if (operation.basisScale !== undefined && Math.abs(operation.basisScale - resolveFogBasisScale(scene)) > 0.000001) return null;
       const fog = editableFog(scene);
-      let changed = false;
+      const fogReveals = operation.revealed ? scene.fogReveals : coverFogRectangles(scene, operation.cells);
+      let changed = fogReveals !== scene.fogReveals;
       for (const cell of operation.cells) {
         if (cell >= 0 && cell < fog.length && fog[cell] !== operation.revealed) {
           fog[cell] = operation.revealed;
           changed = true;
         }
       }
-      return changed || !scene.fog ? { scene: { ...scene, fog }, campaign } : { scene, campaign };
+      return changed || !scene.fog || scene.fogBasisScale === undefined || scene.fog.length !== fog.length ? { scene: { ...scene, fog, fogReveals, fogBasisScale: resolveFogBasisScale(scene) }, campaign } : { scene, campaign };
     }
     case 'revealAllFog': {
       const fog = editableFog(scene);
-      if (fog.every(Boolean)) return { scene, campaign };
+      if (!scene.fogReveals && scene.fog && scene.fogBasisScale !== undefined && scene.fog.length === fog.length && fog.every(Boolean)) return { scene, campaign };
       fog.fill(true);
-      return { scene: { ...scene, fog }, campaign };
+      return { scene: { ...scene, fog, fogReveals: undefined, fogBasisScale: resolveFogBasisScale(scene) }, campaign };
     }
     case 'coverAllFog': {
       const fog = editableFog(scene);
-      if (fog.every((cell) => !cell)) return { scene, campaign };
+      if (!scene.fogReveals && scene.fog && scene.fogBasisScale !== undefined && scene.fog.length === fog.length && fog.every((cell) => !cell)) return { scene, campaign };
       fog.fill(false);
-      return { scene: { ...scene, fog }, campaign };
+      return { scene: { ...scene, fog, fogReveals: undefined, fogBasisScale: resolveFogBasisScale(scene) }, campaign };
     }
   }
 }

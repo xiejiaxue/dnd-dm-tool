@@ -31,7 +31,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
   return (
     <div className="absolute inset-0 z-10 bg-zinc-900 overflow-y-auto p-3 text-sm">
       <div className="flex items-center gap-2 mb-2">
-        <button onClick={onBack} className="text-zinc-400 hover:text-white">←</button>
+        <button onClick={onBack} className="text-zinc-400 hover:text-zinc-100">←</button>
         <h2 className="font-bold text-base">{entry.nameZh}</h2>
       </div>
       {loading && <div className="text-zinc-500">加载中…</div>}
@@ -59,7 +59,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
           <button
             onClick={() => setPending({
               kind: 'monster', name: entry.nameZh, entryId: entry.id,
-              avatar: `/api/token/${entry.id}`, color: '#fff',
+              avatar: `/api/token/${encodeURIComponent(entry.id)}`, color: '#fff',
             })}
             className="flex-1 rounded bg-amber-600/20 text-amber-400 py-1.5 hover:bg-amber-600/30"
           >✋ 拿起</button>

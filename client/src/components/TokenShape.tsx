@@ -3,6 +3,9 @@ import { memo, useEffect, useState } from 'react';
 import { useImage } from '../useImage';
 import type { Token } from '../types';
 
+// One board diameter for both kinds, including previously saved 48px players.
+const TOKEN_SIZE = 100;
+
 interface Props {
   token: Token;
   active: boolean;
@@ -33,65 +36,73 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
 
   return (
     <Group
+      id={token.id} name="board-token"
       x={token.x} y={token.y}
       draggable={draggable}
-      onDragEnd={(e) => onDragEnd(e.target.x(), e.target.y())}
+      onDragEnd={(e) => {
+        const { x, y } = e.target.position();
+        // Konva mutates the node while dragging. Restore the controlled position
+        // before publishing, including when snapping yields an unchanged state.
+        e.target.position({ x: token.x, y: token.y });
+        onDragEnd(x, y);
+      }}
       onClick={onSelect}
       onTap={onSelect}
       onContextMenu={(e) => { e.evt.preventDefault(); onContextMenu(); }}
     >
       {/* 底圆（颜色环 + 选中高亮） */}
       <Circle
-        width={token.size} height={token.size}
+        width={TOKEN_SIZE} height={TOKEN_SIZE}
         fill={token.color || '#333'}
-        stroke={selected ? '#f59e0b' : token.color || '#000'}
+        stroke={selected ? '#B93424' : token.color || '#000'}
         strokeWidth={selected ? 3 : 1.5}
       />
       {/* 头像：圆形裁剪（clipFunc 画圆裁出圆形图）。底圆以 (0,0) 为中心，
           故把头像整体平移 -size/2 使其裁剪圆心也落在 (0,0)，与底圆重合。 */}
       {img && (
         <Group
-          x={-token.size / 2}
-          y={-token.size / 2}
+          x={-TOKEN_SIZE / 2}
+          y={-TOKEN_SIZE / 2}
           clipFunc={(ctx) => {
             ctx.beginPath();
-            ctx.arc(token.size / 2, token.size / 2, token.size / 2, 0, Math.PI * 2, false);
+            ctx.arc(TOKEN_SIZE / 2, TOKEN_SIZE / 2, TOKEN_SIZE / 2, 0, Math.PI * 2, false);
             ctx.closePath();
           }}
         >
-          <KImage image={img} width={token.size} height={token.size} perfectDrawEnabled={false} listening={false} />
+          <KImage image={img} width={TOKEN_SIZE} height={TOKEN_SIZE} perfectDrawEnabled={false} listening={false} />
         </Group>
       )}
-      {/* 当前回合高亮：金色脉冲环 */}
+      {/* 当前回合高亮：白色脉冲环（在明暗地图上都可读） */}
       {active && (
         <Ring
-          innerRadius={token.size / 2 - 6}
-          outerRadius={token.size / 2 + 4 + pulse}
+          innerRadius={TOKEN_SIZE / 2 - 6}
+          outerRadius={TOKEN_SIZE / 2 + 4 + pulse}
           fillEnabled={false}
-          stroke="#fbbf24" strokeWidth={3}
+          stroke="#FFFFFF" strokeWidth={3}
           listening={false}
         />
       )}
-      {/* 怪物编号徽章（右上角） */}
+      {/* 怪物编号徽章（右上角）：白底墨边、红色数字 */}
       {token.kind === 'monster' && token.number != null && (() => {
-        const r = token.size * 0.17;
-        const cx = token.size * 0.78;
-        const cy = token.size * 0.22;
+        const r = TOKEN_SIZE * 0.17;
+        const cx = TOKEN_SIZE * 0.35;
+        const cy = -TOKEN_SIZE * 0.35;
         const fs = r * 1.3;
         return (
           <Group x={0} y={0} listening={false}>
-            <Circle x={cx} y={cy} radius={r} fill="#0f1115" stroke="#f59e0b" strokeWidth={2} />
+            <Circle x={cx} y={cy} radius={r} fill="#FFFFFF" stroke="#111110" strokeWidth={2} />
             <Text
               text={String(token.number)}
               x={cx - r} y={cy - fs / 2} width={r * 2}
-              align="center" fill="#fbbf24" fontStyle="bold"
+              align="center" fill="#B93424" fontStyle="bold"
               fontSize={fs}
             />
           </Group>
         );
       })()}
-      <Text text={token.name} y={token.size / 2 + 2} width={token.size} align="center"
-        fill={token.kind === 'monster' ? '#ef4444' : '#22c55e'} fontSize={12} fontStyle="bold" />
+      <Text text={token.name} x={-TOKEN_SIZE / 2} y={TOKEN_SIZE / 2 + 2} width={TOKEN_SIZE} align="center"
+        fill="#FFFFFF" fontSize={12} fontStyle="bold"
+        shadowColor="#000000" shadowBlur={2} shadowOpacity={0.75} />
     </Group>
   );
 }

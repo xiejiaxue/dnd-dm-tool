@@ -23,8 +23,9 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "dnd-dm-tool",
-      "migrations_dir": "./worker/migrations"
+      "database_name": "dnd-dm-tool-campaigns",
+      "database_id": "e755f51e-5c77-4c70-8f8c-98012e52bf44",
+      "migrations_dir": "./worker/campaign-migrations"
     }
   ],
   "r2_buckets": [

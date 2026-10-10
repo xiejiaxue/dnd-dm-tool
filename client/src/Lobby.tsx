@@ -1,122 +1,380 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { api, type CurrentUser, type RoomSummary } from './api';
-
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  api,
+  type CurrentUser,
+  type CampaignSummary,
+  type CampaignModuleSummary,
+} from "./api";
+import Icon from "./components/Icon";
 interface Props {
   inviteError?: string | null;
-  onOpenRoom: (slug: string) => void;
+  onOpenCampaign: (slug: string) => void;
 }
-
-export default function Lobby({ inviteError, onOpenRoom }: Props) {
-  const [me, setMe] = useState<CurrentUser | null>(null);
-  const [rooms, setRooms] = useState<RoomSummary[]>([]);
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+export default function Lobby({ inviteError, onOpenCampaign }: Props) {
+  const [me, setMe] = useState<CurrentUser | null>(null),
+    [campaigns, setCampaigns] = useState<CampaignSummary[]>([]),
+    [modules, setModules] = useState<CampaignModuleSummary[]>([]);
+  const [name, setName] = useState(""),
+    [moduleId, setModuleId] = useState("");
+  const [query, setQuery] = useState(""),
+    [filter, setFilter] = useState("all"),
+    [archived, setArchived] = useState(false);
+  const [loading, setLoading] = useState(true),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null),
+    pageRef = useRef<HTMLDivElement>(null);
   const load = async () => {
     setLoading(true);
-    setError(null);
+    setError("");
     try {
-      // `api.me()` establishes the anonymous session cookie before room
-      // listing. Do not make these first-visit requests in parallel.
       const user = await api.me();
-      const list = await api.rooms();
+      const [list, templates] = await Promise.all([
+        api.campaignList(archived),
+        api.modules(),
+      ]);
       setMe(user);
-      setRooms(list);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '无法连接服务');
+      setCampaigns(list);
+      setModules(templates);
+      setModuleId((current) =>
+        templates.some((m) => m.id === current)
+          ? current
+          : templates[0]?.id || "",
+      );
+      setName((current) => current || templates[0]?.name || "");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "加载失败");
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => { void load(); }, []);
-
-  const createRoom = async (event: FormEvent) => {
-    event.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed || creating) return;
-    setCreating(true);
-    setError(null);
+  useEffect(() => {
+    void load();
+  }, [archived]);
+  const create = async (e: FormEvent) => {
+    e.preventDefault();
+    if (busy || !name.trim()) return;
+    setBusy(true);
+    setError("");
     try {
-      const room = await api.createRoom(trimmed);
-      onOpenRoom(room.slug);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '创建房间失败');
+      const campaign = await api.createCampaign(
+        name.trim(),
+        moduleId || undefined,
+      );
+      onOpenCampaign(campaign.slug);
+    } catch (e) {
+      await load();
+      setError(e instanceof Error ? e.message : "创建失败");
     } finally {
-      setCreating(false);
+      setBusy(false);
     }
   };
-
+  const archive = async (c: CampaignSummary) => {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await (archived
+        ? api.restoreCampaign(c.slug)
+        : api.archiveCampaign(c.slug));
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "操作失败");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const remove = async (c: CampaignSummary) => {
+    if (
+      busy ||
+      !window.confirm(`删除战役「${c.name}」？删除后将不再显示在大厅。`)
+    )
+      return;
+    setBusy(true);
+    try {
+      await api.deleteCampaign(c.slug);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "删除失败");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const focusCreate = () => {
+    nameRef.current?.scrollIntoView({ block: "center" });
+    nameRef.current?.focus({ preventScroll: true });
+    nameRef.current?.select();
+  };
+  const visible = campaigns.filter(
+    (c) =>
+      (filter === "all" ||
+        (filter === "host" ? c.role === "host" : c.role !== "host")) &&
+      `${c.name} ${c.moduleName || ""}`
+        .toLocaleLowerCase()
+        .includes(query.trim().toLocaleLowerCase()),
+  );
   return (
-    <main className="h-full flex items-center justify-center px-4 py-10 bg-zinc-950">
-      <section className="w-full max-w-2xl rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl overflow-hidden">
-        <div className="p-6 border-b border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950">
-          <p className="text-amber-400 text-sm font-medium">DND DM 追踪</p>
-          <h1 className="text-2xl font-semibold mt-1">选择一个游戏房间</h1>
-          <p className="text-sm text-zinc-400 mt-2">
-            房间通过网址连接；邀请链接会自动把你加入对应桌面。
-          </p>
-          {me && <p className="mt-3 text-xs text-zinc-500">当前身份：{me.displayName ?? me.id}</p>}
-        </div>
-
-        <div className="p-6 grid gap-6 md:grid-cols-[1fr_0.9fr]">
+    <div className="swiss-lobby">
+      <a className="skip-link" href="#campaign-directory">
+        跳转到战役列表
+      </a>
+      <aside className="navigation-rail">
+        <button
+          className="brand-mark"
+          onClick={() => pageRef.current?.scrollTo({ top: 0 })}
+          aria-label="DM 追踪首页"
+        >
+          <span className="brand-symbol">
+            <Icon name="dice" />
+          </span>
+          <span>
+            DM<span className="brand-second">追踪</span>
+          </span>
+        </button>
+        <div className="nav-caption">工具 / TOOLS</div>
+        <nav aria-label="主导航">
+          <button className="rail-destination active" aria-current="page">
+            <Icon name="grid" />
+            <span>我的桌团</span>
+            <span className="nav-index">01</span>
+          </button>
+          <a className="rail-destination" href="/calculator">
+            <Icon name="calculator" />
+            <span>临时计算器</span>
+            <span className="nav-index">02</span>
+          </a>
+          <a className="rail-destination" href="/characters">
+            <Icon name="users" />
+            <span>角色卡</span>
+            <span className="nav-index">03</span>
+          </a>
+          <a className="rail-destination" href="/dice">
+            <Icon name="dice" />
+            <span>掷骰</span>
+            <span className="nav-index">04</span>
+          </a>
+        </nav>
+        <div className="rail-account">
+          <span className="avatar">
+            <Icon name="users" />
+          </span>
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-medium">我的房间</h2>
-              <button onClick={() => { void load(); }} className="text-xs text-zinc-400 hover:text-white">刷新</button>
-            </div>
-            {loading ? (
-              <p className="text-sm text-zinc-500 py-4">正在读取房间…</p>
-            ) : rooms.length === 0 ? (
-              <p className="text-sm text-zinc-500 py-4">还没有加入任何房间。创建一个，或打开朋友发来的邀请链接。</p>
-            ) : (
-              <ul className="space-y-2">
-                {rooms.map(room => (
-                  <li key={room.id || room.slug}>
-                    <button
-                      onClick={() => onOpenRoom(room.slug)}
-                      className="w-full text-left rounded-lg border border-zinc-800 bg-zinc-950/50 hover:border-amber-500/50 hover:bg-zinc-800 px-3 py-3 transition-colors"
-                    >
-                      <span className="block font-medium truncate">{room.name}</span>
-                      <span className="block mt-1 text-xs text-zinc-500">
-                        {room.role ? `权限：${room.role}` : '进入桌面'} · /r/{room.slug}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <strong>{me?.displayName || "访客"}</strong>
+            <small>{loading ? "正在加载…" : "本机访客身份"}</small>
           </div>
-
-          <form onSubmit={createRoom} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 self-start">
-            <h2 className="font-medium">创建房间</h2>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-500">你会成为该房间的拥有者，可以创建邀请链接并管理桌面。</p>
-            <label className="block mt-4 text-xs text-zinc-400" htmlFor="room-name">房间名称</label>
-            <input
-              id="room-name"
-              value={name}
-              onChange={event => setName(event.target.value)}
-              maxLength={80}
-              autoComplete="off"
-              placeholder="例如：周五龙与地下城"
-              className="mt-1 w-full rounded bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm outline-none focus:border-amber-500"
-            />
-            <button
-              type="submit"
-              disabled={!name.trim() || creating}
-              className="mt-3 w-full rounded bg-amber-500/20 px-3 py-2 text-sm text-amber-300 hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-            >{creating ? '正在创建…' : '创建并进入'}</button>
-          </form>
         </div>
-
-        {(inviteError || error) && (
-          <div className="mx-6 mb-6 rounded border border-red-500/30 bg-red-950/30 px-3 py-2 text-sm text-red-300">
-            {inviteError || error}
+      </aside>
+      <div className="lobby-scroll" ref={pageRef}>
+        <header className="app-topbar">
+          <span>
+            DM 追踪 <span className="breadcrumb-divider">/</span>
+            <strong>我的桌团</strong>
+          </span>
+        </header>
+        <main className="lobby-main">
+          <section className="utility-heading">
+            <div>
+              <span className="eyebrow">01 / CAMPAIGNS</span>
+              <h1>我的桌团</h1>
+            </div>
+            <div className="hero-actions">
+              <a className="button-secondary" href="/dice">
+                掷骰
+              </a>
+              <a className="button-secondary" href="/characters">
+                开卡
+              </a>
+              <button className="button-primary" onClick={focusCreate}>
+                <Icon name="plus" />
+                新战役
+              </button>
+            </div>
+          </section>
+          {(inviteError || error) && (
+            <div className="lobby-error" role="alert">
+              <span>{inviteError || error}</span>
+              <button onClick={() => void load()} disabled={loading}>
+                重试
+              </button>
+            </div>
+          )}
+          <div className="lobby-layout">
+            <section id="campaign-directory" aria-label="战役列表">
+              <div className="section-title">
+                <span className="section-number">01</span>
+                <h2>{archived ? "已归档" : "战役"}</h2>
+                <span className="count" role="status">
+                  {visible.length}
+                </span>
+                <button
+                  className="refresh-button"
+                  disabled={loading}
+                  onClick={() => void load()}
+                >
+                  <Icon name="refresh" />
+                  刷新
+                </button>
+              </div>
+              <label className="search-field">
+                <Icon name="search" />
+                <input
+                  aria-label="搜索战役"
+                  type="search"
+                  placeholder="战役名称或模组"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </label>
+              <div className="room-filters" aria-label="筛选战役">
+                {[
+                  ["all", "全部"],
+                  ["host", "我主持的"],
+                  ["joined", "我参加的"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    aria-pressed={filter === value}
+                    className={filter === value ? "selected" : ""}
+                    onClick={() => setFilter(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+                <button
+                  className={`archive-filter ${archived ? "selected" : ""}`}
+                  aria-pressed={archived}
+                  onClick={() => setArchived(!archived)}
+                >
+                  已归档
+                </button>
+              </div>
+              {loading ? (
+                <div className="empty-state" role="status">
+                  正在加载战役…
+                </div>
+              ) : visible.length ? (
+                <div className="room-grid">
+                  {visible.map((c) => (
+                    <article className="room-card" key={c.id}>
+                      <div className="room-card-top">
+                        <span className="visibility">
+                          <span />
+                          {c.role === "host"
+                            ? "主持人"
+                            : c.role === "spectator"
+                              ? "旁观者"
+                              : "参与者"}
+                        </span>
+                      </div>
+                      <h3>{c.name}</h3>
+                      <p>{c.moduleName || "空白冒险"}</p>
+                      <footer>
+                        {c.role === "host" && (
+                          <button
+                            className="text-link"
+                            disabled={busy}
+                            onClick={() => void archive(c)}
+                          >
+                            {archived ? "恢复" : "归档"}
+                          </button>
+                        )}
+                        {archived && c.role === "host" && (
+                          <button
+                            className="text-link"
+                            disabled={busy}
+                            onClick={() => void remove(c)}
+                          >
+                            删除
+                          </button>
+                        )}
+                        {!archived && (
+                          <a
+                            className="room-enter"
+                            href={`/c/${encodeURIComponent(c.slug)}`}
+                            onClick={(e) => {
+                              if (
+                                e.metaKey ||
+                                e.ctrlKey ||
+                                e.shiftKey ||
+                                e.altKey
+                              )
+                                return;
+                              e.preventDefault();
+                              onOpenCampaign(c.slug);
+                            }}
+                          >
+                            继续战役
+                            <Icon name="arrow" />
+                          </a>
+                        )}
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <Icon name="grid" />
+                  <h3>{query ? "没有匹配战役" : "暂无战役"}</h3>
+                </div>
+              )}
+            </section>
+            <aside className="create-room">
+              <div className="create-heading">
+                <span className="eyebrow">NEW CAMPAIGN</span>
+                <Icon name="plus" />
+              </div>
+              <h2>新战役</h2>
+              <form onSubmit={create}>
+                {modules.length > 1 && (
+                  <div className="campaign-create-field">
+                    <label htmlFor="campaign-module">模组</label>
+                    <select
+                      id="campaign-module"
+                      value={moduleId}
+                      onChange={(e) => {
+                        const chosen = modules.find(
+                          (m) => m.id === e.target.value,
+                        );
+                        if (
+                          !name.trim() ||
+                          name === modules.find((m) => m.id === moduleId)?.name
+                        )
+                          setName(chosen?.name || "");
+                        setModuleId(e.target.value);
+                      }}
+                    >
+                      {modules.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="campaign-create-field">
+                  <label htmlFor="campaign-name">战役名称</label>
+                  <input
+                    id="campaign-name"
+                    ref={nameRef}
+                    required
+                    maxLength={80}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <button
+                  className="button-primary"
+                  type="submit"
+                  disabled={busy || loading || !name.trim() || !moduleId}
+                >
+                  {busy ? "创建中…" : "创建并进入"}
+                  <Icon name="arrow" />
+                </button>
+              </form>
+            </aside>
           </div>
-        )}
-      </section>
-    </main>
+        </main>
+      </div>
+    </div>
   );
 }
