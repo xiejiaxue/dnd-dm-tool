@@ -1,3 +1,5 @@
+import MusicNavigation from './components/MusicNavigation';
+import TavernNavigation from './components/TavernNavigation';
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   api,
@@ -114,7 +116,7 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
         .includes(query.trim().toLocaleLowerCase()),
   );
   return (
-    <div className="swiss-lobby">
+    <div className="swiss-lobby page-enter">
       <a className="skip-link" href="#campaign-directory">
         跳转到战役列表
       </a>
@@ -140,7 +142,7 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
           </button>
           <a className="rail-destination" href="/calculator">
             <Icon name="calculator" />
-            <span>临时计算器</span>
+            <span className="nav-name-wide">临时计算器</span><span className="nav-name-short">计算器</span>
             <span className="nav-index">02</span>
           </a>
           <a className="rail-destination" href="/characters">
@@ -153,7 +155,7 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
             <span>掷骰</span>
             <span className="nav-index">04</span>
           </a>
-        </nav>
+        <MusicNavigation /><TavernNavigation /></nav>
         <div className="rail-account">
           <span className="avatar">
             <Icon name="users" />

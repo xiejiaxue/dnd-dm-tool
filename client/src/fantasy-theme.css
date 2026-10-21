@@ -1,0 +1,331 @@
+/*
+ * 纸上冒险 · 视觉层
+ * 只做排版、材质、动效三件事，不动任何业务布局。
+ * 全部规则以 html 前缀提高一级特异性，保证在组件 CSS 之后仍能覆盖。
+ */
+
+@font-face {
+  font-family: "Cinzel";
+  src: url("/fonts/cinzel-latin-var.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --display: "Cinzel", "Songti SC", "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+  --serif: "Songti SC", "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+
+  /* 纸面：在原冷灰调上微微加暖，几乎察觉不到，但整页会「旧」下来 */
+  --paper: #f5f3e8;
+  --panel: #fbf8ee;
+  --panel-2: #ece8da;
+  --line: #d8d3c0;
+  --ink: #1e1f1b;
+  --muted: #5f6054;
+  --accent: #b53324;
+}
+
+/* ---------- 纸面 ---------- */
+
+html body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* 极淡的印刷颗粒：靠 multiply 叠在整页之上，不改变任何层级与交互 */
+html body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E");
+}
+
+/* 主要「纸片」统一到同一张纸色上 */
+html .tool-section,
+html .upload-card,
+html .download-card,
+html .dice-result,
+html .tavern-floor {
+  background: var(--panel);
+}
+html .dice-stage {
+  background: var(--panel-2);
+}
+
+/* ---------- 标题与标签 ---------- */
+
+html .tool-heading h1,
+html .utility-heading h1,
+html .tavern-heading h1,
+html .campaign-portal h1 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-rendering: optimizeLegibility;
+}
+
+html .tool-heading h1,
+html .utility-heading h1 {
+  font-size: clamp(38px, 3.4vw, 52px);
+}
+
+html .campaign-portal h1 {
+  font-size: 34px;
+}
+
+html .tavern-heading h1 {
+  font-size: 40px;
+}
+
+/* 章节名同样走衬线，和正文的黑体拉开层次 */
+html .tool-section h2,
+html .create-heading h2,
+html .dice-history h2,
+html .campaign-portal section h2,
+html .tavern-stage h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* 眉标：小型大写 + 宽字距，是「书页」气质最便宜的一处 */
+html .eyebrow,
+html .tiny-label,
+html .nav-caption {
+  font-family: var(--display);
+  font-weight: 500;
+  letter-spacing: 0.19em;
+}
+
+html .eyebrow {
+  font-size: 9.5px;
+}
+
+/* 中文标签不能吃西文那种宽字距，会把字拆散 */
+html .nav-caption {
+  letter-spacing: 0.04em;
+}
+
+/* 章节号前加一枚印刷用的小方块 */
+html .tool-heading .eyebrow::before,
+html .utility-heading .eyebrow::before,
+html .tavern-heading .eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  background: var(--accent);
+  vertical-align: 1px;
+}
+
+/* 书页双线：原有的 2px 实线下再压一条细线 */
+html .tool-heading,
+html .utility-heading,
+html .tavern-heading {
+  border-bottom: 1px solid var(--ink);
+  box-shadow: 0 3px 0 -2px var(--ink);
+}
+
+/* 卡片外再套一道细框，像书里的框线 */
+html .tool-section,
+html .upload-card,
+html .download-card {
+  border-color: var(--line);
+  box-shadow: 0 0 0 1px var(--paper), 0 0 0 2px var(--line);
+}
+
+/* ---------- 数字：碑刻感 ---------- */
+
+html .dice-total,
+html .dice-tray-total strong,
+html .dice-history li > b,
+html .tavern-date-number,
+html .tavern-stats strong,
+html .hp-readout > strong,
+html .derived-stat strong,
+html .ability-field > strong {
+  font-family: var(--display);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 600;
+}
+
+html .dice-total {
+  letter-spacing: -0.02em;
+}
+
+/* 未投掷时的破折号在碑刻体里会变成一根粗黑杠，压低它 */
+html .dice-result[data-phase="idle"] .dice-total {
+  font-size: 56px;
+  font-weight: 400;
+  color: #c9c3ae;
+}
+
+html .dice-result .result-formula,
+html .dice-stage-caption {
+  letter-spacing: 0.06em;
+}
+
+/* ---------- 导航：书签丝带 ---------- */
+
+html .rail-destination {
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+html .rail-destination.active {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+html .nav-index {
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 空态：一枚线稿骰子 ---------- */
+
+html .tool-empty::before {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 14px;
+  opacity: 0.75;
+  background: no-repeat center / contain
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none' stroke='%23b3ad97' stroke-width='1.1' stroke-linejoin='round'%3E%3Cpath d='M32 4 56 18v28L32 60 8 46V18z'/%3E%3Cpath d='M32 18 46 38H18z'/%3E%3Cpath d='M32 4v14M56 18 46 38M56 46 32 60M8 46l10-8M8 18l10 20M32 60V38'/%3E%3C/svg%3E");
+}
+
+html .empty-state h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 动效 ---------- */
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html .page-enter {
+  animation: page-rise 0.34s cubic-bezier(0.22, 0.68, 0.24, 1) both;
+}
+
+@keyframes dice-land {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+html .dice-result[data-phase="done"] .dice-total {
+  animation: dice-land 0.46s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html .dice-result-breakdown > div {
+  animation: row-in 0.3s cubic-bezier(0.22, 0.68, 0.24, 1) both;
+}
+html .dice-result-breakdown > div:nth-child(1) { animation-delay: 0.04s; }
+html .dice-result-breakdown > div:nth-child(2) { animation-delay: 0.08s; }
+html .dice-result-breakdown > div:nth-child(3) { animation-delay: 0.12s; }
+html .dice-result-breakdown > div:nth-child(4) { animation-delay: 0.16s; }
+html .dice-result-breakdown > div:nth-child(5) { animation-delay: 0.2s; }
+html .dice-result-breakdown > div:nth-child(6) { animation-delay: 0.24s; }
+html .dice-result-breakdown > div:nth-child(7) { animation-delay: 0.28s; }
+html .dice-result-breakdown > div:nth-child(8) { animation-delay: 0.32s; }
+
+/* 自然 20 / 1：像盖下一枚印章 */
+html .natural-result {
+  transform: rotate(-1.5deg);
+  animation: seal-press 0.5s cubic-bezier(0.18, 0.9, 0.22, 1.15) both;
+}
+
+@keyframes seal-press {
+  0% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.5);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(-1.2deg) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-1.5deg) scale(1);
+  }
+}
+
+@keyframes history-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html .dice-history li:first-child {
+  animation: history-in 0.32s ease-out both;
+}
+
+/* ---------- 移动端尺寸兜底（覆盖上面的字号） ---------- */
+
+@media (max-width: 700px) {
+  html .tool-heading h1,
+  html .utility-heading h1 {
+    font-size: 30px;
+    letter-spacing: 0.05em;
+  }
+  html .campaign-portal h1 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 599px) {
+  html .tavern-heading h1 {
+    font-size: 30px;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html .page-enter,
+  html .dice-result[data-phase="done"] .dice-total,
+  html .dice-result-breakdown > div,
+  html .natural-result,
+  html .dice-history li:first-child {
+    animation: none !important;
+  }
+}
