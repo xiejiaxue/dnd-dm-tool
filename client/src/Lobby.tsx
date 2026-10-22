@@ -8,6 +8,7 @@ import {
   type CampaignModuleSummary,
 } from "./api";
 import Icon from "./components/Icon";
+import HeroOrnament from "./components/HeroOrnament";
 interface Props {
   inviteError?: string | null;
   onOpenCampaign: (slug: string) => void;
@@ -116,7 +117,7 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
         .includes(query.trim().toLocaleLowerCase()),
   );
   return (
-    <div className="swiss-lobby page-enter">
+    <div className="swiss-lobby">
       <a className="skip-link" href="#campaign-directory">
         跳转到战役列表
       </a>
@@ -174,10 +175,12 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
           </span>
         </header>
         <main className="lobby-main">
-          <section className="utility-heading">
-            <div>
+          <section className="utility-heading lobby-hero-banner">
+            <HeroOrnament />
+            <div className="hero-copy-block">
               <span className="eyebrow">01 / CAMPAIGNS</span>
               <h1>我的桌团</h1>
+              <p className="hero-tagline">召集冒险者，展开地图，掷下第一颗骰子。</p>
             </div>
             <div className="hero-actions">
               <a className="button-secondary" href="/dice">

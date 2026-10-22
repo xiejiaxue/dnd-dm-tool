@@ -23,9 +23,7 @@ export default function ToolsPage({ page }: { page: 'calculator' | 'characters' 
       </nav>
     </aside>
     <main id="tool-main" className="tool-main" tabIndex={-1}>
-      <div className="page-enter" key={page}>
-        {page === 'tavern' ? <TavernGame /> : page === 'music' ? <MusicBar /> : page === 'dice' ? <DiceRoller /> : page === 'calculator' ? <QuickCalculator /> : <CharacterWorkshop />}
-      </div>
+      {page === 'tavern' ? <TavernGame /> : page === 'music' ? <MusicBar /> : page === 'dice' ? <DiceRoller /> : page === 'calculator' ? <QuickCalculator /> : <CharacterWorkshop />}
     </main>
   </div>;
 }
