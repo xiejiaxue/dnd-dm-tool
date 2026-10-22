@@ -457,6 +457,11 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       ensureFog(scene).fill(false);
       scene.fogReveals = undefined;
       return;
+    default: {
+      // A new Op variant without a case above fails to compile here instead of being silently ignored.
+      const unhandled: never = op;
+      throw new DomainError('INVALID', `未处理的操作：${(unhandled as { op: string }).op}`);
+    }
   }
 }
 
