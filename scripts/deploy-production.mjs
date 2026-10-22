@@ -1,21 +1,16 @@
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
-const hostname = (process.env.PUBLIC_SITE_DOMAIN ?? '').trim().toLowerCase();
-const hostnamePattern = /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/u;
-
-if (!hostnamePattern.test(hostname)) {
-  console.error('PUBLIC_SITE_DOMAIN must contain one DNS hostname, without a scheme, path, or wildcard.');
-  process.exit(2);
+if (process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REF !== 'refs/heads/main') {
+  throw new Error('Production releases run in GitHub Actions on main. Push reviewed changes to main or dispatch the Production workflow.');
 }
-
-const args = ['wrangler', 'deploy', '--domain', hostname];
-for (const name of ['PUBLIC_ICP_FILING', 'PUBLIC_PSB_FILING']) {
-  const value = process.env[name]?.trim();
-  if (value) args.push('--var', `${name}:${value}`);
-}
-
-const result = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', args, {
-  env: process.env,
-  stdio: 'inherit',
+const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+const latest = execFileSync('git', ['ls-remote', 'origin', 'refs/heads/main'], { encoding: 'utf8' }).split(/\s/)[0];
+if (commit !== latest || commit !== process.env.GITHUB_SHA) throw new Error('Refusing to deploy an outdated main commit.');
+if (execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()) throw new Error('Release checkout must be clean.');
+const release = JSON.parse(readFileSync('client/dist/release.json', 'utf8'));
+if (release.commit !== commit) throw new Error('Build artifact does not match the release commit.');
+const result = spawnSync('npx', ['wrangler', 'deploy', '--domain', 'dnd.xiejiaxue.com', '--keep-vars', '--message', `Git ${commit}`], {
+  env: process.env, stdio: 'inherit',
 });
 process.exit(result.status ?? 1);

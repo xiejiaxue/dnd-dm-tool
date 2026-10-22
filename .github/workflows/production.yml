@@ -1,0 +1,78 @@
+name: Production
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+# Never interrupt a production upload. The deploy script also rejects stale main.
+concurrency:
+  group: dnd-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  check:
+    name: Test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run music:prepare
+      - run: npm test
+      - run: npm run build
+      - run: npm run release:stamp
+      - name: Check source remained clean
+        run: test -z "$(git status --porcelain)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-assets
+          path: client/dist
+          include-hidden-files: true
+          retention-days: 14
+  deploy:
+    name: Deploy and verify
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://dnd.xiejiaxue.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-assets
+          path: client/dist
+      - name: Authenticate, deploy, and record Worker version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: d846411f4d16490d94eac5bf6a9f0b21
+        run: |
+          set -o pipefail
+          npx wrangler whoami
+          npm run deploy:production 2>&1 | tee "$RUNNER_TEMP/deploy.log"
+          npx wrangler deployments list --json > "$RUNNER_TEMP/deployments.json"
+          printf 'Commit: `%s`\n\n' "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          grep 'Current Version ID:' "$RUNNER_TEMP/deploy.log" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm run release:verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-record
+          path: |
+            ${{ runner.temp }}/deploy.log
+            ${{ runner.temp }}/deployments.json
+            client/dist/release.json
+          retention-days: 90

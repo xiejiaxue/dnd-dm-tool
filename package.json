@@ -17,14 +17,17 @@
     "check:worker": "tsc --project tsconfig.worker.json --noEmit",
     "db:migrate:local": "wrangler d1 migrations apply dnd-dm-tool-campaigns --local",
     "db:migrate:remote": "wrangler d1 migrations apply dnd-dm-tool-campaigns --remote",
-    "deploy": "npm run build && npm run deploy:production",
+    "deploy": "npm run deploy:production",
     "deploy:production": "node scripts/deploy-production.mjs",
     "test": "npm run test:domain && npm run test:worker",
     "test:domain": "vitest run --config vitest.config.ts",
     "test:worker": "vitest run --config vitest.worker.config.ts",
     "test:watch": "vitest",
     "data:update": "node scripts/data-update.mjs",
-    "data:publish": "node scripts/data-publish.mjs"
+    "data:publish": "node scripts/data-publish.mjs",
+    "music:prepare": "python3 scripts/download-music.py",
+    "release:stamp": "node scripts/release.mjs stamp",
+    "release:verify": "node scripts/release.mjs verify"
   },
   "dependencies": {
     "@pdf-lib/fontkit": "^1.1.1",

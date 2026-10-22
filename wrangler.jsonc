@@ -8,7 +8,7 @@
   // The deploy script supplies the Custom Domain from PUBLIC_SITE_DOMAIN.
   // Keeping the hostname out of source also allows the same config to serve
   // production and a separately owned staging domain.
-  "workers_dev": true,
+  "workers_dev": false,
 
   // The app is one public origin.  Static Assets serves the React build while
   // the Worker remains first in line for application and WebSocket routes.
@@ -18,8 +18,7 @@
     "run_worker_first": ["/api/*"]
   },
 
-  // Omit resource IDs for a new project. Wrangler provisions these bindings on
-  // first deploy; use the generated IDs only when pinning an existing account.
+  // Existing production resources are pinned. Never recreate them during release.
   "d1_databases": [
     {
       "binding": "DB",
@@ -29,8 +28,8 @@
     }
   ],
   "r2_buckets": [
-    { "binding": "ROOM_ASSETS" },
-    { "binding": "REFERENCE_DATA" }
+    { "binding": "ROOM_ASSETS", "bucket_name": "dnd-dm-tool-room-assets" },
+    { "binding": "REFERENCE_DATA", "bucket_name": "dnd-dm-tool-reference-data" }
   ],
 
   "durable_objects": {
