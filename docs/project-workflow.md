@@ -26,20 +26,11 @@ npm test
 npm run build
 ```
 
-将任务分支推送到 GitHub 并创建 PR，Test and build 检查通过后合入 main。main 保留分支保护：禁止强推和删除，必须通过 PR 与检查；不要求额外人工审批。GitHub CI 只运行测试和构建，不保存 Cloudflare 凭据，也不部署网站。
+将任务分支推送到 GitHub 并创建 PR，Test and build 检查通过后合入 main。main 已启用分支保护：禁止强推和删除，必须通过 PR 与检查；不要求额外人工审批。GitHub Production 工作流执行测试、音乐校验、构建、发布和线上核验。PR 只执行检查，不拿生产凭据、不发布。`production` 环境只用于 main，凭据保存在该环境的 secret 中。
 
-代码同步和网站发布是两个独立操作。合并 main 不代表线上已更新；网站允许停留在最近一次明确发布的版本，以线上 release.json 为准。只有用户明确要求发布网站时，才从干净的本地 main 执行：
+生产发布串行运行，不中断正在上传的版本；执行前拒绝过期 main、脏工作区或提交号不匹配的构建。音乐优先从 GitHub Release `music-assets-20261022` 获取（附完整署名和许可清单），原作者源站作为后备。资源包不可覆盖；换曲目时发布新资源版本。音乐依据已提交的 credits.json 校验 SHA-256，旧 MP3 只从构建输出剔除，源文件不删除。
 
-```sh
-# 需要同步代码时先执行；同步本身不会发布网站
- git pull --ff-only
-# 首次或登录过期时：npx wrangler login
-npm run deploy:production
-```
-
-发布命令使用本机 Wrangler 登录，自动检查身份、安装依赖、校验音乐、测试、构建、生成 release.json、部署并验证六个工具页面、Worker 健康状态和全部公开资源哈希。命令拒绝 CI 环境、非 main 分支、脏工作区和准备期间变更的源码。运行期间不要并行修改发布目录或启动第二次发布。部署保留 Worker vars，不操作战役内容。
-
-音乐优先从 GitHub Release `music-assets-20261022` 获取（附署名和许可清单），原作者源站作为后备；这是素材下载，与 GitHub 部署无关。素材依据 credits.json 校验 SHA-256。CI 构建产物保留 14 天。release.json 记录提交、构建时间和资源哈希；本机发布的工作流运行 ID 为 null。
+每次运行保留构建产物 14 天、发布日志和版本记录 90 天。release.json 记录源码提交、构建时间、工作流运行 ID、全部公开资源哈希。流程验证六个工具页面、Worker 健康状态及资源字节，不操作战役内容。
 
 ## 生产数据边界
 
@@ -61,6 +52,6 @@ Open TRPG 改写已保存成独立本地 Git 仓库：`/Users/xiejiaxue/develope
 
 ## 回滚
 
-正常回滚：在任务分支 revert 出问题的提交，运行检查，合入 main；用户明确要求回滚网站后，再从本机执行发布命令。不要强推 main。
+正常回滚：在任务分支 revert 出问题的提交，运行检查，合入 main，由同一 Production 流程发布，保证代码与网站继续一致。不要强推 main。
 
-紧急中断故障可由管理员在 Cloudflare 回滚到已验证 Worker 版本；之后必须立即用 Git revert 对齐 main，并在明确授权后完成本机发布。不要对带有不兼容数据库变化的版本盲目回滚。
+紧急中断故障可由管理员在 Cloudflare 回滚到已验证 Worker 版本；之后必须立即用 Git revert 对齐 main，并完成新的统一发布。不要对带有不兼容数据库变化的版本盲目回滚。
