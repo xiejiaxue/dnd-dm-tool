@@ -35,15 +35,17 @@ describe('physical dice geometry and orientation',()=>{
   });
 });
 
-import {dieScale,insideSpace,spaceBounds,throwLaunches} from '../dice/tray';
+import {RAIL_THICKNESS,dieScale,insideSpace,spaceBounds,throwLaunches,trayOutline,wallSegments,type TrayShape,type TraySize} from '../dice/tray';
+import {DEFAULT_TRAY_SETTINGS,parseTraySettings} from '../dice/settings';
 describe('rectangular throwing space',()=>{
   it('adapts to portrait and landscape screens',()=>{
     expect(spaceBounds(350,320).halfDepth).toBeGreaterThan(spaceBounds(830,430).halfDepth);
     expect(spaceBounds(830,430).halfWidth).toBe(7);
   });
   it('keeps every spawn and its full collision radius inside the frame',()=>{
+    for(const size of ['small','medium','large'] as TraySize[])for(const shape of ['square','octagon'] as TrayShape[])
     for(const [width,height] of [[350,320],[830,430],[1200,430]])for(let count=1;count<=24;count++){
-      const bounds=spaceBounds(width,height),radius=Math.sqrt(3)*.6*dieScale(count);
+      const bounds=spaceBounds(width,height,size,shape,count),radius=Math.sqrt(3)*.6*dieScale(count);
       for(const edge of [0,.999999]){
         for(const {position:[x,,z]} of throwLaunches(count,bounds,()=>edge))expect(insideSpace(x,z,bounds,radius)).toBe(true);
       }
@@ -59,5 +61,41 @@ describe('rectangular throwing space',()=>{
   });
   it('rejects points beyond the rectangular boundaries',()=>{
     const bounds=spaceBounds(830,430);expect(insideSpace(8,0,bounds)).toBe(false);expect(insideSpace(0,bounds.halfDepth+1,bounds)).toBe(false);
+  });
+});
+describe('tray frame',()=>{
+  it('scales with the chosen size and cuts octagon corners',()=>{
+    expect(spaceBounds(830,430,'large').halfWidth).toBeGreaterThan(spaceBounds(830,430,'small').halfWidth);
+    // A big handful widens a small tray but leaves a large one alone.
+    expect(spaceBounds(830,430,'small','octagon',24).halfWidth).toBeGreaterThan(spaceBounds(830,430,'small','octagon',2).halfWidth);
+    expect(spaceBounds(830,430,'large','octagon',24)).toEqual(spaceBounds(830,430,'large','octagon'));
+    expect(spaceBounds(830,430,'medium','square').chamfer).toBe(0);
+    const octagon=spaceBounds(830,430,'medium','octagon');
+    expect(octagon.chamfer).toBeGreaterThan(0);
+    expect(trayOutline(octagon)).toHaveLength(8);
+    expect(insideSpace(octagon.halfWidth-.1,octagon.halfDepth-.1,octagon)).toBe(false);
+    expect(insideSpace(octagon.halfWidth-.1,0,octagon)).toBe(true);
+  });
+  it.each(['square','octagon'] as TrayShape[])('closes the %s rail with its inner faces on the outline',shape=>{
+    const bounds=spaceBounds(830,430,'medium',shape),outline=trayOutline(bounds),walls=wallSegments(bounds);
+    expect(walls).toHaveLength(outline.length);
+    const ends=walls.map(wall=>{
+      // Local +x maps to (cos, -sin) in xz; the outward normal is that turned right, (sin, cos).
+      const dx=Math.cos(wall.angle),dz=-Math.sin(wall.angle),nx=-dz,nz=dx,half=wall.length/2,out=RAIL_THICKNESS/2;
+      return {inner:wall.x*nx+wall.z*nz-out,start:[wall.x-dx*half+nx*out,wall.z-dz*half+nz*out],end:[wall.x+dx*half+nx*out,wall.z+dz*half+nz*out]};
+    });
+    walls.forEach((_,i)=>{
+      const [ax,az]=outline[i],next=ends[(i+1)%walls.length];
+      // The inner face sits on its outline edge, and outer faces of neighbours meet at the corner.
+      const nx=Math.sin(walls[i].angle),nz=Math.cos(walls[i].angle);
+      expect(ends[i].inner).toBeCloseTo(ax*nx+az*nz,6);
+      expect(ends[i].end[0]).toBeCloseTo(next.start[0],6);expect(ends[i].end[1]).toBeCloseTo(next.start[1],6);
+    });
+  });
+});
+describe('tray settings',()=>{
+  it('falls back to defaults for missing or unknown values',()=>{
+    expect(parseTraySettings(null)).toEqual(DEFAULT_TRAY_SETTINGS);
+    expect(parseTraySettings({theme:'dungeon',view:'sideways',showColliders:'yes',size:'large'})).toEqual({...DEFAULT_TRAY_SETTINGS,theme:'dungeon',size:'large'});
   });
 });

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { Euler, Quaternion } from 'three';
-import { DICE_MOTION as motion, DICE_THROW, METERS_PER_UNIT, spaceBounds, throwLaunches, type SpaceBounds } from '../dice/tray';
+import { DICE_MOTION as motion, DICE_THROW, GUARD_TOP, METERS_PER_UNIT, RAIL_THICKNESS, insideSpace, spaceBounds, throwLaunches, wallSegments, type SpaceBounds, type TrayShape, type TraySize } from '../dice/tray';
 import { detectResult, makeDieGeometry } from '../dice/geometry';
 
 beforeAll(async () => { await RAPIER.init(); });
@@ -11,10 +11,10 @@ function world(bounds?: SpaceBounds) {
   world.numSolverIterations = 8;
   world.createCollider(RAPIER.ColliderDesc.cuboid(20, .3, 20).setTranslation(0, -.3, 0)
     .setFriction(motion.floorFriction).setRestitution(motion.floorRestitution));
-  if (bounds) for (const [hx, hz, x, z] of [
-    [.16, bounds.halfDepth + .32, -bounds.halfWidth - .16, 0], [.16, bounds.halfDepth + .32, bounds.halfWidth + .16, 0],
-    [bounds.halfWidth + .32, .16, 0, -bounds.halfDepth - .16], [bounds.halfWidth + .32, .16, 0, bounds.halfDepth + .16],
-  ]) world.createCollider(RAPIER.ColliderDesc.cuboid(hx, 7.2, hz).setTranslation(x, 6.6, z)
+  // Same rail colliders as the renderer: one box per outline edge, from below the felt up to the guard top.
+  if (bounds) for (const wall of wallSegments(bounds)) world.createCollider(RAPIER.ColliderDesc
+    .cuboid(wall.length / 2, (GUARD_TOP + .6) / 2, RAIL_THICKNESS / 2).setTranslation(wall.x, (GUARD_TOP - .6) / 2, wall.z)
+    .setRotation({ x: 0, y: Math.sin(wall.angle / 2), z: 0, w: Math.cos(wall.angle / 2) })
     .setFriction(motion.railFriction).setRestitution(motion.railRestitution));
   return world;
 }
@@ -41,8 +41,11 @@ describe('physical tabletop dice', () => {
       expect(peak).toBeGreaterThan(.002); expect(peak).toBeLessThan(.01);
     } finally { w.free(); }
   });
-  it.each([1, 6, 24])('throws %i mixed dice at the backstop and lets them settle inside the frame', count => {
-    const bounds = spaceBounds(830, 430);
+  it.each([
+    [1, 'medium', 'square'], [6, 'medium', 'square'], [24, 'medium', 'square'],
+    [6, 'medium', 'octagon'], [24, 'medium', 'octagon'], [24, 'small', 'octagon'], [12, 'large', 'octagon'],
+  ] as [number, TraySize, TrayShape][])('throws %i mixed dice in a %s %s tray and lets them settle inside the frame', (count, size, shape) => {
+    const bounds = spaceBounds(830, 430, size, shape, count);
     const w = world(bounds);
     const sides = [4, 6, 8, 10, 12, 20] as const;
     const shapes = sides.map(makeDieGeometry);
@@ -67,8 +70,7 @@ describe('physical tabletop dice', () => {
       for (const { body, shape } of bodies) {
         expect(body.isSleeping()).toBe(true);
         const { x, z } = body.translation();
-        expect(Math.abs(x)).toBeLessThan(bounds.halfWidth);
-        expect(Math.abs(z)).toBeLessThan(bounds.halfDepth);
+        expect(insideSpace(x, z, bounds)).toBe(true);
         if (count === 1) expect(detectResult(shape, body.rotation()).alignment).toBeGreaterThan(.96);
       }
     } finally { w.free(); shapes.forEach(shape => shape.geometry.dispose()); }

@@ -3,10 +3,16 @@ import { DIE_SIDES, parseDiceExpression, physicalDice, simpleRoll, summarizeDice
 import Icon from './Icon';
 import DiceSymbol from '../dice/DiceSymbol';
 import SimpleDiceTray from '../dice/SimpleDiceTray';
+import { DICE_OPTIONS, RAIL_OPTIONS, SHAPE_OPTIONS, SIZE_OPTIONS, THEME_OPTIONS, VIEW_OPTIONS, parseTraySettings, type TraySettings } from '../dice/settings';
 const DiceTray=lazy(()=>import('../dice/DiceTray'));
 const historyKey='dm-tools:dice-history:v1';
+const trayKey='dm-tools:dice-tray:v1';
+function loadTraySettings():TraySettings{try{return parseTraySettings(JSON.parse(localStorage.getItem(trayKey)||'{}'));}catch{return parseTraySettings({});}}
 interface RollSession {id:string;expression:DiceExpression;dice:PhysicalDie[]}
 function loadHistory():RollRecord[]{try{const value=JSON.parse(localStorage.getItem(historyKey)||'[]');if(!Array.isArray(value))return [];return value.filter(r=>r&&typeof r.id==='string'&&typeof r.expression==='string'&&r.expression.length<=120&&Number.isFinite(r.total)&&Number.isFinite(r.createdAt)&&Array.isArray(r.results)&&r.results.length<=24&&r.results.every((d:DiceResult)=>DIE_SIDES.includes(d.sides)&&Number.isInteger(d.value)&&d.value>=1&&d.value<=d.sides)).slice(0,20);}catch{return [];}}
+function TrayChoice<T extends string>({label,options,value,onChange,disabled}:{label:string;options:readonly {value:T;label:string}[];value:T;onChange:(value:T)=>void;disabled?:boolean}){
+  return <div className="dice-tray-choice" role="group" aria-label={label}><span>{label}</span><div>{options.map(option=><button key={option.value} type="button" aria-pressed={value===option.value} disabled={disabled} onClick={()=>onChange(option.value)}>{option.label}</button>)}</div></div>;
+}
 export default function DiceRoller(){
   const [expression,setExpression]=useState('1d20');
   const [mode,setMode]=useState<'physics'|'simple'>(()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'simple':'physics');
@@ -18,10 +24,16 @@ export default function DiceRoller(){
   const [record,setRecord]=useState<RollRecord|null>(null);
   const [history,setHistory]=useState<RollRecord[]>(loadHistory);
   const [storageError,setStorageError]=useState(false);
+  const [tray,setTray]=useState<TraySettings>(loadTraySettings);
   const rolling=useRef(false);
   const activeRollId=useRef<string|null>(null);
   useEffect(()=>{try{localStorage.setItem(historyKey,JSON.stringify(history));setStorageError(false);}catch{setStorageError(true);}},[history]);
   useEffect(()=>{if(mode==='simple'||ready)return;const timer=setTimeout(()=>setError('3D 引擎尚未就绪，可切换简洁模式'),15000);return()=>clearTimeout(timer);},[mode,ready]);
+  useEffect(()=>{try{localStorage.setItem(trayKey,JSON.stringify(tray));}catch{/* Settings simply reset next visit. */}},[tray]);
+  const updateTray=useCallback((change:Partial<TraySettings>)=>setTray(old=>({...old,...change})),[]);
+  // A new frame size or shape needs an empty tray; the last result stays in the panel.
+  const reshapeTray=(change:Partial<TraySettings>)=>{if(phase==='rolling')return;updateTray(change);setSession(null);setValues({});};
+  const onViewChange=useCallback((view:TraySettings['view'])=>updateTray({view}),[updateTray]);
   const onReady=useCallback(()=>{setReady(true);setError('');},[]);
   const onError=useCallback((message:string)=>{if(activeRollId.current!==(session?.id??null))return;rolling.current=false;activeRollId.current=null;setPhase('error');setError(message);},[session]);
   const finish=(parsed:DiceExpression,results:DiceResult[],id:string,rollMode:'physics'|'simple')=>{
@@ -64,12 +76,22 @@ export default function DiceRoller(){
           {error&&<p id="dice-expression-error" role="alert" className="tool-error">{error}</p>}
         </form>
         <div className="dice-stage-header"><div className="dice-mode" role="group" aria-label="掷骰模式"><button aria-pressed={mode==='physics'} disabled={phase==='rolling'} onClick={()=>changeMode('physics')}>3D 骰盘</button><button aria-pressed={mode==='simple'} disabled={phase==='rolling'} onClick={()=>changeMode('simple')}>简洁模式</button></div><span className="dice-status" role="status">{phase==='rolling'?'正在投掷':phase==='done'?'投掷完成':mode==='physics'&&!ready?'加载引擎…':'就绪'}</span></div>
-        <div className={`dice-stage ${mode==='simple'?'is-simple':''}`} aria-label={mode==='physics'?'三维物理骰盘':'简洁骰盘'}>
-          {mode==='physics'?<Suspense fallback={<div className="dice-canvas-fallback">正在加载 3D 骰盘…</div>}><DiceTray rollId={session?.id||'preview'} dice={session?.dice||[]} results={values} complete={phase==='done'||phase==='error'} onComplete={onComplete} onError={onError} onReady={onReady}/></Suspense>:<SimpleDiceTray results={record?.results}/>}
+        <div className={`dice-stage ${mode==='simple'?'is-simple':`theme-${tray.theme}`} ${tray.view==='free'?'is-free-view':''}`} aria-label={mode==='physics'?'三维物理骰盘':'简洁骰盘'}>
+          {mode==='physics'?<Suspense fallback={<div className="dice-canvas-fallback">正在加载 3D 骰盘…</div>}><DiceTray settings={tray} onViewChange={onViewChange} rollId={session?.id||'preview'} dice={session?.dice||[]} results={values} complete={phase==='done'||phase==='error'} onComplete={onComplete} onError={onError} onReady={onReady}/></Suspense>:<SimpleDiceTray results={record?.results}/>}
           {record&&<div className="dice-tray-total"><span>总和</span><strong>{record.total}</strong></div>}
           <div className="dice-stage-caption"><span>{session?.expression.normalized||'D4 / D6 / D8 / D10 / D12 / D20 / D100'}</span><span>{mode==='physics'?'PHYSICS / 3D':'RANDOM / 2D'}</span></div>
         </div>
 
+        {mode==='physics'&&<fieldset className="dice-tray-settings" aria-label="骰盘设置">
+          <TrayChoice label="视角" options={VIEW_OPTIONS} value={tray.view} onChange={view=>updateTray({view})}/>
+          <TrayChoice label="底图" options={THEME_OPTIONS} value={tray.theme} onChange={theme=>updateTray({theme})}/>
+          <TrayChoice label="骰子" options={DICE_OPTIONS} value={tray.dice} onChange={dice=>updateTray({dice})}/>
+          <TrayChoice label="尺寸" options={SIZE_OPTIONS} value={tray.size} disabled={phase==='rolling'} onChange={size=>reshapeTray({size})}/>
+          <TrayChoice label="形状" options={SHAPE_OPTIONS} value={tray.shape} disabled={phase==='rolling'} onChange={shape=>reshapeTray({shape})}/>
+          <TrayChoice label="围栏" options={RAIL_OPTIONS} value={tray.rail} onChange={rail=>updateTray({rail})}/>
+          <label className="dice-collider-toggle"><input type="checkbox" checked={tray.showColliders} onChange={e=>updateTray({showColliders:e.target.checked})}/>显示碰撞框</label>
+          <p className="dice-tray-hint">拖动骰盘可自由旋转视角，自由视角下滚轮缩放。尺寸与形状改变碰撞边界，投掷中不可更改；骰子多时骰盘会自动放大以减少叠压。围栏上方有透明防护，骰子不会飞出盘外。</p>
+        </fieldset>}
         <details className="dice-rules"><summary>读数规则与限制</summary><p>d4 按最高顶点的数字读取；d100 使用十位和个位两颗 d10，00 + 0 = 100。每次最多 24 颗实体骰。</p><p>3D 模式读取停稳后的实际姿态；简洁模式使用浏览器加密随机数。自然 20 / 1 仅标记单颗 d20 的原始结果，是否触发暴击由当前规则决定。本页结果不广播到房间。</p></details>
       </section>
       <aside className="dice-result-panel" aria-label="掷骰结果">
