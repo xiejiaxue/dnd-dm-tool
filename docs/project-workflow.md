@@ -13,18 +13,20 @@
 
 ## 开发与发布
 
+本机音乐准备需要 Python 3、curl 和 ffprobe（FFmpeg）。
+
 每项任务使用独立分支；同时运行的 Claude/Codex 任务使用独立 Git worktree，不共用有修改的目录。提交前检查差异，不把凭据、角色导出、本地数据库或截图加入提交。
 
 ```sh
 git fetch origin
 git switch -c feature/example origin/main
 npm ci
-npm test
 npm run music:prepare
+npm test
 npm run build
 ```
 
-变更检查通过后合入 main 并推送。GitHub Production 工作流执行测试、音乐校验、构建、发布和线上核验。PR 只执行检查，不拿生产凭据、不发布。`production` 环境只用于 main，凭据保存在该环境的 secret 中。
+将任务分支推送到 GitHub 并创建 PR，Test and build 检查通过后合入 main。main 已启用分支保护：禁止强推和删除，必须通过 PR 与检查；不要求额外人工审批。GitHub Production 工作流执行测试、音乐校验、构建、发布和线上核验。PR 只执行检查，不拿生产凭据、不发布。`production` 环境只用于 main，凭据保存在该环境的 secret 中。
 
 生产发布串行运行，不中断正在上传的版本；执行前拒绝过期 main、脏工作区或提交号不匹配的构建。音乐依据已提交的 credits.json 校验 SHA-256，旧 MP3 只从构建输出剔除，源文件不删除。
 
