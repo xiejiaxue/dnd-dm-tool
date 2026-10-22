@@ -1,27 +1,16 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
-process.chdir(fileURLToPath(new URL('..', import.meta.url)));
-const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
-const run = (command, args) => {
-  const result = spawnSync(command, args, { env: process.env, stdio: 'inherit' });
-  if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`${command} failed (${result.status ?? result.signal}).`);
-};
-if (process.env.CI || process.env.GITHUB_ACTIONS) {
-  throw new Error('Production deployment is local only. GitHub runs checks without Cloudflare credentials.');
+if (process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REF !== 'refs/heads/main') {
+  throw new Error('Production releases run in GitHub Actions on main. Push reviewed changes to main or dispatch the Production workflow.');
 }
-if (git('branch', '--show-current') !== 'main') throw new Error('Switch to the reviewed local main branch before releasing.');
-if (git('status', '--porcelain')) throw new Error('Release checkout must be clean.');
-const commit = git('rev-parse', 'HEAD');
-// Invocation is an explicit release request; pushes and merges never invoke this script.
-run('npx', ['wrangler', 'whoami']);
-for (const args of [['ci'], ['run', 'music:prepare'], ['test'], ['run', 'build'], ['run', 'release:stamp']]) run('npm', args);
-if (git('status', '--porcelain') || git('rev-parse', 'HEAD') !== commit || git('branch', '--show-current') !== 'main') {
-  throw new Error('Source changed during preparation; refusing to deploy.');
-}
+const commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+const latest = execFileSync('git', ['ls-remote', 'origin', 'refs/heads/main'], { encoding: 'utf8' }).split(/\s/)[0];
+if (commit !== latest || commit !== process.env.GITHUB_SHA) throw new Error('Refusing to deploy an outdated main commit.');
+if (execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()) throw new Error('Release checkout must be clean.');
 const release = JSON.parse(readFileSync('client/dist/release.json', 'utf8'));
 if (release.commit !== commit) throw new Error('Build artifact does not match the release commit.');
-run('npx', ['wrangler', 'deploy', '--domain', 'dnd.xiejiaxue.com', '--keep-vars', '--message', `Local Git ${commit}`]);
-run('npm', ['run', 'release:verify']);
+const result = spawnSync('npx', ['wrangler', 'deploy', '--domain', 'dnd.xiejiaxue.com', '--keep-vars', '--message', `Git ${commit}`], {
+  env: process.env, stdio: 'inherit',
+});
+process.exit(result.status ?? 1);

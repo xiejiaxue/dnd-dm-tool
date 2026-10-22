@@ -34,11 +34,9 @@ npm run dev
 
 正式代码以 GitHub `main` 为准。本地主目录是 `/Users/xiejiaxue/developer/dndtool`。
 
-GitHub 的 **CI** 工作流只运行测试、音乐校验和构建。推送、合并 main 或手动运行 CI 均不会更新网站；GitHub 不保存 Cloudflare 发布凭据。
+合入 main 后，GitHub 的 **Production** 工作流自动安装依赖、运行测试、校验音乐、构建并发布到 https://dnd.xiejiaxue.com，然后核对线上页面及资源哈希。也可以在 main 上手动运行同一工作流。
 
-只有用户明确要求发布网站时，才在干净的本地 main 上运行 `npm run deploy:production`。该命令使用本机 Wrangler 登录，依次完成认证检查、依赖安装、音乐准备、测试、构建、版本记录、部署和线上校验。首次使用先执行 `npx wrangler login`。发布无需 GitHub Actions，也不要求实时访问 GitHub main；音乐资源仍可从 GitHub Release 下载。
-
-发布始终使用 `--keep-vars`。Worker 不公开 workers.dev 备用地址。
+发布凭据保存在 GitHub `production` 环境的 `CLOUDFLARE_API_TOKEN` secret 中。`npm run deploy:production` 只允许此流程从最新且干净的 main 提交执行，始终使用 `--keep-vars`。Worker 不公开 workers.dev 备用地址。
 
 D1 和 R2 均绑定已有生产资源。日常发布不创建数据库、不清空数据、不自动运行远程迁移。备案变量继续保留在 Cloudflare。
 
