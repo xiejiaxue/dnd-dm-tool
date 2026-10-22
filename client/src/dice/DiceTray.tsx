@@ -5,7 +5,7 @@ import { ConvexHullCollider, CuboidCollider, Physics, RigidBody, useAfterPhysics
 import { CanvasTexture, EdgesGeometry, Euler, OrthographicCamera, Quaternion, SRGBColorSpace, Vector3 } from 'three';
 import { detectResult, isTabletopLanding, labelRotation, makeDieGeometry, type DieGeometry } from './geometry';
 import { randomUnit, type PhysicalDie } from './rules';
-import { DICE_MOTION as motion, dieScale, launchPosition, spaceBounds, type SpaceBounds } from './tray';
+import { DICE_MOTION as motion, dieScale, spaceBounds, throwLaunches, type SpaceBounds } from './tray';
 
 const definitions=new Map<number,DieGeometry>();
 function definition(sides:PhysicalDie['sides']):DieGeometry {let value=definitions.get(sides);if(!value){value=makeDieGeometry(sides);definitions.set(sides,value);}return value;}
@@ -82,15 +82,15 @@ function Simulation({dice,results,complete,onComplete,onError,onReady,bounds}:Si
   const colliderPoints=useMemo(()=>new Map(dice.map(die=>[die.sides,new Float32Array(Array.from(definition(die.sides).points,value=>value*size))])),[dice,size]);
   const bodies=useRef(new Map<string,RapierRigidBody>()),elapsed=useRef(0),quiet=useRef(0),finished=useRef(false);
   const invalidQuiet=useRef(new Map<string,number>());
-  const launches=useMemo(()=>dice.map((die,index)=>{
+  const launches=useMemo(()=>{const hand=throwLaunches(dice.length,bounds,randomUnit);return dice.map((die,index)=>{
     const u=randomUnit(),v=randomUnit(),w=randomUnit();
     const quaternion=new Quaternion(Math.sqrt(1-u)*Math.sin(2*Math.PI*v),Math.sqrt(1-u)*Math.cos(2*Math.PI*v),Math.sqrt(u)*Math.sin(2*Math.PI*w),Math.sqrt(u)*Math.cos(2*Math.PI*w));
     const euler=new Euler().setFromQuaternion(quaternion);
-    const [x,z]=launchPosition(index,dice.length,bounds);
-    // Set the lowest rotated vertex 20 cm above the tabletop.
+    const {position:[x,height,z],velocity,spin}=hand[index];
+    // Lift the die so its lowest rotated vertex sits at the release height.
     const support = -Math.min(...definition(die.sides).vertices.map(vertex=>vertex.clone().multiplyScalar(size).applyQuaternion(quaternion).y));
-    return {die,position:[x,motion.releaseHeight+support,z] as [number,number,number],rotation:[euler.x,euler.y,euler.z] as [number,number,number],velocity:[(randomUnit()-.5)*16,0,(randomUnit()-.5)*12] as [number,number,number],spin:[(randomUnit()-.5)*12,(randomUnit()-.5)*12,(randomUnit()-.5)*12] as [number,number,number]};
-  }),[dice,bounds,size]);
+    return {die,position:[x,height+support,z] as [number,number,number],rotation:[euler.x,euler.y,euler.z] as [number,number,number],velocity,spin};
+  });},[dice,bounds,size]);
   useEffect(()=>{onReady();},[onReady]);
   useAfterPhysicsStep(()=>{
     const delta=motion.timeStep;
@@ -113,10 +113,10 @@ function Simulation({dice,results,complete,onComplete,onError,onReady,bounds}:Si
   return <>
     <RigidBody type="fixed" colliders={false} friction={motion.floorFriction} restitution={motion.floorRestitution}>
       <CuboidCollider args={[bounds.halfWidth+.3,.3,bounds.halfDepth+.3]} position={[0,-.3,0]}/>
-      <CuboidCollider args={[.16,7.2,bounds.halfDepth+.32]} position={[-bounds.halfWidth-.16,6.6,0]}/>
-      <CuboidCollider args={[.16,7.2,bounds.halfDepth+.32]} position={[bounds.halfWidth+.16,6.6,0]}/>
-      <CuboidCollider args={[bounds.halfWidth+.32,7.2,.16]} position={[0,6.6,-bounds.halfDepth-.16]}/>
-      <CuboidCollider args={[bounds.halfWidth+.32,7.2,.16]} position={[0,6.6,bounds.halfDepth+.16]}/>
+      <CuboidCollider args={[.16,7.2,bounds.halfDepth+.32]} position={[-bounds.halfWidth-.16,6.6,0]} friction={motion.railFriction} restitution={motion.railRestitution}/>
+      <CuboidCollider args={[.16,7.2,bounds.halfDepth+.32]} position={[bounds.halfWidth+.16,6.6,0]} friction={motion.railFriction} restitution={motion.railRestitution}/>
+      <CuboidCollider args={[bounds.halfWidth+.32,7.2,.16]} position={[0,6.6,-bounds.halfDepth-.16]} friction={motion.railFriction} restitution={motion.railRestitution}/>
+      <CuboidCollider args={[bounds.halfWidth+.32,7.2,.16]} position={[0,6.6,bounds.halfDepth+.16]} friction={motion.railFriction} restitution={motion.railRestitution}/>
     </RigidBody>
     {launches.map(({die,position,rotation,velocity,spin})=><RigidBody key={die.id} ref={body=>{if(body)bodies.current.set(die.id,body);else bodies.current.delete(die.id);}} position={position} rotation={rotation} linearVelocity={velocity} angularVelocity={spin} colliders={false} linearDamping={motion.linearDamping} angularDamping={motion.angularDamping} friction={motion.friction} restitution={motion.restitution} ccd canSleep>
       <ConvexHullCollider args={[colliderPoints.get(die.sides)!]} density={motion.density} restitutionCombineRule={CoefficientCombineRule.Min}/><group scale={size}><DieMesh die={die} result={results[die.id]}/></group>

@@ -35,7 +35,7 @@ describe('physical dice geometry and orientation',()=>{
   });
 });
 
-import {dieScale,insideSpace,launchPosition,spaceBounds} from '../dice/tray';
+import {dieScale,insideSpace,spaceBounds,throwLaunches} from '../dice/tray';
 describe('rectangular throwing space',()=>{
   it('adapts to portrait and landscape screens',()=>{
     expect(spaceBounds(350,320).halfDepth).toBeGreaterThan(spaceBounds(830,430).halfDepth);
@@ -44,7 +44,17 @@ describe('rectangular throwing space',()=>{
   it('keeps every spawn and its full collision radius inside the frame',()=>{
     for(const [width,height] of [[350,320],[830,430],[1200,430]])for(let count=1;count<=24;count++){
       const bounds=spaceBounds(width,height),radius=Math.sqrt(3)*.6*dieScale(count);
-      for(let i=0;i<count;i++){const [x,z]=launchPosition(i,count,bounds);expect(insideSpace(x+.05,z,bounds,radius)).toBe(true);expect(insideSpace(x-.05,z,bounds,radius)).toBe(true);}
+      for(const edge of [0,.999999]){
+        for(const {position:[x,,z]} of throwLaunches(count,bounds,()=>edge))expect(insideSpace(x,z,bounds,radius)).toBe(true);
+      }
+    }
+  });
+  it('releases the hand near the front rail and throws towards the backstop',()=>{
+    const bounds=spaceBounds(830,430);
+    for(const edge of [0,.5,.999999])for(const count of [1,6,24]){
+      const launches=throwLaunches(count,bounds,()=>edge);
+      expect(Math.max(...launches.map(({position})=>position[2]))).toBeGreaterThan(bounds.halfDepth/2);
+      for(const {velocity:[vx,vy,vz]} of launches){expect(vz).toBeLessThan(0);expect(Math.abs(vx)).toBeLessThan(-vz);expect(vy).toBeGreaterThan(0);}
     }
   });
   it('rejects points beyond the rectangular boundaries',()=>{
