@@ -27,3 +27,11 @@ preview-shots/
 
 # Background music is fetched by scripts/download-music.py
 client/public/music/*.mp3
+
+# Local credentials and personal artifacts
+.env
+.env.*
+!.env.example
+.dev.vars.*
+!.dev.vars.example
+Claude outputs/

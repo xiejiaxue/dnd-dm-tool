@@ -7,6 +7,7 @@ import subprocess
 
 root = Path(__file__).resolve().parent.parent
 tracks = json.loads((root / 'client/src/music/hosted.json').read_text())
+credits = {track['id']: track for track in json.loads((root / 'client/public/music/credits.json').read_text())}
 
 def download(track):
     target = root / 'client/public' / track['audio'].lstrip('/')
@@ -15,6 +16,10 @@ def download(track):
         temporary = target.with_suffix('.download')
         subprocess.run(['curl', '-fL', '--retry', '3', '--max-time', '180', '-sS', track['downloadUrl'], '-o', str(temporary)], check=True)
         temporary.rename(target)
+    expected = credits[track['id']]
+    assert all(expected.get(k) == v for k, v in track.items()), 'Music catalog differs from pinned credits'
+    assert target.stat().st_size == expected['bytes'], 'Unexpected audio size: ' + str(target)
+    assert hashlib.sha256(target.read_bytes()).hexdigest() == expected['sha256'], 'Audio checksum mismatch: ' + str(target)
     metadata = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-show_format', '-show_streams', '-of', 'json', str(target)]))
     assert any(s.get('codec_type') == 'audio' for s in metadata['streams']), track['title']
     assert target.stat().st_size < 25 * 1024 * 1024, 'Cloudflare static asset limit'
@@ -22,5 +27,5 @@ def download(track):
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
     manifest = list(pool.map(download, tracks))
-(root / 'client/public/music/credits.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+# credits.json is the reviewed, pinned checksum manifest; releases never rewrite it.
 print(f'Verified {len(manifest)} audio files, {sum(t["bytes"] for t in manifest) / 1024 / 1024:.1f} MiB')

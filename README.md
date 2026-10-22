@@ -20,7 +20,7 @@ Cloudflare Worker ── D1：身份、个人模组库、战役、名册、邀�
 需要 Node.js 22 或更高版本。
 
 ```bash
-npm install
+npm ci
 npm run cf:types
 npm run db:migrate:local
 npm run dev
@@ -32,38 +32,15 @@ npm run dev
 
 ## Cloudflare 部署
 
-`wrangler.jsonc` 已声明 Worker Static Assets、D1、两个私有 R2 bucket 和 SQLite Durable Object。Custom Domain 只从部署环境变量读取，不写入仓库。首次部署时 Wrangler 会创建未绑定 ID 的资源；在绑定了自定义域名或对外分享前，按以下顺序完成初始化：
+正式代码以 GitHub `main` 为准。本地主目录是 `/Users/xiejiaxue/developer/dndtool`。
 
-```bash
-npm run build
-npx wrangler login
-export PUBLIC_SITE_DOMAIN=<你的公开域名>
-npm run deploy:production           # 创建/协调 Cloudflare 资源与 Custom Domain
-npm run db:migrate:remote           # 应用 D1 控制面 schema
-npm run deploy:production           # 以完成迁移的数据库正式提供服务
-```
+合入 main 后，GitHub 的 **Production** 工作流自动安装依赖、运行测试、校验音乐、构建并发布到 https://dnd.xiejiaxue.com，然后核对线上页面及资源哈希。也可以在 main 上手动运行同一工作流。
 
-`PUBLIC_SITE_DOMAIN` 必须是目标 Cloudflare account 中 zone 的单个 hostname，且不能预先存在冲突的 CNAME。部署会创建 Custom Domain 所需 DNS 和证书；这个 Worker 不公开 `workers.dev` 备用地址。所有用户只访问这个 HTTPS URL；前端会自动连到同源 `wss://<PUBLIC_SITE_DOMAIN>/api/campaigns/<slug>/ws`。
+发布凭据保存在 GitHub `production` 环境的 `CLOUDFLARE_API_TOKEN` secret 中。`npm run deploy:production` 只允许此流程从最新且干净的 main 提交执行，始终使用 `--keep-vars`。Worker 不公开 workers.dev 备用地址。
 
-本仓库不含自动部署的 GitHub Actions。每次发布请在已登录目标 Cloudflare account 的终端中运行上面的命令；部署域名和备案信息均从环境变量读取，不会写进仓库：
+D1 和 R2 均绑定已有生产资源。日常发布不创建数据库、不清空数据、不自动运行远程迁移。备案变量继续保留在 Cloudflare。
 
-```bash
-export PUBLIC_SITE_DOMAIN=<你的公开域名>
-export PUBLIC_ICP_FILING=<可选的ICP备案号>
-export PUBLIC_PSB_FILING=<可选的公网安备号>
-npm run deploy:production
-```
-
-两个备案变量由 Worker 在运行时公开给页面页脚；未设置的项目不会显示。它们是公开信息，不能放 API token、OAuth secret 或其他敏感值。
-
-规则书资料是私有 R2 内容，不打包进 Worker：
-
-```bash
-npm run data:update
-R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run data:publish
-```
-
-自动创建的 R2 bucket 名称可在 Cloudflare Dashboard 或 `wrangler r2 bucket list` 中查看。请确认 5etools-cn 数据的 CC BY-NC-SA 许可与自己的公开/商业使用方式相符。
+开发、归档、回滚以及历史目录说明见 [项目管理与发布约定](docs/project-workflow.md)。
 
 ## 验证
 
@@ -87,15 +64,6 @@ npm run build
 - 房间内原有角色卡也提供 PDF 导出，包含已添加资料的完整说明。
 
 独立工具使用当前浏览器的 localStorage，不与房间状态同步。PDF 在浏览器生成，中文字体由本站提供，不将角色内容发送到外部生成服务。字体及衍生版本遵循 `client/public/fonts/OFL.txt`；重建方法见 `scripts/build-pdf-font.py`。D20 轮廓参考纯美苹果园 favicon，以单色 SVG 重绘。
-
-本版本在 `codex/swiss-production` 工作树上维护，避免用主工作目录内尚在开发的 Open TRPG 引擎替换线上后端。发布到现有域名时保留线上变量：
-
-```bash
-npm test
-npm run build
-npx wrangler whoami
-npx wrangler deploy --domain dnd.xiejiaxue.com --keep-vars
-```
 
 ### 角色文件往返编辑
 
