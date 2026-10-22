@@ -4,15 +4,12 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
-        display: ['Songti SC', 'STSong', 'Noto Serif SC', 'Source Han Serif SC', 'Noto Serif CJK SC', 'SimSun', 'Georgia', 'serif'],
-      },
-      borderRadius: { DEFAULT: '6px', md: '8px', lg: '10px', xl: '14px', '2xl': '18px' },
+      fontFamily: { sans: ['Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'] },
+      borderRadius: { DEFAULT: '2px', md: '2px', lg: '3px', xl: '3px', '2xl': '4px' },
       letterSpacing: { label: '0.18em' },
       colors: {
-        paper: '#f4efe4', panel: '#fdfaf3', well: '#ece5d6', ink: '#1f1b17', muted: '#6b6257', faint: '#a79d8c', line: '#e0d6c3', accent: '#ad3328', gold: '#b08a3e', night: '#17151d',
-        zinc: { 50: '#16130f', 100: '#1f1b17', 200: '#2a251f', 300: '#3c352d', 400: '#575046', 500: '#6b6257', 600: '#8c8272', 700: '#e0d6c3', 800: '#ebe3d2', 900: '#fdfaf3', 950: '#f4efe4' },
+        paper: '#f6f5f0', panel: '#fcfbf8', well: '#eeede6', ink: '#20221e', muted: '#62645c', faint: '#a6a49b', line: '#d6d7cd', accent: '#ba3526',
+        zinc: { 50: '#171914', 100: '#20221e', 200: '#292b26', 300: '#3b3d36', 400: '#565851', 500: '#62645c', 600: '#85877e', 700: '#d6d7cd', 800: '#e5e5dc', 900: '#fcfbf8', 950: '#f6f5f0' },
         amber: { 200: '#80291e', 300: '#9f2e21', 400: '#ba3526', 500: '#ba3526', 600: '#a32f22', 700: '#8b2b20', 900: '#edc2b8', 950: '#f5e5df' },
         emerald: { 200: '#254332', 300: '#2d563f', 400: '#38604b', 500: '#38604b', 600: '#305a43', 700: '#264936', 900: '#c8dccf', 950: '#e0ebe2' },
         red: { 200: '#80271f', 300: '#992f25', 400: '#b3261e', 500: '#b3261e', 600: '#9b241e', 900: '#edc8c1', 950: '#f9e1dd' },

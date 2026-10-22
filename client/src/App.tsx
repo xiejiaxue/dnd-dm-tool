@@ -1,7 +1,9 @@
 import { useMonsterHp } from './useMonsterHp';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Lobby from './Lobby';
-import ToolsPage from './components/ToolsPage';
+import AppFrame from './shell/AppFrame';
+import ErrorBoundary from './shell/ErrorBoundary';
+import { navigate, shellPageFor, usePathname } from './shell/navigation';
 import { ApiError, api, setCurrentRoomSlug, type InviteResult, type CampaignBootstrap } from './api';
 import FilingFooter from './components/FilingFooter';
 import TopBar from './components/TopBar';
@@ -167,9 +169,7 @@ export default function App() {
   const enterRoom = useCallback((slug: string, replace = false) => {
     const room = slug.trim();
     if (!room) return;
-    const target = `/c/${encodeURIComponent(room)}`;
-    if (replace) history.replaceState(null, '', target);
-    else history.pushState(null, '', target);
+    navigate(`/c/${encodeURIComponent(room)}`, replace);
     setCurrentRoomSlug(room);
     setInviteToken(null);
     setRoomSlug(room);
@@ -180,7 +180,7 @@ export default function App() {
     connection.disconnect();
     setCurrentRoomSlug(null);
     setInviteToken(null);
-    history.pushState(null, '', '/');
+    navigate('/');
     setRoomSlug(null);
   }, []);
 
@@ -225,16 +225,21 @@ export default function App() {
       });
   }, [enterRoom, inviteToken]);
 
-  if (['/calculator', '/characters', '/dice', '/music', '/tavern', '/calendar'].includes(location.pathname)) return <ToolsPage page={location.pathname === '/calendar' ? 'tavern' : location.pathname === '/tavern' ? 'tavern' : location.pathname === '/music' ? 'music' : location.pathname === '/dice' ? 'dice' : location.pathname === '/calculator' ? 'calculator' : 'characters'} />;
+  const pathname = usePathname();
+  // Unknown paths fall back to the lobby, as the single-page asset handler does.
+  const shellPage = inviteToken || roomSlug ? null : shellPageFor(pathname) ?? 'home';
+  if (shellPage) {
+    return <AppFrame page={shellPage} lobby={<Lobby inviteError={inviteError} onOpenCampaign={enterRoom} />} />;
+  }
 
   return (
     <div className="h-full flex flex-col bg-zinc-950">
       <div className="min-h-0 flex-1">
-        {inviteToken
-          ? <RoomLoading message="正在加入邀请战役…" />
-          : roomSlug
-          ? <CampaignSession key={roomSlug} slug={roomSlug} onLeaveRoom={leaveRoom} />
-          : <Lobby inviteError={inviteError} onOpenCampaign={enterRoom} />}
+        <ErrorBoundary key={roomSlug ?? inviteToken ?? 'room'} title="战役桌面没有正常加载">
+          {inviteToken
+            ? <RoomLoading message="正在加入邀请战役…" />
+            : <CampaignSession key={roomSlug} slug={roomSlug!} onLeaveRoom={leaveRoom} />}
+        </ErrorBoundary>
       </div>
       <FilingFooter />
     </div>

@@ -1,21 +1,17 @@
-import MusicNavigation from './components/MusicNavigation';
-import TavernNavigation from './components/TavernNavigation';
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   api,
-  type CurrentUser,
   type CampaignSummary,
   type CampaignModuleSummary,
 } from "./api";
 import Icon from "./components/Icon";
-import HeroOrnament from "./components/HeroOrnament";
+import { currentUser } from "./shell/currentUser";
 interface Props {
   inviteError?: string | null;
   onOpenCampaign: (slug: string) => void;
 }
 export default function Lobby({ inviteError, onOpenCampaign }: Props) {
-  const [me, setMe] = useState<CurrentUser | null>(null),
-    [campaigns, setCampaigns] = useState<CampaignSummary[]>([]),
+  const [campaigns, setCampaigns] = useState<CampaignSummary[]>([]),
     [modules, setModules] = useState<CampaignModuleSummary[]>([]);
   const [name, setName] = useState(""),
     [moduleId, setModuleId] = useState("");
@@ -25,18 +21,16 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
   const [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
-  const nameRef = useRef<HTMLInputElement>(null),
-    pageRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const load = async () => {
     setLoading(true);
     setError("");
     try {
-      const user = await api.me();
+      await currentUser();
       const [list, templates] = await Promise.all([
         api.campaignList(archived),
         api.modules(),
       ]);
-      setMe(user);
       setCampaigns(list);
       setModules(templates);
       setModuleId((current) =>
@@ -118,56 +112,7 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
   );
   return (
     <div className="swiss-lobby">
-      <a className="skip-link" href="#campaign-directory">
-        跳转到战役列表
-      </a>
-      <aside className="navigation-rail">
-        <button
-          className="brand-mark"
-          onClick={() => pageRef.current?.scrollTo({ top: 0 })}
-          aria-label="DM 追踪首页"
-        >
-          <span className="brand-symbol">
-            <Icon name="dice" />
-          </span>
-          <span>
-            DM<span className="brand-second">追踪</span>
-          </span>
-        </button>
-        <div className="nav-caption">工具 / TOOLS</div>
-        <nav aria-label="主导航">
-          <button className="rail-destination active" aria-current="page">
-            <Icon name="grid" />
-            <span>我的桌团</span>
-            <span className="nav-index">01</span>
-          </button>
-          <a className="rail-destination" href="/calculator">
-            <Icon name="calculator" />
-            <span className="nav-name-wide">临时计算器</span><span className="nav-name-short">计算器</span>
-            <span className="nav-index">02</span>
-          </a>
-          <a className="rail-destination" href="/characters">
-            <Icon name="users" />
-            <span>角色卡</span>
-            <span className="nav-index">03</span>
-          </a>
-          <a className="rail-destination" href="/dice">
-            <Icon name="dice" />
-            <span>掷骰</span>
-            <span className="nav-index">04</span>
-          </a>
-        <MusicNavigation /><TavernNavigation /></nav>
-        <div className="rail-account">
-          <span className="avatar">
-            <Icon name="users" />
-          </span>
-          <div>
-            <strong>{me?.displayName || "访客"}</strong>
-            <small>{loading ? "正在加载…" : "本机访客身份"}</small>
-          </div>
-        </div>
-      </aside>
-      <div className="lobby-scroll" ref={pageRef}>
+      <div className="lobby-scroll">
         <header className="app-topbar">
           <span>
             DM 追踪 <span className="breadcrumb-divider">/</span>
@@ -175,12 +120,10 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
           </span>
         </header>
         <main className="lobby-main">
-          <section className="utility-heading lobby-hero-banner">
-            <HeroOrnament />
-            <div className="hero-copy-block">
+          <section className="utility-heading">
+            <div>
               <span className="eyebrow">01 / CAMPAIGNS</span>
               <h1>我的桌团</h1>
-              <p className="hero-tagline">召集冒险者，展开地图，掷下第一颗骰子。</p>
             </div>
             <div className="hero-actions">
               <a className="button-secondary" href="/dice">
