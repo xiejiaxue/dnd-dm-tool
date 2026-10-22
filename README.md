@@ -34,7 +34,9 @@ npm run dev
 
 正式代码以 GitHub `main` 为准。本地主目录是 `/Users/xiejiaxue/developer/dndtool`。
 
-合入 main 后，GitHub 的 **Production** 工作流自动安装依赖、运行测试、校验音乐、构建并发布到 https://dnd.xiejiaxue.com，然后核对线上页面及资源哈希。也可以在 main 上手动运行同一工作流。
+合入 main 后，GitHub 的 **Production** 工作流只安装依赖、运行测试、校验音乐和构建，不更新网站。
+
+需要上线时，打开 GitHub → Actions → Production → Run workflow，分支选择 `main`，点击 Run workflow。只有这次手动运行会在检查通过后发布到 https://dnd.xiejiaxue.com，并核对线上页面及资源哈希。也可明确要求代理代为发布；代理不得在合并后自行触发。
 
 发布凭据保存在 GitHub `production` 环境的 `CLOUDFLARE_API_TOKEN` secret 中。`npm run deploy:production` 只允许此流程从最新且干净的 main 提交执行，始终使用 `--keep-vars`。Worker 不公开 workers.dev 备用地址。
 
