@@ -24,7 +24,12 @@
     "test:worker": "vitest run --config vitest.worker.config.ts",
     "test:watch": "vitest",
     "data:update": "node scripts/data-update.mjs",
+    "data:character-rules": "node scripts/build-character-rules.mjs",
+    "data:character-rules:local": "npm run data:character-rules && wrangler r2 object put dnd-dm-tool-reference-data/compendium/books/character-options.json --local --file data/db/character-options.json --content-type application/json",
     "data:publish": "node scripts/data-publish.mjs",
+    "content:validate": "tsx scripts/build-content-package.ts --validate-only",
+    "content:build": "tsx scripts/build-content-package.ts",
+    "content:publish": "node scripts/publish-room-templates.mjs",
     "template:build:waterdeep": "node scripts/build-waterdeep-template.mjs",
     "template:build:waterdeep-remix": "node scripts/build-waterdeep-remix-template.mjs",
     "template:publish": "node scripts/publish-room-templates.mjs"
@@ -57,6 +62,7 @@
     "tailwindcss": "^3.4.4",
     "tsx": "^4.15.0",
     "typescript": "^5.5.2",
+    "undici": "^7.29.0",
     "vite": "^6.4.3",
     "vitest": "^4.1.10",
     "wrangler": "^4.120.0"

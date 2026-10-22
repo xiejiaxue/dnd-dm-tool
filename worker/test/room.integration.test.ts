@@ -3,12 +3,15 @@ import { SELF, reset } from 'cloudflare:test';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import controlPlaneMigration from '../migrations/0001_control_plane.sql?raw';
 import persistentInviteMigration from '../migrations/0002_persistent_room_invite_codes.sql?raw';
+import platformRolesMigration from '../migrations/0003_platform_roles.sql?raw';
+import worldDocumentsMigration from '../migrations/0004_world_documents.sql?raw';
+import tabletopToolsMigration from '../migrations/0005_tabletop_tools.sql?raw';
 import { callRoom, requireRoomAccess } from '../src/repository';
 
 // D1Database#exec accepts a multi-statement script but its local parser does
 // not accept a leading comment-only statement. Wrangler's migration command
 // does; removing comments here keeps this an integration test of the exact SQL.
-const migrationSql = [controlPlaneMigration, persistentInviteMigration]
+const migrationSql = [controlPlaneMigration, persistentInviteMigration, platformRolesMigration, worldDocumentsMigration, tabletopToolsMigration]
   .map(migration => migration
     .split('\n')
     .filter(line => !line.trimStart().startsWith('--'))
@@ -98,6 +101,88 @@ describe('Cloudflare room control plane', () => {
     expect(await response.json()).toEqual({});
   });
 
+  it('stores personal character cards independently and only lets room players import them', async () => {
+    const hostMe = await api('/api/me');
+    const hostCookie = sessionCookie(hostMe);
+    const headers = { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' };
+
+    const rules = await api('/api/plugins/dnd5e-character-sheet/rules', { headers: { cookie: hostCookie } });
+    expect(rules.status).toBe(200);
+    expect(await rules.json()).toMatchObject({
+      schemaVersion: 1,
+      sourceUrl: 'https://5echm.kagangtuya.top/',
+      sources: expect.arrayContaining([expect.objectContaining({ id: 'PHB', core: true })]),
+      options: expect.arrayContaining([expect.objectContaining({ kind: 'class', source: 'PHB' })]),
+    });
+
+    const hostCharacter = await api('/api/plugins/dnd5e-character-sheet/characters', {
+      method: 'POST', headers,
+      body: JSON.stringify({ name: '房主的私人角色', sheet: { identity: { characterName: '房主的私人角色' } } }),
+    });
+    expect(hostCharacter.status).toBe(201);
+    const hostCharacterBody = await hostCharacter.json() as { id: string };
+
+    const created = await api('/api/rooms', {
+      method: 'POST', headers, body: JSON.stringify({ roomName: 'Character plugin room' }),
+    });
+    const { room } = await created.json() as RoomResponse;
+    const hostRoomPlugin = await api(`/api/rooms/${room.slug}/plugins/dnd5e-character-sheet/characters`, {
+      headers: { cookie: hostCookie },
+    });
+    expect(hostRoomPlugin.status).toBe(403);
+    expect(await hostRoomPlugin.json()).toMatchObject({ error: { code: 'PLAYER_ONLY' } });
+
+    const playerMe = await api('/api/me');
+    const playerCookie = sessionCookie(playerMe);
+    expect(await (await api('/api/plugins/dnd5e-character-sheet/characters', { headers: { cookie: playerCookie } })).json()).toEqual({ characters: [] });
+    const inviteResponse = await api(`/api/rooms/${room.slug}/invites`, {
+      method: 'POST', headers, body: JSON.stringify({ role: 'player' }),
+    });
+    const invite = await inviteResponse.json() as { inviteCode: string };
+    await api('/api/invites/redeem', {
+      method: 'POST',
+      headers: { cookie: playerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ token: invite.inviteCode }),
+    });
+
+    const playerCharacterResponse = await api('/api/plugins/dnd5e-character-sheet/characters', {
+      method: 'POST',
+      headers: { cookie: playerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: '玩家游侠', color: '#123abc',
+        sheet: {
+          rules: { enabledSources: ['PHB', 'XGE'] },
+          identity: { characterName: '玩家游侠', playerName: '测试玩家' },
+          advancement: { level: 5 },
+          combat: { armorClass: 16, speed: 30, hitPoints: { current: 42, max: 42, temporary: 0 } },
+          abilities: { str: 10, dex: 18, con: 14, int: 10, wis: 15, cha: 8 },
+          feats: [{ id: 'feat:XGE:Elven Accuracy', kind: 'feat', name: '精灵精准', nameEn: 'Elven Accuracy', source: 'XGE' }],
+        },
+      }),
+    });
+    expect(playerCharacterResponse.status).toBe(201);
+    const playerCharacter = await playerCharacterResponse.json() as { id: string };
+
+    const roomCards = await api(`/api/rooms/${room.slug}/plugins/dnd5e-character-sheet/characters`, { headers: { cookie: playerCookie } });
+    expect(await roomCards.json()).toMatchObject({ characters: [expect.objectContaining({ id: playerCharacter.id, name: '玩家游侠' })] });
+    const imported = await api(`/api/rooms/${room.slug}/plugins/dnd5e-character-sheet/characters/${playerCharacter.id}/import`, {
+      method: 'POST', headers: { cookie: playerCookie, origin: 'https://table.test' },
+    });
+    expect(imported.status).toBe(201);
+    const importedBody = await imported.json() as { actorId: string; characterId: string };
+    expect(importedBody.characterId).toBe(playerCharacter.id);
+    const actors = await api(`/api/rooms/${room.slug}/actors`, { headers: { cookie: playerCookie } });
+    expect(await actors.json()).toMatchObject({
+      actors: [expect.objectContaining({ id: importedBody.actorId, name: '玩家游侠', system: expect.objectContaining({ level: 5, armorClass: 16 }) })],
+      claim: expect.objectContaining({ actorId: importedBody.actorId }),
+    });
+
+    expect((await api(`/api/plugins/dnd5e-character-sheet/characters/${hostCharacterBody.id}`, {
+      method: 'DELETE', headers,
+    })).status).toBe(200);
+    expect(await (await api('/api/plugins/dnd5e-character-sheet/characters', { headers: { cookie: hostCookie } })).json()).toEqual({ characters: [] });
+  });
+
   it('creates an isolated room, initializes its Durable Object, and persists a scene mutation', async () => {
     const me = await api('/api/me');
     expect(me.status).toBe(200);
@@ -131,6 +216,69 @@ describe('Cloudflare room control plane', () => {
     const afterBody = await afterMutation.json() as { state: { revision: number; campaign: { sceneIds: string[] } } };
     expect(afterBody.state.revision).toBe(1);
     expect(afterBody.state.campaign.sceneIds).toContain(sceneBody.id);
+  });
+
+  it('lets the platform owner inspect every room and perform explicit room cleanup without general mutation rights', async () => {
+    await putRoomTemplate();
+    const hostMe = await api('/api/me');
+    const hostCookie = sessionCookie(hostMe);
+    const created = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Other host room', templateId: roomTemplateSummary.id }),
+    });
+    const { room } = await created.json() as RoomResponse;
+
+    const ownerMe = await api('/api/me');
+    const ownerCookie = sessionCookie(ownerMe);
+    const ownerIdentity = await ownerMe.json() as { id: string };
+    await env.DB.prepare(
+      `INSERT INTO platform_roles (user_id, role, granted_at) VALUES (?1, 'owner', ?2)`,
+    ).bind(ownerIdentity.id, Date.now()).run();
+
+    const refreshedIdentity = await api('/api/me', { headers: { cookie: ownerCookie } });
+    expect(await refreshedIdentity.json()).toMatchObject({
+      id: ownerIdentity.id, platformRole: 'owner', canReadAllRooms: true,
+    });
+
+    const listed = await api('/api/rooms', { headers: { cookie: ownerCookie } });
+    const listBody = await listed.json() as { rooms: Array<{ slug: string; role: string; platformReadOnly?: boolean }> };
+    expect(listBody.rooms).toContainEqual(expect.objectContaining({
+      slug: room.slug, role: 'spectator', platformReadOnly: true,
+    }));
+
+    const bootstrap = await api(`/api/rooms/${room.slug}`, { headers: { cookie: ownerCookie } });
+    expect(bootstrap.status).toBe(200);
+    const body = await bootstrap.json() as {
+      room: { platformReadOnly?: boolean };
+      membership: { role: string; canManage: boolean; canReadAll: boolean };
+      state: { role: string; viewer: { canManage: boolean; canReadAll: boolean }; campaign: { npcs: unknown[] } };
+    };
+    expect(body.room.platformReadOnly).toBe(true);
+    expect(body.membership).toMatchObject({ role: 'spectator', canManage: false, canReadAll: true });
+    expect(body.state).toMatchObject({ role: 'player', viewer: { canManage: false, canReadAll: true } });
+    expect(body.state.campaign.npcs).toHaveLength(1);
+
+    const scenes = await api(`/api/rooms/${room.slug}/scenes`, { headers: { cookie: ownerCookie } });
+    const sceneList = await scenes.json() as Array<{ id: string; unlocked: boolean }>;
+    expect(sceneList).toHaveLength(2);
+    expect(sceneList.some(scene => scene.unlocked === false)).toBe(true);
+    const locked = sceneList.find(scene => !scene.unlocked);
+    expect(locked).toBeDefined();
+    expect((await api(`/api/rooms/${room.slug}/scenes/${locked!.id}`, { headers: { cookie: ownerCookie } })).status).toBe(200);
+
+    const mutation = await api(`/api/rooms/${room.slug}/scenes`, {
+      method: 'POST',
+      headers: { cookie: ownerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Must not be created' }),
+    });
+    expect(mutation.status).toBe(403);
+    const cleanup = await api(`/api/rooms/${room.slug}`, {
+      method: 'DELETE', headers: { cookie: ownerCookie, origin: 'https://table.test' },
+    });
+    expect(cleanup.status).toBe(200);
+    expect(await cleanup.json()).toEqual({ ok: true });
+    expect((await api(`/api/rooms/${room.slug}`, { headers: { cookie: ownerCookie } })).status).toBe(404);
   });
 
   it('lists templates and clones independent Dragon Heist rooms with protected shared maps', async () => {
@@ -319,25 +467,43 @@ describe('Cloudflare room control plane', () => {
     });
     expect(added.status).toBe(200);
 
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    const initiativeSelections = [
+      ['browser-monster', 'browser-custom-npc'],
+      ['browser-linked-npc'],
+    ];
+    const expectedModifiers = [[2, 3], [2]];
+    for (let attempt = 0; attempt < initiativeSelections.length; attempt += 1) {
       const rolled = await api(`/api/rooms/${room.slug}/initiative/roll`, {
-        method: 'POST', headers: { cookie: hostCookie, origin: 'https://table.test' },
+        method: 'POST',
+        headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+        body: JSON.stringify({ tokenIds: initiativeSelections[attempt] }),
       });
       expect(rolled.status).toBe(200);
       const body = await rolled.json() as { rolls: { name: string; value: number; modifier: number }[] };
-      expect(body.rolls).toHaveLength(3);
-      expect(body.rolls.map(result => result.modifier)).toEqual([2, 2, 3]);
+      expect(body.rolls).toHaveLength(initiativeSelections[attempt].length);
+      expect(body.rolls.map(result => result.modifier)).toEqual(expectedModifiers[attempt]);
       for (const result of body.rolls) {
         expect(result.value).toBeGreaterThanOrEqual(1 + result.modifier);
         expect(result.value).toBeLessThanOrEqual(20 + result.modifier);
       }
     }
 
+    const advanced = await callRoom(env, access, 'POST', '/ops', {
+      id: crypto.randomUUID(),
+      ops: [{ op: 'startEncounter' }, { op: 'nextTurn' }, { op: 'nextTurn' }, { op: 'nextTurn' }],
+    });
+    expect(advanced.status).toBe(200);
+
     const bootstrap = await api(`/api/rooms/${room.slug}`, { headers: { cookie: hostCookie } });
-    const state = await bootstrap.json() as { state: { scene: { initiative: { name: string; tokenId: string }[] } } };
+    const state = await bootstrap.json() as { state: {
+      scene: { initiative: { name: string; tokenId: string }[] };
+      encounter: { status: string; round: number; turn: number | null; combatants: { name: string; tokenId: string }[] };
+    } };
     expect(state.state.scene.initiative).toHaveLength(3);
     expect(state.state.scene.initiative.map(entry => entry.name).sort()).toEqual(['地精 #1', '泽姆克 #1', '阿迈戈 #1'].sort());
     expect(state.state.scene.initiative.every(entry => typeof entry.tokenId === 'string')).toBe(true);
+    expect(state.state.encounter).toMatchObject({ status: 'active', round: 2, turn: 0 });
+    expect(state.state.encounter.combatants).toHaveLength(3);
   });
 
   it('keeps one reusable player invite code for a room and lets multiple players redeem it', async () => {
@@ -403,6 +569,220 @@ describe('Cloudflare room control plane', () => {
 
     const secondJoined = await api(`/api/rooms/${room.slug}`, { headers: { cookie: secondPlayerCookie } });
     expect(secondJoined.status).toBe(200);
+  });
+
+  it('keeps Actors, claims, Journals, MapNotes, and Macros behind one document permission model', async () => {
+    const hostMe = await api('/api/me');
+    const hostCookie = sessionCookie(hostMe);
+    const created = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Document model room' }),
+    });
+    const { room } = await created.json() as RoomResponse;
+    const bootstrap = await api(`/api/rooms/${room.slug}`, { headers: { cookie: hostCookie } });
+    const sceneId = (await bootstrap.json() as { state: { scene: { id: string } } }).state.scene.id;
+
+    const actorResponse = await api(`/api/rooms/${room.slug}/actors`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: '面团勇士', actorType: 'character',
+        ownership: { default: 'owner', users: {} },
+      }),
+    });
+    expect(actorResponse.status).toBe(201);
+    const actor = await actorResponse.json() as { id: string };
+
+    const journalResponse = await api(`/api/rooms/${room.slug}/journals`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '玩家手册', ownership: { default: 'observer', users: {} } }),
+    });
+    const journal = await journalResponse.json() as { id: string };
+    const pageResponse = await api(`/api/rooms/${room.slug}/journals/${journal.id}/pages`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '线索', type: 'markdown', text: '港口仓库的门牌号。' }),
+    });
+    expect(pageResponse.status).toBe(201);
+    const page = await pageResponse.json() as { id: string };
+    const noteResponse = await api(`/api/rooms/${room.slug}/scenes/${sceneId}/notes`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ journalId: journal.id, pageId: page.id, x: 120, y: 240, label: '仓库', visibility: 'inherit' }),
+    });
+    expect(noteResponse.status).toBe(201);
+    const macroFolderResponse = await api(`/api/rooms/${room.slug}/folders/macro`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '常用检定' }),
+    });
+    const macroFolder = await macroFolderResponse.json() as { id: string };
+    const macroResponse = await api(`/api/rooms/${room.slug}/macros`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: '察觉检定', command: { commandId: 'core.dice.roll', args: { formula: '1d20+5' } },
+        ownership: { default: 'observer', users: {} }, folderId: macroFolder.id,
+      }),
+    });
+    expect(macroResponse.status).toBe(201);
+    const macro = await macroResponse.json() as { id: string; name: string };
+    const hostBinding = await api(`/api/rooms/${room.slug}/macros/hotbar/1`, {
+      method: 'PATCH',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ macroId: macro.id }),
+    });
+    expect(hostBinding.status).toBe(200);
+    expect(await hostBinding.json()).toMatchObject({ slot: 1, macro: { id: macro.id, name: '察觉检定' } });
+    const updatedMacro = await api(`/api/rooms/${room.slug}/macros/${macro.id}`, {
+      method: 'PATCH',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '察觉检定（更新）' }),
+    });
+    expect(await updatedMacro.json()).toMatchObject({ id: macro.id, name: '察觉检定（更新）', folderId: macroFolder.id });
+
+    const inviteResponse = await api(`/api/rooms/${room.slug}/invites`, {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ role: 'player' }),
+    });
+    const invite = await inviteResponse.json() as { inviteCode: string };
+    const playerMe = await api('/api/me');
+    const playerCookie = sessionCookie(playerMe);
+    const player = await playerMe.json() as { id: string };
+    await api('/api/invites/redeem', {
+      method: 'POST',
+      headers: { cookie: playerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ token: invite.inviteCode }),
+    });
+
+    const claimed = await api(`/api/rooms/${room.slug}/actors/${actor.id}/claim`, {
+      method: 'POST', headers: { cookie: playerCookie, origin: 'https://table.test' },
+    });
+    expect(claimed.status).toBe(200);
+    const access = await requireRoomAccess(env, player.id, room.slug);
+    expect(access.claimedActor).toMatchObject({ id: actor.id, name: '面团勇士' });
+
+    const journals = await api(`/api/rooms/${room.slug}/journals`, { headers: { cookie: playerCookie } });
+    expect(await journals.json()).toEqual([
+      expect.objectContaining({ id: journal.id, pages: [expect.objectContaining({ id: page.id, text: '港口仓库的门牌号。' })] }),
+    ]);
+    const notes = await api(`/api/rooms/${room.slug}/scenes/${sceneId}/notes`, { headers: { cookie: playerCookie } });
+    expect(await notes.json()).toEqual([expect.objectContaining({ journalId: journal.id, pageId: page.id, label: '仓库' })]);
+    const macros = await api(`/api/rooms/${room.slug}/macros`, { headers: { cookie: playerCookie } });
+    expect(await macros.json()).toEqual([expect.objectContaining({ command: { commandId: 'core.dice.roll', args: { formula: '1d20+5' } } })]);
+    expect(await (await api(`/api/rooms/${room.slug}/macros/hotbar`, { headers: { cookie: playerCookie } })).json()).toEqual([]);
+    const playerBinding = await api(`/api/rooms/${room.slug}/macros/hotbar/10`, {
+      method: 'PATCH',
+      headers: { cookie: playerCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ macroId: macro.id }),
+    });
+    expect(playerBinding.status).toBe(200);
+    expect(await (await api(`/api/rooms/${room.slug}/macros/hotbar`, { headers: { cookie: playerCookie } })).json()).toEqual([
+      expect.objectContaining({ slot: 10, macro: expect.objectContaining({ id: macro.id }) }),
+    ]);
+    expect(await (await api(`/api/rooms/${room.slug}/macros/hotbar`, { headers: { cookie: hostCookie } })).json()).toEqual([
+      expect.objectContaining({ slot: 1, macro: expect.objectContaining({ id: macro.id }) }),
+    ]);
+    expect((await api(`/api/rooms/${room.slug}/macros/${macro.id}`, {
+      method: 'DELETE', headers: { cookie: hostCookie, origin: 'https://table.test' },
+    })).status).toBe(200);
+    expect(await (await api(`/api/rooms/${room.slug}/macros`, { headers: { cookie: hostCookie } })).json()).toEqual([]);
+    expect(await (await api(`/api/rooms/${room.slug}/macros/hotbar`, { headers: { cookie: hostCookie } })).json()).toEqual([]);
+    expect(await (await api(`/api/rooms/${room.slug}/macros/hotbar`, { headers: { cookie: playerCookie } })).json()).toEqual([]);
+  });
+
+  it('persists document folders, tabletop libraries, action history, settings, and deduplicated assets', async () => {
+    const me = await api('/api/me');
+    const hostCookie = sessionCookie(me);
+    const created = await api('/api/rooms', {
+      method: 'POST',
+      headers: { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' },
+      body: JSON.stringify({ roomName: 'Tabletop tools room' }),
+    });
+    const { room } = await created.json() as RoomResponse;
+    const headers = { cookie: hostCookie, origin: 'https://table.test', 'content-type': 'application/json' };
+
+    const folderResponse = await api(`/api/rooms/${room.slug}/folders/actor`, {
+      method: 'POST', headers, body: JSON.stringify({ name: '玩家角色' }),
+    });
+    expect(folderResponse.status).toBe(201);
+    const folder = await folderResponse.json() as { id: string; name: string };
+    const childFolderResponse = await api(`/api/rooms/${room.slug}/folders/actor`, {
+      method: 'POST', headers, body: JSON.stringify({ name: '子目录', parentId: folder.id }),
+    });
+    const childFolder = await childFolderResponse.json() as { id: string };
+    const grandchildFolderResponse = await api(`/api/rooms/${room.slug}/folders/actor`, {
+      method: 'POST', headers, body: JSON.stringify({ name: '孙目录', parentId: childFolder.id }),
+    });
+    const grandchildFolder = await grandchildFolderResponse.json() as { id: string };
+    expect((await api(`/api/rooms/${room.slug}/folders/actor/${folder.id}`, {
+      method: 'PATCH', headers, body: JSON.stringify({ parentId: grandchildFolder.id }),
+    })).status).toBe(400);
+    const actorResponse = await api(`/api/rooms/${room.slug}/actors`, {
+      method: 'POST', headers, body: JSON.stringify({ name: '目录勇士', actorType: 'character' }),
+    });
+    const actor = await actorResponse.json() as { id: string };
+    expect((await api(`/api/rooms/${room.slug}/actors/${actor.id}`, {
+      method: 'PATCH', headers, body: JSON.stringify({ folderId: folder.id, sort: 10 }),
+    })).status).toBe(200);
+    expect(await (await api(`/api/rooms/${room.slug}/folders/actor`, { headers: { cookie: hostCookie } })).json()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: folder.id, name: '玩家角色' }),
+      expect.objectContaining({ id: childFolder.id, parentId: folder.id }),
+      expect.objectContaining({ id: grandchildFolder.id, parentId: childFolder.id }),
+    ]));
+    expect(await (await api(`/api/rooms/${room.slug}/actors`, { headers: { cookie: hostCookie } })).json()).toMatchObject({
+      actors: [expect.objectContaining({ id: actor.id, folderId: folder.id, sort: 10 })],
+    });
+
+    const itemResponse = await api(`/api/rooms/${room.slug}/tools/items`, {
+      method: 'POST', headers,
+      body: JSON.stringify({
+        name: '长剑', folder: '装备/武器', ownership: { default: 'observer', users: {} },
+        data: { itemType: 'weapon', description: '一把长剑。', system: {}, actions: [], effects: [] },
+      }),
+    });
+    expect(itemResponse.status).toBe(201);
+    const item = await itemResponse.json() as { id: string };
+    const locked = await api(`/api/rooms/${room.slug}/tools/items/${item.id}`, {
+      method: 'PATCH', headers, body: JSON.stringify({ locked: true }),
+    });
+    expect(await locked.json()).toMatchObject({ id: item.id, locked: true, folder: '装备/武器' });
+    expect((await api(`/api/rooms/${room.slug}/tools/items/${item.id}`, { method: 'DELETE', headers })).status).toBe(409);
+
+    const logged = await api(`/api/rooms/${room.slug}/action-log`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ type: 'roll', label: '力量检定', formula: '1d20+3', total: 17, details: { mode: 'normal' } }),
+    });
+    expect(logged.status).toBe(201);
+    expect(await (await api(`/api/rooms/${room.slug}/action-log`, { headers: { cookie: hostCookie } })).json()).toEqual([
+      expect.objectContaining({ type: 'roll', label: '力量检定', formula: '1d20+3', total: 17 }),
+    ]);
+
+    const settings = await api(`/api/rooms/${room.slug}/settings`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ compactMode: true, fontScale: 9, keybindings: { 'ui.toggle-dice': 'Shift+D' } }),
+    });
+    expect(await settings.json()).toMatchObject({ compactMode: true, fontScale: 1.4, keybindings: { 'ui.toggle-dice': 'Shift+D' } });
+
+    const upload = () => {
+      const form = new FormData();
+      form.append('file', new File([tinyPng], 'same-map.png', { type: 'image/png' }));
+      form.append('kind', 'map');
+      return api(`/api/rooms/${room.slug}/assets`, { method: 'POST', headers: { cookie: hostCookie, origin: 'https://table.test' }, body: form });
+    };
+    const firstAssetResponse = await upload();
+    const secondAssetResponse = await upload();
+    expect(firstAssetResponse.status).toBe(201);
+    expect(secondAssetResponse.status).toBe(201);
+    const firstAsset = await firstAssetResponse.json() as { id: string };
+    const secondAsset = await secondAssetResponse.json() as { id: string };
+    expect(secondAsset.id).toBe(firstAsset.id);
+    expect(await (await api(`/api/rooms/${room.slug}/asset-library`, { headers: { cookie: hostCookie } })).json()).toEqual([
+      expect.objectContaining({ id: firstAsset.id, name: 'same-map.png', archived: false }),
+    ]);
   });
 
   it('lets only the host delete a room and revokes its members, invites, assets, and live state', async () => {

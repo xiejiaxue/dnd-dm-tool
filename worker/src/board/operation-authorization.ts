@@ -2,23 +2,29 @@ import {
   FOG_CELL,
   type EntryType,
   type Favorite,
+  type FogRect,
   type GridConfig,
   type NpcImportance,
+  type NpcPlayerAccess,
   type NpcRecord,
   type NpcStatus,
   type Op,
   type PlayArea,
   type PlayerToken,
+  type PlayerUpdatePatch,
   type Token,
+  type TokenUpdatePatch,
+  type TokenCondition,
+  type TokenConditionId,
   type Wall,
 } from '../../../shared/types';
 import { fogExtent, fogRectContains, MAX_FOG_REVEAL_RECTS } from '../../../shared/fog-rects';
 import { canonicalizeNpcRecord } from '../../../shared/npc-metadata';
 import {
   activeScene,
+  currentEncounter,
   DomainError,
   isRoomModerator,
-  newOpaqueId,
   type PersistedRoomState,
   type RoomActor,
 } from '../domain';
@@ -54,6 +60,8 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
       return { op, wall: wall(value.wall) };
     case 'removeWall':
       return { op, wallId: id(value.wallId) };
+    case 'updateWall':
+      return { op, wallId: id(value.wallId), patch: wallPatch(value.patch) };
     case 'updateGrid':
       return { op, patch: gridPatch(value.patch) };
     case 'updateMap':
@@ -80,8 +88,22 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
       return { op, name: shortText(value.name, 120), value: boundedNumber(value.value, -100, 100), source: 'dm', tokenId: nullableId(value.tokenId) };
     case 'removeFromInitiative':
       return { op, entryId: id(value.entryId) };
+    case 'setCombatantHidden':
+      return { op, entryId: id(value.entryId), hidden: boolean(value.hidden, '先攻可见性') };
+    case 'updateCombatant':
+      return { op, entryId: id(value.entryId), patch: combatantPatch(value.patch) };
+    case 'createEncounter':
+    case 'duplicateEncounter':
+    case 'startEncounter':
+    case 'endEncounter':
+    case 'previousTurn':
+    case 'nextTurn':
+    case 'previousRound':
+    case 'nextRound':
     case 'advanceTurn':
       return { op };
+    case 'endMyTurn':
+      throw new DomainError('FORBIDDEN', '主持人请使用下一行动');
     case 'reorderInitiative':
       return { op, order: idList(value.order, 250) };
     case 'addFavorite':
@@ -95,6 +117,8 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
     case 'revealAllFog':
     case 'coverAllFog':
       return { op };
+    case 'restoreFog':
+      return fogSnapshot(value, state);
     case 'switchCampaign': {
       const campaignId = id(value.campaignId);
       if (!state.campaigns[campaignId]) throw new DomainError('INVALID', '战役不属于当前房间');
@@ -116,7 +140,7 @@ function authorizePlayerOperation(value: Record<string, unknown>, state: Persist
     case 'updatePlayer': {
       const tokenId = id(value.tokenId);
       if (!own || own.id !== tokenId) throw new DomainError('FORBIDDEN', '只能编辑自己的角色');
-      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, false) };
+      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, true) };
     }
     case 'submitInitiative': {
       if (!own) throw new DomainError('FORBIDDEN', '尚未认领角色');
@@ -127,6 +151,14 @@ function authorizePlayerOperation(value: Record<string, unknown>, state: Persist
         tokenId: own.id,
         sessionId: actor.userId,
       };
+    }
+    case 'endMyTurn': {
+      const encounter = currentEncounter(state);
+      const active = encounter?.status === 'active' && encounter.turn !== null
+        ? encounter.combatants[encounter.turn]
+        : undefined;
+      if (!active || active.sessionId !== actor.userId) throw new DomainError('FORBIDDEN', '现在不是你的行动');
+      return { op: 'endMyTurn' };
     }
     default:
       throw new DomainError('FORBIDDEN', '当前身份不能执行此操作');
@@ -229,8 +261,9 @@ function token(value: unknown, requiredKind: 'monster' | 'npc' | 'player'): Toke
   if (!isRecord(value)) throw new DomainError('INVALID', 'Token 无效');
   const entry = value.entryId === null ? null : shortText(value.entryId, 180);
   return {
-    id: newOpaqueId('token'),
+    id: id(value.id),
     kind: requiredKind,
+    actorId: value.actorId === undefined || value.actorId === null || value.actorId === '' ? null : id(value.actorId),
     name: shortText(value.name, 120),
     entryId: entry,
     x: coordinate(value.x),
@@ -239,6 +272,10 @@ function token(value: unknown, requiredKind: 'monster' | 'npc' | 'player'): Toke
     avatar: optionalAssetUrl(value.avatar),
     color: color(value.color),
     hp: hp(value.hp),
+    hidden: optionalBoolean(value.hidden, false),
+    publicName: optionalText(value.publicName, 120),
+    hpVisibility: tokenHpVisibility(value.hpVisibility),
+    conditions: tokenConditions(value.conditions),
   };
 }
 
@@ -269,6 +306,8 @@ function npcRecord(value: unknown, state: PersistedRoomState): NpcRecord {
     groupPath: npcGroupPath(value.groupPath),
     statReference: npcStatReference(value.statReference),
     notesMarkdown: optionalText(value.notesMarkdown, 16_000),
+    playerAccess: npcPlayerAccess(value.playerAccess),
+    publicDescription: optionalText(value.publicDescription, 4_000),
     sourceFile: value.sourceFile === null ? null : optionalNullableText(value.sourceFile, 180),
     updatedAt: Date.now(),
   });
@@ -326,36 +365,143 @@ function npcImportance(value: unknown): NpcImportance | undefined {
   throw new DomainError('INVALID', 'NPC 重要程度无效');
 }
 
+function npcPlayerAccess(value: unknown): NpcPlayerAccess {
+  if (value === undefined || value === null || value === '') return 'none';
+  if (value === 'none' || value === 'limited' || value === 'observer') return value;
+  throw new DomainError('INVALID', 'NPC 玩家权限无效');
+}
+
 function playerToken(value: unknown, sessionId: string | null): PlayerToken {
   return { ...token(value, 'player'), sessionId };
 }
 
 function wall(value: unknown): Wall {
   if (!isRecord(value)) throw new DomainError('INVALID', '墙体无效');
-  return { id: newOpaqueId('wall'), p1: point(value.p1), p2: point(value.p2) };
+  return { id: id(value.id), p1: point(value.p1), p2: point(value.p2) };
 }
 
-function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> {
+function wallPatch(value: unknown): Partial<Pick<Wall, 'p1' | 'p2'>> {
+  if (!isRecord(value)) throw new DomainError('INVALID', '墙体更新无效');
+  const patch: Partial<Pick<Wall, 'p1' | 'p2'>> = {};
+  if (value.p1 !== undefined) patch.p1 = point(value.p1);
+  if (value.p2 !== undefined) patch.p2 = point(value.p2);
+  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
+  return patch;
+}
+
+function fogSnapshot(value: Record<string, unknown>, state: PersistedRoomState): Op {
+  const scene = activeScene(state);
+  const fog = value.fog === null ? null : value.fog;
+  if (fog !== null && (!Array.isArray(fog) || fog.length > 100_000 || fog.some((cell) => typeof cell !== 'boolean'))) {
+    throw new DomainError('INVALID', '迷雾快照无效');
+  }
+  if (!Array.isArray(value.fogReveals) || value.fogReveals.length > MAX_FOG_REVEAL_RECTS) {
+    throw new DomainError('INVALID', '迷雾快照无效');
+  }
+  const { width, height } = fogExtent(scene);
+  const fogReveals = value.fogReveals.map((candidate): FogRect => {
+    if (!isRecord(candidate)) throw new DomainError('INVALID', '迷雾快照无效');
+    const rect = {
+      x: boundedNumber(candidate.x, 0, width),
+      y: boundedNumber(candidate.y, 0, height),
+      w: boundedNumber(candidate.w, 1, width),
+      h: boundedNumber(candidate.h, 1, height),
+    };
+    if (rect.x + rect.w > width + 0.001 || rect.y + rect.h > height + 0.001) {
+      throw new DomainError('INVALID', '迷雾快照超出地图范围');
+    }
+    return rect;
+  });
+  return { op: 'restoreFog', fog: fog ? [...fog] : null, fogReveals };
+}
+
+function tokenPatch(value: unknown): TokenUpdatePatch {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> = {};
+  const patch: TokenUpdatePatch = {};
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.size !== undefined) patch.size = boundedNumber(value.size, 12, 500);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
   if (value.color !== undefined) patch.color = color(value.color);
-  if (value.hp !== undefined) patch.hp = hp(value.hp);
+  if (value.hp !== undefined) patch.hp = value.hp === null ? null : hp(value.hp);
+  if (value.hidden !== undefined) patch.hidden = boolean(value.hidden, 'Token 可见性');
+  if (value.publicName !== undefined) patch.publicName = optionalText(value.publicName, 120);
+  if (value.hpVisibility !== undefined) patch.hpVisibility = tokenHpVisibility(value.hpVisibility);
+  if (value.conditions !== undefined) patch.conditions = tokenConditions(value.conditions);
   if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
   return patch;
 }
 
-function playerPatch(value: unknown, maySetHp: boolean): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> {
+function tokenHpVisibility(value: unknown): Token['hpVisibility'] {
+  if (value === undefined || value === null || value === '') return 'value';
+  if (value === 'none' || value === 'bar' || value === 'value') return value;
+  throw new DomainError('INVALID', 'HP 可见性无效');
+}
+
+function boolean(value: unknown, label: string): boolean {
+  if (typeof value !== 'boolean') throw new DomainError('INVALID', `${label}无效`);
+  return value;
+}
+
+function optionalBoolean(value: unknown, fallback: boolean): boolean {
+  return value === undefined ? fallback : boolean(value, '布尔字段');
+}
+
+function playerPatch(value: unknown, maySetHp: boolean): PlayerUpdatePatch {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> = {};
+  const patch: PlayerUpdatePatch = {};
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.color !== undefined) patch.color = color(value.color);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
-  if (maySetHp && value.hp !== undefined) patch.hp = hp(value.hp);
+  if (maySetHp && value.hp !== undefined) patch.hp = value.hp === null ? null : hp(value.hp);
+  if (maySetHp && value.conditions !== undefined) patch.conditions = tokenConditions(value.conditions);
   if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
   return patch;
+}
+
+function combatantPatch(value: unknown): { name?: string; value?: number; hidden?: boolean; defeated?: boolean; group?: string | null; turnState?: 'normal' | 'ready' | 'delayed' } {
+  if (!isRecord(value)) throw new DomainError('INVALID', '战斗单位更新无效');
+  const patch: { name?: string; value?: number; hidden?: boolean; defeated?: boolean; group?: string | null; turnState?: 'normal' | 'ready' | 'delayed' } = {};
+  if (value.name !== undefined) patch.name = shortText(value.name, 120);
+  if (value.value !== undefined) patch.value = boundedNumber(value.value, -100, 100);
+  if (value.hidden !== undefined) patch.hidden = boolean(value.hidden, '先攻可见性');
+  if (value.defeated !== undefined) patch.defeated = boolean(value.defeated, '战败状态');
+  if (value.group !== undefined) patch.group = value.group === null || value.group === '' ? null : shortText(value.group, 80);
+  if (value.turnState !== undefined) {
+    if (value.turnState !== 'normal' && value.turnState !== 'ready' && value.turnState !== 'delayed') throw new DomainError('INVALID', '行动状态无效');
+    patch.turnState = value.turnState;
+  }
+  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
+  return patch;
+}
+
+const TOKEN_CONDITION_IDS: readonly TokenConditionId[] = [
+  'prone', 'grappled', 'restrained', 'stunned', 'unconscious', 'invisible', 'concentrating', 'dead',
+];
+
+function tokenConditions(value: unknown): TokenCondition[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.length > TOKEN_CONDITION_IDS.length) {
+    throw new DomainError('INVALID', 'Token 状态列表无效');
+  }
+  const seen = new Set<TokenConditionId>();
+  return value.map(item => {
+    if (!isRecord(item) || !TOKEN_CONDITION_IDS.includes(item.id as TokenConditionId) || seen.has(item.id as TokenConditionId)) {
+      throw new DomainError('INVALID', 'Token 状态无效');
+    }
+    const conditionId = item.id as TokenConditionId;
+    seen.add(conditionId);
+    const remainingRounds = item.remainingRounds === null || item.remainingRounds === undefined
+      ? null
+      : boundedInteger(item.remainingRounds, 1, 99, '状态持续轮数');
+    return { id: conditionId, remainingRounds };
+  });
+}
+
+function boundedInteger(value: unknown, min: number, max: number, label: string): number {
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < min || value > max) {
+    throw new DomainError('INVALID', `${label}无效`);
+  }
+  return value;
 }
 
 function gridPatch(value: unknown): Partial<GridConfig> {

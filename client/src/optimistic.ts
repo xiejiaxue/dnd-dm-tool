@@ -1,4 +1,4 @@
-import { fogGridSize, type Campaign, type InitiativeEntry, type NpcRecord, type Op, type PlayerToken, type Scene, type Token } from './types';
+import { fogGridSize, type Campaign, type NpcRecord, type Op, type PlayerToken, type Scene, type Token } from './types';
 import { addFogReveal, fogExtent } from '../../shared/fog-rects';
 
 /** The active-room projection that may be predicted locally. */
@@ -50,7 +50,6 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         scene: {
           ...scene,
           tokens: scene.tokens.filter((token) => token.id !== operation.tokenId),
-          initiative: scene.initiative.filter((entry) => entry.tokenId !== operation.tokenId),
         },
         campaign,
       };
@@ -58,7 +57,15 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
       const index = scene.tokens.findIndex((token) => token.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
       const token = scene.tokens[index];
-      return { scene: { ...scene, tokens: replaceAt(scene.tokens, index, { ...token, ...operation.patch, ...(operation.patch.hp ? { hp: { ...operation.patch.hp } } : {}) }) }, campaign };
+      const { hp, conditions, ...patch } = operation.patch;
+      const updated: Token = {
+        ...token,
+        ...patch,
+      };
+      if (hp === null) delete updated.hp;
+      else if (hp) updated.hp = { ...hp };
+      if (conditions) updated.conditions = conditions.map(condition => ({ ...condition }));
+      return { scene: { ...scene, tokens: replaceAt(scene.tokens, index, updated) }, campaign };
     }
     case 'addPlayer':
       return scene.players.some((player) => player.id === operation.player.id)
@@ -70,7 +77,15 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
       const index = scene.players.findIndex((player) => player.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
       const player = scene.players[index];
-      return { scene: { ...scene, players: replaceAt(scene.players, index, { ...player, ...operation.patch, ...(operation.patch.hp ? { hp: { ...operation.patch.hp } } : {}) }) }, campaign };
+      const { hp, conditions, ...patch } = operation.patch;
+      const updated: PlayerToken = {
+        ...player,
+        ...patch,
+      };
+      if (hp === null) delete updated.hp;
+      else if (hp) updated.hp = { ...hp };
+      if (conditions) updated.conditions = conditions.map(condition => ({ ...condition }));
+      return { scene: { ...scene, players: replaceAt(scene.players, index, updated) }, campaign };
     }
     case 'addWall':
       return scene.walls.some((wall) => wall.id === operation.wall.id)
@@ -78,6 +93,17 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         : { scene: { ...scene, walls: [...scene.walls, { ...operation.wall, p1: [...operation.wall.p1] as [number, number], p2: [...operation.wall.p2] as [number, number] }] }, campaign };
     case 'removeWall':
       return { scene: { ...scene, walls: scene.walls.filter((wall) => wall.id !== operation.wallId) }, campaign };
+    case 'updateWall': {
+      const index = scene.walls.findIndex((wall) => wall.id === operation.wallId);
+      if (index < 0) return { scene, campaign };
+      const wall = scene.walls[index];
+      return { scene: { ...scene, walls: replaceAt(scene.walls, index, {
+        ...wall,
+        ...operation.patch,
+        ...(operation.patch.p1 ? { p1: [...operation.patch.p1] as [number, number] } : {}),
+        ...(operation.patch.p2 ? { p2: [...operation.patch.p2] as [number, number] } : {}),
+      }) }, campaign };
+    }
     case 'updateGrid':
       return { scene: { ...scene, grid: { ...scene.grid, ...operation.patch, ...(operation.patch.offset ? { offset: [...operation.patch.offset] as [number, number] } : {}) } }, campaign };
     case 'updateMap':
@@ -122,24 +148,21 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     case 'switchCampaign':
     case 'submitInitiative':
     case 'addToInitiative':
-      return null;
-    case 'removeFromInitiative': {
-      const linkedCombatantTokenId = scene.initiative.find((entry) => entry.id === operation.entryId)?.tokenId;
-      return {
-        scene: {
-          ...scene,
-          initiative: scene.initiative.filter((entry) => entry.id !== operation.entryId),
-          tokens: linkedCombatantTokenId && scene.tokens.some((token) => token.id === linkedCombatantTokenId && (token.kind === 'monster' || token.kind === 'npc'))
-            ? scene.tokens.filter((token) => token.id !== linkedCombatantTokenId)
-            : scene.tokens,
-        },
-        campaign,
-      };
-    }
+    case 'removeFromInitiative':
+    case 'setCombatantHidden':
+    case 'updateCombatant':
+    case 'createEncounter':
+    case 'duplicateEncounter':
+    case 'startEncounter':
+    case 'endEncounter':
+    case 'previousTurn':
+    case 'nextTurn':
+    case 'previousRound':
+    case 'nextRound':
+    case 'endMyTurn':
     case 'advanceTurn':
-      return { scene: { ...scene, initiative: advanceInitiative(scene.initiative) }, campaign };
     case 'reorderInitiative':
-      return { scene: { ...scene, initiative: reorderInitiative(scene.initiative, operation.order) }, campaign };
+      return null;
     case 'addFavorite':
       return scene.favorites.some((item) => item.type === operation.favorite.type && item.entryId === operation.favorite.entryId)
         ? { scene, campaign }
@@ -165,6 +188,16 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     }
     case 'coverAllFog':
       return { scene: { ...scene, fog: undefined, fogReveals: [] }, campaign };
+    case 'restoreFog':
+      return {
+        scene: {
+          ...scene,
+          fog: operation.fog ? [...operation.fog] : undefined,
+          fogReveals: operation.fogReveals.map((rect) => ({ ...rect })),
+          fogVersion: 2,
+        },
+        campaign,
+      };
   }
 }
 
@@ -182,7 +215,11 @@ function replaceAt<T>(items: readonly T[], index: number, value: T): T[] {
 }
 
 function cloneToken(token: Token): Token {
-  return { ...token, ...(token.hp ? { hp: { ...token.hp } } : {}) };
+  return {
+    ...token,
+    ...(token.hp ? { hp: { ...token.hp } } : {}),
+    ...(token.conditions ? { conditions: token.conditions.map(condition => ({ ...condition })) } : {}),
+  };
 }
 
 function clonePlayer(player: PlayerToken): PlayerToken {
@@ -193,26 +230,4 @@ function editableFog(scene: Scene): boolean[] {
   const { cols, rows } = fogGridSize(scene);
   const length = cols * rows;
   return scene.fog && scene.fog.length === length ? [...scene.fog] : new Array<boolean>(length).fill(false);
-}
-
-function reorderInitiative(entries: readonly InitiativeEntry[], order: readonly string[]): InitiativeEntry[] {
-  const byId = new Map(entries.map((entry) => [entry.id, entry]));
-  const ordered: InitiativeEntry[] = [];
-  for (const id of order) {
-    const entry = byId.get(id);
-    if (entry) {
-      ordered.push(entry);
-      byId.delete(id);
-    }
-  }
-  return [...ordered, ...byId.values()];
-}
-
-function advanceInitiative(entries: readonly InitiativeEntry[]): InitiativeEntry[] {
-  if (entries.length === 0) return entries as InitiativeEntry[];
-  const next = entries.map((entry) => ({ ...entry, active: false }));
-  const active = entries.find((entry) => entry.active);
-  const nextIndex = active ? (next.findIndex((entry) => entry.id === active.id) + 1) % next.length : 0;
-  next[nextIndex].active = true;
-  return next;
 }

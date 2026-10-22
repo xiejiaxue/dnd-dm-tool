@@ -4,10 +4,14 @@
 
 export interface PendingToken {
   kind: 'monster' | 'npc' | 'player';
+  actorId?: string | null;
   name: string;
   entryId: string | null;
   avatar: string;
   color: string;
+  size?: number;
+  hidden?: boolean;
+  hpVisibility?: 'none' | 'bar' | 'value';
   hp?: { current: number; max: number };
 }
 

@@ -14,7 +14,7 @@ let useClock = 0;
 /** Return an already decoded image without starting a network request. */
 export function decodedImage(url: string): HTMLImageElement | null {
   const record = records.get(url);
-  if (!record?.ready) return null;
+  if (!record?.ready || !hasRenderableDimensions(record.image)) return null;
   touch(record);
   return record.image;
 }
@@ -33,12 +33,12 @@ export function loadDecodedImage(url: string): Promise<HTMLImageElement> {
 
   const image = new Image();
   image.decoding = 'async';
-  const record = {
+  const record: ImageCacheRecord = {
     image,
     promise: Promise.resolve(image),
     ready: false,
     lastUsed: ++useClock,
-  } satisfies ImageCacheRecord;
+  };
 
   record.promise = new Promise<HTMLImageElement>((resolve, reject) => {
     let settled = false;
@@ -63,6 +63,10 @@ export function loadDecodedImage(url: string): Promise<HTMLImageElement> {
       // bitmap decode ahead of a scene switch when the browser supports it.
       try { await image.decode?.(); } catch { /* A loaded image is still usable. */ }
       if (settled) return;
+      if (!hasRenderableDimensions(image)) {
+        fail(new Error(`图片没有可绘制尺寸：${url}`));
+        return;
+      }
       settled = true;
       cleanup();
       record.ready = true;
@@ -115,4 +119,8 @@ function trimCache(protectedUrl: string): void {
 
 function imagePixels(image: HTMLImageElement): number {
   return Math.max(1, image.naturalWidth) * Math.max(1, image.naturalHeight);
+}
+
+function hasRenderableDimensions(image: HTMLImageElement): boolean {
+  return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
 }

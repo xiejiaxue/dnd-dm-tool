@@ -36,9 +36,12 @@ describe('optimistic room projection', () => {
     expect(applyOptimisticOps({ scene, campaign: null }, [{
       op: 'addToInitiative', name: 'Goblin', value: 13, source: 'dm', tokenId: 'goblin',
     }])).toBeNull();
+    expect(applyOptimisticOps({ scene, campaign: null }, [{
+      op: 'setCombatantHidden', entryId: 'initiative-1', hidden: true,
+    }])).toBeNull();
   });
 
-  it('predicts synchronized deletion from either the enemy list or initiative strip', () => {
+  it('keeps token deletion separate and waits for authoritative encounter removal', () => {
     const linkedScene: Scene = {
       ...scene,
       tokens: [
@@ -55,16 +58,15 @@ describe('optimistic room projection', () => {
       { op: 'removeToken', tokenId: 'goblin' },
     ]);
     expect(fromEnemyList?.scene.tokens.map(token => token.id)).toEqual(['goblin-2']);
-    expect(fromEnemyList?.scene.initiative.map(entry => entry.id)).toEqual(['ini-2']);
+    expect(fromEnemyList?.scene.initiative.map(entry => entry.id)).toEqual(['ini-1', 'ini-2']);
 
     const fromInitiative = applyOptimisticOps({ scene: linkedScene, campaign: null }, [
       { op: 'removeFromInitiative', entryId: 'ini-2' },
     ]);
-    expect(fromInitiative?.scene.tokens.map(token => token.id)).toEqual(['goblin']);
-    expect(fromInitiative?.scene.initiative.map(entry => entry.id)).toEqual(['ini-1']);
+    expect(fromInitiative).toBeNull();
   });
 
-  it('predicts the same initiative deletion cascade for NPC combatants', () => {
+  it('waits for the server encounter snapshot when removing an NPC combatant', () => {
     const npcScene: Scene = {
       ...scene,
       tokens: [{ ...scene.tokens[0], id: 'npc-token', kind: 'npc', name: '老乔', entryId: 'npc:npc-joe' }],
@@ -73,11 +75,10 @@ describe('optimistic room projection', () => {
     const result = applyOptimisticOps({ scene: npcScene, campaign: null }, [
       { op: 'removeFromInitiative', entryId: 'npc-initiative' },
     ]);
-    expect(result?.scene.tokens).toEqual([]);
-    expect(result?.scene.initiative).toEqual([]);
+    expect(result).toBeNull();
   });
 
-  it('removes only an unlinked manual initiative entry', () => {
+  it('waits for the server encounter snapshot when removing a manual combatant', () => {
     const manualScene: Scene = {
       ...scene,
       initiative: [{ id: 'manual', name: 'Lair action', value: 20, source: 'dm', sessionId: null, tokenId: null, active: false }],
@@ -85,8 +86,7 @@ describe('optimistic room projection', () => {
     const result = applyOptimisticOps({ scene: manualScene, campaign: null }, [
       { op: 'removeFromInitiative', entryId: 'manual' },
     ]);
-    expect(result?.scene.tokens).toBe(manualScene.tokens);
-    expect(result?.scene.initiative).toEqual([]);
+    expect(result).toBeNull();
   });
 
   it('projects a pixel-precise fog reveal box without changing the legacy grid', () => {

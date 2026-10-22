@@ -29,7 +29,9 @@
   ],
   "r2_buckets": [
     { "binding": "ROOM_ASSETS" },
-    { "binding": "REFERENCE_DATA" }
+    // A stable name also lets `wrangler r2 object put --local` seed the exact
+    // bucket consumed by `wrangler dev`.
+    { "binding": "REFERENCE_DATA", "bucket_name": "dnd-dm-tool-reference-data" }
   ],
 
   "durable_objects": {

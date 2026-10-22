@@ -23,6 +23,9 @@ export function useScene(): SceneState {
     online: connection.lastOnline,
     connected: connection.connected,
     campaign: connection.lastState?.campaign ?? null,
+    encounter: connection.lastState?.encounter ?? null,
+    activeSceneId: connection.lastState?.activeSceneId ?? connection.lastState?.scene.id ?? null,
+    viewingInactive: connection.lastState?.viewingInactive ?? false,
   }));
 
   useEffect(() => connection.onMessage((message) => {
@@ -32,11 +35,14 @@ export function useScene(): SceneState {
       setState(current => ({
         ...current,
         scene: message.scene!,
-        role: uiRole(effectiveRole),
+        role: message.viewingInactive === true ? 'spectator' : uiRole(effectiveRole),
         roomRole: rawRole(effectiveRole),
         viewer,
         revision: typeof message.revision === 'number' ? message.revision : null,
         campaign: message.campaign ?? null,
+        encounter: message.encounter ?? null,
+        activeSceneId: typeof message.activeSceneId === 'string' ? message.activeSceneId : message.scene!.id,
+        viewingInactive: message.viewingInactive === true,
         connected: true,
       }));
     } else if (message.type === 'meta') {
@@ -55,6 +61,9 @@ export function useScene(): SceneState {
         online: 0,
         connected: false,
         campaign: null,
+        encounter: null,
+        activeSceneId: null,
+        viewingInactive: false,
       });
     } else if (message.type === 'error') {
       console.warn('[ws]', typeof message.message === 'string' ? message.message : 'Room WebSocket error');

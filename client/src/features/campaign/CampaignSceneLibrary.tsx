@@ -1,10 +1,11 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import type { Campaign, SceneFolder, Scene } from '../../types';
+import type { Campaign, SceneFolder } from '../../types';
 import { api } from '../../api';
 import { connection } from '../../ws';
 import { preloadDecodedImage, waitForDecodedImage } from '../assets/imageCache';
 import type { SceneCatalogEntry } from './useSceneCatalog';
 import ExplorerRow, { ExplorerAction } from '../../components/explorer/ExplorerRow';
+import { useTabletopSettings } from '../settings/TabletopSettingsContext';
 
 export interface CampaignSceneGroup {
   folder: SceneFolder | null;
@@ -18,7 +19,7 @@ export function groupCampaignScenes(
   assignments: Readonly<Record<string, string>>,
 ): CampaignSceneGroup[] {
   const validFolderIds = new Set(folders.map(folder => folder.id));
-  const grouped = folders.map(folder => ({
+  const grouped: CampaignSceneGroup[] = folders.map(folder => ({
     folder,
     sceneIds: sceneIds.filter(sceneId => assignments[sceneId] === folder.id),
   }));
@@ -29,14 +30,17 @@ export function groupCampaignScenes(
 
 interface Props {
   role: string;
+  canManage?: boolean;
+  canReadAll?: boolean;
   campaign: Campaign | null;
   catalog: Record<string, SceneCatalogEntry>;
-  currentSceneId?: string;
-  onPreview: (scene: Scene) => void;
+  viewedSceneId?: string;
+  activeSceneId?: string | null;
 }
 
-export default function CampaignSceneLibrary({ role, campaign, catalog, currentSceneId, onPreview }: Props) {
-  const isDm = role === 'dm';
+export default function CampaignSceneLibrary({ role, canManage = false, canReadAll = false, campaign, catalog, viewedSceneId, activeSceneId }: Props) {
+  const isDm = canManage || role === 'dm';
+  const { confirmAction } = useTabletopSettings();
   const [newFolderName, setNewFolderName] = useState('');
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [folderName, setFolderName] = useState('');
@@ -45,8 +49,8 @@ export default function CampaignSceneLibrary({ role, campaign, catalog, currentS
 
   const visibleSceneIds = useMemo(() => {
     const ids = campaign?.sceneIds ?? [];
-    return isDm ? ids : ids.filter(sceneId => catalog[sceneId]?.unlocked);
-  }, [campaign?.sceneIds, catalog, isDm]);
+    return isDm || canReadAll ? ids : ids.filter(sceneId => catalog[sceneId]?.unlocked);
+  }, [campaign?.sceneIds, catalog, isDm, canReadAll]);
   const folders = campaign?.sceneFolders ?? [];
   const assignments = campaign?.sceneFolderAssignments ?? {};
   const groups = useMemo(
@@ -87,18 +91,14 @@ export default function CampaignSceneLibrary({ role, campaign, catalog, currentS
 
   const openScene = async (sceneId: string) => {
     if (loadingSceneId) return;
-    if (!isDm) {
-      api.scene(sceneId).then(onPreview).catch(() => {});
-      return;
-    }
-    if (sceneId === currentSceneId) return;
+    if (sceneId === viewedSceneId) { connection.viewScene(null); return; }
     const mapImage = catalog[sceneId]?.mapImage;
     if (mapImage) {
       setLoadingSceneId(sceneId);
       try { await waitForDecodedImage(mapImage); } catch { /* The board retries after switching. */ }
       setLoadingSceneId(null);
     }
-    connection.sendControl({ type: 'switchScene', sceneId });
+    api.scene(sceneId).then(candidate => connection.viewScene(candidate)).catch(() => {});
   };
 
   if (!campaign) return <div className="p-3 text-xs text-zinc-500">正在读取战役地图…</div>;
@@ -162,7 +162,7 @@ export default function CampaignSceneLibrary({ role, campaign, catalog, currentS
                 <>
                   <ExplorerAction label="F2" title="重命名文件夹" onClick={() => { setEditingFolderId(group.folder!.id); setFolderName(group.folder!.name); }} />
                   <ExplorerAction label="×" title="删除文件夹；地图会移到未分组" danger onClick={() => {
-                    if (confirm(`删除文件夹“${group.folder!.name}”？其中地图会移到“未分组”。`)) {
+                    if (confirmAction(`删除文件夹“${group.folder!.name}”？其中地图会移到“未分组”。`)) {
                       connection.sendControl({ type: 'deleteSceneFolder', folderId: group.folder!.id });
                     }
                   }} />
@@ -177,11 +177,12 @@ export default function CampaignSceneLibrary({ role, campaign, catalog, currentS
                   <ExplorerRow
                     depth={1}
                     kind="file"
-                    active={sceneId === currentSceneId}
+                    active={sceneId === viewedSceneId}
                     onClick={() => { void openScene(sceneId); }}
                     title={entry?.name ?? sceneId}
-                    label={<>{entry?.name ?? sceneId}{loadingSceneId === sceneId ? ' · 加载中…' : ''}</>}
-                    actions={isDm ? (
+                    label={<>{entry?.name ?? sceneId}{loadingSceneId === sceneId ? ' · 加载中…' : sceneId === activeSceneId ? ' · 当前' : sceneId === viewedSceneId ? ' · 查看中' : ''}</>}
+                    actions={isDm ? (<div className="flex items-center gap-1">
+                    {sceneId !== activeSceneId && <ExplorerAction label="激活" title="激活并同步给全桌" onClick={() => connection.activateScene(sceneId)} />}
                     <select
                       value={assignments[sceneId] ?? ''}
                       onChange={event => connection.sendControl({
@@ -196,7 +197,7 @@ export default function CampaignSceneLibrary({ role, campaign, catalog, currentS
                     >
                       <option value="">未分组</option>
                       {folders.map(folder => <option key={folder.id} value={folder.id}>{folder.name}</option>)}
-                    </select>) : undefined}
+                    </select></div>) : undefined}
                   />
                 </div>
               );

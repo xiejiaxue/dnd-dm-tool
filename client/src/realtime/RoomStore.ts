@@ -38,6 +38,7 @@ export class RoomStore {
   private visible: RoomSnapshot | null = null;
   private online = 0;
   private isConnected = false;
+  private viewedScene: RoomSnapshot['scene'] | null = null;
 
   constructor(private readonly dependencies: RoomStoreDependencies) {}
 
@@ -54,6 +55,7 @@ export class RoomStore {
     this.visible = null;
     this.online = 0;
     this.isConnected = false;
+    this.viewedScene = null;
   }
 
   markDisconnected(): void {
@@ -69,14 +71,20 @@ export class RoomStore {
     if (!message.scene) return;
     const viewer = asViewer(message.viewer);
     const effectiveRole = viewer?.roomRole ?? message.roomRole ?? message.role;
+    const previousActiveSceneId = this.authoritative?.scene.id ?? null;
     const next: RoomSnapshot = {
       scene: message.scene,
       role: uiRole(effectiveRole),
       roomRole: rawRole(effectiveRole),
       campaign: message.campaign ?? null,
+      encounter: message.encounter ?? null,
       viewer,
       revision: typeof message.revision === 'number' ? message.revision : null,
+      activeSceneId: message.scene.id,
+      viewingInactive: false,
     };
+    if (previousActiveSceneId && previousActiveSceneId !== next.scene.id) this.viewedScene = null;
+    if (this.viewedScene?.id === next.scene.id) this.viewedScene = null;
     this.authoritative = next;
     this.isConnected = true;
     this.dropConfirmed(next.revision);
@@ -136,6 +144,12 @@ export class RoomStore {
     };
   }
 
+  setViewedScene(scene: RoomSnapshot['scene'] | null): void {
+    if (!this.authoritative) return;
+    this.viewedScene = scene?.id === this.authoritative.scene.id ? null : scene;
+    this.rebuildVisible();
+  }
+
   private dropConfirmed(revision: number | null): boolean {
     if (revision === null) return false;
     const before = this.pending.length;
@@ -157,7 +171,16 @@ export class RoomStore {
       const next = applyOptimisticOps(projection, preview.ops);
       if (next) projection = next;
     }
-    this.visible = { ...this.authoritative, ...projection };
+    const viewingInactive = Boolean(this.viewedScene && this.viewedScene.id !== this.authoritative.scene.id);
+    this.visible = {
+      ...this.authoritative,
+      ...projection,
+      scene: viewingInactive ? this.viewedScene! : projection.scene,
+      encounter: viewingInactive ? null : this.authoritative.encounter,
+      role: viewingInactive ? 'spectator' : this.authoritative.role,
+      activeSceneId: this.authoritative.scene.id,
+      viewingInactive,
+    };
     this.dependencies.onSnapshot(this.visible);
   }
 }

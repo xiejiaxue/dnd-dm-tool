@@ -2,6 +2,7 @@ import { Group, Circle, Image as KImage, Text, Ring } from 'react-konva';
 import { memo, useEffect, useState } from 'react';
 import { useImage } from '../useImage';
 import type { Token } from '../types';
+import { conditionDefinition } from '../features/conditions/model';
 
 interface Props {
   token: Token;
@@ -10,13 +11,14 @@ interface Props {
   draggable?: boolean;
   /** Includes grid settings so ignored callback identities cannot go stale. */
   interactionKey: string;
-  onSelect: () => void;
+  onSelect: (additive: boolean) => void;
   onDragEnd: (x: number, y: number) => void;
   onContextMenu: () => void;
 }
 
 function TokenShape({ token, active, selected, draggable = true, onSelect, onDragEnd, onContextMenu }: Props) {
   const img = useImage(token.avatar || null);
+  const renderableImage = img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0 ? img : null;
   const [pulse, setPulse] = useState(0);
 
   // Animate the active-turn gold ring: oscillate pulse 0..4 while active.
@@ -34,22 +36,24 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
   return (
     <Group
       x={token.x} y={token.y}
+      opacity={token.hidden ? 0.62 : 1}
       draggable={draggable}
       onDragEnd={(e) => onDragEnd(e.target.x(), e.target.y())}
-      onClick={onSelect}
-      onTap={onSelect}
+      onClick={(event) => onSelect(Boolean(event.evt.shiftKey || event.evt.metaKey || event.evt.ctrlKey))}
+      onTap={() => onSelect(false)}
       onContextMenu={(e) => { e.evt.preventDefault(); onContextMenu(); }}
     >
       {/* 底圆（颜色环 + 选中高亮） */}
       <Circle
         width={token.size} height={token.size}
         fill={token.color || '#333'}
-        stroke={selected ? '#f59e0b' : token.color || '#000'}
+        stroke={selected ? '#f59e0b' : token.hidden ? '#a78bfa' : token.color || '#000'}
         strokeWidth={selected ? 3 : 1.5}
+        dash={token.hidden ? [7, 5] : undefined}
       />
       {/* 头像：圆形裁剪（clipFunc 画圆裁出圆形图）。底圆以 (0,0) 为中心，
           故把头像整体平移 -size/2 使其裁剪圆心也落在 (0,0)，与底圆重合。 */}
-      {img && (
+      {renderableImage && (
         <Group
           x={-token.size / 2}
           y={-token.size / 2}
@@ -59,7 +63,7 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
             ctx.closePath();
           }}
         >
-          <KImage image={img} width={token.size} height={token.size} perfectDrawEnabled={false} listening={false} />
+          <KImage image={renderableImage} width={token.size} height={token.size} perfectDrawEnabled={false} listening={false} />
         </Group>
       )}
       {/* 当前回合高亮：金色脉冲环 */}
@@ -90,7 +94,28 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
           </Group>
         );
       })()}
-      <Text text={token.name} y={token.size / 2 + 2} width={token.size} align="center"
+      {token.hidden && (
+        <Text text="仅主持人" x={-token.size / 2} y={-token.size / 2 - 16} width={token.size} align="center"
+          fill="#c4b5fd" fontSize={10} fontStyle="bold" listening={false} />
+      )}
+      {(token.conditions ?? []).slice(0, 4).map((condition, index) => {
+        const definition = conditionDefinition(condition.id);
+        const radius = Math.max(8, token.size * 0.11);
+        const x = -token.size / 2 + radius + index * (radius * 1.8);
+        const y = token.size / 2 - radius;
+        return (
+          <Group key={condition.id} x={x} y={y} listening={false}>
+            <Circle radius={radius} fill="#18181b" stroke={definition.tone} strokeWidth={2} />
+            <Text text={definition.badge} x={-radius} y={-radius * 0.7} width={radius * 2} align="center"
+              fill={definition.tone} fontSize={radius * 1.15} fontStyle="bold" />
+            {condition.remainingRounds !== null && (
+              <Text text={String(condition.remainingRounds)} x={radius * 0.35} y={-radius * 1.25} width={radius * 1.2}
+                align="center" fill="#fafafa" fontSize={Math.max(8, radius * 0.85)} fontStyle="bold" />
+            )}
+          </Group>
+        );
+      })}
+      <Text text={token.name} x={-token.size / 2} y={token.size / 2 + 2} width={token.size} align="center"
         fill={token.kind === 'monster' ? '#ef4444' : token.kind === 'npc' ? '#38bdf8' : '#22c55e'} fontSize={12} fontStyle="bold" />
     </Group>
   );

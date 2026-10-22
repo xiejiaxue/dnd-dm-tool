@@ -1,9 +1,13 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, type CurrentUser, type RoomSummary, type RoomTemplateSummary } from './api';
+import type { StandalonePageRegistration } from './extensions/registry';
+import Icon, { DiceArtwork } from './components/Icon';
 import { looksLikeRoomEntry } from './routing';
 
 interface Props {
   inviteError?: string | null;
+  standalonePages: StandalonePageRegistration[];
+  onOpenStandalonePage: (path: string) => void;
   onOpenRoom: (slug: string) => void;
   onJoinRoom: (value: string) => void | Promise<void>;
 }
@@ -24,46 +28,32 @@ function RoomList({ rooms, deletingSlug, onOpenRoom, onDeleteRoom }: {
   onOpenRoom: (slug: string) => void;
   onDeleteRoom: (room: RoomSummary) => void;
 }) {
-  return (
-    <ul className="space-y-2">
-      {rooms.map(room => (
-        <li key={room.id || room.slug} className="flex min-w-0 items-stretch overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950/55 transition-colors focus-within:border-amber-500/50 hover:border-amber-500/50 hover:bg-zinc-800/80">
-          <button
-            type="button"
-            onClick={() => onOpenRoom(room.slug)}
-            disabled={deletingSlug === room.slug}
-            className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label={`进入房间 ${room.name}`}
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium text-zinc-100" title={room.name}>{room.name}</span>
-              <span className="mt-1 block truncate text-xs text-zinc-500" title={`/r/${room.slug}`}>
-                {ROLE_LABELS[room.role ?? ''] ?? room.role ?? '成员'} · /r/{room.slug}
-              </span>
-            </span>
-            <span className="shrink-0 text-sm text-zinc-500 transition-colors group-hover:text-amber-300">进入 →</span>
-          </button>
-          {room.role === 'host' && (
-            <button
-              type="button"
-              onClick={() => onDeleteRoom(room)}
-              disabled={deletingSlug !== null}
-              className="m-2 ml-0 shrink-0 rounded-md px-3 text-xs text-zinc-500 transition-colors hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={`删除房间 ${room.name}`}
-            >{deletingSlug === room.slug ? '删除中…' : '删除'}</button>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
+  return <div className="room-grid">{rooms.map(room => <div className="room-card-wrapper" key={room.id || room.slug}>
+    <a className="room-card" href={`/r/${encodeURIComponent(room.slug)}`} aria-disabled={deletingSlug === room.slug} onClick={event => {
+      if (deletingSlug === room.slug) { event.preventDefault(); return; }
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+      event.preventDefault(); onOpenRoom(room.slug);
+    }} aria-label={`进入房间 ${room.name}`}>
+      <div className="room-card-top"><span className={`visibility ${MANAGER_ROLES.has(room.role ?? '') ? 'host' : ''}`}><span/>{room.platformReadOnly ? '平台只读' : ROLE_LABELS[room.role ?? ''] ?? '成员'}</span></div>
+      <h3>{room.name}</h3><p className="room-slug">ROOM / {room.slug}</p>
+      <div className="chip-row"><span className="chip">{room.platformReadOnly ? '只读浏览' : MANAGER_ROLES.has(room.role ?? '') ? '主持与管理' : '参与冒险'}</span><span className="chip">游戏桌面</span></div>
+      <footer><span>你的故事，随时继续</span><span className="room-enter">进入房间 <Icon name="arrow"/></span></footer>
+    </a>
+    {room.role === 'host' && <button className="room-delete" type="button" onClick={() => onDeleteRoom(room)} disabled={deletingSlug !== null} aria-label={`删除房间 ${room.name}`}>{deletingSlug === room.slug ? '删除中…' : '删除'}</button>}
+  </div>)}</div>;
 }
 
-export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
+export default function Lobby({ inviteError, standalonePages, onOpenStandalonePage, onOpenRoom, onJoinRoom }: Props) {
   const [me, setMe] = useState<CurrentUser | null>(null);
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [templates, setTemplates] = useState<RoomTemplateSummary[]>([]);
   const [templateId, setTemplateId] = useState('');
   const [name, setName] = useState('');
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('all');
+  const nameRef = useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const [roomEntry, setRoomEntry] = useState('');
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -145,137 +135,64 @@ export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
     }
   };
 
-  const managedRooms = rooms.filter(room => MANAGER_ROLES.has(room.role ?? ''));
-  const joinedRooms = rooms.filter(room => !MANAGER_ROLES.has(room.role ?? ''));
-
+  const focusField = (field: HTMLInputElement | null) => {
+    field?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
+    field?.focus({ preventScroll: true });
+  };
+  const visibleRooms = rooms.filter(room => `${room.name} ${room.slug}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+  const managedRooms = visibleRooms.filter(room => !room.platformReadOnly && MANAGER_ROLES.has(room.role ?? ''));
+  const platformRooms = visibleRooms.filter(room => room.platformReadOnly);
+  const joinedRooms = visibleRooms.filter(room => !room.platformReadOnly && !MANAGER_ROLES.has(room.role ?? ''));
+  const filteredRooms = filter === 'host' ? managedRooms : filter === 'joined' ? joinedRooms : visibleRooms;
+  const hasFilter = Boolean(query.trim()) || filter !== 'all';
+  const hosted = rooms.filter(room => !room.platformReadOnly && MANAGER_ROLES.has(room.role ?? '')).length;
+  const selectedTemplate = templates.find(template => template.id === templateId);
+  const roomList = (list: RoomSummary[]) => <RoomList rooms={list} deletingSlug={deletingSlug} onOpenRoom={onOpenRoom} onDeleteRoom={room => { void removeRoom(room); }}/>;
   return (
-    <main className="h-full overflow-y-auto bg-zinc-950 px-4 py-6 sm:py-10 md:px-8">
-      <div className="mx-auto w-full max-w-5xl">
-        <header className="rounded-xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-6 shadow-2xl sm:p-8">
-          <p className="text-sm font-medium text-amber-400">DND DM 追踪</p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">开始或继续一场冒险</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
-                从已有房间继续，输入邀请码、粘贴朋友发来的邀请链接，或创建一张新的游戏桌面。
-              </p>
-            </div>
-            {me && (
-              <p className="w-fit shrink-0 rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1.5 text-xs text-zinc-400">
-                当前身份：<span className="text-zinc-200">{me.displayName ?? me.id}</span>
-              </p>
-            )}
+    <div className="swiss-lobby">
+      <a className="skip-link" href="#room-directory">跳转到房间列表</a>
+      <aside className="navigation-rail">
+        <button className="brand-mark" onClick={() => pageRef.current?.scrollTo({ top: 0 })} aria-label="DM 追踪首页"><span className="brand-symbol"><Icon name="dice"/></span><span>DM<span className="brand-second">追踪</span></span></button>
+        <div className="nav-caption">冒险工作空间 / WORKSPACE</div>
+        <nav aria-label="主导航">
+          <button className="rail-destination active" aria-current="page" onClick={() => pageRef.current?.scrollTo({ top: 0 })}><Icon name="grid"/><span>冒险大厅</span><span className="nav-index">01</span></button>
+          <button className="rail-destination" onClick={() => focusField(searchRef.current)}><Icon name="users"/><span>我的房间</span><span className="nav-index">02</span></button>
+          {standalonePages.map(page => <button key={page.id} className="rail-destination" onClick={() => onOpenStandalonePage(page.path)}><Icon name="dice"/><span>角色卡</span><span className="nav-index">03</span></button>)}
+        </nav>
+        <div className="rail-note"><span className="tiny-label">MADE FOR YOUR STORIES</span><p>每一次掷骰，<br/>都是故事的开始。</p><span className="rail-note-mark" aria-hidden="true">✳</span></div>
+        <div className="rail-account"><span className="avatar"><Icon name="users"/></span><div><strong>{me?.displayName || '冒险者'}</strong><small>{loading ? '正在连接…' : me?.platformRole === 'owner' ? '平台所有者' : me ? '已连接 · 游客身份' : '连接未完成'}</small></div></div>
+      </aside>
+      <div className="lobby-scroll" ref={pageRef}>
+        <header className="app-topbar"><span>DM 追踪 <span className="breadcrumb-divider">/</span> <strong>冒险大厅</strong></span><span className="topbar-note">一起创造，下一个故事。<span className="status-dot"/></span></header>
+        <main className="lobby-main">
+          <section className="lobby-hero"><div className="hero-copy"><span className="eyebrow">01 / THE ADVENTURE LOBBY</span><h1>下一场冒险，<br/>从这里开始<span className="accent">。</span></h1><p>召集伙伴，铺开地图。把想象中的世界，变成共同的故事。</p><div className="hero-actions"><button className="button-primary" onClick={() => focusField(nameRef.current)}><Icon name="plus"/> 创建房间</button><button className="text-link" onClick={() => focusField(searchRef.current)}>继续我的冒险 <Icon name="arrow"/></button></div></div><DiceArtwork/></section>
+          <div className="lobby-meta"><span><b>{String(rooms.filter(room => !room.platformReadOnly).length).padStart(2, '0')}</b> 我的房间</span><span><b>{String(hosted).padStart(2, '0')}</b> 我主持的</span><span className="meta-note">你的想象，就是边界。</span></div>
+          {(inviteError || error) && <div className="lobby-error" role="alert"><span>{inviteError || error}</span>{error && <button disabled={loading} onClick={() => void load()}>重新读取</button>}</div>}
+          <div className="lobby-layout">
+            <section id="room-directory" tabIndex={-1} aria-label="我的房间">
+              <div className="section-title"><span className="section-number">01</span><h2>我的房间</h2><span className="count" role="status">{filteredRooms.length}</span><button className="refresh-button" disabled={loading} onClick={() => void load()} aria-label="刷新房间列表"><Icon name="refresh"/> {loading ? '读取中' : '刷新'}</button></div>
+              <label className="search-field"><Icon name="search"/><input ref={searchRef} type="search" aria-label="搜索房间" placeholder="搜索房间名称或编号…" value={query} onChange={event => setQuery(event.target.value)}/></label>
+              <div className="room-filters" aria-label="筛选房间">{[['all', '全部房间'], ['host', '我管理的'], ['joined', '我加入的']].map(([value, label]) => <button key={value} aria-pressed={filter === value} className={filter === value ? 'selected' : ''} onClick={() => setFilter(value)}>{label}</button>)}<span className="section-english">YOUR ADVENTURES</span></div>
+              {loading ? <div className="empty-state" role="status"><Icon name="refresh"/><h3>正在寻找你的冒险…</h3><p>正在读取已加入的房间。</p></div> : filteredRooms.length ? filter !== 'all' ? roomList(filteredRooms) : <>
+                {managedRooms.length > 0 && <><h3 className="room-group-heading">我管理的 / HOSTING</h3>{roomList(managedRooms)}</>}
+                {joinedRooms.length > 0 && <><h3 className="room-group-heading">我加入的 / PLAYING</h3>{roomList(joinedRooms)}</>}
+                {platformRooms.length > 0 && <><h3 className="room-group-heading">全站房间 · 只读 / PLATFORM</h3>{roomList(platformRooms)}</>}
+              </> : <div className="empty-state"><Icon name="dice"/><h3>{hasFilter ? '没有找到匹配的房间' : '下一段故事，等你开场'}</h3><p>{hasFilter ? '试试其他关键词，或查看全部房间。' : '创建一间房间，或通过邀请加入伙伴的游戏。'}</p><button className="button-secondary" onClick={() => { if (hasFilter) { setQuery(''); setFilter('all'); } else focusField(nameRef.current); }}>{hasFilter ? '清除筛选' : <><Icon name="plus"/> 创建第一间房间</>}</button></div>}
+              {standalonePages.map(page => <section key={page.id} className="character-entry"><span className="eyebrow">CHARACTER / 角色档案</span><h2>{page.label}</h2><p>{page.description}</p><button className="button-secondary" onClick={() => onOpenStandalonePage(page.path)}>打开角色卡 <Icon name="arrow"/></button></section>)}
+            </section>
+            <aside className="lobby-utilities">
+              <section className="create-room"><div className="create-heading"><span className="eyebrow">NEW ADVENTURE</span><Icon name="plus"/></div><h2>创建你的房间</h2><p className="form-intro">一张新游戏桌，一个新世界。</p><form onSubmit={createRoom}>
+                <label htmlFor="room-name">房间名称</label><input ref={nameRef} id="room-name" value={name} onChange={event => setName(event.target.value)} maxLength={80} required autoComplete="off" placeholder="例如：周五的龙与地下城" aria-describedby="room-name-hint"/>
+                <label htmlFor="room-template">跑团模板</label><select id="room-template" value={templateId} onChange={event => setTemplateId(event.target.value)}><option value="">空白冒险</option>{templates.map(template => <option key={template.id} value={template.id}>{template.name}</option>)}</select>
+                {selectedTemplate && <div className="template-preview"><strong>{selectedTemplate.name}</strong><p>{selectedTemplate.description}</p><p>{selectedTemplate.sceneCount} 个场景 · {selectedTemplate.npcCount} 个 NPC 档案</p></div>}
+                <p id="room-name-hint" className="field-hint">你将成为房主，可以管理地图、桌面与玩家邀请。</p><button type="submit" className="button-primary" disabled={!name.trim() || creating || loading}>{creating ? '正在创建…' : '创建并进入'}<Icon name="arrow"/></button>
+              </form></section>
+              <form className="join-room" onSubmit={joinRoom}><span className="eyebrow">JOIN THE TABLE</span><h2>已有邀请？即刻落座。</h2><p>输入邀请码、房间编号，或粘贴本站邀请链接。</p><label htmlFor="room-entry">房间信息</label><input id="room-entry" value={roomEntry} onChange={event => setRoomEntry(event.target.value)} autoComplete="off" spellCheck={false} placeholder="邀请码、房间编号或邀请链接" required/><button className="button-secondary" type="submit" disabled={!roomEntry.trim() || joining}>{joining ? '正在进入…' : '进入房间'}<Icon name="arrow"/></button></form>
+            </aside>
           </div>
-        </header>
-
-        {(inviteError || error) && (
-          <div role="alert" className="mt-4 rounded-lg border border-red-500/30 bg-red-950/30 px-4 py-3 text-sm text-red-300">
-            {inviteError || error}
-          </div>
-        )}
-
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-          <section aria-labelledby="my-rooms-heading" className="order-2 min-w-0 rounded-xl border border-zinc-800 bg-zinc-900/80 p-5 sm:p-6 lg:order-1">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <div>
-                <h2 id="my-rooms-heading" className="text-lg font-semibold">我的房间</h2>
-                <p className="mt-1 text-xs text-zinc-500">按你在房间中的职责归档</p>
-              </div>
-              <button type="button" onClick={() => { void load(); }} disabled={loading} className="shrink-0 text-xs text-zinc-400 hover:text-white disabled:opacity-50">
-                {loading ? '读取中…' : '刷新'}
-              </button>
-            </div>
-            {loading ? (
-              <p className="rounded-lg border border-dashed border-zinc-800 py-10 text-center text-sm text-zinc-500">正在读取房间…</p>
-            ) : rooms.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-zinc-800 px-5 py-10 text-center text-sm leading-relaxed text-zinc-500">
-                还没有加入任何房间。你可以在右侧输入邀请码或邀请链接，或创建自己的第一个房间。
-              </p>
-            ) : (
-              <div className="space-y-6">
-                {managedRooms.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">我管理的</h3>
-                    <RoomList rooms={managedRooms} deletingSlug={deletingSlug} onOpenRoom={onOpenRoom} onDeleteRoom={room => { void removeRoom(room); }} />
-                  </div>
-                )}
-                {joinedRooms.length > 0 && (
-                  <div>
-                    <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">我加入的</h3>
-                    <RoomList rooms={joinedRooms} deletingSlug={deletingSlug} onOpenRoom={onOpenRoom} onDeleteRoom={room => { void removeRoom(room); }} />
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-
-          <aside className="order-1 space-y-6 lg:order-2">
-            <form onSubmit={joinRoom} className="rounded-xl border border-emerald-500/20 bg-zinc-900/80 p-5 sm:p-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-300" aria-hidden="true">↗</div>
-              <h2 className="mt-4 text-lg font-semibold">进入房间</h2>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">输入邀请码、房间编号，或粘贴本站的房间地址、玩家邀请链接。</p>
-              <label className="mt-4 block text-xs text-zinc-400" htmlFor="room-entry">房间信息</label>
-              <input
-                id="room-entry"
-                value={roomEntry}
-                onChange={event => setRoomEntry(event.target.value)}
-                autoComplete="off"
-                spellCheck={false}
-                placeholder="邀请码、房间编号或邀请链接"
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950/70 px-3 py-2.5 text-sm outline-none transition-colors focus:border-emerald-500"
-              />
-              <button
-                type="submit"
-                disabled={!roomEntry.trim() || joining}
-                className="mt-3 w-full rounded-lg bg-emerald-500/15 px-3 py-2.5 text-sm font-medium text-emerald-300 hover:bg-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-              >{joining ? '正在进入…' : '进入房间'}</button>
-            </form>
-
-            <form onSubmit={createRoom} className="rounded-xl border border-amber-500/20 bg-zinc-900/80 p-5 sm:p-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-xl text-amber-300" aria-hidden="true">＋</div>
-              <h2 className="mt-4 text-lg font-semibold">创建房间</h2>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">你会成为房主，可以管理桌面、地图和玩家邀请。</p>
-              <label className="mt-4 block text-xs text-zinc-400" htmlFor="room-name">房间名称</label>
-              <input
-                id="room-name"
-                value={name}
-                onChange={event => setName(event.target.value)}
-                maxLength={80}
-                autoComplete="off"
-                placeholder="例如：周五龙与地下城"
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950/70 px-3 py-2.5 text-sm outline-none transition-colors focus:border-amber-500"
-              />
-              <label className="mt-4 block text-xs text-zinc-400" htmlFor="room-template">跑团模板</label>
-              <select
-                id="room-template"
-                value={templateId}
-                onChange={event => setTemplateId(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950/70 px-3 py-2.5 text-sm text-zinc-200 outline-none transition-colors focus:border-amber-500"
-              >
-                <option value="">空白冒险</option>
-                {templates.map(template => (
-                  <option key={template.id} value={template.id}>{template.name}</option>
-                ))}
-              </select>
-              {templateId && (() => {
-                const selected = templates.find(template => template.id === templateId);
-                return selected ? (
-                  <div className="mt-2 rounded-lg border border-amber-500/15 bg-amber-500/5 px-3 py-2 text-xs leading-relaxed text-zinc-400">
-                    <div className="font-medium text-amber-300">{selected.name}</div>
-                    <div className="mt-0.5">{selected.description}</div>
-                    <div className="mt-1 text-zinc-500">{selected.sceneCount} 个场景 · {selected.npcCount} 个 NPC 档案</div>
-                  </div>
-                ) : null;
-              })()}
-              <button
-                type="submit"
-                disabled={!name.trim() || creating}
-                className="mt-3 w-full rounded-lg bg-amber-500/15 px-3 py-2.5 text-sm font-medium text-amber-300 hover:bg-amber-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-              >{creating ? '正在创建…' : '创建并进入'}</button>
-            </form>
-          </aside>
-        </div>
+          <footer className="page-footer"><span>DM 追踪 / 为共同的故事而造</span><span>想象无界 · 冒险继续 <Icon name="arrow"/></span></footer>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }

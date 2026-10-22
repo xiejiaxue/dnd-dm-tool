@@ -38,9 +38,10 @@ export function findNpcForToken(token: Pick<Token, 'kind' | 'entryId' | 'name'>,
 export function npcQuickReferenceForToken(
   token: Pick<Token, 'id' | 'kind' | 'entryId' | 'name' | 'hp'>,
   records: readonly NpcRecord[],
+  options: { allowFallback?: boolean } = {},
 ): NpcRecord | null {
   const linked = findNpcForToken(token, records);
-  if (linked || token.kind !== 'npc') return linked;
+  if (linked || token.kind !== 'npc' || options.allowFallback === false) return linked;
   const hp = token.hp ? `${token.hp.current} / ${token.hp.max}` : '未设置';
   return {
     id: npcIdFromEntryId(token.entryId) ?? `token-${token.id}`,

@@ -42,4 +42,34 @@ describe('RoomStore', () => {
     expect(requestResync).toHaveBeenCalledOnce();
     expect(store.lastState?.revision).toBe(2);
   });
+
+  it('views an inactive scene locally without changing the authoritative active scene', () => {
+    const store = new RoomStore({ onSnapshot: vi.fn(), requestResync: vi.fn() });
+    const inactive = { ...scene, id: 'scene-2', name: 'Preview' };
+    store.acceptState({ type: 'state', scene, role: 'dm', revision: 0 });
+
+    store.setViewedScene(inactive);
+
+    expect(store.lastState?.scene.id).toBe('scene-2');
+    expect(store.lastState?.activeSceneId).toBe('scene-1');
+    expect(store.lastState?.viewingInactive).toBe(true);
+    expect(store.lastState?.role).toBe('spectator');
+
+    store.setViewedScene(null);
+    expect(store.lastState?.scene.id).toBe('scene-1');
+    expect(store.lastState?.viewingInactive).toBe(false);
+    expect(store.lastState?.role).toBe('dm');
+  });
+
+  it('returns to the active scene when the table activates another scene', () => {
+    const store = new RoomStore({ onSnapshot: vi.fn(), requestResync: vi.fn() });
+    store.acceptState({ type: 'state', scene, role: 'dm', revision: 0 });
+    store.setViewedScene({ ...scene, id: 'scene-preview' });
+
+    store.acceptState({ type: 'state', scene: { ...scene, id: 'scene-2' }, role: 'dm', revision: 1 });
+
+    expect(store.lastState?.scene.id).toBe('scene-2');
+    expect(store.lastState?.activeSceneId).toBe('scene-2');
+    expect(store.lastState?.viewingInactive).toBe(false);
+  });
 });

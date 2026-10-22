@@ -158,6 +158,8 @@ export function emptyNpc(): NpcRecord {
     faction: '未分类',
     groupPath: ['未分类'],
     notesMarkdown: '',
+    playerAccess: 'none',
+    publicDescription: '',
     sourceFile: null,
     updatedAt: Date.now(),
   });

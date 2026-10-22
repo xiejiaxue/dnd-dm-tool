@@ -1,4 +1,5 @@
 import type { Op } from '../types';
+import type { Scene } from '../types';
 import { newCommandId, type RoomMessageListener, type SocketMessage, type Viewer } from './protocol';
 import { RoomStore } from './RoomStore';
 import { SocketTransport, type TransportStatus } from './SocketTransport';
@@ -59,6 +60,15 @@ export class RoomConnection {
     return this.store.pushPreview(newCommandId(), operations);
   }
 
+  viewScene(scene: Scene | null): void {
+    this.store.setViewedScene(scene);
+  }
+
+  activateScene(sceneId: string): void {
+    this.store.setViewedScene(null);
+    this.transport.send({ type: 'switchScene', sceneId });
+  }
+
   sendControl(message: unknown): void {
     this.transport.send(message);
   }
@@ -93,7 +103,12 @@ export class RoomConnection {
       return;
     }
     if (message.type === 'patch') {
+      const previousRevision = this.store.lastState?.revision ?? null;
       this.store.acceptPatch(message);
+      const committedRevision = typeof message.revision === 'number' ? message.revision : null;
+      if (committedRevision !== null && committedRevision !== previousRevision && this.store.lastState?.revision === committedRevision) {
+        this.emit({ ...message, type: 'committedOps' });
+      }
       return;
     }
     if (message.type === 'ack') {

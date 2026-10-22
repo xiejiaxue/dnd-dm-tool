@@ -1,4 +1,4 @@
-import { FOG_CELL, fogGridSize, type Campaign, type Scene, type SceneFolder, type Wall } from '../../../shared/types';
+import { FOG_CELL, fogGridSize, type Campaign, type Encounter, type Scene, type SceneFolder, type TokenCondition, type TokenConditionId, type Wall } from '../../../shared/types';
 import { consolidateNpcRecords } from '../../../shared/npc-metadata';
 import type { PersistedRoomState } from '../domain';
 
@@ -56,6 +56,8 @@ export function normalizeLegacyMapFog(scene: Scene): boolean {
 
 export function normalizePersistedRoomState(state: PersistedRoomState): boolean {
   let changed = removeRetiredAutoRoomData(state);
+  if (normalizeEncounters(state)) changed = true;
+  if (normalizeVisibilityState(state)) changed = true;
   for (const campaign of Object.values(state.campaigns)) {
     if (!Array.isArray(campaign.npcs)) {
       campaign.npcs = [];
@@ -68,6 +70,156 @@ export function normalizePersistedRoomState(state: PersistedRoomState): boolean 
   for (const scene of Object.values(state.scenes)) {
     if (normalizeLegacyMapFog(scene)) changed = true;
   }
+  return changed;
+}
+
+/** Reject malformed legacy visibility metadata at the persistence boundary.
+ * Missing values intentionally remain absent because their secure defaults are
+ * part of the projection policy: old Tokens are visible, old NPC documents are
+ * private, and old HP values are shown normally. */
+export function normalizeVisibilityState(state: PersistedRoomState): boolean {
+  let changed = false;
+  for (const scene of Object.values(state.scenes)) {
+    for (const token of [...scene.tokens, ...scene.players]) {
+      const raw = token as unknown as Record<string, unknown>;
+      if (raw.hidden !== undefined && typeof raw.hidden !== 'boolean') {
+        delete raw.hidden;
+        changed = true;
+      }
+      if (raw.publicName !== undefined && typeof raw.publicName !== 'string') {
+        delete raw.publicName;
+        changed = true;
+      } else if (typeof raw.publicName === 'string') {
+        const normalized = raw.publicName.trim().slice(0, 120);
+        if (normalized !== raw.publicName) {
+          raw.publicName = normalized;
+          changed = true;
+        }
+      }
+      if (raw.hpVisibility !== undefined && raw.hpVisibility !== 'none' && raw.hpVisibility !== 'bar' && raw.hpVisibility !== 'value') {
+        delete raw.hpVisibility;
+        changed = true;
+      }
+      if (raw.hpRatio !== undefined) {
+        delete raw.hpRatio;
+        changed = true;
+      }
+      const normalizedConditions = normalizeTokenConditions(raw.conditions);
+      if (JSON.stringify(normalizedConditions) !== JSON.stringify(raw.conditions ?? [])) changed = true;
+      if (normalizedConditions.length) raw.conditions = normalizedConditions;
+      else if (raw.conditions !== undefined) delete raw.conditions;
+    }
+  }
+  for (const campaign of Object.values(state.campaigns)) {
+    for (const npc of campaign.npcs ?? []) {
+      const raw = npc as unknown as Record<string, unknown>;
+      if (raw.playerAccess !== undefined && raw.playerAccess !== 'none' && raw.playerAccess !== 'limited' && raw.playerAccess !== 'observer') {
+        delete raw.playerAccess;
+        changed = true;
+      }
+      if (raw.publicDescription !== undefined && typeof raw.publicDescription !== 'string') {
+        delete raw.publicDescription;
+        changed = true;
+      } else if (typeof raw.publicDescription === 'string' && raw.publicDescription.length > 4_000) {
+        raw.publicDescription = raw.publicDescription.slice(0, 4_000);
+        changed = true;
+      }
+    }
+  }
+  for (const encounter of Object.values(state.encounters)) {
+    for (const entry of encounter.combatants) {
+      const raw = entry as unknown as Record<string, unknown>;
+      if (raw.hidden !== undefined && typeof raw.hidden !== 'boolean') {
+        delete raw.hidden;
+        changed = true;
+      }
+      if (raw.defeated !== undefined && typeof raw.defeated !== 'boolean') {
+        delete raw.defeated;
+        changed = true;
+      }
+      if (raw.group !== undefined && raw.group !== null && typeof raw.group !== 'string') {
+        delete raw.group;
+        changed = true;
+      }
+      if (raw.turnState !== undefined && raw.turnState !== 'normal' && raw.turnState !== 'ready' && raw.turnState !== 'delayed') {
+        delete raw.turnState;
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
+const CONDITION_IDS: readonly TokenConditionId[] = [
+  'prone', 'grappled', 'restrained', 'stunned', 'unconscious', 'invisible', 'concentrating', 'dead',
+];
+
+function normalizeTokenConditions(value: unknown): TokenCondition[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<TokenConditionId>();
+  const result: TokenCondition[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+    const source = item as { id?: unknown; remainingRounds?: unknown };
+    if (!CONDITION_IDS.includes(source.id as TokenConditionId) || seen.has(source.id as TokenConditionId)) continue;
+    const id = source.id as TokenConditionId;
+    const remainingRounds = source.remainingRounds === null || source.remainingRounds === undefined
+      ? null
+      : typeof source.remainingRounds === 'number' && Number.isInteger(source.remainingRounds)
+        ? Math.max(1, Math.min(99, source.remainingRounds))
+        : null;
+    seen.add(id);
+    result.push({ id, remainingRounds });
+  }
+  return result;
+}
+
+/** Move the former Scene.initiative array into a room-level Encounter exactly
+ * once. The legacy field is then kept empty in persistence and materialized
+ * only in role-aware projections for tabs running an older client bundle. */
+export function normalizeEncounters(state: PersistedRoomState): boolean {
+  const legacy = state as PersistedRoomState & {
+    encounters?: Record<string, Encounter>;
+    currentEncounterId?: string | null;
+  };
+  let changed = false;
+  if (!legacy.encounters || typeof legacy.encounters !== 'object' || Array.isArray(legacy.encounters)) {
+    legacy.encounters = {};
+    changed = true;
+  }
+  const encounters = legacy.encounters;
+  for (const scene of Object.values(state.scenes)) {
+    const entries = Array.isArray(scene.initiative) ? scene.initiative : [];
+    const existing = Object.values(encounters).find((encounter) => encounter.sceneId === scene.id);
+    if (!existing && entries.length > 0) {
+      const activeIndex = entries.findIndex((entry) => entry.active);
+      const encounter: Encounter = {
+        id: `encounter-migrated-${scene.id}`,
+        sceneId: scene.id,
+        name: `${scene.name} 遭遇`,
+        status: activeIndex >= 0 ? 'active' : 'setup',
+        round: activeIndex >= 0 ? 1 : 0,
+        turn: activeIndex >= 0 ? activeIndex : null,
+        combatants: structuredClone(entries),
+        createdAt: 0,
+        endedAt: null,
+      };
+      encounter.combatants.forEach((entry, index) => { entry.active = encounter.status === 'active' && encounter.turn === index; });
+      encounters[encounter.id] = encounter;
+      changed = true;
+    }
+    if (entries.length > 0) {
+      scene.initiative = [];
+      changed = true;
+    }
+  }
+  if (legacy.currentEncounterId === undefined || (legacy.currentEncounterId && !encounters[legacy.currentEncounterId])) {
+    const current = Object.values(encounters).filter((encounter) => encounter.sceneId === state.currentSceneId).at(-1);
+    legacy.currentEncounterId = current?.id ?? null;
+    changed = true;
+  }
+  state.encounters = encounters;
+  state.currentEncounterId = legacy.currentEncounterId ?? null;
   return changed;
 }
 

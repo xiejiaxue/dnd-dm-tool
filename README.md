@@ -15,6 +15,8 @@ Cloudflare Worker ── D1：身份、桌团、战役、房间、成员、邀�
 
 详细的权限、组队、房间与部署设计见 [Cloudflare 架构说明](docs/cloudflare-architecture.md)。
 代码模块职责、依赖方向与新增功能落点见 [项目结构与模块边界](docs/project-structure.md)。
+Actor 认领、文档 Ownership、Journal/地图标记和声明式宏的统一边界见 [面团优先的 FVTT 式文档架构](docs/fvtt-inspired-tabletop-architecture.md)。
+D&D 5e 个人角色卡的插件边界、玩家权限、规则包筛选和导入语义见 [D&D 5e 角色卡插件](docs/dnd5e-character-sheet-plugin.md)。
 
 ## 本地开发
 
@@ -44,6 +46,15 @@ npm run db:migrate:remote           # 应用 D1 控制面 schema
 npm run deploy:production           # 以完成迁移的数据库正式提供服务
 ```
 
+迁移完成后，可把一个已经由 `/api/me` 返回的用户 ID 授予平台所有者只读审计权限。不要把具体用户 ID 写入仓库或 migration：
+
+```bash
+npx wrangler d1 execute dnd-dm-tool --remote --command \
+  "INSERT INTO platform_roles (user_id, role, granted_at) VALUES ('<USER_ID>', 'owner', CAST(unixepoch() AS INTEGER) * 1000) ON CONFLICT(user_id) DO UPDATE SET role = 'owner'"
+```
+
+平台所有者会在大厅看到“全站房间（只读）”，可以读取完整地图、场景、战役库和 NPC，但不会获得其他房间的编辑、邀请或删除权限。
+
 `PUBLIC_SITE_DOMAIN` 必须是目标 Cloudflare account 中 zone 的单个 hostname，且不能预先存在冲突的 CNAME。部署会创建 Custom Domain 所需 DNS 和证书；这个 Worker 不公开 `workers.dev` 备用地址。所有用户只访问这个 HTTPS URL；前端会自动连到同源 `wss://<PUBLIC_SITE_DOMAIN>/api/rooms/<slug>/ws`。
 
 本仓库不含自动部署的 GitHub Actions。每次发布请在已登录目标 Cloudflare account 的终端中运行上面的命令；部署域名和备案信息均从环境变量读取，不会写进仓库：
@@ -66,7 +77,17 @@ R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run data:publish
 
 自动创建的 R2 bucket 名称可在 Cloudflare Dashboard 或 `wrangler r2 bucket list` 中查看。请确认 5etools-cn 数据的 CC BY-NC-SA 许可与自己的公开/商业使用方式相符。
 
-跑团模板同样保存在私有 `REFERENCE_DATA` R2 中。以下命令把本地“深水城：龙金劫”目录整理为 21 个章节场景和 NPC 档案，再发布模板清单、模板快照和地图资源：
+跑团资料采用统一的、纯数据内容包规范，并保存在私有 `REFERENCE_DATA` R2 中。新增模组只需提供 `manifest.json`、按章节拆分的场景、按“阵营 → 人物”拆分的 NPC 文件和带内容摘要的地图资源，无需修改应用代码。完整字段、目录和版本规则见 [跑团内容包规范 v1](docs/campaign-content-package-spec.md)。
+
+通用内容包工作流：
+
+```bash
+npm run content:validate -- /绝对路径/my-adventure
+npm run content:build -- /绝对路径/my-adventure
+CONTENT_PACKAGE_ID=my-adventure R2_REFERENCE_BUCKET=<你的 REFERENCE_DATA bucket 名称> npm run content:publish
+```
+
+现有深水城脚本是把原始书籍目录转换为同一内容包规范的适配器。以下命令把本地“深水城：龙金劫”目录整理为 21 个章节场景和 NPC 档案，再发布模板清单、模板快照和地图资源：
 
 ```bash
 MODULE_SOURCE_DIR='/绝对路径/深水城：龙金劫' npm run template:build:waterdeep
@@ -90,6 +111,8 @@ npm run build
 ```
 
 测试同时覆盖旧的纯领域逻辑，以及 Worker + D1 + Durable Object 的房间创建、邀请兑换和状态持久化。
+
+当前 D1 schema 依次包含平台角色、FVTT 式世界文档与桌面工具迁移（`0003`–`0005`）。本地或远端升级后再启动新版 Worker，避免 Actor、Journal、宏、行动日志和用户设置接口访问尚未创建的表。
 
 ## 迁移说明
 

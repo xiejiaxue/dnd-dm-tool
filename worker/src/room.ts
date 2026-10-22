@@ -1,8 +1,9 @@
 import { DurableObject } from 'cloudflare:workers';
-import { DEFAULT_TOKEN_SIZE, type Op } from '../../shared/types';
+import { DEFAULT_TOKEN_SIZE, type Op, type SceneConfigurationPatch } from '../../shared/types';
 import {
   activeCampaign,
   activeScene,
+  canReadAllRoomData,
   addScene,
   applyOperation,
   createInitialRoomState,
@@ -13,12 +14,14 @@ import {
   ensurePlayerToken,
   isRoomModerator,
   normalizeLegacyPlayerTokenSizes,
+  playerTokenNeedsProvision,
   moveSceneToFolder,
   projectRoomState,
   renameScene,
   renameSceneFolder,
   selectScene,
   setSceneUnlocked,
+  updateSceneConfiguration,
   type PersistedRoomState,
   type RoomActor,
   type RoomRole,
@@ -95,6 +98,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (sceneMatch) {
       const sceneId = decodeURIComponent(sceneMatch[1]);
       if (request.method === 'GET') return this.getScene(actor, sceneId);
+      if (request.method === 'PATCH') return this.updateSceneRoute(request, actor, sceneId);
       if (request.method === 'DELETE') return this.deleteSceneRoute(actor, sceneId);
     }
     if (url.pathname === '/campaigns' && request.method === 'GET') {
@@ -218,6 +222,13 @@ export class RoomDurableObject extends DurableObject<Env> {
         const sceneId = text(data.sceneId, '场景 ID', 180);
         const result = this.mutate(actor, clientCommandId(data.id), 'scene.select', (next) => {
           selectScene(next, sceneId);
+          // Scene Tokens are embedded instances. Recreate/bind the claimed
+          // Actor for every connected player when the shared table changes
+          // scene, rather than treating one old Token as their identity.
+          for (const socket of this.ctx.getWebSockets()) {
+            const connectedActor = socketActor(socket);
+            if (connectedActor?.role === 'player') ensurePlayerToken(next, connectedActor);
+          }
           return { sceneId };
         });
         this.safeSend(ws, { type: 'ack', revision: result.revision });
@@ -235,6 +246,22 @@ export class RoomDurableObject extends DurableObject<Env> {
         });
         this.safeSend(ws, { type: 'ack', revision: result.revision });
         this.broadcastState();
+        return;
+      }
+      if (data.type === 'showJournal') {
+        this.requireModerator(actor);
+        const journalId = text(data.journalId, '日志 ID', 180);
+        const pageId = data.pageId === null || data.pageId === undefined ? null : text(data.pageId, '页面 ID', 180);
+        const targetUserIds = Array.isArray(data.userIds)
+          ? new Set(data.userIds.filter((value): value is string => typeof value === 'string' && value.length <= 180))
+          : null;
+        for (const socket of this.ctx.getWebSockets()) {
+          const recipient = socketActor(socket);
+          if (!recipient || isRoomModerator(recipient.role)) continue;
+          if (targetUserIds && !targetUserIds.has(recipient.userId)) continue;
+          this.safeSend(socket, { type: 'showJournal', journalId, pageId });
+        }
+        this.safeSend(ws, { type: 'ack', revision: this.requireState().revision });
         return;
       }
       this.sendError(ws, 'INVALID', '未知消息类型');
@@ -313,23 +340,27 @@ export class RoomDurableObject extends DurableObject<Env> {
     }
     if (!this.state) return this.respondJson({ error: { code: 'ROOM_UNINITIALIZED', message: '房间正在初始化' } }, 503);
 
-    // Guests receive a server-created, account-bound starter token. The
-    // browser never chooses its controller ID; a future character-claim UI can
-    // replace this onboarding record without weakening authorization.
+    // Guests receive a server-created starter token until they claim an Actor.
+    // The Worker resolves that claim from D1 and the browser never chooses the
+    // controller ID or Actor identity carried into this Durable Object.
     const currentScene = activeScene(this.requireState());
-    const currentPlayer = currentScene.players.find((player) => player.sessionId === actor.userId);
-    const needsProvision = actor.role === 'player'
-      && !currentPlayer;
+    const needsProvision = playerTokenNeedsProvision(this.requireState(), actor);
     const needsTokenSizeMigration = Object.values(this.requireState().scenes)
       .some((scene) => scene.players.some((player) => player.size !== DEFAULT_TOKEN_SIZE));
     if (needsProvision || needsTokenSizeMigration) {
       const result = this.mutate(actor, crypto.randomUUID(), 'player.provision', (next) => {
+        const knownPlayerIds = new Set(activeScene(next).players.map(player => player.id));
         const resizedPlayers = normalizeLegacyPlayerTokenSizes(next);
-        const provisioned = ensurePlayerToken(next, actor);
-        const player = provisioned
+        const changed = ensurePlayerToken(next, actor);
+        const player = changed
           ? activeScene(next).players.find((candidate) => candidate.sessionId === actor.userId) ?? null
           : null;
-        return { provisioned, player: player ? structuredClone(player) : null, resizedPlayers };
+        return {
+          provisioned: Boolean(player && !knownPlayerIds.has(player.id)),
+          updated: Boolean(player && knownPlayerIds.has(player.id)),
+          player: player ? structuredClone(player) : null,
+          resizedPlayers,
+        };
       });
       // The joining socket does not exist yet, so this reaches only the room's
       // existing members. They see both one-time size migrations and newly
@@ -345,7 +376,8 @@ export class RoomDurableObject extends DurableObject<Env> {
         // A migration in a non-active scene has no safe small patch for the
         // current board. Send a snapshot so existing sockets still advance to
         // the persisted revision instead of detecting a later revision gap.
-        if (operations.length > 0) this.broadcastOperations(operations, result.revision);
+        if (result.payload.updated) this.broadcastState();
+        else if (operations.length > 0) this.broadcastOperations(operations, result.revision);
         else this.broadcastState();
       }
     }
@@ -391,6 +423,16 @@ export class RoomDurableObject extends DurableObject<Env> {
     return this.respondJson({ ok: true, revision: result.revision });
   }
 
+  private async updateSceneRoute(request: Request, actor: RoomActor, sceneId: string): Promise<Response> {
+    this.requireModerator(actor);
+    const patch = sceneConfigurationPatch(await objectBody(request));
+    const result = this.mutate(actor, crypto.randomUUID(), 'scene.configure', (next) => ({
+      scene: structuredClone(updateSceneConfiguration(next, sceneId, patch)),
+    }));
+    this.broadcastState();
+    return this.respondJson(result.payload.scene);
+  }
+
   private async assignSceneRoute(request: Request, actor: RoomActor): Promise<Response> {
     this.requireModerator(actor);
     const body = await objectBody(request);
@@ -410,7 +452,7 @@ export class RoomDurableObject extends DurableObject<Env> {
 
   private getScene(actor: RoomActor, sceneId: string): Response {
     const scene = this.requireState().scenes[sceneId];
-    if (!scene || (!isRoomModerator(actor.role) && !scene.unlocked)) return this.respondJson({ error: { code: 'NOT_FOUND', message: '找不到场景' } }, 404);
+    if (!scene || (!canReadAllRoomData(actor) && !scene.unlocked)) return this.respondJson({ error: { code: 'NOT_FOUND', message: '找不到场景' } }, 404);
     const copy = structuredClone(scene);
     if (!isRoomModerator(actor.role)) {
       copy.players = copy.players.map((player) => ({ ...player, sessionId: player.sessionId === actor.userId ? actor.userId : null }));
@@ -423,7 +465,7 @@ export class RoomDurableObject extends DurableObject<Env> {
     const campaign = activeCampaign(this.requireState());
     return campaign.sceneIds.flatMap((id) => {
       const scene = this.requireState().scenes[id];
-      if (!scene || (!isRoomModerator(actor.role) && !scene.unlocked)) return [];
+      if (!scene || (!canReadAllRoomData(actor) && !scene.unlocked)) return [];
       return [{
         id: scene.id,
         name: scene.name,
@@ -445,11 +487,11 @@ export class RoomDurableObject extends DurableObject<Env> {
     return this.respondJson({ ok: true });
   }
 
-  private bootstrap(actor: RoomActor): { room: { id: string }; state: ReturnType<typeof projectRoomState>; membership: { role: RoomRole; canManage: boolean } } {
+  private bootstrap(actor: RoomActor): { room: { id: string }; state: ReturnType<typeof projectRoomState>; membership: { role: RoomRole; canManage: boolean; canReadAll: boolean } } {
     return {
       room: { id: this.ctx.id.toString() },
       state: projectRoomState(this.requireState(), actor),
-      membership: { role: actor.role, canManage: isRoomModerator(actor.role) },
+      membership: { role: actor.role, canManage: isRoomModerator(actor.role), canReadAll: canReadAllRoomData(actor) },
     };
   }
 
@@ -586,4 +628,62 @@ export class RoomDurableObject extends DurableObject<Env> {
   private sendError(socket: WebSocket, code: string, message: string, commandId?: string): void {
     this.safeSend(socket, { type: 'error', code, message, ...(commandId ? { commandId } : {}) });
   }
+}
+
+function sceneConfigurationPatch(value: Record<string, unknown>): SceneConfigurationPatch {
+  const patch: SceneConfigurationPatch = {};
+  if (value.name !== undefined) patch.name = text(value.name, '场景名称');
+  if (value.unlocked !== undefined) {
+    if (typeof value.unlocked !== 'boolean') throw new DomainError('INVALID', '场景可见性无效');
+    patch.unlocked = value.unlocked;
+  }
+  if (value.mapScale !== undefined) patch.mapScale = sceneNumber(value.mapScale, 0.1, 8, '地图比例');
+  if (value.grid !== undefined) {
+    if (!isRecord(value.grid)) throw new DomainError('INVALID', '网格设置无效');
+    const grid: NonNullable<SceneConfigurationPatch['grid']> = {};
+    if (value.grid.size !== undefined) grid.size = sceneNumber(value.grid.size, 10, 500, '网格尺寸');
+    if (value.grid.color !== undefined) {
+      if (typeof value.grid.color !== 'string' || !/^#[0-9a-fA-F]{3,8}$|^rgba?\([0-9.,\s%]+\)$/u.test(value.grid.color)) {
+        throw new DomainError('INVALID', '网格颜色无效');
+      }
+      grid.color = value.grid.color;
+    }
+    if (value.grid.offset !== undefined) grid.offset = scenePoint(value.grid.offset, '网格偏移');
+    if (value.grid.snap !== undefined) {
+      if (typeof value.grid.snap !== 'boolean') throw new DomainError('INVALID', '网格吸附设置无效');
+      grid.snap = value.grid.snap;
+    }
+    patch.grid = grid;
+  }
+  if (value.playArea !== undefined) {
+    if (!isRecord(value.playArea)) throw new DomainError('INVALID', '游戏区域无效');
+    patch.playArea = {
+      x: sceneNumber(value.playArea.x, -100_000, 100_000, '区域横坐标'),
+      y: sceneNumber(value.playArea.y, -100_000, 100_000, '区域纵坐标'),
+      w: sceneNumber(value.playArea.w, 1, 20_000, '区域宽度'),
+      h: sceneNumber(value.playArea.h, 1, 20_000, '区域高度'),
+    };
+  }
+  if (value.initialView !== undefined) {
+    if (!isRecord(value.initialView)) throw new DomainError('INVALID', '初始视图无效');
+    patch.initialView = {
+      x: sceneNumber(value.initialView.x, -100_000, 100_000, '初始视图横坐标'),
+      y: sceneNumber(value.initialView.y, -100_000, 100_000, '初始视图纵坐标'),
+      scale: sceneNumber(value.initialView.scale, 0.1, 8, '初始视图比例'),
+    };
+  }
+  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新的场景设置');
+  return patch;
+}
+
+function sceneNumber(value: unknown, minimum: number, maximum: number, label: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < minimum || value > maximum) {
+    throw new DomainError('INVALID', `${label}无效`);
+  }
+  return value;
+}
+
+function scenePoint(value: unknown, label: string): [number, number] {
+  if (!Array.isArray(value) || value.length !== 2) throw new DomainError('INVALID', `${label}无效`);
+  return [sceneNumber(value[0], -100_000, 100_000, label), sceneNumber(value[1], -100_000, 100_000, label)];
 }

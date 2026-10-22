@@ -1,31 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { connection } from '../ws';
 import { useScene } from '../ws';
 import { setPending } from '../pending';
 import DetailDrawer from './DetailDrawer';
-import { type EntryType, type IndexEntry, type Scene } from '../types';
+import { type EntryType, type IndexEntry } from '../types';
 import { useCompendiumSearch } from '../features/compendium/useCompendiumSearch';
 import { useFavoriteNames } from '../features/compendium/useFavoriteNames';
 import { createMonsterToken } from '../features/compendium/monsterToken';
 import { useSceneCatalog } from '../features/campaign/useSceneCatalog';
 import CampaignSceneLibrary from '../features/campaign/CampaignSceneLibrary';
 import NpcPanel from '../features/npc/NpcPanel';
+import ActorClaimPanel from '../features/actors/ActorClaimPanel';
+import JournalPanel from '../features/journal/JournalPanel';
+import MacroPanel from '../features/macros/MacroPanel';
+import { subscribeJournalNavigation } from '../documents/navigation';
+import { subscribeMacroLibraryNavigation } from '../features/macros/navigation';
+import { useBoardCommands } from '../features/history/BoardCommandContext';
+import TabletopToolsPanel from '../features/tools/TabletopToolsPanel';
+import { subscribeActorNavigation } from '../features/actors/navigation';
+import { subscribeToolNavigation } from '../features/tools/navigation';
 
-type Tab = 'query' | 'camp' | 'npc' | 'fav';
+type Tab = 'query' | 'camp' | 'npc' | 'actor' | 'journal' | 'macro' | 'tools' | 'fav';
 
 interface Props {
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  onSelectTool?: (tool: string) => void;
+  onRequestFloat?: () => void;
 }
 
-export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
+export default function QueryPanel({ collapsed, onToggleCollapsed, onSelectTool, onRequestFloat }: Props) {
   const [tab, setTab] = useState<Tab>('query');
   const [q, setQ] = useState('');
   const [type, setType] = useState<EntryType | 'all'>('all');
+  const { performOps } = useBoardCommands();
   const { results, source: resultSource } = useCompendiumSearch(q, type);
   // DetailDrawer only needs the id trio; both search results and favorites fit it.
   const [detail, setDetail] = useState<{ type: EntryType; id: string; nameZh: string } | null>(null);
-  const { scene, role, campaign } = useScene();
+  const { scene, role, campaign, viewer, activeSceneId } = useScene();
+  const canReadAll = role === 'dm' || viewer?.canReadAll === true;
   // Favorites tab: resolve the Chinese name for each favorited entryId.
   const favorites = scene?.favorites ?? [];
   const favNames = useFavoriteNames(favorites);
@@ -34,33 +47,48 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   // list. Players only see DM-unlocked scenes (read-only preview); DMs switch.
   const sceneNames = useSceneCatalog(campaign?.sceneIds ?? []);
   // Read-only scene preview for players (map thumbnail + token list).
-  const [preview, setPreview] = useState<Scene | null>(null);
+
+  useEffect(() => subscribeJournalNavigation(() => {
+    setTab('journal');
+    setDetail(null);
+  }), []);
+
+  useEffect(() => subscribeMacroLibraryNavigation(() => {
+    setTab('macro');
+    setDetail(null);
+  }), []);
+  useEffect(() => subscribeActorNavigation(() => { setTab('actor'); setDetail(null); }), []);
+  useEffect(() => subscribeToolNavigation(() => { setTab('tools'); setDetail(null); }), []);
 
   // Directly add a monster token to a predictable visible spawn zone. Counting
   // every token prevents different monster types from stacking on each other.
   const spawnEnemy = (entryId: string, nameZh: string, maximumHitPoints?: number) => {
     if (!scene) return;
-    connection.sendOps([{
+    performOps(`添加 ${nameZh} Token`, [{
       op: 'addToken',
       token: createMonsterToken(
         scene,
         { id: entryId, nameZh, hitPoints: maximumHitPoints },
-        `t${Date.now()}-${scene.tokens.length}`,
+        `token-${crypto.randomUUID()}`,
       ),
     }]);
   };
   const addMonsterToScene = (r: IndexEntry) => spawnEnemy(r.id, r.nameZh, r.hitPoints);
   const isInLibrary = (entryId: string) => (campaign?.enemies ?? []).some(e => e.entryId === entryId);
 
-  const tabs: Tab[] = role === 'dm' ? ['query', 'camp', 'npc', 'fav'] : ['query', 'camp', 'fav'];
+  const hasPublicNpcs = (campaign?.npcs?.length ?? 0) > 0;
+  const tabs: Tab[] = canReadAll || hasPublicNpcs
+    ? ['query', 'camp', 'actor', 'npc', 'journal', 'macro', 'tools', 'fav']
+    : ['query', 'camp', 'actor', 'journal', 'macro', 'tools', 'fav'];
 
   // Collapsed: a thin vertical bar so players can reclaim board space.
   if (collapsed) {
     return (
-      <aside className="w-10 border-l border-zinc-700/60 bg-zinc-900 flex flex-col items-center pt-2 text-sm">
+      <aside className="h-full w-10 border-l border-zinc-700/60 bg-zinc-900 flex flex-col items-center pt-2 text-sm">
         <button
           onClick={onToggleCollapsed}
           title="展开查询面板"
+          aria-label="展开右侧资料面板"
           className="w-8 h-8 rounded-md hover:bg-zinc-700 text-zinc-400 text-lg"
         >⇥</button>
       </aside>
@@ -68,19 +96,22 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
   }
 
   return (
-    <aside className="w-80 border-l border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
-      <div className="flex items-center border-b border-zinc-800">
+    <aside className="relative flex h-full w-full flex-col border-l border-zinc-700/60 bg-zinc-900 text-sm">
+      <div className="library-tabs flex items-center border-b border-zinc-800">
         {tabs.map(t => (
           <button key={t} onClick={() => { setTab(t); setDetail(null); }}
-            className={`flex-1 py-2 text-center ${tab === t ? 'text-amber-400 border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
-            {t === 'query' ? '查询' : t === 'camp' ? '战役库' : t === 'npc' ? 'NPC' : '收藏夹'}
+            className={`shrink-0 px-2.5 py-2 text-center text-xs ${tab === t ? 'text-amber-400 border-b-2 border-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            {tabLabel(t)}
           </button>
         ))}
         <button
           onClick={onToggleCollapsed}
           title="收起查询面板"
+          aria-label="收起右侧资料面板"
           className="shrink-0 px-2 h-8 text-zinc-500 hover:text-zinc-200 text-lg"
         >⇤</button>
+        {onRequestFloat && <button type="button" onClick={onRequestFloat} title="浮动资料面板" aria-label="浮动资料面板"
+          className="shrink-0 px-2 text-xs text-zinc-500 hover:text-zinc-200">浮</button>}
       </div>
 
       {detail ? (
@@ -160,38 +191,49 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
               {favorites.map(f => {
                 const zh = favNames[f.entryId] ?? f.entryId;
                 return (
-                  <button key={`${f.type}-${f.entryId}`}
-                    onClick={() => setDetail({ type: f.type, id: f.entryId, nameZh: zh })}
-                    className="w-full text-left px-3 py-2 border-b border-zinc-800/50 flex justify-between items-center hover:bg-zinc-800">
-                    <span>
+                  <div key={`${f.type}-${f.entryId}`}
+                    className="flex w-full items-center border-b border-zinc-800/50 hover:bg-zinc-800">
+                    <button type="button" onClick={() => setDetail({ type: f.type, id: f.entryId, nameZh: zh })}
+                      className="min-w-0 flex-1 px-3 py-2 text-left">
+                      <span>
                       <span className="block text-zinc-100">{zh}</span>
                       <span className="block text-xs text-zinc-500">{f.entryId}</span>
-                    </span>
+                      </span>
+                    </button>
                     {role !== 'spectator' && (
-                      <button className="text-zinc-500 hover:text-red-400 shrink-0"
-                        onClick={(e) => { e.stopPropagation(); connection.sendOps([{ op: 'removeFavorite', type: f.type, entryId: f.entryId }]); }}>✕</button>
+                      <button type="button" className="mr-3 shrink-0 rounded px-1 text-zinc-500 hover:bg-zinc-700 hover:text-red-400"
+                        aria-label={`取消收藏 ${zh}`}
+                        title={`取消收藏 ${zh}`}
+                        onClick={() => connection.sendOps([{ op: 'removeFavorite', type: f.type, entryId: f.entryId }])}>✕</button>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
           )}
-          {tab === 'npc' && role === 'dm' && <NpcPanel />}
+          {tab === 'npc' && (canReadAll || hasPublicNpcs) && <NpcPanel readOnly={role !== 'dm'} />}
+          {tab === 'actor' && <ActorClaimPanel />}
+          {tab === 'journal' && <JournalPanel />}
+          {tab === 'macro' && <MacroPanel onSelectTool={onSelectTool} />}
+          {tab === 'tools' && <TabletopToolsPanel />}
           {tab === 'camp' && (
             <div className="flex-1 overflow-y-auto">
-              {role === 'dm' && (
+              {canReadAll && (
                 <>
                   <div className="px-3 py-1.5 text-xs text-zinc-500 bg-zinc-800/40">敌人 ({campaign?.enemies.length ?? 0})</div>
                   {(campaign?.enemies ?? []).map(e => (
                     <div key={e.entryId} className="flex items-center gap-2 px-2 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800/50">
                       <img src={`/api/token/${e.entryId}`} alt="" className="w-6 h-6 rounded-full bg-zinc-700 shrink-0" />
                       <span className="flex-1 truncate text-zinc-200">{e.nameZh}</span>
-                      <button onClick={() => spawnEnemy(e.entryId, e.nameZh)} title="一键放入当前场景"
+                      {role === 'dm' && <button onClick={() => spawnEnemy(e.entryId, e.nameZh)} title="一键放入当前场景"
                         className="shrink-0 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-xs">＋</button>
-                      <button onClick={() => setPending({ kind: 'monster', name: e.nameZh, entryId: e.entryId, avatar: `/api/token/${e.entryId}`, color: '#fff' })}
+                      }
+                      {role === 'dm' && <button onClick={() => setPending({ kind: 'monster', name: e.nameZh, entryId: e.entryId, avatar: `/api/token/${e.entryId}`, color: '#fff' })}
                         title="拿起放置" className="shrink-0 px-1.5 py-0.5 rounded hover:bg-zinc-700 text-zinc-300 text-xs">✋</button>
-                      <button onClick={() => connection.sendOps([{ op: 'removeEnemy', entryId: e.entryId }])}
+                      }
+                      {role === 'dm' && <button onClick={() => connection.sendOps([{ op: 'removeEnemy', entryId: e.entryId }])}
                         title="移出战役库" className="shrink-0 px-1.5 py-0.5 rounded hover:bg-zinc-700 text-zinc-400 hover:text-red-400 text-xs">✕</button>
+                      }
                     </div>
                   ))}
                   {(campaign?.enemies.length ?? 0) === 0 && <div className="p-3 text-zinc-500 text-xs">战役库为空，搜索怪物后点「加入战役库」</div>}
@@ -199,34 +241,28 @@ export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
               )}
               <CampaignSceneLibrary
                 role={role}
+                canManage={viewer?.canManage === true}
+                canReadAll={canReadAll}
                 campaign={campaign}
                 catalog={sceneNames}
-                currentSceneId={scene?.id}
-                onPreview={setPreview}
+                viewedSceneId={scene?.id}
+                activeSceneId={activeSceneId}
               />
-              {preview && (
-                <div className="absolute inset-0 z-20 bg-zinc-900/95 overflow-y-auto p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <button onClick={() => setPreview(null)} className="text-zinc-400 hover:text-white">←</button>
-                    <h3 className="font-bold">{preview.name}</h3>
-                    <span className="text-xs text-emerald-500 ml-auto">只读预览</span>
-                  </div>
-                  {preview.mapImage ? (
-                    <img src={preview.mapImage} alt="" className="w-full rounded border border-zinc-700" />
-                  ) : (
-                    <div className="p-3 text-zinc-500 text-xs">该场景无地图</div>
-                  )}
-                  <div className="mt-2 text-xs text-zinc-400">token：</div>
-                  <ul className="text-xs text-zinc-300">
-                    {preview.tokens.map(t => <li key={t.id}>· {t.name}{t.number != null ? ` #${t.number}` : ''}</li>)}
-                    {preview.players.map(p => <li key={p.id}>· {p.name}（玩家）</li>)}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
         </>
       )}
     </aside>
   );
+}
+
+function tabLabel(tab: Tab): string {
+  if (tab === 'query') return '查询';
+  if (tab === 'camp') return '场景';
+  if (tab === 'actor') return '角色';
+  if (tab === 'npc') return 'NPC';
+  if (tab === 'journal') return '日志';
+  if (tab === 'macro') return '宏';
+  if (tab === 'tools') return '工具';
+  return '收藏';
 }

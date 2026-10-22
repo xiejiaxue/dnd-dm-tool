@@ -48,6 +48,9 @@ describe('NPC token creation', () => {
     });
     expect(fallback?.notesMarkdown).toContain('| HP | 99 / 126 |');
     expect(npcQuickReferenceForToken({
+      id: 'old-token', kind: 'npc', entryId: 'npc:missing-record', name: '曼松的拟像', hp: { current: 99, max: 126 },
+    }, [npc], { allowFallback: false })).toBeNull();
+    expect(npcQuickReferenceForToken({
       id: 'monster-token', kind: 'monster', entryId: 'MM__Commoner', name: '平民', hp: undefined,
     }, [npc])).toBeNull();
   });

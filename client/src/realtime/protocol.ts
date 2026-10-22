@@ -1,4 +1,4 @@
-import type { Campaign, Op, Role, Scene } from '../types';
+import type { Campaign, Encounter, Op, Role, Scene } from '../types';
 
 /** Identity comes from the same-origin HttpOnly session used for WebSocket auth. */
 export interface Viewer {
@@ -6,6 +6,8 @@ export interface Viewer {
   roomMemberId?: string;
   roomRole?: string;
   displayName?: string;
+  canManage?: boolean;
+  canReadAll?: boolean;
 }
 
 export type RoomViewRole = Role | 'spectator';
@@ -19,6 +21,9 @@ export interface SceneState {
   online: number;
   connected: boolean;
   campaign: Campaign | null;
+  encounter: Encounter | null;
+  activeSceneId: string | null;
+  viewingInactive: boolean;
 }
 
 export interface RoomSnapshot {
@@ -26,8 +31,11 @@ export interface RoomSnapshot {
   role: RoomViewRole;
   roomRole: string;
   campaign: Campaign | null;
+  encounter: Encounter | null;
   viewer: Viewer | null;
   revision: number | null;
+  activeSceneId: string;
+  viewingInactive: boolean;
 }
 
 export interface SocketMessage {
@@ -36,12 +44,17 @@ export interface SocketMessage {
   role?: unknown;
   roomRole?: unknown;
   campaign?: Campaign | null;
+  encounter?: Encounter | null;
   viewer?: unknown;
   revision?: unknown;
   online?: unknown;
   message?: unknown;
   commandId?: unknown;
   ops?: unknown;
+  activeSceneId?: unknown;
+  viewingInactive?: unknown;
+  journalId?: unknown;
+  pageId?: unknown;
 }
 
 export type RoomMessageListener = (message: SocketMessage) => void;
@@ -55,6 +68,8 @@ export function asViewer(value: unknown): Viewer | null {
     ...(typeof source.roomMemberId === 'string' ? { roomMemberId: source.roomMemberId } : {}),
     ...(typeof source.roomRole === 'string' ? { roomRole: source.roomRole } : {}),
     ...(typeof source.displayName === 'string' ? { displayName: source.displayName } : {}),
+    ...(typeof source.canManage === 'boolean' ? { canManage: source.canManage } : {}),
+    ...(typeof source.canReadAll === 'boolean' ? { canReadAll: source.canReadAll } : {}),
   };
 }
 

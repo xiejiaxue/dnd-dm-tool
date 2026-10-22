@@ -15,6 +15,13 @@ export interface RoomAccess extends RoomActor {
   templateId?: string | null;
 }
 
+interface ClaimedActorRow {
+  id: string;
+  name: string;
+  avatar_url: string;
+  color: string | null;
+}
+
 export interface RoomSummary {
   slug: string;
   name: string;
@@ -22,6 +29,14 @@ export interface RoomSummary {
   role: RoomRole;
   campaignName: string;
   updatedAt: number;
+  /** The platform owner can inspect this room without becoming a member. */
+  platformReadOnly?: boolean;
+}
+
+export interface RoomMemberSummary {
+  userId: string;
+  displayName: string;
+  role: RoomRole;
 }
 
 interface RoomAccessRow {
@@ -67,6 +82,7 @@ export interface RoomInvite {
 }
 
 export async function requireRoomAccess(env: Env, userId: string, roomSlug: string): Promise<RoomAccess> {
+  const platformOwner = await isPlatformOwner(env, userId);
   const row = await env.DB.prepare(
     `SELECT r.id AS room_id, r.slug AS room_slug, r.name AS room_name,
             r.status AS room_status, r.access_epoch AS room_access_epoch,
@@ -83,10 +99,45 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
         AND rm.status = 'active'`,
   ).bind(roomSlug, userId).first<RoomAccessRow>();
 
-  if (!row || !isRoomRole(row.room_role)) {
+  if (row && isRoomRole(row.room_role)) {
+    return attachActorClaim(env, roomAccessFromRow(row, userId, row.room_role, platformOwner));
+  }
+
+  if (!platformOwner) {
     // Do not distinguish a missing room from a room the caller cannot join.
     throw new HttpError(404, 'ROOM_NOT_FOUND', '找不到该房间，或你尚未加入');
   }
+
+  const inspected = await env.DB.prepare(
+    `SELECT r.id AS room_id, r.slug AS room_slug, r.name AS room_name,
+            r.status AS room_status, r.access_epoch AS room_access_epoch,
+            c.id AS campaign_id, c.name AS campaign_name, c.workspace_id,
+            json_extract(c.settings_json, '$.roomTemplateId') AS template_id
+       FROM rooms r
+       JOIN campaigns c ON c.id = r.campaign_id AND c.deleted_at IS NULL
+      WHERE r.slug = ?1 AND r.deleted_at IS NULL`,
+  ).bind(roomSlug).first<Omit<RoomAccessRow, 'room_member_id' | 'room_role' | 'member_access_epoch' | 'campaign_member_id'>>();
+  if (!inspected) throw new HttpError(404, 'ROOM_NOT_FOUND', '找不到该房间');
+  return {
+    roomId: inspected.room_id,
+    roomSlug: inspected.room_slug,
+    roomName: inspected.room_name,
+    roomStatus: inspected.room_status,
+    roomAccessEpoch: inspected.room_access_epoch,
+    campaignId: inspected.campaign_id,
+    campaignName: inspected.campaign_name,
+    workspaceId: inspected.workspace_id,
+    memberId: `platform-owner:${userId}`,
+    userId,
+    role: 'spectator',
+    accessEpoch: inspected.room_access_epoch,
+    campaignMemberId: null,
+    templateId: inspected.template_id,
+    platformOwner: true,
+  };
+}
+
+function roomAccessFromRow(row: RoomAccessRow, userId: string, role: RoomRole, platformOwner: boolean): RoomAccess {
   return {
     roomId: row.room_id,
     roomSlug: row.room_slug,
@@ -98,11 +149,26 @@ export async function requireRoomAccess(env: Env, userId: string, roomSlug: stri
     workspaceId: row.workspace_id,
     memberId: row.room_member_id,
     userId,
-    role: row.room_role,
+    role,
     accessEpoch: row.member_access_epoch,
     campaignMemberId: row.campaign_member_id,
     templateId: row.template_id,
+    ...(platformOwner ? { platformOwner: true } : {}),
   };
+}
+
+export async function isPlatformOwner(env: Env, userId: string): Promise<boolean> {
+  try {
+    const row = await env.DB.prepare(
+      `SELECT 1 AS present FROM platform_roles WHERE user_id = ?1 AND role = 'owner'`,
+    ).bind(userId).first<{ present: number }>();
+    return row?.present === 1;
+  } catch (error) {
+    // Safe rolling deployment: old databases remain membership-only until the
+    // migration is applied, instead of making every room endpoint unavailable.
+    if (error instanceof Error && /no such table:\s*platform_roles/iu.test(error.message)) return false;
+    throw error;
+  }
 }
 
 export function requireRoomModerator(access: RoomAccess): void {
@@ -110,10 +176,36 @@ export function requireRoomModerator(access: RoomAccess): void {
 }
 
 export function requireRoomHost(access: RoomAccess): void {
-  if (access.role !== 'host') throw new HttpError(403, 'FORBIDDEN', '只有房主可以删除房间');
+  if (access.role !== 'host' && !access.platformOwner) {
+    throw new HttpError(403, 'FORBIDDEN', '只有房主或平台所有者可以删除房间');
+  }
 }
 
 export async function listRooms(env: Env, userId: string): Promise<RoomSummary[]> {
+  if (await isPlatformOwner(env, userId)) {
+    const result = await env.DB.prepare(
+      `SELECT r.slug, r.name, r.status, r.updated_at,
+              rm.role, c.name AS campaign_name
+         FROM rooms r
+         JOIN campaigns c ON c.id = r.campaign_id AND c.deleted_at IS NULL
+         LEFT JOIN room_members rm
+           ON rm.room_id = r.id AND rm.user_id = ?1 AND rm.status = 'active'
+        WHERE r.deleted_at IS NULL
+        ORDER BY r.updated_at DESC`,
+    ).bind(userId).all<{ slug: string; name: string; status: string; updated_at: number; role: string | null; campaign_name: string }>();
+    return result.results.map(row => {
+      const memberRole = row.role && isRoomRole(row.role) ? row.role : null;
+      return {
+        slug: row.slug,
+        name: row.name,
+        status: row.status,
+        role: memberRole ?? 'spectator',
+        campaignName: row.campaign_name,
+        updatedAt: row.updated_at,
+        ...(memberRole ? {} : { platformReadOnly: true }),
+      };
+    });
+  }
   const result = await env.DB.prepare(
     `SELECT r.slug, r.name, r.status, r.updated_at,
             rm.role, c.name AS campaign_name
@@ -131,6 +223,24 @@ export async function listRooms(env: Env, userId: string): Promise<RoomSummary[]
     role: row.role,
     campaignName: row.campaign_name,
     updatedAt: row.updated_at,
+  }] : []);
+}
+
+export async function listRoomMembers(env: Env, access: RoomAccess): Promise<RoomMemberSummary[]> {
+  requireRoomModerator(access);
+  const result = await env.DB.prepare(
+    `SELECT rm.user_id, u.display_name, rm.role
+       FROM room_members rm
+       JOIN users u ON u.id = rm.user_id AND u.deleted_at IS NULL
+      WHERE rm.room_id = ?1 AND rm.status = 'active'
+      ORDER BY CASE rm.role
+        WHEN 'host' THEN 0 WHEN 'dm' THEN 1 WHEN 'assistant_dm' THEN 2
+        WHEN 'player' THEN 3 ELSE 4 END, rm.joined_at`,
+  ).bind(access.roomId).all<{ user_id: string; display_name: string; role: string }>();
+  return result.results.flatMap(row => isRoomRole(row.role) ? [{
+    userId: row.user_id,
+    displayName: row.display_name,
+    role: row.role,
   }] : []);
 }
 
@@ -405,11 +515,22 @@ export async function createAsset(env: Env, access: RoomAccess, file: File, kind
   if (!isRoomModerator(access.role) && !playerAvatarUpload) {
     throw new HttpError(403, 'FORBIDDEN', '只有主持人可上传此类素材');
   }
-  const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
-  if (!allowedTypes.has(file.type)) throw new HttpError(415, 'UNSUPPORTED_MEDIA', '仅支持 JPEG、PNG、WebP 或 AVIF 图片');
-  if (file.size <= 0 || file.size > 10 * 1024 * 1024) throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '图片必须小于 10 MiB');
+  const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+  const attachmentTypes = new Set(['application/pdf', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/mp4']);
+  const allowed = imageTypes.has(file.type) || (kind === 'attachment' && attachmentTypes.has(file.type));
+  if (!allowed) throw new HttpError(415, 'UNSUPPORTED_MEDIA', '仅支持图片、PDF、MP3、Ogg、WAV 或 M4A 素材');
+  if (file.size <= 0 || file.size > 10 * 1024 * 1024) throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '素材必须小于 10 MiB');
   const bytes = await file.arrayBuffer();
-  if (!looksLikeImage(bytes, file.type)) throw new HttpError(415, 'UNSUPPORTED_MEDIA', '文件内容不是声明的图片格式');
+  if (!looksLikeAsset(bytes, file.type)) throw new HttpError(415, 'UNSUPPORTED_MEDIA', '文件内容与声明的素材格式不符');
+
+  const digest = await sha256Hex(bytes);
+  const duplicate = await env.DB.prepare(
+    `SELECT id FROM assets
+      WHERE workspace_id = ?1 AND campaign_id = ?2 AND sha256 = ?3
+        AND content_type = ?4 AND deleted_at IS NULL
+      ORDER BY created_at ASC LIMIT 1`,
+  ).bind(access.workspaceId, access.campaignId, digest, file.type).first<{ id: string }>();
+  if (duplicate) return { id: duplicate.id, url: `/api/rooms/${encodeURIComponent(access.roomSlug)}/assets/${duplicate.id}` };
 
   const id = crypto.randomUUID();
   const objectKey = `${roomAssetPrefix(access)}${id}/source`;
@@ -429,7 +550,7 @@ export async function createAsset(env: Env, access: RoomAccess, file: File, kind
       objectKey,
       file.type,
       file.size,
-      await sha256Hex(bytes),
+      digest,
       JSON.stringify({ filename: file.name.slice(0, 200) }),
       now,
     ).run();
@@ -464,7 +585,43 @@ export function internalRoomHeaders(access: RoomAccess): Headers {
   headers.set('x-dnd-member-id', access.memberId);
   headers.set('x-dnd-room-role', access.role);
   headers.set('x-dnd-access-epoch', String(access.accessEpoch));
+  if (access.platformOwner) headers.set('x-dnd-platform-owner', '1');
+  if (access.claimedActor) {
+    headers.set('x-dnd-actor-id', access.claimedActor.id);
+    headers.set('x-dnd-actor-name', encodeURIComponent(access.claimedActor.name));
+    headers.set('x-dnd-actor-avatar', encodeURIComponent(access.claimedActor.avatar));
+    headers.set('x-dnd-actor-color', access.claimedActor.color);
+  }
   return headers;
+}
+
+async function attachActorClaim(env: Env, access: RoomAccess): Promise<RoomAccess> {
+  if (access.role !== 'player') return access;
+  try {
+    const actor = await env.DB.prepare(
+      `SELECT a.id, a.name, a.avatar_url,
+              json_extract(a.prototype_token_json, '$.color') AS color
+         FROM actor_claims ac
+         JOIN actors a ON a.id = ac.actor_id AND a.deleted_at IS NULL
+        WHERE ac.room_id = ?1 AND ac.user_id = ?2 AND ac.status = 'active'
+        LIMIT 1`,
+    ).bind(access.roomId, access.userId).first<ClaimedActorRow>();
+    if (!actor) return access;
+    return {
+      ...access,
+      claimedActor: {
+        id: actor.id,
+        name: actor.name,
+        avatar: actor.avatar_url,
+        color: actor.color && /^#[0-9a-f]{3,8}$/iu.test(actor.color) ? actor.color : '#38a169',
+      },
+    };
+  } catch (error) {
+    // Rolling deployment: the room remains available before migration 0004 is
+    // applied; only Actor claims are temporarily unavailable.
+    if (error instanceof Error && /no such table:\s*actor_claims/iu.test(error.message)) return access;
+    throw error;
+  }
 }
 
 export async function initializeRoom(env: Env, access: RoomAccess): Promise<void> {
@@ -554,12 +711,17 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/gu, '');
 }
 
-function looksLikeImage(buffer: ArrayBuffer, type: string): boolean {
+function looksLikeAsset(buffer: ArrayBuffer, type: string): boolean {
   const bytes = new Uint8Array(buffer.slice(0, 16));
   const startsWith = (...signature: number[]) => signature.every((byte, index) => bytes[index] === byte);
   if (type === 'image/jpeg') return startsWith(0xff, 0xd8, 0xff);
   if (type === 'image/png') return startsWith(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
   if (type === 'image/webp') return startsWith(0x52, 0x49, 0x46, 0x46) && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP';
   if (type === 'image/avif') return String.fromCharCode(...bytes.slice(4, 8)) === 'ftyp';
+  if (type === 'application/pdf') return startsWith(0x25, 0x50, 0x44, 0x46, 0x2d);
+  if (type === 'audio/mpeg') return startsWith(0x49, 0x44, 0x33) || startsWith(0xff, 0xfb) || startsWith(0xff, 0xf3) || startsWith(0xff, 0xf2);
+  if (type === 'audio/ogg') return startsWith(0x4f, 0x67, 0x67, 0x53);
+  if (type === 'audio/wav' || type === 'audio/x-wav') return startsWith(0x52, 0x49, 0x46, 0x46) && String.fromCharCode(...bytes.slice(8, 12)) === 'WAVE';
+  if (type === 'audio/mp4') return String.fromCharCode(...bytes.slice(4, 8)) === 'ftyp';
   return false;
 }

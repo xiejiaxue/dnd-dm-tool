@@ -114,7 +114,7 @@ export function MapUploadProvider({ children }: { children: ReactNode }) {
       />
       {notice && (
         <div className="fixed top-14 right-3 z-50 max-w-md rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs shadow-xl text-zinc-200">
-          <button onClick={() => setNotice(null)} className="float-right ml-3 text-zinc-500 hover:text-white" aria-label="关闭地图提示">✕</button>
+          <button onClick={() => setNotice(null)} className="float-right ml-3 text-zinc-500 hover:text-zinc-100" aria-label="关闭地图提示" title="关闭地图提示">✕</button>
           {notice}
         </div>
       )}

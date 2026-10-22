@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { connection, useScene } from '../ws';
+import { useTabletopSettings } from '../features/settings/TabletopSettingsContext';
 
 export default function CampaignSwitcher({ onClose }: { onClose: () => void }) {
   const { campaign } = useScene();
+  const { confirmAction } = useTabletopSettings();
   const [list, setList] = useState<{ id: string; name: string }[]>([]);
   const [name, setName] = useState('');
   const reload = () => api.campaigns().then(setList);
@@ -22,8 +24,12 @@ export default function CampaignSwitcher({ onClose }: { onClose: () => void }) {
             <button
               className={active ? 'text-zinc-700 cursor-not-allowed' : 'text-zinc-500 hover:text-red-400'}
               title={active ? '当前战役不可删除' : '删除战役（不删场景）'}
+              aria-label={active ? `当前战役 ${c.name} 不可删除` : `删除战役 ${c.name}`}
               disabled={active}
-              onClick={() => { api.deleteCampaign(c.id).then(reload); }}>✕</button>
+              onClick={() => {
+                if (!confirmAction(`删除战役“${c.name}”？战役内场景会保留，但归档和关联关系将被删除。`)) return;
+                void api.deleteCampaign(c.id).then(reload);
+              }}>✕</button>
           </div>
         );
       })}
@@ -31,7 +37,8 @@ export default function CampaignSwitcher({ onClose }: { onClose: () => void }) {
         <input value={name} onChange={e => setName(e.target.value)} placeholder="新战役名"
           className="flex-1 bg-zinc-900 rounded px-2 py-1 text-sm" />
         <button onClick={() => { if (name.trim()) api.createCampaign(name.trim()).then(reload); setName(''); }}
-          className="px-2 py-1 rounded bg-amber-600/20 text-amber-400">＋</button>
+          disabled={!name.trim()} aria-label="新建战役" title="新建战役"
+          className="px-2 py-1 rounded bg-amber-600/20 text-amber-400 disabled:cursor-not-allowed disabled:opacity-40">＋</button>
       </div>
     </div>
   );

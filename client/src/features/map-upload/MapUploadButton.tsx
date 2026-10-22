@@ -25,6 +25,6 @@ export default function MapUploadButton({ variant = 'topbar', active = false }: 
       disabled={uploading}
       className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 disabled:opacity-50 whitespace-nowrap"
       title="上传地图底图"
-    >{uploading ? '上传地图…' : '🗺 上传地图'}</button>
+    >{uploading ? '上传地图…' : '上传地图'}</button>
   );
 }

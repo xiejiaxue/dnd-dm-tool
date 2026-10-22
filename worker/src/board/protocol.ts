@@ -17,16 +17,34 @@ export function actorFromHeaders(headers: Headers): RoomActor {
   const memberId = headers.get('x-dnd-member-id');
   const role = headers.get('x-dnd-room-role');
   const accessEpoch = Number(headers.get('x-dnd-access-epoch'));
+  const platformOwner = headers.get('x-dnd-platform-owner') === '1';
+  const claimedActorId = headers.get('x-dnd-actor-id');
+  const claimedActorName = decodedHeader(headers.get('x-dnd-actor-name'));
+  const claimedActorAvatar = decodedHeader(headers.get('x-dnd-actor-avatar'));
+  const claimedActorColor = headers.get('x-dnd-actor-color');
   if (!userId || !memberId || !isRoomRole(role) || !Number.isInteger(accessEpoch) || accessEpoch < 1) {
     throw new DomainError('FORBIDDEN', '无效的房间身份');
   }
-  return { userId, memberId, role, accessEpoch };
+  const claimedActor = claimedActorId && claimedActorName && claimedActorAvatar !== null && claimedActorColor
+    ? { id: claimedActorId, name: claimedActorName, avatar: claimedActorAvatar, color: claimedActorColor }
+    : undefined;
+  return {
+    userId, memberId, role, accessEpoch,
+    ...(platformOwner ? { platformOwner: true } : {}),
+    ...(claimedActor ? { claimedActor } : {}),
+  };
 }
 
 export function socketActor(socket: WebSocket): SocketAttachment | null {
   const value: unknown = socket.deserializeAttachment();
   if (!isRecord(value) || value.version !== 1 || typeof value.userId !== 'string' || typeof value.memberId !== 'string' || !isRoomRole(value.role)
     || typeof value.accessEpoch !== 'number' || typeof value.commandWindowStartedAt !== 'number' || typeof value.commandCount !== 'number') return null;
+  if (value.platformOwner !== undefined && typeof value.platformOwner !== 'boolean') return null;
+  if (value.claimedActor !== undefined && (!isRecord(value.claimedActor)
+    || typeof value.claimedActor.id !== 'string'
+    || typeof value.claimedActor.name !== 'string'
+    || typeof value.claimedActor.avatar !== 'string'
+    || typeof value.claimedActor.color !== 'string')) return null;
   return value as unknown as SocketAttachment;
 }
 
@@ -36,6 +54,11 @@ export function isRoomRole(value: unknown): value is RoomRole {
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function decodedHeader(value: string | null): string | null {
+  if (value === null) return null;
+  try { return decodeURIComponent(value); } catch { throw new DomainError('FORBIDDEN', '无效的角色身份'); }
 }
 
 export async function objectBody(request: Request): Promise<Record<string, unknown>> {

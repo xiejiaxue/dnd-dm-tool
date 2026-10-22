@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dnd.xiejiaxue.com/schemas/campaign-content-package.schema.json",
+  "title": "DND DM Tool Campaign Content Package",
+  "description": "Data-only campaign package. scenes/npcs may be inline in a compiled artifact or supplied as source directories during build.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "name", "version"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "$ref": "#/$defs/packageId" },
+    "name": { "$ref": "#/$defs/name" },
+    "description": { "type": "string", "maxLength": 500 },
+    "version": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+    "system": { "const": "dnd5e" },
+    "authors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": { "type": "string", "minLength": 1, "maxLength": 120 }
+    },
+    "license": { "type": "string", "maxLength": 240 },
+    "homepage": { "type": "string", "format": "uri", "maxLength": 500 },
+    "sceneCount": { "type": "integer", "minimum": 1, "maximum": 50, "readOnly": true },
+    "npcCount": { "type": "integer", "minimum": 0, "maximum": 250, "readOnly": true },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/scene" }
+    },
+    "npcs": {
+      "type": "array",
+      "maxItems": 250,
+      "items": { "$ref": "#/$defs/npc" }
+    }
+  },
+  "$defs": {
+    "packageId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+    },
+    "assetId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[a-z0-9](?:[a-z0-9-]{0,118}[a-z0-9])?-[a-f0-9]{12,64}$"
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assetId", "width", "height", "contentType", "mapScale"],
+      "properties": {
+        "assetId": { "$ref": "#/$defs/assetId" },
+        "width": { "type": "integer", "minimum": 1, "maximum": 20000 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 20000 },
+        "contentType": { "enum": ["image/jpeg", "image/png", "image/webp", "image/avif"] },
+        "mapScale": { "type": "number", "minimum": 0.1, "maximum": 8 }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "name", "map"],
+      "properties": {
+        "key": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "name": { "$ref": "#/$defs/name" },
+        "chapter": { "type": "string", "maxLength": 120, "default": "" },
+        "map": { "$ref": "#/$defs/map" },
+        "unlocked": { "type": "boolean", "default": false },
+        "tokens": {
+          "type": "array",
+          "maxItems": 500,
+          "default": [],
+          "items": { "$ref": "#/$defs/token" }
+        }
+      }
+    },
+    "token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "entryId", "x", "y", "size", "avatar", "color"],
+      "properties": {
+        "kind": { "enum": ["monster", "npc"] },
+        "name": { "$ref": "#/$defs/name" },
+        "entryId": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1, "maxLength": 180 }
+          ]
+        },
+        "x": { "type": "number", "minimum": 0, "maximum": 160000 },
+        "y": { "type": "number", "minimum": 0, "maximum": 160000 },
+        "size": { "type": "number", "minimum": 12, "maximum": 500 },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "color": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "number": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "hp": { "$ref": "#/$defs/hp" },
+        "hidden": { "type": "boolean" },
+        "publicName": { "type": "string", "maxLength": 120 },
+        "hpVisibility": { "enum": ["none", "bar", "value"] },
+        "conditions": {
+          "type": "array",
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/condition" }
+        },
+        "key": { "type": "string", "maxLength": 180, "deprecated": true },
+        "room": { "type": "string", "maxLength": 180, "deprecated": true }
+      }
+    },
+    "hp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current", "max"],
+      "properties": {
+        "current": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+        "max": { "type": "integer", "minimum": 1, "maximum": 1000000 }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "enum": ["prone", "grappled", "restrained", "stunned", "unconscious", "invisible", "concentrating", "dead"]
+        },
+        "remainingRounds": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "integer", "minimum": 1, "maximum": 99 }
+          ],
+          "default": null
+        }
+      }
+    },
+    "npc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "aliases", "role", "location", "status", "notesMarkdown", "sourceFile", "updatedAt"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 180 },
+        "name": { "$ref": "#/$defs/name" },
+        "aliases": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+        },
+        "role": { "type": "string", "maxLength": 120 },
+        "location": { "type": "string", "maxLength": 120 },
+        "status": { "enum": ["active", "missing", "inactive", "dead"] },
+        "importance": { "enum": ["major", "supporting", "minor"] },
+        "faction": { "type": "string", "maxLength": 120 },
+        "groupPath": {
+          "type": "array",
+          "maxItems": 6,
+          "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+        },
+        "statReference": { "$ref": "#/$defs/statReference" },
+        "notesMarkdown": { "type": "string", "maxLength": 16000 },
+        "playerAccess": { "enum": ["none", "limited", "observer"] },
+        "publicDescription": { "type": "string", "maxLength": 4000 },
+        "sourceFile": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1, "maxLength": 180 }
+          ]
+        },
+        "updatedAt": { "type": "number", "minimum": 0, "maximum": 10000000000000 }
+      }
+    },
+    "statReference": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": { "kind": { "const": "custom" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "entryId", "nameZh", "nameEn"],
+          "properties": {
+            "kind": { "const": "compendium" },
+            "entryId": { "type": "string", "minLength": 1, "maxLength": 180 },
+            "nameZh": { "$ref": "#/$defs/name" },
+            "nameEn": { "$ref": "#/$defs/name" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "npcId", "name"],
+          "properties": {
+            "kind": { "const": "npc" },
+            "npcId": { "type": "string", "minLength": 1, "maxLength": 180 },
+            "name": { "$ref": "#/$defs/name" }
+          }
+        }
+      ]
+    }
+  }
+}

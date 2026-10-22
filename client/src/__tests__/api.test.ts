@@ -30,7 +30,7 @@ describe('API errors', () => {
   });
 
   it('sends the selected room template when creating a room', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({
       room: { slug: 'dragon-heist-test', name: '周五团' },
     }), {
       status: 201,
@@ -54,7 +54,7 @@ describe('API errors', () => {
   });
 
   it('deletes the selected room without depending on global room state', async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { 'content-type': 'application/json' },
     }));
