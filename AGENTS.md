@@ -5,7 +5,7 @@
 - Preserve the Swiss UI and client-side tool navigation unless the task requests changes.
 - Start changes on a task branch and merge through a PR after the required Test and build check passes. main rejects direct pushes, force pushes, and deletion. Concurrent agents must use separate Git worktrees; do not switch another agent's branch or modify its uncommitted work.
 - Run `npm ci`, `npm run music:prepare`, `npm test`, and `npm run build` before release. Music bytes must match the checked-in credits manifest.
-- Production releases run only through `.github/workflows/production.yml` after main is updated. Never deploy directly from a worktree, a detached HEAD, or an uncommitted checkout.
+- Pushes and merges only test and build. Production releases require an explicit user release request and manual workflow_dispatch of `.github/workflows/production.yml` on main; never dispatch merely because a PR was merged. Never deploy directly from a worktree, a detached HEAD, or an uncommitted checkout.
 - The release pipeline preserves existing Worker vars and uses pinned D1/R2 resources. Do not recreate resources or run remote database migrations as part of a routine release.
 - Check the workflow's deploy verification and `https://dnd.xiejiaxue.com/release.json` before claiming a release succeeded.
 - Never commit `.dev.vars`, `.env` credentials, local state, character exports, or screenshots.
