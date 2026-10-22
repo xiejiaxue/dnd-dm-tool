@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import presets from '../../shared/waterdeep/deployment.json';
-import { deployWaterdeep } from '../src/waterdeep-deployment';
+import { deployWaterdeep } from '../src/modules/waterdeep-dragon-heist/deployment';
 import { createInitialRoomState, addScene, projectRoomState, type RoomActor } from '../src/domain';
 const host: RoomActor = {userId:'h',memberId:'h',role:'host',accessEpoch:1};
 it('previews all 21 scenes, preserves existing units and current scene, scales placements and is idempotent', () => {

@@ -24,13 +24,27 @@ Cloudflare 的 Static Assets 提供 SPA；`/api/*` 被 `run_worker_first` 保留
 
 | 目录 | 内容 |
 | --- | --- |
-| `worker/src/` | 唯一后端：`index.ts` 路由与入口，`room.ts` 战役 DO，`domain.ts` 纯状态机与操作校验，`campaign-store.ts` DO SQLite 持久化，`campaigns.ts` / `repository.ts` D1 业务，`auth.ts` / `http.ts` 会话与 HTTP 工具，其余为资料库、日历、模组等功能模块 |
+| `worker/src/` | 唯一后端：`index.ts` 路由与入口，`room.ts` 战役 DO，`domain.ts` 纯状态机与操作校验，`campaign-store.ts` DO SQLite 持久化，`campaigns.ts` / `repository.ts` D1 业务，`auth.ts` / `http.ts` 会话与 HTTP 工具，`modules/` 冒险模组注册表，其余为资料库、日历等功能模块 |
 | `worker/campaign-migrations/` | D1 schema（`wrangler.jsonc` 的 `migrations_dir`） |
 | `shared/` | 前后端共用的类型与纯逻辑：`types.ts`、`fog.ts`、`calendar/model.ts`、模组数据（`strahd/`、`waterdeep/`） |
 | `client/` | React 前端 |
 | `scripts/` | 构建、数据与发布脚本；`compendium-index.ts` 为 `npm run data:update` 生成规则书索引 |
 
 旧的 Express/局域网实现（`server/`）与旧房间模型的 D1 migration（`worker/migrations/`）已删除；需要查阅时看 Git 历史或标签 `production/before-cleanup-20261022`。
+
+## 冒险模组
+
+每个内置模组是 `worker/src/modules/<id>/` 下导出的一个 `AdventureModule`（类型见 `worker/src/modules/types.ts`），在 `worker/src/modules/registry.ts` 的 `MODULES` 中登记。Worker 其余代码只通过注册表使用模组，不直接引用某个模组：
+
+| 字段 | 作用 | 使用方 |
+| --- | --- | --- |
+| `id` | 写入 `campaign_modules.template_json` 的 `templateId`，也是 R2 `room-templates/<id>/` 前缀；发布后不可修改 | 全部 |
+| `library` | 个人库中显示的名称与说明；修改会为老用户新增一条库记录 | `campaigns.ts` |
+| `scenes.count` / `scenes.prepare` | 校验 R2 清单的地图数量；可逐张校验地图并填充新场景（例如预置 Token） | `module-template.ts` |
+| `compendium` | 加入资料搜索、怪物数据卡和 Token 图；按 `MODULES` 顺序查找 | `index.ts` |
+| `routes` | 模组专属接口 `/api/campaigns/:slug/<path>[/<param>]`，由 Worker 转发、在战役 DO 内执行，可读写实时状态 | `index.ts`、`room.ts` |
+
+新增模组：建目录导出 `AdventureModule`，加入 `MODULES`，把地图清单与图片上传到 R2 `room-templates/<id>/`。路由名不能与 `RESERVED_ROUTE_PATHS` 中的核心接口重复，`worker/test/modules.test.ts` 会检查。不要直接从 `MODULES` 移除已发布的模组：移除后无法再用它新建战役（库中旧记录仍会显示，选择时报“模组暂不可用”），已用它创建的战役的共享地图也会读不到（`repository.ts` 的 `getAsset` 只为登记中的模组从 R2 `REFERENCE_DATA` 读取地图）。下线模组需要先决定已有战役如何处理。
 
 ## 数据模型
 

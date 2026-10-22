@@ -1,6 +1,6 @@
-import presets from '../../shared/waterdeep/deployment.json';
-import type { Token } from '../../shared/types';
-import { type PersistedRoomState, type RoomActor, isRoomModerator, DomainError } from './domain';
+import presets from '../../../../shared/waterdeep/deployment.json';
+import type { Token } from '../../../../shared/types';
+import { type PersistedRoomState, type RoomActor, isRoomModerator, DomainError } from '../../domain';
 
 /** Additive and idempotent: manual tokens count toward each template's roster. */
 export function deployWaterdeep(state: PersistedRoomState, actor: RoomActor, apply = false) {

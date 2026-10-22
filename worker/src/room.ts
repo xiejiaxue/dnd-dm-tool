@@ -1,5 +1,5 @@
-import { strahdSceneFor, strahdTokens } from './strahd';
-import { deployWaterdeep } from './waterdeep-deployment';
+import { findModuleRoute } from './modules/registry';
+import type { ModuleRoute } from './modules/types';
 import { resolveFogBasisScale } from '../../shared/fog';
 import { DurableObject } from "cloudflare:workers";
 import { CampaignStore } from "./campaign-store";
@@ -121,40 +121,9 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (url.pathname === "/bootstrap" && request.method === "GET")
       return this.respondJson(this.bootstrap(actor));
 
-    const strahdMatch = /^\/strahd-scene\/([^/]+)$/.exec(url.pathname);
-    if (strahdMatch) {
-      this.requireModerator(actor);
-      const scene = this.requireState().scenes[decodeURIComponent(strahdMatch[1])];
-      if (!scene) return this.respondJson({ error: '找不到场景' }, 404);
-      const preset = strahdSceneFor(scene);
-      if (request.method === 'GET') return this.respondJson(preset ?? null);
-      if (request.method === 'POST') {
-        const body = await objectBody(request);
-        const spec = preset?.encounters.find(e => e.key === body.encounterKey);
-        const count = body.count;
-        if (!spec || typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > 100)
-          return this.respondJson({ error: '请选择本场景遭遇，数量须为 1–100' }, 400);
-        const result = this.mutate(actor, clientCommandId(body.id), 'scene.strahd-encounter', next => {
-          const target = next.scenes[scene.id];
-          const offset = target.tokens.filter(t => t.entryId === spec.entryId).length;
-          const tokens = strahdTokens(target, spec, count, offset).map(t => ({ ...t, id: crypto.randomUUID() }));
-          target.tokens.push(...tokens);
-          return { added: tokens.length };
-        }, [scene.id]);
-        this.broadcastState();
-        return this.respondJson(result.payload);
-      }
-    }
-    if (url.pathname === "/waterdeep-deployment") {
-      this.requireModerator(actor);
-      if (request.method === "GET") return this.respondJson(deployWaterdeep(this.requireState(), actor));
-      if (request.method === "POST") {
-        const body = await objectBody(request);
-        const result = this.mutate(actor, clientCommandId(body.id), "scene.deploy-waterdeep", next => deployWaterdeep(next, actor, true), []);
-        this.broadcastState();
-        return this.respondJson(result.payload);
-      }
-    }
+    const moduleMatch = /^\/([a-z0-9-]+)(?:\/([^/]+))?$/u.exec(url.pathname);
+    const moduleRoute = moduleMatch && findModuleRoute(moduleMatch[1], moduleMatch[2] !== undefined, request.method);
+    if (moduleRoute) return this.moduleRoute(moduleRoute, request, actor, moduleMatch[2]);
     if (url.pathname === "/scenes") {
       if (request.method === "GET")
         return this.respondJson(this.listScenes(actor));
@@ -614,6 +583,23 @@ export class RoomDurableObject extends DurableObject<Env> {
     this.broadcastState();
     const sceneId = (result.payload as { sceneId: string }).sceneId;
     return this.respondJson(this.requireState().scenes[sceneId], 201);
+  }
+
+  private async moduleRoute(route: ModuleRoute, request: Request, actor: RoomActor, param?: string): Promise<Response> {
+    if (route.moderatorOnly) this.requireModerator(actor);
+    const result = await route.handle({
+      method: request.method as 'GET' | 'POST',
+      param: param === undefined ? undefined : decodeURIComponent(param),
+      actor,
+      state: () => this.requireState(),
+      body: () => objectBody(request),
+      mutate: (commandId, action, update, sceneIds) => {
+        const { payload } = this.mutate(actor, clientCommandId(commandId), action, update, sceneIds);
+        this.broadcastState();
+        return payload;
+      },
+    });
+    return this.respondJson(result.body, result.status);
   }
 
   private deleteSceneRoute(actor: RoomActor, sceneId: string): Response {

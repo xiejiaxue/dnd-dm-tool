@@ -1,4 +1,5 @@
-import { prepareModuleScenes, modulePrefix, DRAGON_HEIST, CURSE_OF_STRAHD, templateAssetPrefix } from "./module-template";
+import { prepareModuleScenes, modulePrefix, templateAssetPrefix } from "./module-template";
+import { LEGACY_TEMPLATE_ID, findModule } from "./modules/registry";
 import { sha256Hex } from "./auth";
 import {
   requireCampaignAccess,
@@ -443,11 +444,11 @@ export async function getAsset(
     .bind(assetId, access.workspaceId, access.campaignId)
     .first<AssetRow>();
   if (!metadata) throw new HttpError(404, "ASSET_NOT_FOUND", "找不到素材");
-  const templateId = access.templateId ?? DRAGON_HEIST;
+  const templateId = access.templateId ?? LEGACY_TEMPLATE_ID;
   const prefix = templateAssetPrefix(access.campaignId, templateId);
   const templateAsset = metadata.object_key.startsWith(prefix)
     ? metadata.object_key.slice(prefix.length) : null;
-  const object = [DRAGON_HEIST, CURSE_OF_STRAHD].includes(templateId) && templateAsset && /^map-[a-z0-9-]+$/.test(templateAsset)
+  const object = findModule(templateId) && templateAsset && /^map-[a-z0-9-]+$/.test(templateAsset)
     ? await env.REFERENCE_DATA.get(`${modulePrefix(templateId)}assets/${templateAsset}`)
     : await env.ROOM_ASSETS.get(metadata.object_key);
   if (!object) throw new HttpError(404, "ASSET_NOT_FOUND", "找不到素材");

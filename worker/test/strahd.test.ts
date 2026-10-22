@@ -2,7 +2,7 @@ import { env, SELF, reset, runInDurableObject } from 'cloudflare:test';
 import { beforeEach, afterEach, expect, it } from 'vitest';
 import migration from '../campaign-migrations/0001_campaign_core.sql?raw';
 import { CampaignStore } from '../src/campaign-store';
-import { strahdScenes } from '../src/strahd';
+import { strahdScenes } from '../src/modules/curse-of-strahd/scenes';
 import { getStrahdCard, strahdIndex } from '../../shared/strahd';
 const base='https://table.test';
 const api=(path:string,cookie='',body?:unknown)=>SELF.fetch(base+path,{method:body===undefined?'GET':'POST',headers:{cookie,origin:base,'content-type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});
