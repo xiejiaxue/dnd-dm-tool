@@ -1,4 +1,4 @@
-import { DAYS, dayIndex, type CalendarEvent } from '../calendar/model';
+import { DAYS, dayIndex, type CalendarEvent } from '../../../shared/calendar/model';
 export const CAMPAIGN_START_DAY = dayIndex(3, 1);
 export const DEFAULT_OPENING_DAY = dayIndex(3, 20);
 export function tavernDate(day: number, startDay = DEFAULT_OPENING_DAY) {

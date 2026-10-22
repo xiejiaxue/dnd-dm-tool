@@ -1,5 +1,5 @@
 import { DATE_FLAVOR } from "./calendar-flavor";
-import { dayIndex, type CalendarEvent } from "../../client/src/calendar/model";
+import { dayIndex, type CalendarEvent } from "../../shared/calendar/model";
 export function seedEvents(): CalendarEvent[] {
   const start = '07-GM工具/04-战役何时开始.md'; const carnival = '05-派系大本营/01-海洋少女嘉年华.md'; const cass = '05-派系大本营/02-卡萨兰特庄园.md'; const clues = '07-GM工具/02-线索与时间线.md';
   const e = (id: string, month: number, day: number, title: string, kind: CalendarEvent['kind'], visible: boolean, detail: string, source: string, condition = ''): CalendarEvent => ({ id, title, day: dayIndex(month, day), minute: null, kind, public: visible, detail, source, condition, status: '待处理', flavor: DATE_FLAVOR[id] });

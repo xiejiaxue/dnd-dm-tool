@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { dayIndex, DAYS } from '../calendar/model';
+import { dayIndex, DAYS } from '../../../shared/calendar/model';
 import { seedEvents } from '../../../worker/src/calendar';
 import { newGame, parseGame } from './game';
 import { CAMPAIGN_START_DAY, tavernDate, todayPublicEvents } from './date';

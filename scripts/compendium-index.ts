@@ -1,9 +1,7 @@
-import { getStrahdCard, searchStrahd, strahdToken } from '../../shared/strahd';
-import { searchWaterdeep } from "../../shared/waterdeep";
+// Builds data/db/index.json from a local 5etools-cn checkout for `npm run data:update`.
 import fs from 'node:fs';
 import path from 'node:path';
-import Fuse from 'fuse.js';
-import { EntryType, IndexEntry } from './types';
+import type { EntryType, IndexEntry } from '../shared/types';
 
 export interface SourceMap { [source: string]: string }
 
@@ -156,34 +154,4 @@ function readSourceMap(dbDir: string, sub: string): SourceMap {
 export function writeIndex(dbDir: string, entries: IndexEntry[]): void {
   fs.mkdirSync(dbDir, { recursive: true });
   fs.writeFileSync(path.join(dbDir, 'index.json'), JSON.stringify(entries));
-}
-
-export class SearchService {
-  private entries: IndexEntry[] = [];
-  private fuse: Fuse<IndexEntry> | null = null;
-
-  constructor(private dbDir: string) {}
-
-  async load(): Promise<void> {
-    const p = path.join(this.dbDir, 'index.json');
-    if (!fs.existsSync(p)) {
-      const built = await buildIndexFromDir(this.dbDir);
-      writeIndex(this.dbDir, built);
-    }
-    this.entries = JSON.parse(fs.readFileSync(path.join(this.dbDir, 'index.json'), 'utf8')) as IndexEntry[];
-    this.fuse = new Fuse(this.entries, {
-      keys: ['nameZh', 'nameEn'],
-      threshold: 0.4,
-      ignoreLocation: true,
-    });
-  }
-
-  query(q: string, type: EntryType | 'all' = 'all'): IndexEntry[] {
-    if (!this.fuse) return [...searchWaterdeep(q, type), ...searchStrahd(q, type)].slice(0, 50);
-    const trimmed = q.trim();
-    if (!trimmed) return [];
-    const scored = this.fuse.search(trimmed);
-    const out = scored.map(r => r.item).filter(e => type === 'all' || e.type === type);
-    return [...searchWaterdeep(q, type), ...searchStrahd(q, type), ...out].slice(0, 50);
-  }
 }
