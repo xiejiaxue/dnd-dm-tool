@@ -1,6 +1,5 @@
-import { getStrahdCard, searchStrahd, strahdToken } from '../../shared/strahd';
 import { calendarPayload } from "./calendar";
-import { getWaterdeepCard, searchWaterdeep, waterdeepToken } from "../../shared/waterdeep";
+import { findModuleRoute, moduleMonsterCard, moduleToken, searchModules } from "./modules/registry";
 import {
   getOrCreateSession,
   revokeCurrentSession,
@@ -372,11 +371,10 @@ async function routeRoomApi(
     });
     return new Response(asset.object.body, { headers });
   }
-  if (rest[0] === 'strahd-scene' && rest.length === 2 && (request.method === 'GET' || request.method === 'POST')) {
-    return callRoom(env, access, request.method, `/strahd-scene/${encodeURIComponent(rest[1])}`, request.method === 'POST' ? await readJsonObject(request) : undefined);
-  }
-  if (rest[0] === "waterdeep-deployment" && rest.length === 1 && (request.method === "GET" || request.method === "POST")) {
-    return callRoom(env, access, request.method, "/waterdeep-deployment", request.method === "POST" ? await readJsonObject(request) : undefined);
+  const moduleRoute = rest.length <= 2 ? findModuleRoute(rest[0], rest.length === 2, request.method) : undefined;
+  if (moduleRoute) {
+    const path = `/${moduleRoute.path}${moduleRoute.param ? `/${encodeURIComponent(rest[1])}` : ""}`;
+    return callRoom(env, access, request.method, path, request.method === "POST" ? await readJsonObject(request) : undefined);
   }
   if (rest[0] === "scenes") {
     if (
@@ -535,13 +533,13 @@ async function searchCompendium(env: Env, url: URL): Promise<Response> {
   const requestedType = url.searchParams.get("type") ?? "all";
   if (!query) return json([]);
   const index = await env.REFERENCE_DATA.get("compendium/index.json");
-  if (!index) return json([...searchWaterdeep(query, requestedType), ...searchStrahd(query, requestedType)].slice(0, 50));
+  if (!index) return json(searchModules(query, requestedType).slice(0, 50));
   const source: unknown = await index.json();
-  if (!Array.isArray(source)) return json([...searchWaterdeep(query, requestedType), ...searchStrahd(query, requestedType)].slice(0, 50));
+  if (!Array.isArray(source)) return json(searchModules(query, requestedType).slice(0, 50));
   const entries = source.flatMap((item) =>
     asCompendiumIndexRow(item) ? [item] : [],
   );
-  const matches = [...searchWaterdeep(query, requestedType), ...searchStrahd(query, requestedType), ...entries]
+  const matches = [...searchModules(query, requestedType), ...entries]
     .filter((entry) => {
       if (requestedType !== "all" && entry.type !== requestedType) return false;
       return `${entry.nameZh} ${entry.nameEn} ${entry.id} ${entry.source}`
@@ -561,7 +559,7 @@ async function getCompendiumEntry(
     throw new HttpError(404, "NOT_FOUND", "找不到资料条目");
   if (!id || id.length > 180)
     throw new HttpError(404, "NOT_FOUND", "找不到资料条目");
-  const builtin = type === "monster" ? (getWaterdeepCard(id) ?? getStrahdCard(id)) : undefined;
+  const builtin = type === "monster" ? moduleMonsterCard(id) : undefined;
   if (builtin) return json(builtin);
   const indexObject = await env.REFERENCE_DATA.get("compendium/index.json");
   if (!indexObject) throw new HttpError(404, "NOT_FOUND", "找不到资料条目");
@@ -608,7 +606,7 @@ async function getCompendiumEntry(
 async function getCompendiumToken(env: Env, id: string): Promise<Response> {
   if (!id || id.length > 180)
     throw new HttpError(404, "NOT_FOUND", "找不到 Token");
-  const builtin = waterdeepToken(id) ?? strahdToken(id);
+  const builtin = moduleToken(id);
   if (builtin) return new Response(builtin, { headers: { "content-type": "image/svg+xml; charset=utf-8", "cache-control": "public, max-age=86400", "x-content-type-options": "nosniff" } });
   const token = await env.REFERENCE_DATA.get(
     `compendium/tokens/${encodeURIComponent(id)}.webp`,

@@ -1,6 +1,6 @@
-import presets from '../../shared/strahd/scenes.json';
-import type { Scene, Token } from '../../shared/types';
-import type { StrahdEncounter, StrahdScene } from '../../shared/strahd-types';
+import presets from '../../../../shared/strahd/scenes.json';
+import type { Scene, Token } from '../../../../shared/types';
+import type { StrahdEncounter, StrahdScene } from '../../../../shared/strahd-types';
 export const strahdScenes: StrahdScene[] = presets;
 export function strahdSceneFor(scene: Scene) {
   return strahdScenes.find(p => scene.mapImage?.endsWith(`-${p.map.assetId}`));
