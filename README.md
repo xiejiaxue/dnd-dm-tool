@@ -51,11 +51,11 @@ npm test
 npm run build
 ```
 
-测试同时覆盖旧的纯领域逻辑，以及 Worker + D1 + Durable Object 的房间创建、邀请兑换和状态持久化。
+测试覆盖前端与共享纯逻辑、规则书索引脚本，以及 Worker + D1 + Durable Object 的战役创建、邀请兑换和状态持久化。
 
 ## 迁移说明
 
-旧的 Express/局域网服务保留在 `server/`，便于参考与离线数据构建，但不再是部署入口。不要迁移旧浏览器的 `sessionId`、DM 口令或 `localStorage` 身份；新版本全部使用服务器签发的 Cookie 会话和 D1 房间成员关系。
+旧的 Express/局域网服务（`server/`）已删除，唯一后端是 `worker/`；需要查阅旧实现时看 Git 历史或标签 `production/before-cleanup-20261022`。规则书索引生成已移到 `scripts/compendium-index.ts`。不要迁移旧浏览器的 `sessionId`、DM 口令或 `localStorage` 身份；新版本全部使用服务器签发的 Cookie 会话和 D1 战役成员关系。
 
 ## 独立工具与角色卡 PDF
 

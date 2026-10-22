@@ -73,7 +73,7 @@ for (const f of targets) {
 }
 
 await import('tsx/esm');
-const { buildIndexFromDir, writeIndex } = await import('../server/src/search.ts');
+const { buildIndexFromDir, writeIndex } = await import('./compendium-index.ts');
 const idx = await buildIndexFromDir(DB);
 writeIndex(DB, idx);
 

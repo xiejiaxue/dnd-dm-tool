@@ -1,4 +1,4 @@
-import { seedEvents } from '../../../worker/src/calendar';
+import { seedEvents } from '../../worker/src/calendar';
 import { describe, expect, it } from 'vitest';
 import { advance, crossedEvents, DAYS, dayIndex, LAST_MINUTE, newCalendar, parseCalendar, undoAdvance } from './model';
 

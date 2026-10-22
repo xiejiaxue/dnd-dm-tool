@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DAYS, type CalendarEvent } from '../calendar/model';
+import { DAYS, type CalendarEvent } from '../../../shared/calendar/model';
 import { CAMPAIGN_START_DAY, DEFAULT_OPENING_DAY, tavernDate, todayPublicEvents } from '../tavern/date';
 type Payload = { canManage: boolean; events: CalendarEvent[] };
 function DateStory({ event, dm = false }: { event: CalendarEvent; dm?: boolean }) {
