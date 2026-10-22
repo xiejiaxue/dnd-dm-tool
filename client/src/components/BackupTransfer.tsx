@@ -183,17 +183,17 @@ export default function BackupTransfer() {
   };
 
   const toneClass = notice?.tone === 'error'
-    ? 'text-red-300'
+    ? 'text-accent'
     : notice?.tone === 'success'
-      ? 'text-emerald-300'
-      : 'text-zinc-400';
+      ? 'text-ink font-medium'
+      : 'text-muted';
 
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setOpen(value => !value)}
-        className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 disabled:opacity-50"
+        className="btn-quiet"
         title="导入或导出当前场景的本地备份文件"
         aria-expanded={open}
         disabled={busy}
@@ -206,24 +206,24 @@ export default function BackupTransfer() {
         onChange={(event) => { void importScene(event); }}
       />
       {open && (
-        <div className="absolute right-0 top-9 z-30 w-80 rounded border border-zinc-700 bg-zinc-800 p-3 text-xs shadow-xl">
-          <div className="font-medium text-zinc-200">本地场景备份</div>
-          <p className="mt-1 leading-relaxed text-zinc-400">导出当前场景为文件；导入时会新建场景，不会覆盖正在进行的战斗。</p>
+        <div className="absolute right-0 top-9 z-30 w-80 border border-ink bg-panel p-3 text-xs shadow-[4px_4px_0_0_rgba(17,17,16,0.12)]">
+          <div className="panel-label">本地场景备份</div>
+          <p className="mt-1.5 leading-relaxed text-muted">导出当前场景为文件；导入时会新建场景，不会覆盖正在进行的战斗。</p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => { void exportScene(); }}
               disabled={!scene || busy}
-              className="rounded bg-emerald-600/20 px-2 py-2 text-emerald-300 hover:bg-emerald-600/30 disabled:opacity-50"
+              className="btn-primary w-full"
             >导出当前场景</button>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={busy}
-              className="rounded bg-amber-600/20 px-2 py-2 text-amber-300 hover:bg-amber-600/30 disabled:opacity-50"
+              className="btn-accent w-full"
             >导入为新场景</button>
           </div>
-          <p className="mt-3 leading-relaxed text-zinc-500">地图、怪物与迷雾会恢复（超大迷雾除外）；玩家身份与当前先攻顺序属于房间实时状态，出于权限安全不会导入。</p>
+          <p className="mt-3 leading-relaxed text-faint">地图、怪物与迷雾会恢复（超大迷雾除外）；玩家身份与当前先攻顺序属于房间实时状态，出于权限安全不会导入。</p>
           {notice && <p className={`mt-2 leading-relaxed ${toneClass}`} role="status">{notice.text}</p>}
         </div>
       )}

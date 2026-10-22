@@ -115,46 +115,47 @@ export default function EnemyList() {
   };
 
   return (
-    <aside className="w-52 border-r border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
+    <aside id="campaign-encounter" className="campaign-encounter-panel" aria-label="当前遭遇">
       {role === 'player' && myToken && (
-        <div className="px-2 py-2 border-b border-zinc-800 bg-zinc-800/30">
-          <div className="text-xs text-zinc-400 mb-1">我的角色</div>
+        <div className="px-3 py-2.5 border-b border-line">
+          <div className="panel-label mb-1.5">我的角色</div>
           <div className="flex items-center gap-1.5">
             {editName ? (
               <input autoFocus value={nameVal} onChange={e => setNameVal(e.target.value)}
                 onBlur={() => { if (nameVal.trim()) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { name: nameVal.trim().slice(0, 20) } }]); setEditName(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
-                className="flex-1 min-w-0 bg-zinc-900 rounded px-1 py-0.5 text-sm" />
+                className="field-sm flex-1 min-w-0" />
             ) : (
-              <button className="flex-1 min-w-0 text-left truncate text-zinc-100"
+              <button className="flex-1 min-w-0 text-left truncate font-medium text-ink"
                 onClick={() => { setNameVal(myToken.name); setEditName(true); }}>{myToken.name} ✎</button>
             )}
-            <span className="shrink-0 text-[10px] text-zinc-500">HP</span>
+            <span className="shrink-0 text-[10px] text-faint">HP</span>
             {hpEdit ? (
               <input autoFocus value={hpCur} onChange={e => setHpCur(e.target.value)}
                 onBlur={() => { const c = Number(hpCur), m = Number(hpMax); if (Number.isFinite(c) && Number.isFinite(m)) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { hp: { current: c, max: m } } }]); setHpEdit(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
-                className="w-8 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs" />
+                className="field-sm w-9 text-center tabular-nums" />
             ) : (
-              <button className="shrink-0 text-emerald-400 text-xs" onClick={() => { setHpCur(String(myToken.hp?.current ?? '')); setHpMax(String(myToken.hp?.max ?? '')); setHpEdit(true); }}>
+              <button className="shrink-0 text-xs font-medium tabular-nums text-ink" onClick={() => { setHpCur(String(myToken.hp?.current ?? '')); setHpMax(String(myToken.hp?.max ?? '')); setHpEdit(true); }}>
                 {myToken.hp ? `${myToken.hp.current}/${myToken.hp.max}` : '—'}
               </button>
             )}
           </div>
-          <div className="flex items-center gap-1 mt-1 flex-wrap">
+          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
             {PALETTE.map(c => (
               <button key={c} onClick={() => connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { color: c } }])}
-                className={`w-4 h-4 rounded-full ${myToken.color === c ? 'ring-2 ring-white' : ''}`} style={{ background: c }} />
+                aria-label={`选择颜色 ${c}`}
+                className={`w-4 h-4 ${myToken.color === c ? 'ring-2 ring-ink ring-offset-2 ring-offset-panel' : ''}`} style={{ background: c }} />
             ))}
           </div>
-          <div className="flex items-center gap-2 mt-1.5">
+          <div className="flex items-center gap-2 mt-2">
             {avatarPreview || myToken.avatar ? (
-              <img src={avatarPreview ?? myToken.avatar} alt="" className="w-8 h-8 rounded-full object-cover bg-zinc-700 shrink-0" />
+              <img src={avatarPreview ?? myToken.avatar} alt="" className="w-9 h-9 object-cover border border-line shrink-0" />
             ) : (
-              <span className="w-8 h-8 rounded-full shrink-0" style={{ background: myToken.color }} />
+              <span className="w-9 h-9 shrink-0 border border-line" style={{ background: myToken.color }} />
             )}
             <button onClick={() => avatarRef.current?.click()}
-              className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-xs">上传头像</button>
+              className="btn-xs">上传头像</button>
             {(avatarPreview || myToken.avatar) && (
               <button onClick={() => {
                 avatarUploadGeneration.current += 1;
@@ -164,22 +165,16 @@ export default function EnemyList() {
                 setAvatarPreview(null);
                 connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: '' } }]);
               }}
-                className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 hover:text-red-400 text-xs">移除</button>
+                className="btn-xs text-accent hover:border-accent hover:text-accent">移除</button>
             )}
             <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={onAvatarPicked} />
           </div>
-          <div className="text-[10px] text-zinc-600 mt-1">拖动画布上的 token 可移动位置</div>
+          <div className="text-[10px] text-faint mt-1.5">拖动棋子移动</div>
         </div>
       )}
-      <div className="px-2 py-2 border-b border-zinc-800 text-xs text-zinc-400 flex items-center justify-between gap-1">
-        <span>敌人 <span className="text-zinc-500">({tokens.length})</span></span>
-        {isDm && (
-          <button
-            onClick={() => connection.sendControl({ type: 'rollInitiative' })}
-            title="对场景内所有怪物掷 d20+敏捷调整值，加入/重掷先攻"
-            className="shrink-0 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 text-[10px]"
-          >自动随机先攻</button>
-        )}
+      <div className="campaign-query-heading">
+        <span className="panel-label">遭遇 <span className="tabular-nums">({tokens.length})</span></span>
+
       </div>
       {detail ? (
         <DetailDrawer entry={detail} onBack={() => setDetail(null)} />
@@ -189,8 +184,8 @@ export default function EnemyList() {
             const eid = t.entryId;
             if (addingId === t.id) {
               return (
-                <div key={t.id} className="flex items-center gap-1 px-2 py-1.5 border-b border-zinc-800/50 bg-zinc-800/50">
-                  <span className="flex-1 truncate text-zinc-200">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+                <div key={t.id} className="flex items-center gap-1 px-3 py-1.5 border-b border-line bg-well">
+                  <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
                   <input
                     autoFocus
                     value={addValue}
@@ -201,16 +196,16 @@ export default function EnemyList() {
                       if (e.key === 'Escape') { setAddingId(null); setAddValue(''); }
                     }}
                     placeholder="先攻值"
-                    className="w-14 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs"
+                    className="field-sm w-14 text-center tabular-nums"
                   />
                 </div>
               );
             }
             if (hpEditId === t.id) {
               return (
-                <div key={t.id} className="flex items-center gap-1 px-2 py-1.5 border-b border-zinc-800/50 bg-zinc-800/50">
-                  <span className="flex-1 truncate text-zinc-200">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
-                  <span className="text-[10px] text-zinc-500 shrink-0">HP</span>
+                <div key={t.id} className="flex items-center gap-1 px-3 py-1.5 border-b border-line bg-well">
+                  <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+                  <span className="text-[10px] text-faint shrink-0">HP</span>
                   <input
                     autoFocus
                     value={hpCur}
@@ -218,58 +213,60 @@ export default function EnemyList() {
                     onBlur={() => commitHp(t)}
                     onKeyDown={e => { if (e.key === 'Enter') commitHp(t); if (e.key === 'Escape') { setHpEditId(null); } }}
                     placeholder="当前"
-                    className="w-9 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs"
+                    className="field-sm w-9 text-center tabular-nums"
                   />
-                  <span className="text-zinc-600 text-xs">/</span>
+                  <span className="text-faint text-xs">/</span>
                   <input
                     value={hpMax}
                     onChange={e => setHpMax(e.target.value)}
                     onBlur={() => commitHp(t)}
                     onKeyDown={e => { if (e.key === 'Enter') commitHp(t); }}
                     placeholder="最大"
-                    className="w-9 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs"
+                    className="field-sm w-9 text-center tabular-nums"
                   />
                 </div>
               );
             }
             return (
-              <div key={t.id} className="flex items-center gap-1 px-2 py-1.5 border-b border-zinc-800/50 hover:bg-zinc-800/50">
-                <span className="flex-1 truncate text-zinc-200">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+              <div key={t.id} className="group flex items-center gap-1 px-3 py-1.5 border-b border-line hover:bg-well transition-colors duration-150">
+                <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+                {isDm ? (
                 <button
                   onClick={() => startHpEdit(t)}
                   title="修改 HP"
-                  className={`shrink-0 px-1 py-0.5 rounded text-[10px] font-semibold hover:bg-zinc-700 ${
-                    !t.hp ? 'text-zinc-600' : t.hp.current <= 0 ? 'text-red-400' : 'text-emerald-400'
+                  className={`shrink-0 px-1 py-0.5 text-xs font-medium tabular-nums hover:bg-panel ${
+                    !t.hp ? 'text-faint' : t.hp.current <= 0 ? 'text-accent' : 'text-ink'
                   }`}
                 >{t.hp ? `${t.hp.current}/${t.hp.max}` : 'HP:—'}</button>
+                ) : <span className="shrink-0 px-1 text-xs tabular-nums">{t.hp ? `${t.hp.current}/${t.hp.max}` : 'HP:—'}</span>}
                 {eid && (
                   <button
                     onClick={() => setDetail({ type: 'monster', id: eid, nameZh: t.name })}
                     title="显示详细数据"
-                    className="shrink-0 w-6 h-6 rounded hover:bg-zinc-700 text-zinc-400 hover:text-amber-400"
-                  >📖</button>
+                    className="shrink-0 h-6 px-1 inline-flex items-center text-xs text-faint hover:text-ink hover:bg-panel transition-colors duration-150"
+                  >数据</button>
                 )}
                 {isDm && !inInitiative(t.id) && (
                   <button
                     onClick={() => startAdd(t)}
                     title="加入先攻"
-                    className="shrink-0 px-1 py-0.5 rounded hover:bg-emerald-700/30 text-emerald-400 text-xs"
+                    className="shrink-0 h-6 px-1 inline-flex items-center text-xs text-faint group-hover:text-ink hover:bg-panel transition-colors duration-150"
                   >先攻</button>
                 )}
                 {isDm && inInitiative(t.id) && (
-                  <span title="已在先攻列表" className="shrink-0 px-1 py-0.5 text-[10px] text-emerald-600">已入</span>
+                  <span title="已在先攻列表" className="shrink-0 px-1 text-[10px] font-bold text-accent">已入</span>
                 )}
                 {isDm && (
                   <button
                     onClick={() => connection.sendOps([{ op: 'removeToken', tokenId: t.id }])}
-                    title="删除 token"
-                    className="shrink-0 w-6 h-6 rounded hover:bg-zinc-700 text-zinc-400 hover:text-red-400"
+                    title="移除棋子"
+                    className="shrink-0 h-6 px-1 inline-flex items-center text-xs text-faint hover:text-accent hover:bg-panel transition-colors duration-150"
                   >✕</button>
                 )}
               </div>
             );
           })}
-          {tokens.length === 0 && <div className="p-3 text-zinc-500 text-xs">暂无敌人 token</div>}
+          {tokens.length === 0 && <div className="p-3 text-muted text-xs">暂无敌人</div>}
         </div>
       )}
     </aside>

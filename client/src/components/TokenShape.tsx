@@ -44,7 +44,7 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
       <Circle
         width={token.size} height={token.size}
         fill={token.color || '#333'}
-        stroke={selected ? '#f59e0b' : token.color || '#000'}
+        stroke={selected ? '#B93424' : token.color || '#000'}
         strokeWidth={selected ? 3 : 1.5}
       />
       {/* 头像：圆形裁剪（clipFunc 画圆裁出圆形图）。底圆以 (0,0) 为中心，
@@ -62,17 +62,17 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
           <KImage image={img} width={token.size} height={token.size} perfectDrawEnabled={false} listening={false} />
         </Group>
       )}
-      {/* 当前回合高亮：金色脉冲环 */}
+      {/* 当前回合高亮：白色脉冲环（在明暗地图上都可读） */}
       {active && (
         <Ring
           innerRadius={token.size / 2 - 6}
           outerRadius={token.size / 2 + 4 + pulse}
           fillEnabled={false}
-          stroke="#fbbf24" strokeWidth={3}
+          stroke="#FFFFFF" strokeWidth={3}
           listening={false}
         />
       )}
-      {/* 怪物编号徽章（右上角） */}
+      {/* 怪物编号徽章（右上角）：白底墨边、红色数字 */}
       {token.kind === 'monster' && token.number != null && (() => {
         const r = token.size * 0.17;
         const cx = token.size * 0.78;
@@ -80,18 +80,19 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
         const fs = r * 1.3;
         return (
           <Group x={0} y={0} listening={false}>
-            <Circle x={cx} y={cy} radius={r} fill="#0f1115" stroke="#f59e0b" strokeWidth={2} />
+            <Circle x={cx} y={cy} radius={r} fill="#FFFFFF" stroke="#111110" strokeWidth={2} />
             <Text
               text={String(token.number)}
               x={cx - r} y={cy - fs / 2} width={r * 2}
-              align="center" fill="#fbbf24" fontStyle="bold"
+              align="center" fill="#B93424" fontStyle="bold"
               fontSize={fs}
             />
           </Group>
         );
       })()}
       <Text text={token.name} y={token.size / 2 + 2} width={token.size} align="center"
-        fill={token.kind === 'monster' ? '#ef4444' : '#22c55e'} fontSize={12} fontStyle="bold" />
+        fill="#FFFFFF" fontSize={12} fontStyle="bold"
+        shadowColor="#000000" shadowBlur={2} shadowOpacity={0.75} />
     </Group>
   );
 }

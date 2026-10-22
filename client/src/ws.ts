@@ -396,11 +396,12 @@ export function useScene(): SceneState {
   }));
   useEffect(() => connection.onMessage((msg) => {
     if (msg.type === 'state' && msg.scene) {
+      const scene = msg.scene;
       const viewer = asViewer(msg.viewer);
       const effectiveRole = viewer?.roomRole ?? msg.roomRole ?? msg.role;
       setState(current => ({
         ...current,
-        scene: msg.scene,
+        scene,
         role: uiRole(effectiveRole),
         roomRole: rawRole(effectiveRole),
         viewer,

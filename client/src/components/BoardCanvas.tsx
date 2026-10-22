@@ -5,11 +5,19 @@ import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
 import { FOG_CELL, fogGridSize } from '../types';
 import TokenShape from './TokenShape';
+import ZoomControl from './ZoomControl';
+import { zoomAroundPoint, wheelZoomFactor } from './board-zoom';
+import { useMapScale } from '../hooks/useMapScale';
 import type { PendingToken } from '../pending';
 
-// Fog overlay color by role: the DM sees a translucent amber veil (they can see
+// Fog overlay color by role: the DM sees a translucent red veil (they can see
 // through it), players see near-opaque dark so unrevealed areas hide the map.
-const FOG_COLOR = { dm: 'rgba(245,158,11,0.35)', player: '#0f1115', spectator: '#0f1115' } as const;
+const FOG_COLOR = { dm: 'rgba(186,53,38,0.32)', player: '#141412', spectator: '#141412' } as const;
+
+// Shared ink/accent tokens for the canvas layer (mirror of tailwind.config).
+const INK = '#20221e';
+const ACCENT = '#ba3526';
+const MAP_LOADING = '#E3E1D8';
 
 interface Props {
   tool: string;
@@ -33,10 +41,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   // Coalescing them keeps a large Konva layer from rebuilding for every tick.
   const pendingViewRef = useRef<{ scale: number; pos: { x: number; y: number } } | null>(null);
   const viewFrameRef = useRef<number | null>(null);
-  // Consecutive map-calibration clicks must compose locally instead of waiting
-  // for a server snapshot to update the callback's `scene` closure.
-  const [localMapScale, setLocalMapScale] = useState<number | null>(null);
-  const localMapScaleRef = useRef<number | null>(null);
+  const mapZoom = useMapScale({ sceneId: scene?.id, mapImage: scene?.mapImage, value: scene?.mapScale ?? 1, enabled: role === 'dm' });
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   // Live preview line while dragging the wall tool: [x1, y1, x2, y2].
   const [wallPreview, setWallPreview] = useState<[number, number, number, number] | null>(null);
@@ -54,6 +59,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   // Size the Konva surface from its actual flex item instead of subtracting
   // hard-coded viewport chrome. This keeps the board above the filing footer
   // (and handles panel/viewport changes without making the footer overlap).
+  // Re-run once the scene arrives: the loading early-return renders no ref'd
+  // root, so the first pass measures nothing.
+  const sceneReady = scene != null;
   useLayoutEffect(() => {
     const element = boardRef.current;
     if (!element) return;
@@ -69,7 +77,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       observer?.disconnect();
       window.removeEventListener('resize', measure);
     };
-  }, []);
+  }, [sceneReady]);
 
   // Leaving wall mode cancels any in-progress wall line.
   useEffect(() => {
@@ -100,14 +108,6 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }, []);
 
   const map = useImage(scene?.mapImage ? scene.mapImage : null);
-
-  useEffect(() => {
-    const authoritative = scene?.mapScale ?? 1;
-    const local = localMapScaleRef.current;
-    if (local === null || Math.abs(local - authoritative) > 0.0001) return;
-    localMapScaleRef.current = null;
-    setLocalMapScale(null);
-  }, [scene?.mapScale]);
 
   // Convert a container-space pointer to world coordinates (unaffected by pan/zoom).
   const worldPos = useCallback((): { x: number; y: number } | null => {
@@ -172,9 +172,6 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     }
   }, [fogCellAt, scene, brushSize]);
 
-  const MIN_SCALE = 0.1;
-  const MAX_SCALE = 8;
-
   const scheduleView = useCallback((nextScale: number, nextPos: { x: number; y: number }) => {
     pendingViewRef.current = { scale: nextScale, pos: nextPos };
     if (viewFrameRef.current !== null) return;
@@ -196,52 +193,27 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     const pending = pendingViewRef.current;
     const oldScale = pending?.scale ?? stage.scaleX();
     const oldPos = pending?.pos ?? { x: stage.x(), y: stage.y() };
-    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, oldScale * factor));
-    if (newScale === oldScale) return;
-    const mousePointTo = { x: (pointer.x - oldPos.x) / oldScale, y: (pointer.y - oldPos.y) / oldScale };
-    scheduleView(newScale, { x: pointer.x - mousePointTo.x * newScale, y: pointer.y - mousePointTo.y * newScale });
+    const next = zoomAroundPoint(oldScale, oldPos, pointer, oldScale * factor);
+    scheduleView(next.scale, next.pos);
   }, [scheduleView]);
 
-  // Zoom around the visible canvas centre (used by the +/- buttons).
-  const zoomCenter = useCallback((factor: number) => {
+  const setViewScale = useCallback((value: number) => {
     const stage = stageRef.current;
     if (!stage) return;
-    zoomAt({ x: stage.width() / 2, y: stage.height() / 2 }, factor);
-  }, [zoomAt]);
+    const previous = pendingViewRef.current ?? { scale: stage.scaleX(), pos: { x: stage.x(), y: stage.y() } };
+    const next = zoomAroundPoint(previous.scale, previous.pos, { x: stage.width() / 2, y: stage.height() / 2 }, value);
+    scheduleView(next.scale, next.pos);
+  }, [scheduleView]);
 
   const resetView = useCallback(() => {
     scheduleView(1, { x: 0, y: 0 });
   }, [scheduleView]);
 
-  // Map-image calibration: scale the map (NOT the tokens/grid) so a hand-drawn
-  // map's cells line up with the grid. Sent as an op so it persists per scene.
-  const adjustMapScale = useCallback((factor: number) => {
-    if (!scene) return;
-    const cur = localMapScaleRef.current ?? scene.mapScale ?? 1;
-    const next = Math.min(8, Math.max(0.1, Math.round(cur * factor * 100) / 100));
-    if (next !== cur) {
-      localMapScaleRef.current = next;
-      setLocalMapScale(next);
-      connection.sendOps([{ op: 'updateMapScale', mapScale: next }]);
-    }
-  }, [scene]);
-
-  const setMapScale = useCallback((value: number) => {
-    if (!scene) return;
-    const clamped = Math.min(8, Math.max(0.1, value));
-    if (clamped !== (localMapScaleRef.current ?? scene.mapScale ?? 1)) {
-      localMapScaleRef.current = clamped;
-      setLocalMapScale(clamped);
-      connection.sendOps([{ op: 'updateMapScale', mapScale: clamped }]);
-    }
-  }, [scene]);
-
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const pointer = stageRef.current?.getPointerPosition();
     if (!pointer) return;
-    const dir = e.evt.deltaY > 0 ? -1 : 1;
-    zoomAt(pointer, dir > 0 ? 1.1 : 0.9);
+    zoomAt(pointer, wheelZoomFactor(e.evt.deltaY, e.evt.deltaMode, stageRef.current?.height() ?? 800));
   }, [zoomAt]);
 
   // Erase tool: mousedown reveals cells under the brush (DM only) and marks the
@@ -389,11 +361,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return <Group listening={false}>{cells.map(c => <Rect key={c.key} x={c.x} y={c.y} width={FOG_CELL} height={FOG_CELL} fill={color} />)}</Group>;
   }, [scene?.fog, scene?.mapImage, scene?.mapSize, scene?.mapScale, scene?.playArea, role]);
 
-  if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-zinc-600">连接中…</div>;
+  if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-faint tracking-label">连接中…</div>;
 
   const grid = scene.grid;
   const area = scene.playArea;
-  const displayedMapScale = localMapScale ?? scene.mapScale ?? 1;
+  const displayedMapScale = mapZoom.value;
   const tokenInteractionKey = `${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
 
   return (
@@ -429,14 +401,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             listening={false}
           />
         )}
-        {scene.mapImage && !map && <Rect width={area.w} height={area.h} fill="#262932" listening={false} />}
+        {scene.mapImage && !map && <Rect width={area.w} height={area.h} fill={MAP_LOADING} listening={false} />}
         {/* Existing walls: thick dark lines. */}
         {scene.walls.map(w => (
-          <Line key={w.id} points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke="#111827" strokeWidth={10} lineCap="round" lineJoin="round" listening={false} />
+          <Line key={w.id} points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke={INK} strokeWidth={10} lineCap="round" lineJoin="round" listening={false} />
         ))}
         {/* Live wall preview while dragging. */}
         {wallPreview && (
-          <Line points={[...wallPreview]} stroke="#f59e0b" strokeWidth={3} dash={[8, 8]} lineCap="round" listening={false} />
+          <Line points={[...wallPreview]} stroke={ACCENT} strokeWidth={3} dash={[8, 8]} lineCap="round" listening={false} />
         )}
         {scene.tokens.map(t => (
           <TokenShape
@@ -477,58 +449,21 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         {fogOverlay}
       </Layer>
     </Stage>
-    {/* Selected-token action popup (DM only). Must be OUTSIDE the Konva Stage
-        (react-konva only accepts Konva nodes as Stage children); the Stage is
-        wrapped in a relative container so this HTML overlay tracks the token. */}
-    {role === 'dm' && (() => {
-      const sel = scene.tokens.find(t => t.id === selectedId) ?? scene.players.find(p => p.id === selectedId);
-      if (!sel) return null;
-      return (
-        <div
-          className="absolute z-10"
-          style={{
-            left: sel.x * scale + pos.x + (sel.size / 2) * scale,
-            top: sel.y * scale + pos.y - 4,
-            transform: 'translate(-50%, -100%)',
-          }}
-        >
-          <button
-            onClick={handleDelete}
-            title="删除 token（Delete 键）"
-            className="px-2 py-1 rounded bg-red-600/20 text-red-400 hover:bg-red-600/30 text-xs shadow-lg shadow-black/40 whitespace-nowrap"
-          >🗑 删除</button>
-        </div>
-      );
-    })()}
-    {/* View zoom controls (all roles): zoom in/out, reset, current percentage. */}
-    <div className="absolute bottom-3 right-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
-      <button onClick={() => zoomCenter(1.25)} title="放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
-      <button onClick={() => zoomCenter(0.8)} title="缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
-      <button onClick={resetView} title="重置视图" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-sm leading-none">⟲</button>
-      <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round(scale * 100)}%</span>
-    </div>
-    {/* Map-image scale (DM only): scales the map to fit the grid while tokens
-        keep their size — for calibrating hand-drawn maps. */}
     {/* Fog controls (DM): reveal-all (清空遮罩) and cover-all (添加遮罩), text
         buttons per user request. */}
     {role === 'dm' && (
-      <div className="absolute bottom-3 left-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
-        <span className="text-center text-[10px] text-zinc-400 select-none">迷雾</span>
+      <div className="campaign-fog-controls" aria-label="迷雾">
+        <span className="panel-label text-center select-none py-1">迷雾</span>
         <button onClick={() => connection.sendOps([{ op: 'revealAllFog' }])}
-          className="px-2 py-1 rounded hover:bg-emerald-700/30 text-emerald-400 text-xs">一键清空遮罩</button>
+          className="px-2 py-1 text-xs text-muted hover:text-ink hover:bg-well transition-colors duration-150">全部显示</button>
         <button onClick={() => connection.sendOps([{ op: 'coverAllFog' }])}
-          className="px-2 py-1 rounded hover:bg-amber-700/30 text-amber-400 text-xs">一键添加遮罩</button>
+          className="px-2 py-1 text-xs text-accent hover:bg-well transition-colors duration-150">全部遮蔽</button>
       </div>
     )}
-    {role === 'dm' && scene?.mapImage && (
-      <div className="absolute bottom-28 left-3 z-20 flex flex-col items-stretch gap-1 bg-zinc-800/90 rounded-lg p-1 shadow-lg shadow-black/40">
-        <span className="text-center text-[10px] text-zinc-400 select-none">地图</span>
-        <button onClick={() => adjustMapScale(1.1)} title="地图放大" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">＋</button>
-        <button onClick={() => adjustMapScale(0.9)} title="地图缩小" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-base leading-none">－</button>
-        <button onClick={() => setMapScale(1)} title="地图重置为 100%" className="w-8 h-8 rounded hover:bg-zinc-700 text-zinc-200 text-sm leading-none">⟲</button>
-        <span className="text-center text-[10px] text-zinc-400 select-none">{Math.round(displayedMapScale * 100)}%</span>
-      </div>
-    )}
+    <div className="campaign-zoom-dock">
+      {role === 'dm' && scene.mapImage && !scene.mapImage.startsWith('blob:') && <ZoomControl key={`${scene.id}:${scene.mapImage}`} kind="map" value={displayedMapScale} onChange={mapZoom.preview} onStep={mapZoom.set} onCommit={mapZoom.commit} onCancel={mapZoom.cancel} onReset={() => mapZoom.set(1)} />}
+      <ZoomControl kind="view" value={scale} onChange={setViewScale} onStep={setViewScale} onReset={resetView} />
+    </div>
   </div>
   );
 }

@@ -20,15 +20,15 @@ export default function FilingFooter() {
   if (!config?.icpFiling && !config?.publicSecurityFiling) return null;
 
   return (
-    <footer className="shrink-0 border-t border-zinc-800 bg-zinc-950 px-4 py-2 text-center text-xs text-zinc-500" role="contentinfo">
+    <footer className="shrink-0 border-t border-line bg-paper px-4 py-2 text-center text-xs text-muted" role="contentinfo">
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
         {config.icpFiling && (
-          <a href={ICP_URL} target="_blank" rel="noreferrer" className="hover:text-zinc-300">
+          <a href={ICP_URL} target="_blank" rel="noreferrer" className="hover:text-ink">
             {config.icpFiling}
           </a>
         )}
         {config.publicSecurityFiling && (
-          <a href={PSB_URL} target="_blank" rel="noreferrer" className="hover:text-zinc-300">
+          <a href={PSB_URL} target="_blank" rel="noreferrer" className="hover:text-ink">
             {config.publicSecurityFiling}
           </a>
         )}

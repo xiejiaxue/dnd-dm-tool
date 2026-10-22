@@ -3,7 +3,7 @@ import { api } from '../api';
 import { connection, useScene } from '../ws';
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
-  const { campaign } = useScene();
+  const { campaign, scene } = useScene();
   const [scenes, setScenes] = useState<{ id: string; name: string; unlocked: boolean }[]>([]);
   const [name, setName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -22,10 +22,10 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="absolute top-11 right-0 z-20 w-64 bg-zinc-800 border border-zinc-700 rounded shadow-xl p-2 text-sm">
-      <div className="text-xs text-zinc-500 mb-1">场景列表</div>
+    <div className="absolute top-12 right-0 z-20 w-64 bg-panel border border-ink shadow-[4px_4px_0_0_rgba(17,17,16,0.12)] p-2 text-sm">
+      <div className="campaign-scene-heading"><span className="panel-label">场景</span><button onClick={onClose} aria-label="关闭场景管理">×</button></div>
       {visible.map(s => (
-        <div key={s.id} className="flex items-center gap-1.5 py-1 px-1 rounded hover:bg-zinc-700">
+        <div key={s.id} className="flex items-center gap-1.5 py-1 px-1 hover:bg-well transition-colors duration-150">
           {renamingId === s.id ? (
             <input
               autoFocus
@@ -36,37 +36,39 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
                 if (e.key === 'Enter') commitRename(s.id);
                 if (e.key === 'Escape') { setRenamingId(null); setRenameValue(''); }
               }}
-              className="flex-1 min-w-0 bg-zinc-900 rounded px-2 py-1 text-sm"
+              className="field-sm flex-1 min-w-0"
             />
           ) : (
             <button
-              className="flex-1 min-w-0 text-left truncate"
+              className="flex-1 min-w-0 text-left truncate text-ink"
+              disabled={s.id === scene?.id}
+              aria-current={s.id === scene?.id ? 'page' : undefined}
               onClick={() => { connection.sendControl({ type: 'switchScene', sceneId: s.id }); onClose(); }}
             >{s.name}</button>
           )}
           <button
             title={s.unlocked ? '锁定场景（玩家不可见）' : '解锁场景（玩家可见）'}
             onClick={() => { connection.sendControl({ type: 'updateSceneUnlock', sceneId: s.id, unlocked: !s.unlocked }); reload(); }}
-            className={`shrink-0 text-xs ${s.unlocked ? 'text-emerald-400' : 'text-zinc-600 hover:text-zinc-400'}`}
-          >{s.unlocked ? '🔓' : '🔒'}</button>
+            className={`shrink-0 text-xs transition-colors duration-150 ${s.unlocked ? 'text-ink font-medium' : 'text-faint hover:text-accent'}`}
+          >{s.unlocked ? '已解锁' : '已锁定'}</button>
           <button
-            className="shrink-0 text-zinc-500 hover:text-amber-400"
+            className="shrink-0 text-faint hover:text-accent transition-colors duration-150"
             title="重命名场景"
             onClick={() => { setRenamingId(s.id); setRenameValue(s.name); }}
-          >✏️</button>
+          >✎</button>
           <button
-            className="shrink-0 text-zinc-500 hover:text-red-400"
-            title="删除场景"
+            className="shrink-0 text-faint hover:text-accent transition-colors duration-150"
+            title="删除场景" disabled={visible.length <= 1}
             onClick={() => { api.deleteScene(s.id).then(reload); }}
           >✕</button>
         </div>
       ))}
-      <div className="flex gap-1 mt-2 border-t border-zinc-700 pt-2">
+      <div className="flex gap-1.5 mt-2 border-t border-line pt-2">
         <input
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="新场景名"
-          className="flex-1 bg-zinc-900 rounded px-2 py-1 text-sm"
+          placeholder="新场景名" aria-label="新场景名"
+          className="field-sm flex-1"
         />
         <button
           onClick={() => {
@@ -80,7 +82,7 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
             }
             setName('');
           }}
-          className="px-2 py-1 rounded bg-amber-600/20 text-amber-400"
+          className="btn-primary" disabled={!name.trim()} aria-label="新建场景"
         >＋</button>
       </div>
     </div>

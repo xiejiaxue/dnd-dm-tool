@@ -1,0 +1,65 @@
+- generic [ref=e5]:
+  - link "跳转到战役列表" [ref=e6] [cursor=pointer]:
+    - /url: "#campaign-directory"
+  - complementary [ref=e7]:
+    - button "DM 追踪首页" [ref=e8] [cursor=pointer]:
+      - generic [ref=e12]:
+        - text: DM
+        - generic [ref=e13]: 追踪
+    - generic [ref=e14]: 工具 / TOOLS
+    - navigation "主导航" [ref=e15]:
+      - button "我的桌团 01" [ref=e16] [cursor=pointer]:
+        - generic [ref=e22]: 我的桌团
+        - generic [ref=e23]: "01"
+      - link "临时计算器 02" [ref=e24] [cursor=pointer]:
+        - /url: /calculator
+        - generic [ref=e28]: 临时计算器
+        - generic [ref=e29]: "02"
+      - link "角色卡 03" [ref=e30] [cursor=pointer]:
+        - /url: /characters
+        - generic [ref=e34]: 角色卡
+        - generic [ref=e35]: "03"
+      - link "掷骰 04" [ref=e36] [cursor=pointer]:
+        - /url: /dice
+        - generic [ref=e39]: 掷骰
+        - generic [ref=e40]: "04"
+    - generic [ref=e46]:
+      - strong [ref=e47]: 访客
+      - generic [ref=e48]: 正在加载…
+  - generic [ref=e49]:
+    - banner [ref=e50]:
+      - generic [ref=e51]:
+        - text: DM 追踪 /
+        - strong [ref=e52]: 我的桌团
+    - main [ref=e53]:
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - text: 01 / CAMPAIGNS
+          - heading "我的桌团" [level=1] [ref=e56]
+        - generic [ref=e57]:
+          - link "掷骰" [ref=e58] [cursor=pointer]:
+            - /url: /dice
+          - link "开卡" [ref=e59] [cursor=pointer]:
+            - /url: /characters
+          - button "新战役" [ref=e60] [cursor=pointer]
+      - generic [ref=e63]:
+        - region "战役列表" [ref=e64]:
+          - generic [ref=e65]:
+            - generic [ref=e66]: "01"
+            - heading "战役" [level=2] [ref=e67]
+            - status [ref=e68]: "0"
+            - button "刷新" [disabled] [ref=e69]
+          - searchbox "搜索战役" [ref=e76]
+          - generic "筛选战役" [ref=e77]:
+            - button "全部" [pressed] [ref=e78] [cursor=pointer]
+            - button "我主持的" [ref=e79] [cursor=pointer]
+            - button "我参加的" [ref=e80] [cursor=pointer]
+            - button "已归档" [ref=e81] [cursor=pointer]
+          - status [ref=e82]: 正在加载战役…
+        - complementary [ref=e83]:
+          - generic [ref=e84]: NEW CAMPAIGN
+          - heading "新战役" [level=2] [ref=e88]
+          - generic [ref=e89]:
+            - generic [ref=e90]: 战役名称
+            - textbox "战役名称" [ref=e91]
+            - button "创建并进入" [disabled] [ref=e92]

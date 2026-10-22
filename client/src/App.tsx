@@ -20,8 +20,8 @@ function roomSlugFromInvite(result: InviteResult): string | null {
 
 function RoomLoading({ message }: { message: string }) {
   return (
-    <main className="h-full flex items-center justify-center bg-zinc-950 text-zinc-400">
-      <p className="text-sm">{message}</p>
+    <main className="h-full flex items-center justify-center bg-paper text-muted">
+      <p className="text-sm tracking-label">{message}</p>
     </main>
   );
 }
@@ -69,15 +69,15 @@ function RoomSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () => v
   if (error) {
     const needsInvite = error instanceof ApiError && error.code === 'ROOM_NOT_FOUND';
     return (
-      <main className="h-full flex items-center justify-center bg-zinc-950 px-4">
-        <div className="max-w-md rounded-lg border border-red-500/30 bg-zinc-900 p-6 text-center">
-          <h1 className="font-semibold text-red-300">{needsInvite ? '你还没有加入这个房间' : '无法进入房间'}</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+      <main className="h-full flex items-center justify-center bg-paper px-4">
+        <div className="max-w-md border border-line border-l-4 border-l-accent bg-panel p-6">
+          <h1 className="font-bold text-accent">{needsInvite ? '你还没有加入这个房间' : '无法进入房间'}</h1>
+          <p className="mt-2 text-sm text-muted">
             {needsInvite
               ? '房间地址本身不会授予访问权限。请从大厅进入已加入的房间，或让主持人发送有效的邀请链接。'
               : error.message}
           </p>
-          <button onClick={onLeaveRoom} className="mt-5 rounded bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700">返回大厅</button>
+          <button onClick={onLeaveRoom} className="btn-primary mt-5">返回大厅</button>
         </div>
       </main>
     );
@@ -106,7 +106,10 @@ function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => 
   // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
   // token to the initiative order with its tokenId (enables the turn highlight).
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [queryCollapsed, setQueryCollapsed] = useState(false);
+  const [queryCollapsed, setQueryCollapsed] = useState(() => window.matchMedia('(max-width: 1100px)').matches);
+  const [encounterOpen, setEncounterOpen] = useState(() => !window.matchMedia('(max-width: 1100px)').matches);
+  const toggleEncounter = () => { setEncounterOpen(open => !open); if (window.matchMedia('(max-width: 1100px)').matches) setQueryCollapsed(true); };
+  const toggleQuery = () => { setQueryCollapsed(collapsed => !collapsed); if (window.matchMedia('(max-width: 1100px)').matches) setEncounterOpen(false); };
   const [brushSize, setBrushSize] = useState(1);
 
   useEffect(() => subscribe((pickedUp) => {
@@ -130,10 +133,10 @@ function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => 
   }, [campaign?.id, roomRole]);
 
   return (
-    <div className="h-full flex flex-col">
-      <TopBar roomName={room.room.name} roomSlug={room.room.slug} onLeaveRoom={onLeaveRoom} />
+    <div className="campaign-shell h-full flex flex-col">
+      <TopBar roomName={room.room.name} roomSlug={room.room.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} />
       <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
-      <div className="flex-1 flex min-h-0">
+      <div className="campaign-workspace flex-1 flex min-h-0" data-role={role}>
         <Toolbar
           role={role}
           tool={tool}
@@ -142,19 +145,19 @@ function Table({ room, onLeaveRoom }: { room: RoomBootstrap; onLeaveRoom: () => 
           brushSize={brushSize}
           onBrushSize={setBrushSize}
         />
-        <EnemyList />
-        <div className="flex-1 min-w-0 relative bg-zinc-900">
+        <div className="campaign-encounter-slot" data-open={encounterOpen}><EnemyList /></div>
+        <div className="campaign-board flex-1 min-w-0 relative bg-well">
           <BoardCanvas
             tool={tool}
             pending={pending}
-            onClearPending={() => setPendingState(null)}
+            onClearPending={() => { setPendingState(null); setTool('select'); }}
             selectedId={selectedId}
             onSelect={setSelectedId}
             queryOpen={!queryCollapsed}
             brushSize={brushSize}
           />
         </div>
-        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={() => setQueryCollapsed(collapsed => !collapsed)} />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} />
       </div>
     </div>
   );
@@ -229,7 +232,7 @@ export default function App() {
   }, [enterRoom, inviteToken]);
 
   return (
-    <div className="h-full flex flex-col bg-zinc-950">
+    <div className="h-full flex flex-col bg-paper text-ink">
       <div className="min-h-0 flex-1">
         {inviteToken
           ? <RoomLoading message="正在加入邀请房间…" />

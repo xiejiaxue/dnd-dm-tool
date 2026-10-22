@@ -690,6 +690,9 @@ function gridPatch(value: unknown): Partial<GridConfig> {
 function optionalAssetUrl(value: unknown): string {
   if (typeof value !== 'string') throw new DomainError('INVALID', '素材地址无效');
   if (value === '') return '';
+  // Token avatars may reference the shared compendium portrait route; only
+  // map-sized artwork is confined to the room's private assets.
+  if (value.startsWith('/api/token/')) return value;
   return mapUrl(value) ?? '';
 }
 

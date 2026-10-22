@@ -1,0 +1,741 @@
+[     539ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[     571ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5181/favicon.ico:0
+[     617ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5181/api/rooms:0
+[     621ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5181/api/rooms:0
+[  221829ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://127.0.0.1:5181/src/components/QueryPanel.tsx?t=1791604962436:0
+[  221830ms] [ERROR] [vite] Failed to reload /src/components/QueryPanel.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  318227ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  330539ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  356869ms] [ERROR] Warning: %s must not return anything besides a function, which is used for clean-up.%s%s useEffect 
+
+It looks like you wrote useEffect(async () => ...) or returned a Promise. Instead, write the async function inside your effect and call it immediately:
+
+useEffect(() => {
+  async function fetchData() {
+    // You can await here
+    const response = await MyAPI.getData(someId);
+    // ...
+  }
+  fetchData();
+}, [someId]); // Or [] if effect doesn't need props or state
+
+Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching 
+    at ChatPanel (http://127.0.0.1:5181/src/components/ChatPanel.tsx:22:24)
+    at aside
+    at QueryPanel (http://127.0.0.1:5181/src/components/QueryPanel.tsx?t=1791605004207:31:38)
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:252:26) @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  356870ms] TypeError: destroy is not a function
+    at safelyCallDestroy (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16335:13)
+    at commitHookEffectListUnmount (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16462:19)
+    at invokePassiveEffectUnmountInDEV (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17952:19)
+    at invokeEffectsInDev (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19293:19)
+    at commitDoubleInvokeEffectsInDEV (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19274:15)
+    at flushPassiveEffectsImpl (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19095:13)
+    at flushPassiveEffects (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19039:22)
+    at commitRootImpl (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19008:13)
+    at commitRoot (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:18869:13)
+    at performSyncWorkOnRoot (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:18487:11)
+[  356870ms] [ERROR] Warning: %s must not return anything besides a function, which is used for clean-up.%s useEffect 
+
+It looks like you wrote useEffect(async () => ...) or returned a Promise. Instead, write the async function inside your effect and call it immediately:
+
+useEffect(() => {
+  async function fetchData() {
+    // You can await here
+    const response = await MyAPI.getData(someId);
+    // ...
+  }
+  fetchData();
+}, [someId]); // Or [] if effect doesn't need props or state
+
+Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  356871ms] [ERROR] The above error occurred in the <ChatPanel> component:
+
+    at ChatPanel (http://127.0.0.1:5181/src/components/ChatPanel.tsx:22:24)
+    at aside
+    at QueryPanel (http://127.0.0.1:5181/src/components/QueryPanel.tsx?t=1791605004207:31:38)
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:252:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  356871ms] TypeError: destroy is not a function
+    at safelyCallDestroy (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16335:13)
+    at commitHookEffectListUnmount (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16462:19)
+    at invokePassiveEffectUnmountInDEV (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17952:19)
+    at invokeEffectsInDev (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19293:19)
+    at commitDoubleInvokeEffectsInDEV (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19274:15)
+    at flushPassiveEffectsImpl (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19095:13)
+    at flushPassiveEffects (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19039:22)
+    at commitRootImpl (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19008:13)
+    at commitRoot (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:18869:13)
+    at performSyncWorkOnRoot (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:18487:11)
+[  356873ms] TypeError: destroy is not a function
+    at safelyCallDestroy (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16335:13)
+    at commitHookEffectListUnmount (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16462:19)
+    at commitPassiveUnmountInsideDeletedTreeOnFiber (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17872:17)
+    at commitPassiveUnmountEffectsInsideOfDeletedTree_begin (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17834:13)
+    at commitPassiveUnmountEffects_begin (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17770:19)
+    at commitPassiveUnmountEffects (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17758:11)
+    at flushPassiveEffectsImpl (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19081:11)
+    at flushPassiveEffects (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19039:22)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:18920:17
+    at workLoop (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-7VRNVKFW.js?v=9685de88:194:42)
+[  356872ms] [ERROR] The above error occurred in the <ChatPanel> component:
+
+    at ChatPanel (http://127.0.0.1:5181/src/components/ChatPanel.tsx:22:24)
+    at aside
+    at QueryPanel (http://127.0.0.1:5181/src/components/QueryPanel.tsx?t=1791605004207:31:38)
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605004207:252:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  356873ms] TypeError: destroy is not a function
+    at safelyCallDestroy (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16335:13)
+    at commitHookEffectListUnmount (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:16462:19)
+    at commitPassiveUnmountInsideDeletedTreeOnFiber (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17872:17)
+    at commitPassiveUnmountEffectsInsideOfDeletedTree_begin (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17834:13)
+    at commitPassiveUnmountEffects_begin (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17770:19)
+    at commitPassiveUnmountEffects (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:17758:11)
+    at flushPassiveEffectsImpl (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19081:11)
+    at flushPassiveEffects (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:19039:22)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:18920:17
+    at workLoop (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-7VRNVKFW.js?v=9685de88:194:42)
+[  356974ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  469692ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  469692ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  469692ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  469696ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  469695ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  469697ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  469696ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:252:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  469696ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:252:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  469697ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  471416ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  471436ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  471437ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  471437ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  471441ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  471440ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  471441ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  471440ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:252:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  471440ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605210062:252:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  471442ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507728ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507728ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  507729ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507729ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  507731ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507736ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507737ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  507737ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507740ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507740ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  507741ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  507740ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605248279:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605248279:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605248279:255:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  507740ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605248279:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605248279:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605248279:255:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  507741ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509188ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509188ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509188ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509189ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509189ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509189ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509190ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509190ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509193ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509199ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509199ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509199ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509203ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509202ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509203ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  509202ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:255:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509202ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:255:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  509203ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  510224ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  510240ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  510241ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  510241ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  510245ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  510244ms] [ERROR] The above error occurred in one of your React components:
+
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  510246ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  510245ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:255:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  510245ms] [ERROR] The above error occurred in the <StageWrap> component:
+
+    at StageWrap (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27483:42)
+    at FiberProvider (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27409:21)
+    at div
+    at BoardCanvas (http://127.0.0.1:5181/src/components/BoardCanvas.tsx?t=1791605210062:28:39)
+    at div
+    at div
+    at div
+    at Table (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:133:18)
+    at RoomSession (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:47:24)
+    at div
+    at div
+    at App (http://127.0.0.1:5181/src/App.tsx?t=1791605249745:255:26)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:27405
+[  510246ms] InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.
+    at SceneContext.drawImage (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:1096:20)
+    at Text2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:4736:19)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Group2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Group2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+    at http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3546:28
+    at Array.forEach (<anonymous>)
+    at Layer2._drawChildren (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3545:73)
+    at Layer2.drawScene (http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/react-konva.js?v=9685de88:3498:16)
+[  540598ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  541179ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  591634ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147
+[  711160ms] [LOG] [vite] server connection lost. Polling for restart... @ http://127.0.0.1:5181/@vite/client:963
+[  711438ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5181/@fs/Users/xiejiaxue/Documents/DnD-DMTool/node_modules/.vite/deps/chunk-IJZM7XFA.js?v=9685de88:21147

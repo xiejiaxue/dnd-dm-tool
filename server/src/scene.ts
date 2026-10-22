@@ -6,7 +6,7 @@ export function newId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${counter}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-const DEFAULT_GRID: GridConfig = { size: 100, color: '#00000040', offset: [0, 0], snap: false, show: true };
+const DEFAULT_GRID: GridConfig & { show: boolean } = { size: 100, color: '#00000040', offset: [0, 0], snap: false, show: true };
 const DEFAULT_PLAY: PlayArea = { x: 0, y: 0, w: 1600, h: 1200 };
 
 export function createScene(name: string): Scene {

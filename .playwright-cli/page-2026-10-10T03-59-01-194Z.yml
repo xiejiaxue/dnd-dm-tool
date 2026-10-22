@@ -1,0 +1,22 @@
+- main [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - paragraph [ref=e8]: 桌面跑团 · D&D 5E
+      - heading "DM 追踪" [level=1] [ref=e9]
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - heading "我的房间" [level=2] [ref=e14]
+          - button "刷新" [ref=e15] [cursor=pointer]
+        - paragraph [ref=e16]: 正在读取房间…
+      - generic [ref=e17]:
+        - heading "创建房间" [level=2] [ref=e18]
+        - generic [ref=e19]: 房间名称
+        - textbox "房间名称" [ref=e20]:
+          - /placeholder: 例如：周五龙与地下城
+        - button "创建并进入" [disabled] [ref=e21]
+    - button "桌面计算器 骰点、先攻排序与生命值追踪（数据保存在本机）" [ref=e23] [cursor=pointer]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: 桌面计算器
+        - generic [ref=e26]: 骰点、先攻排序与生命值追踪（数据保存在本机）
+      - generic [aria-hidden] [ref=e27]: →

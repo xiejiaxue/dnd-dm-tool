@@ -1,9 +1,43 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, type CurrentUser, type RoomSummary } from './api';
+import SessionCalculator from './components/SessionCalculator';
 
 interface Props {
   inviteError?: string | null;
   onOpenRoom: (slug: string) => void;
+}
+
+function CalculatorDialog({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:p-10"
+      onClick={onClose}
+      role="presentation"
+    >
+      <section
+        aria-label="桌面计算器"
+        className="w-full max-w-xl border border-ink bg-panel shadow-[6px_6px_0_0_rgba(17,17,16,0.2)]"
+        onClick={event => event.stopPropagation()}
+      >
+        <header className="flex items-center justify-between border-b-2 border-ink px-5 py-3">
+          <div>
+            <p className="panel-label">桌面计算器</p>
+            <h2 className="font-bold tracking-tight">骰点 · 先攻 · 生命值</h2>
+          </div>
+          <button onClick={onClose} aria-label="关闭" className="text-faint text-lg leading-none hover:text-accent transition-colors duration-150">✕</button>
+        </header>
+        <div className="px-5 py-4">
+          <SessionCalculator />
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export default function Lobby({ inviteError, onOpenRoom }: Props) {
@@ -13,6 +47,7 @@ export default function Lobby({ inviteError, onOpenRoom }: Props) {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [calcOpen, setCalcOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -50,37 +85,35 @@ export default function Lobby({ inviteError, onOpenRoom }: Props) {
   };
 
   return (
-    <main className="h-full flex items-center justify-center px-4 py-10 bg-zinc-950">
-      <section className="w-full max-w-2xl rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl overflow-hidden">
-        <div className="p-6 border-b border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950">
-          <p className="text-amber-400 text-sm font-medium">DND DM 追踪</p>
-          <h1 className="text-2xl font-semibold mt-1">选择一个游戏房间</h1>
-          <p className="text-sm text-zinc-400 mt-2">
-            房间通过网址连接；邀请链接会自动把你加入对应桌面。
-          </p>
-          {me && <p className="mt-3 text-xs text-zinc-500">当前身份：{me.displayName ?? me.id}</p>}
-        </div>
+    <main className="h-full overflow-y-auto bg-paper">
+      <section className="w-full max-w-3xl m-auto px-6 py-12">
+        <header>
+          <p className="panel-label">桌面跑团 · D&amp;D 5E</p>
+          <h1 className="mt-2 text-4xl font-bold tracking-tight">DM 追踪</h1>
+          {me && <p className="mt-3 text-xs text-muted">当前身份：{me.displayName ?? me.id}</p>}
+        </header>
+        <div aria-hidden className="mt-5 h-[3px] bg-ink" />
 
-        <div className="p-6 grid gap-6 md:grid-cols-[1fr_0.9fr]">
-          <div>
+        <div className="grid gap-10 md:grid-cols-[1fr_0.9fr] md:gap-0 pt-8">
+          <div className="md:pr-10">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-medium">我的房间</h2>
-              <button onClick={() => { void load(); }} className="text-xs text-zinc-400 hover:text-white">刷新</button>
+              <h2 className="panel-label">我的房间</h2>
+              <button onClick={() => { void load(); }} className="text-xs text-muted hover:text-accent transition-colors duration-150">刷新</button>
             </div>
             {loading ? (
-              <p className="text-sm text-zinc-500 py-4">正在读取房间…</p>
+              <p className="text-sm text-muted py-4">正在读取房间…</p>
             ) : rooms.length === 0 ? (
-              <p className="text-sm text-zinc-500 py-4">还没有加入任何房间。创建一个，或打开朋友发来的邀请链接。</p>
+              <p className="text-sm text-muted py-4">暂无房间</p>
             ) : (
-              <ul className="space-y-2">
+              <ul>
                 {rooms.map(room => (
-                  <li key={room.id || room.slug}>
+                  <li key={room.id || room.slug} className="border-b border-line">
                     <button
                       onClick={() => onOpenRoom(room.slug)}
-                      className="w-full text-left rounded-lg border border-zinc-800 bg-zinc-950/50 hover:border-amber-500/50 hover:bg-zinc-800 px-3 py-3 transition-colors"
+                      className="group w-full text-left py-3 px-1 hover:bg-panel transition-colors duration-150"
                     >
                       <span className="block font-medium truncate">{room.name}</span>
-                      <span className="block mt-1 text-xs text-zinc-500">
+                      <span className="block mt-1 text-xs text-muted">
                         {room.role ? `权限：${room.role}` : '进入桌面'} · /r/{room.slug}
                       </span>
                     </button>
@@ -90,10 +123,9 @@ export default function Lobby({ inviteError, onOpenRoom }: Props) {
             )}
           </div>
 
-          <form onSubmit={createRoom} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 self-start">
-            <h2 className="font-medium">创建房间</h2>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-500">你会成为该房间的拥有者，可以创建邀请链接并管理桌面。</p>
-            <label className="block mt-4 text-xs text-zinc-400" htmlFor="room-name">房间名称</label>
+          <form onSubmit={createRoom} className="h-fit md:border-l md:border-line md:pl-10">
+            <h2 className="panel-label">创建房间</h2>
+            <label className="block mt-5 text-xs text-muted" htmlFor="room-name">房间名称</label>
             <input
               id="room-name"
               value={name}
@@ -101,22 +133,36 @@ export default function Lobby({ inviteError, onOpenRoom }: Props) {
               maxLength={80}
               autoComplete="off"
               placeholder="例如：周五龙与地下城"
-              className="mt-1 w-full rounded bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm outline-none focus:border-amber-500"
+              className="field mt-1.5"
             />
             <button
               type="submit"
               disabled={!name.trim() || creating}
-              className="mt-3 w-full rounded bg-amber-500/20 px-3 py-2 text-sm text-amber-300 hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-accent mt-4 w-full"
             >{creating ? '正在创建…' : '创建并进入'}</button>
           </form>
         </div>
 
         {(inviteError || error) && (
-          <div className="mx-6 mb-6 rounded border border-red-500/30 bg-red-950/30 px-3 py-2 text-sm text-red-300">
+          <div className="mt-8 border border-line border-l-4 border-l-accent bg-panel px-3 py-2 text-sm text-accent">
             {inviteError || error}
           </div>
         )}
+
+        <div className="mt-12 border-t border-line pt-6">
+          <button
+            onClick={() => setCalcOpen(true)}
+            className="group flex w-full items-center justify-between gap-4 border border-line bg-panel px-4 py-3 text-left transition-colors duration-150 hover:border-ink"
+          >
+            <span>
+              <span className="block font-medium">桌面计算器</span>
+              <span className="mt-0.5 block text-xs text-muted">骰点、先攻排序与生命值追踪（数据保存在本机）</span>
+            </span>
+            <span aria-hidden className="text-lg text-faint transition-colors duration-150 group-hover:text-ink">→</span>
+          </button>
+        </div>
       </section>
+      {calcOpen && <CalculatorDialog onClose={() => setCalcOpen(false)} />}
     </main>
   );
 }

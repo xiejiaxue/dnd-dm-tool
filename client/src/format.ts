@@ -152,6 +152,13 @@ export function formatSpell(s: any): StatBlock {
   };
 }
 
+export const ENTRY_KIND_ZH: Partial<Record<EntryType, string>> = {
+  monster: '怪物', spell: '法术', item: '装备', feat: '专长', condition: '状态',
+  race: '种族', subrace: '亚种', background: '背景', class: '职业', subclass: '子职',
+  classFeature: '职业特性', subclassFeature: '子职特性', optionalFeature: '可选能力',
+  language: '语言', vehicle: '载具', action: '动作', reward: '奖励',
+};
+
 /**
  * Monster and spell records have dedicated stat blocks. Other 5etools record
  * kinds still deserve a readable drawer when they arrive from the online
@@ -161,11 +168,7 @@ export function formatCompendiumEntry(type: EntryType, entry: any): StatBlock {
   if (type === 'monster') return formatMonster(entry);
   if (type === 'spell') return formatSpell(entry);
 
-  const kind = ({
-    item: '装备', feat: '专长', condition: '状态', race: '种族', subrace: '亚种', background: '背景',
-    class: '职业', subclass: '子职', classFeature: '职业特性', subclassFeature: '子职特性',
-    optionalFeature: '可选能力', language: '语言', vehicle: '载具', action: '动作', reward: '奖励',
-  } as Partial<Record<EntryType, string>>)[type] ?? '资料';
+  const kind = ENTRY_KIND_ZH[type] ?? '资料';
   const source = typeof entry.source === 'string' ? entry.source : '';
   const page = typeof entry.page === 'number' ? `第 ${entry.page} 页` : '';
   return {
