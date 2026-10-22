@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api';
+import { api, type WaterdeepDeploymentResult } from '../api';
 import { connection, useScene } from '../ws';
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
-  const { campaign, scene } = useScene();
+  const { campaign, scene, role } = useScene();
+  const [deployment, setDeployment] = useState<WaterdeepDeploymentResult | null>(null);
+  const [deployBusy, setDeployBusy] = useState(false);
+  const [deployError, setDeployError] = useState('');
+  const loadDeployment = async (apply: boolean) => {
+    setDeployBusy(true); setDeployError('');
+    try { setDeployment(await (apply ? api.deployWaterdeep() : api.previewWaterdeepDeployment())); }
+    catch (error) { setDeployError(error instanceof Error ? error.message : '部署失败'); }
+    finally { setDeployBusy(false); }
+  };
   const [scenes, setScenes] = useState<{ id: string; name: string; unlocked: boolean }[]>([]);
   const [name, setName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -24,6 +33,15 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
   return (
     <div className="absolute top-12 right-0 z-20 w-64 max-h-[70vh] overflow-y-auto bg-panel border border-ink shadow-[4px_4px_0_0_rgba(17,17,16,0.12)] p-2 text-sm">
       <div className="campaign-scene-heading"><span className="panel-label">场景</span><button onClick={onClose} aria-label="关闭场景管理">×</button></div>
+      {role === 'dm' && visible.some(s => s.name.includes('地图8.1')) && <div className="border-b border-line py-2 mb-2">
+        <button className="btn-xs" disabled={deployBusy} onClick={() => loadDeployment(false)}>预览深水城Token部署</button>
+        {deployError && <p role="alert">{deployError}</p>}
+        {deployment && <div className="text-xs mt-2" aria-live="polite">
+          <p>{deployment.applied ? '部署完成：新增' : '预览：待新增'} {deployment.added} 个隐藏Token。保留已有单位、HP与先攻。</p>
+          {!deployment.applied && <button className="btn-primary my-2" disabled={deployBusy || deployment.added === 0} onClick={() => loadDeployment(true)}>部署全部场景隐藏Token</button>}
+          {deployment.rows.map(row => <details key={row.scene} className="py-1 border-b border-line"><summary>{row.scene}：已有{row.existing}／新增{row.added}</summary><p>{row.note}</p><p>场景合计{row.total}；已隐藏{row.hidden}</p></details>)}
+        </div>}
+      </div>}
       {visible.map(s => (
         <div key={s.id} className="flex items-center gap-1.5 py-1 px-1 hover:bg-well transition-colors duration-150">
           {renamingId === s.id ? (

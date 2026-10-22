@@ -10,17 +10,21 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
   const { scene, role } = useScene();
   const [stat, setStat] = useState<StatBlock | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
     if (!entry) { setStat(null); return; }
     let cancelled = false;
     setLoading(true);
+    setStat(null);
+    setError('');
     setAdded(false);
     api.entry(entry.type, entry.id)
       .then(e => {
         if (!cancelled) setStat(formatCompendiumEntry(entry.type, e));
       })
+      .catch(() => { if (!cancelled) setError('数据卡加载失败，请返回后重试。'); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [entry]);
@@ -35,6 +39,8 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
         <h2 className="font-bold text-base">{entry.nameZh}</h2>
       </div>
       {loading && <div className="text-zinc-500">加载中…</div>}
+      {error && <p role="alert" className="text-red-400">{error}</p>}
+      {entry.id.startsWith('WDNPC__') && <img src={`/api/token/${encodeURIComponent(entry.id)}`} alt={`${entry.nameZh} Token`} className="w-24 h-24 rounded-full mx-auto mb-3" />}
       {stat && (
         <>
           <div className="text-zinc-400 text-xs mb-2">{stat.meta}</div>
@@ -45,7 +51,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
               ))}
             </tbody>
           </table>
-          {stat.body.map((p, i) => <p key={i} className="mb-2 whitespace-pre-wrap">{p}</p>)}
+          {stat.body.map((p, i) => <p key={i} className="mb-2 whitespace-pre-wrap">{p.replace(/^#{1,6} /gm, '')}</p>)}
         </>
       )}
       <div className="mt-3 flex gap-2">

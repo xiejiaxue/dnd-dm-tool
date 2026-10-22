@@ -48,7 +48,7 @@ describe('CompendiumTab and SearchControls', () => {
     elements(tree).find(e => e.type === 'button' && text(e.props.children).includes('Goblin'))!.props.onClick();
     expect(setDetail).toHaveBeenCalledWith(record);
     button(tree, '添加到场景').props.onClick();
-    expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'addToken', token: { id: 't1234-2', kind: 'monster', name: '哥布林', entryId: 'goblin', x: 600, y: 400, size: 100, avatar: '/api/token/goblin', color: '#fff' } }]);
+    expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'addToken', token: { id: 't1234-2', kind: 'monster', hidden: true, name: '哥布林', entryId: 'goblin', x: 600, y: 400, size: 100, avatar: '/api/token/goblin', color: '#fff' } }]);
     button(tree, '加入战役库').props.onClick();
     expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'addEnemy', entryId: 'goblin', nameZh: '哥布林' }]);
   });

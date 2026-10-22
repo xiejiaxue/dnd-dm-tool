@@ -1,3 +1,6 @@
+import BatchInitiative from './BatchInitiative';
+import { selectionRect, selectEnemies, visibilityBatches } from './token-selection';
+import { waterdeepHp } from '../waterdeep';
 import { Stage, Layer, Rect, Shape, Line, Image as KImage, Group } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
@@ -57,6 +60,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const eraserDown = useRef(false);
   const areaRef = useRef<{start:{x:number;y:number};end:{x:number;y:number}} | null>(null);
   const [areaPreview,setAreaPreview] = useState<{x:number;y:number;width:number;height:number}|null>(null);
+  const selectionRef = useRef<{start:{x:number;y:number};end:{x:number;y:number}} | null>(null);
+  const [selectionPreview, setSelectionPreview] = useState<ReturnType<typeof selectionRect> | null>(null);
+  const [selectedEnemies, setSelectedEnemies] = useState<string[]>([]);
+  const [initiativeSelection, setInitiativeSelection] = useState<string[] | null>(null);
+  useLayoutEffect(() => { setSelectedEnemies([]); setInitiativeSelection(null); }, [scene?.id, role, tool, selectedId]);
   const boardRef = useRef<HTMLDivElement>(null);
 
   // Size the Konva surface from its actual flex item instead of subtracting
@@ -82,7 +90,26 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     };
   }, [sceneReady]);
 
+  // The imported Strahd maps include very large overviews and multi-floor sheets.
+  // Fit once on entry; later pan/zoom and panel resizing remain under user control.
+  const fittedStrahdScene = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const key = scene?.mapImage?.includes('-map-cos-') ? `${scene.id}:${scene.mapImage}` : null;
+    if (!key) { fittedStrahdScene.current = null; return; }
+    if (!scene || fittedStrahdScene.current === key || stageSize.width <= 0 || stageSize.height <= 0) return;
+    const width = scene.mapSize[0] * (scene.mapScale ?? 1);
+    const height = scene.mapSize[1] * (scene.mapScale ?? 1);
+    const fitted = Math.max(0.1, Math.min(1, (stageSize.width - 32) / width, (stageSize.height - 32) / height));
+    if (viewFrameRef.current !== null) cancelAnimationFrame(viewFrameRef.current);
+    viewFrameRef.current = null; pendingViewRef.current = null;
+    setScale(fitted);
+    setPos({ x: Math.max(16, (stageSize.width - width * fitted) / 2), y: 16 });
+    fittedStrahdScene.current = key;
+  }, [scene?.id, scene?.mapImage, stageSize.width, stageSize.height]);
+
   const cancelGesture = useCallback(() => {
+    selectionRef.current = null;
+    setSelectionPreview(null);
     areaRef.current = null;
     setAreaPreview(null);
     wallStart.current = null;
@@ -101,7 +128,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }, [tool, scene?.id, scene?.mapImage, scene?.fogBasisScale, mapZoom.value, scene?.mapSize[0], scene?.mapSize[1], scene?.playArea.x, scene?.playArea.y, scene?.playArea.w, scene?.playArea.h, role, cancelGesture]);
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') cancelGesture(); };
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') { cancelGesture(); setSelectedEnemies([]); } };
     window.addEventListener('keydown', onKey);
     window.addEventListener('blur', cancelGesture);
     window.addEventListener('touchcancel', cancelGesture);
@@ -228,6 +255,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     if ('touches' in e.evt && e.evt.touches.length !== 1) { cancelGesture(); return; }
     if ('button' in e.evt && e.evt.button !== 0) return;
     if (role !== 'dm') return;
+    if (tool === 'select-tokens') {
+      const p = worldPos();
+      if (p) { selectionRef.current = { start:p, end:p }; setSelectionPreview(selectionRect(p,p)); setSelectedEnemies([]); onSelect(null); }
+      return;
+    }
     if (tool === 'erase-area') {
       const p = worldPos();
       if (p) { areaRef.current={start:p,end:p};setAreaPreview({x:p.x,y:p.y,width:0,height:0}); }
@@ -245,13 +277,18 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     wallStart.current = [snap(p.x, 0), snap(p.y, 1)];
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], wallStart.current[0], wallStart.current[1]]);
-  }, [tool, role, scene, worldPos, snap, revealAt, cancelGesture]);
+  }, [tool, role, scene, worldPos, snap, revealAt, cancelGesture, onSelect]);
 
   // Erase tool: while pressed, dragging reveals cells as the pointer moves (DM
   // only). Without the eraserDown gate, mere hovering would reveal.
   const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if ('touches' in e.evt && e.evt.touches.length !== 1) { cancelGesture(); return; }
     if (role !== 'dm') return;
+    if (tool === 'select-tokens') {
+      const p = worldPos(), selection = selectionRef.current;
+      if (p && selection) { selection.end = p; setSelectionPreview(selectionRect(selection.start,p)); }
+      return;
+    }
     if (tool === 'erase-area') {
       const p=worldPos(), area=areaRef.current;
       if (p && area && scene) {
@@ -273,6 +310,27 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], p.x, p.y]);
   }, [tool, role, scene, mapZoom.value, worldPos, revealAt, cancelGesture]);
+
+  const finishSelection = useCallback(() => {
+    const selection = selectionRef.current;
+    selectionRef.current = null;
+    setSelectionPreview(null);
+    if (!selection || role !== 'dm' || tool !== 'select-tokens' || !scene) return;
+    setSelectedEnemies(selectEnemies(scene.tokens, selection.start, worldPos() ?? selection.end));
+  }, [role, tool, scene, worldPos]);
+  const finishSelectionRef = useRef(finishSelection);
+  finishSelectionRef.current = finishSelection;
+  useEffect(() => {
+    if (tool !== 'select-tokens') return;
+    const finish = (event: MouseEvent | TouchEvent) => {
+      if (!selectionRef.current) return;
+      stageRef.current?.setPointersPositions(event);
+      finishSelectionRef.current();
+    };
+    window.addEventListener('mouseup', finish);
+    window.addEventListener('touchend', finish);
+    return () => { window.removeEventListener('mouseup', finish); window.removeEventListener('touchend', finish); };
+  }, [tool]);
 
   const finishArea = useCallback(() => {
     const area=areaRef.current;
@@ -334,6 +392,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   // Empty-canvas click: zoom tool zooms, add tool places the pending token,
   // select tool deselects.
   const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (tool === 'select-tokens') return;
     if (!scene || (e.target !== stageRef.current && tool !== 'add')) return;
     if (tool === 'zoom') {
       const pointer = stageRef.current?.getPointerPosition();
@@ -350,6 +409,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         token: {
           id: `t${Date.now()}`,
           kind: pending.kind,
+          hidden: true,
           name: pending.name,
           entryId: pending.entryId,
           x: sx,
@@ -357,6 +417,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           size: 100,
           avatar: pending.avatar,
           color: pending.color,
+          hp: waterdeepHp(pending.entryId),
         },
       }]);
       onClearPending();
@@ -408,11 +469,28 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const area = scene.playArea;
   const displayedMapScale = mapZoom.value;
   const fogBounds = fogGeometry(scene, displayedMapScale);
-  const tokenInteractionKey = `${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
+  const tokenInteractionKey = `${tool}:${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
 
   return (
     <div ref={boardRef} className="relative h-full min-h-0 w-full overflow-hidden touch-none">
-    <Stage
+    {role === 'dm' && tool === 'select-tokens' && <div className="absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center gap-2 border border-line bg-panel px-3 py-2 shadow-sm" role="group" aria-label="批量Token可见性">
+      <span className="text-xs">{selectedEnemies.length ? `已选 ${scene.tokens.filter(t => selectedEnemies.includes(t.id)).length} 个敌人` : '拖动框选敌人 · Esc 取消'}</span>
+      <button className="btn-xs" disabled={!scene.tokens.some(t => selectedEnemies.includes(t.id) && t.hidden)} onClick={() => visibilityBatches(scene.tokens, selectedEnemies, false).forEach(batch => connection.sendOps(batch))}>显示选中</button>
+      <button className="btn-xs" disabled={!scene.tokens.some(t => selectedEnemies.includes(t.id) && !t.hidden)} onClick={() => visibilityBatches(scene.tokens, selectedEnemies, true).forEach(batch => connection.sendOps(batch))}>隐藏选中</button>
+      <button className="btn-xs" title="仅为选中且尚未加入先攻的敌人掷骰" disabled={!scene.tokens.some(t => selectedEnemies.includes(t.id) && !scene.initiative.some(e => e.tokenId === t.id))} onClick={() => setInitiativeSelection([...selectedEnemies])}>选中先攻</button>
+      <button className="btn-xs" disabled={!selectedEnemies.length} onClick={() => setSelectedEnemies([])}>取消选择</button>
+    </div>}
+    {role === 'dm' && tool !== 'select-tokens' && scene.tokens.find(t => t.id === selectedId) && (() => {
+      const token = scene.tokens.find(t => t.id === selectedId)!;
+      return <div className="absolute top-3 left-3 z-10 flex items-center gap-2 border border-line bg-panel px-3 py-2 shadow-sm">
+        <span className="text-xs truncate max-w-40">{token.name} · {token.hidden ? '仅DM可见' : '玩家可见'}</span>
+        <button className="btn-xs" onClick={() => connection.sendOps([{ op: 'updateToken', tokenId: token.id, patch: { hidden: !token.hidden } }])}>
+          {token.hidden ? '显示' : '隐藏'}
+        </button>
+      </div>;
+    })()}
+    {role === 'dm' && tool === 'select-tokens' && initiativeSelection && <BatchInitiative enemyIds={initiativeSelection} onClose={() => setInitiativeSelection(null)} />}
+    {stageSize.width > 0 && stageSize.height > 0 && <Stage
       ref={stageRef}
       width={stageSize.width}
       height={stageSize.height}
@@ -421,7 +499,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       // The Stage stays non-draggable while drawing (wall) or erasing so that
       // mousemove fires on every pointer move instead of being captured by a
       // drag — same pattern the wall tool uses for its live preview.
-      draggable={tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
+      draggable={tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
       onDragEnd={(e) => {
         // Konva bubbles dragend from dragged children (tokens) up to the Stage;
         // only update the pan position when the Stage itself was the drag target.
@@ -429,14 +507,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
-      onMouseUp={() => { finishArea(); finishWall(); }}
+      onMouseUp={() => { finishSelection(); finishArea(); finishWall(); }}
       onTouchStart={handleMouseDown}
       onTouchMove={handleMouseMove}
-      onTouchEnd={() => { finishArea(); finishWall(); }}
+      onTouchEnd={() => { finishSelection(); finishArea(); finishWall(); }}
       onTouchCancel={cancelGesture}
       onClick={handleClick}
       onTap={handleClick}
-      className={tool === 'add' || tool === 'wall' || tool === 'erase-area' ? 'cursor-crosshair' : tool === 'zoom' ? 'cursor-zoom-in' : 'cursor-grab'}
+      className={tool === 'select-tokens' || tool === 'add' || tool === 'wall' || tool === 'erase-area' ? 'cursor-crosshair' : tool === 'zoom' ? 'cursor-zoom-in' : 'cursor-grab'}
     >
       <Layer>
         {map && (
@@ -457,15 +535,16 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         {wallPreview && (
           <Line points={[...wallPreview]} stroke={ACCENT} strokeWidth={3} dash={[8, 8]} lineCap="round" listening={false} />
         )}
-        {scene.tokens.map(t => (
+        {scene.tokens.filter(t => role === 'dm' || !t.hidden).map(t => (
           <TokenShape
             key={t.id}
             token={t}
+            showHp={role === 'dm'}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
-            selected={selectedId === t.id}
-            draggable={role === 'dm' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
+            selected={selectedId === t.id || (role === 'dm' && selectedEnemies.includes(t.id))}
+            draggable={role === 'dm' && tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
             interactionKey={tokenInteractionKey}
-            onSelect={() => onSelect(t.id)}
+            onSelect={() => { if (tool !== 'select-tokens') onSelect(t.id); }}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
               const sy = grid.snap ? Math.round((y - grid.offset[1]) / grid.size) * grid.size + grid.offset[1] : y;
@@ -486,9 +565,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             token={p}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
-            draggable={tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add' && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}
+            draggable={tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add' && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}
             interactionKey={tokenInteractionKey}
-            onSelect={() => onSelect(p.id)}
+            onSelect={() => { if (tool !== 'select-tokens') onSelect(p.id); }}
             onDragEnd={(x, y) => {
               const sx = grid.snap ? Math.round((x - grid.offset[0]) / grid.size) * grid.size + grid.offset[0] : x;
               const sy = grid.snap ? Math.round((y - grid.offset[1]) / grid.size) * grid.size + grid.offset[1] : y;
@@ -497,9 +576,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(p.id)}
           />
         ))}
+        {selectionPreview && <Rect name="token-selection" {...selectionPreview} fill="rgba(186,53,38,0.12)" stroke="#ba3526" strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
         {areaPreview && <Rect name="fog-selection" {...areaPreview} fill="rgba(186,53,38,0.12)" stroke="#ba3526" strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
       </Layer>
-    </Stage>
+    </Stage>}
     {/* Fog controls (DM): reveal-all (清空遮罩) and cover-all (添加遮罩), text
         buttons per user request. */}
     {role === 'dm' && (

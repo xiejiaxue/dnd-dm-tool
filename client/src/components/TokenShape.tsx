@@ -11,6 +11,7 @@ interface Props {
   active: boolean;
   selected: boolean;
   draggable?: boolean;
+  showHp?: boolean;
   /** Includes grid settings so ignored callback identities cannot go stale. */
   interactionKey: string;
   onSelect: () => void;
@@ -18,7 +19,8 @@ interface Props {
   onContextMenu: () => void;
 }
 
-function TokenShape({ token, active, selected, draggable = true, onSelect, onDragEnd, onContextMenu }: Props) {
+function TokenShape({ token, active, selected, draggable = true, showHp = false, onSelect, onDragEnd, onContextMenu }: Props) {
+  const tokenDiameter = token.entryId?.startsWith('COS__') ? Math.max(12, Math.min(500, token.size)) : TOKEN_SIZE;
   const img = useImage(token.avatar || null);
   const [pulse, setPulse] = useState(0);
 
@@ -38,6 +40,7 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
     <Group
       id={token.id} name="board-token"
       x={token.x} y={token.y}
+      opacity={token.hidden ? 0.4 : 1}
       draggable={draggable}
       onDragEnd={(e) => {
         const { x, y } = e.target.position();
@@ -50,9 +53,10 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
       onTap={onSelect}
       onContextMenu={(e) => { e.evt.preventDefault(); onContextMenu(); }}
     >
+      {token.hidden && <Text text="已隐藏 · 仅DM可见" x={-65} y={-72} width={130} align="center" fill="#FFFFFF" fontSize={12} listening={false} shadowColor="#000" shadowBlur={3} />}
       {/* 底圆（颜色环 + 选中高亮） */}
       <Circle
-        width={TOKEN_SIZE} height={TOKEN_SIZE}
+        width={tokenDiameter} height={tokenDiameter}
         fill={token.color || '#333'}
         stroke={selected ? '#B93424' : token.color || '#000'}
         strokeWidth={selected ? 3 : 1.5}
@@ -61,22 +65,22 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
           故把头像整体平移 -size/2 使其裁剪圆心也落在 (0,0)，与底圆重合。 */}
       {img && (
         <Group
-          x={-TOKEN_SIZE / 2}
-          y={-TOKEN_SIZE / 2}
+          x={-tokenDiameter / 2}
+          y={-tokenDiameter / 2}
           clipFunc={(ctx) => {
             ctx.beginPath();
-            ctx.arc(TOKEN_SIZE / 2, TOKEN_SIZE / 2, TOKEN_SIZE / 2, 0, Math.PI * 2, false);
+            ctx.arc(tokenDiameter / 2, tokenDiameter / 2, tokenDiameter / 2, 0, Math.PI * 2, false);
             ctx.closePath();
           }}
         >
-          <KImage image={img} width={TOKEN_SIZE} height={TOKEN_SIZE} perfectDrawEnabled={false} listening={false} />
+          <KImage image={img} width={tokenDiameter} height={tokenDiameter} perfectDrawEnabled={false} listening={false} />
         </Group>
       )}
       {/* 当前回合高亮：白色脉冲环（在明暗地图上都可读） */}
       {active && (
         <Ring
-          innerRadius={TOKEN_SIZE / 2 - 6}
-          outerRadius={TOKEN_SIZE / 2 + 4 + pulse}
+          innerRadius={tokenDiameter / 2 - 6}
+          outerRadius={tokenDiameter / 2 + 4 + pulse}
           fillEnabled={false}
           stroke="#FFFFFF" strokeWidth={3}
           listening={false}
@@ -84,9 +88,9 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
       )}
       {/* 怪物编号徽章（右上角）：白底墨边、红色数字 */}
       {token.kind === 'monster' && token.number != null && (() => {
-        const r = TOKEN_SIZE * 0.17;
-        const cx = TOKEN_SIZE * 0.35;
-        const cy = -TOKEN_SIZE * 0.35;
+        const r = tokenDiameter * 0.17;
+        const cx = tokenDiameter * 0.35;
+        const cy = -tokenDiameter * 0.35;
         const fs = r * 1.3;
         return (
           <Group x={0} y={0} listening={false}>
@@ -100,9 +104,16 @@ function TokenShape({ token, active, selected, draggable = true, onSelect, onDra
           </Group>
         );
       })()}
-      <Text text={token.name} x={-TOKEN_SIZE / 2} y={TOKEN_SIZE / 2 + 2} width={TOKEN_SIZE} align="center"
+      <Text text={token.name} x={-tokenDiameter / 2} y={tokenDiameter / 2 + 2} width={tokenDiameter} align="center"
         fill="#FFFFFF" fontSize={12} fontStyle="bold"
         shadowColor="#000000" shadowBlur={2} shadowOpacity={0.75} />
+      {showHp && token.hp && <Text
+        text={`HP ${token.hp.current}/${token.hp.max}`}
+        x={-tokenDiameter / 2} y={tokenDiameter / 2 + 30} width={tokenDiameter}
+        align="center" fill={token.hp.current <= 0 ? '#ffb4a9' : '#FFFFFF'}
+        fontSize={12} fontStyle="bold" listening={false}
+        shadowColor="#000000" shadowBlur={3} shadowOpacity={1}
+      />}
     </Group>
   );
 }
@@ -115,6 +126,7 @@ export default memo(TokenShape, (previous, next) => (
   previous.token === next.token
   && previous.active === next.active
   && previous.selected === next.selected
+  && previous.showHp === next.showHp
   && previous.draggable === next.draggable
   && previous.interactionKey === next.interactionKey
 ));

@@ -1,3 +1,5 @@
+import { getStrahdCard, searchStrahd, strahdToken } from '../../shared/strahd';
+import { searchWaterdeep } from "../../shared/waterdeep";
 import fs from 'node:fs';
 import path from 'node:path';
 import Fuse from 'fuse.js';
@@ -177,11 +179,11 @@ export class SearchService {
   }
 
   query(q: string, type: EntryType | 'all' = 'all'): IndexEntry[] {
-    if (!this.fuse) return [];
+    if (!this.fuse) return [...searchWaterdeep(q, type), ...searchStrahd(q, type)].slice(0, 50);
     const trimmed = q.trim();
     if (!trimmed) return [];
     const scored = this.fuse.search(trimmed);
     const out = scored.map(r => r.item).filter(e => type === 'all' || e.type === type);
-    return out.slice(0, 50);
+    return [...searchWaterdeep(q, type), ...searchStrahd(q, type), ...out].slice(0, 50);
   }
 }

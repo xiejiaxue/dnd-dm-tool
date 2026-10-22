@@ -30,6 +30,9 @@ export interface Token {
   number?: number;
   // Current/max hit points (monsters only; filled from the stat block on place).
   hp?: { current: number; max: number };
+  initiativeBonus?: number;
+  /** Hidden encounter tokens are only sent to the DM. Legacy tokens stay visible. */
+  hidden?: boolean;
 }
 
 export interface PlayerToken extends Token {
@@ -113,10 +116,10 @@ export type Op =
   | { op: 'moveToken'; tokenId: string; x: number; y: number }
   | { op: 'addToken'; token: Token }
   | { op: 'removeToken'; tokenId: string }
-  | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> }
+  | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden'>> }
   | { op: 'addPlayer'; player: PlayerToken }
   | { op: 'removePlayer'; tokenId: string }
-  | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> }
+  | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> }
   | { op: 'addWall'; wall: Wall }
   | { op: 'removeWall'; wallId: string }
   | { op: 'updateGrid'; patch: Partial<GridConfig> }

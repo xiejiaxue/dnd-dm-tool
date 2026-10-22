@@ -92,6 +92,7 @@ function fmtLanguages(lang: unknown): string {
 }
 
 export function formatMonster(m: any): StatBlock {
+  if (m.campaignCard) return m.campaignCard as StatBlock;
   const size = SIZE_ZH[String(m.size?.[0])] ?? m.size?.[0] ?? '';
   const type = TYPE_ZH[m.type?.type ?? m.type] ?? m.type?.type ?? (typeof m.type === 'string' ? m.type : '');
   const body = [

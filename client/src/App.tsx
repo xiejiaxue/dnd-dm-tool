@@ -1,3 +1,4 @@
+import { useMonsterHp } from './useMonsterHp';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Lobby from './Lobby';
 import ToolsPage from './components/ToolsPage';
@@ -98,7 +99,9 @@ function CampaignSession({ slug, onLeaveRoom }: { slug: string; onLeaveRoom: () 
 }
 
 function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: () => void }) {
-  const { scene, role } = useScene();
+  const sceneState = useScene();
+  const { scene, role } = sceneState;
+  useMonsterHp(sceneState);
   const [tool, setTool] = useState('select');
   const [pending, setPendingState] = useState<PendingToken | null>(null);
   // Lifted from BoardCanvas so the InitiativePanel can add the board-selected
@@ -222,7 +225,7 @@ export default function App() {
       });
   }, [enterRoom, inviteToken]);
 
-  if (location.pathname === '/calculator' || location.pathname === '/characters' || location.pathname === '/dice') return <ToolsPage page={location.pathname === '/dice' ? 'dice' : location.pathname === '/calculator' ? 'calculator' : 'characters'} />;
+  if (['/calculator', '/characters', '/dice', '/music', '/tavern', '/calendar'].includes(location.pathname)) return <ToolsPage page={location.pathname === '/calendar' ? 'tavern' : location.pathname === '/tavern' ? 'tavern' : location.pathname === '/music' ? 'music' : location.pathname === '/dice' ? 'dice' : location.pathname === '/calculator' ? 'calculator' : 'characters'} />;
 
   return (
     <div className="h-full flex flex-col bg-zinc-950">

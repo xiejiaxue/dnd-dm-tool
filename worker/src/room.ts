@@ -1,3 +1,5 @@
+import { strahdSceneFor, strahdTokens } from './strahd';
+import { deployWaterdeep } from './waterdeep-deployment';
 import { resolveFogBasisScale } from '../../shared/fog';
 import { DurableObject } from "cloudflare:workers";
 import { CampaignStore } from "./campaign-store";
@@ -119,6 +121,40 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (url.pathname === "/bootstrap" && request.method === "GET")
       return this.respondJson(this.bootstrap(actor));
 
+    const strahdMatch = /^\/strahd-scene\/([^/]+)$/.exec(url.pathname);
+    if (strahdMatch) {
+      this.requireModerator(actor);
+      const scene = this.requireState().scenes[decodeURIComponent(strahdMatch[1])];
+      if (!scene) return this.respondJson({ error: '找不到场景' }, 404);
+      const preset = strahdSceneFor(scene);
+      if (request.method === 'GET') return this.respondJson(preset ?? null);
+      if (request.method === 'POST') {
+        const body = await objectBody(request);
+        const spec = preset?.encounters.find(e => e.key === body.encounterKey);
+        const count = body.count;
+        if (!spec || typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > 100)
+          return this.respondJson({ error: '请选择本场景遭遇，数量须为 1–100' }, 400);
+        const result = this.mutate(actor, clientCommandId(body.id), 'scene.strahd-encounter', next => {
+          const target = next.scenes[scene.id];
+          const offset = target.tokens.filter(t => t.entryId === spec.entryId).length;
+          const tokens = strahdTokens(target, spec, count, offset).map(t => ({ ...t, id: crypto.randomUUID() }));
+          target.tokens.push(...tokens);
+          return { added: tokens.length };
+        }, [scene.id]);
+        this.broadcastState();
+        return this.respondJson(result.payload);
+      }
+    }
+    if (url.pathname === "/waterdeep-deployment") {
+      this.requireModerator(actor);
+      if (request.method === "GET") return this.respondJson(deployWaterdeep(this.requireState(), actor));
+      if (request.method === "POST") {
+        const body = await objectBody(request);
+        const result = this.mutate(actor, clientCommandId(body.id), "scene.deploy-waterdeep", next => deployWaterdeep(next, actor, true), []);
+        this.broadcastState();
+        return this.respondJson(result.payload);
+      }
+    }
     if (url.pathname === "/scenes") {
       if (request.method === "GET")
         return this.respondJson(this.listScenes(actor));
@@ -631,17 +667,7 @@ export class RoomDurableObject extends DurableObject<Env> {
         { error: { code: "NOT_FOUND", message: "找不到场景" } },
         404,
       );
-    const copy = structuredClone(scene);
-    if (!isRoomModerator(actor.role)) {
-      copy.players = copy.players.map((player) => ({
-        ...player,
-        sessionId: player.sessionId === actor.userId ? actor.userId : null,
-      }));
-      copy.initiative = copy.initiative.map((entry) => ({
-        ...entry,
-        sessionId: entry.sessionId === actor.userId ? actor.userId : null,
-      }));
-    }
+    const copy = projectRoomState({ ...this.requireState(), currentSceneId: sceneId }, actor).scene;
     return this.respondJson(copy);
   }
 
@@ -931,6 +957,13 @@ export function projectPatchOperations(
 ): Op[] | null {
   const scene = activeScene(state);
   const canManage = isRoomModerator(actor.role);
+  // Visibility transitions need a complete projection to add/remove both token
+  // and initiative rows. Also avoid sending movement/edits for hidden tokens.
+  if (!canManage && operations.some(op =>
+    ['addToken', 'updateToken', 'removeToken'].includes(op.op)
+    || (op.op === 'moveToken' && scene.tokens.some(t => t.id === op.tokenId && t.hidden))
+    || (scene.tokens.some(t => t.hidden) && ['advanceTurn', 'reorderInitiative', 'removeFromInitiative'].includes(op.op))
+  )) return null;
   const projected: Op[] = [];
   for (const operation of operations) {
     switch (operation.op) {

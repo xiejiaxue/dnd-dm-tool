@@ -146,9 +146,11 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
   }
 
   // A player must never receive another player's stable account identifier.
-  // Tokens without a visibility model are still intentionally visible; strong
-  // fog needs derived map tiles and is documented as a separate feature.
+  // Strip hidden encounter tokens and their initiative entries before transmission.
   const playerScene = structuredClone(scene);
+  const hiddenIds = new Set(scene.tokens.filter(t => t.hidden).map(t => t.id));
+  playerScene.tokens = playerScene.tokens.filter(t => !t.hidden);
+  playerScene.initiative = playerScene.initiative.filter(e => !e.tokenId || !hiddenIds.has(e.tokenId));
   playerScene.players = playerScene.players.map((player) => ({
     ...player,
     sessionId: player.sessionId === actor.userId ? actor.userId : null,
@@ -329,6 +331,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     }
     case 'removeToken':
       scene.tokens = scene.tokens.filter((item) => item.id !== op.tokenId);
+      scene.initiative = scene.initiative.filter((item) => item.tokenId !== op.tokenId);
       return;
     case 'updateToken': {
       const target = scene.tokens.find((item) => item.id === op.tokenId);
@@ -627,6 +630,8 @@ function token(value: unknown, requiredKind: 'monster' | 'player'): Token {
     avatar: optionalAssetUrl(value.avatar),
     color: color(value.color),
     hp: hp(value.hp),
+    ...(requiredKind === 'monster' ? { hidden: value.hidden === undefined ? true : tokenHidden(value.hidden) } : {}),
+    ...(value.initiativeBonus === undefined ? {} : { initiativeBonus: initiativeBonus(value.initiativeBonus) }),
   };
 }
 
@@ -640,25 +645,39 @@ function wall(value: unknown): Wall {
   return { id: newOpaqueId('wall'), p1: point(value.p1), p2: point(value.p2) };
 }
 
-function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> {
+function initiativeBonus(value: unknown): number {
+  const bonus = boundedNumber(value, -50, 50);
+  if (!Number.isInteger(bonus)) throw new DomainError('INVALID', '先攻加值必须是整数');
+  return bonus;
+}
+
+function tokenHidden(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new DomainError('INVALID', '隐藏状态必须是布尔值');
+  return value;
+}
+
+function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden'>> {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp'>> = {};
+  const patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden'>> = {};
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
+  if (value.hidden !== undefined) patch.hidden = tokenHidden(value.hidden);
   if (value.size !== undefined) patch.size = boundedNumber(value.size, 12, 500);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
   if (value.color !== undefined) patch.color = color(value.color);
   if (value.hp !== undefined) patch.hp = hp(value.hp);
+  if (value.initiativeBonus !== undefined) patch.initiativeBonus = initiativeBonus(value.initiativeBonus);
   if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
   return patch;
 }
 
-function playerPatch(value: unknown, maySetHp: boolean): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> {
+function playerPatch(value: unknown, maySetHp: boolean): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar'>> = {};
+  const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> = {};
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.color !== undefined) patch.color = color(value.color);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
   if (maySetHp && value.hp !== undefined) patch.hp = hp(value.hp);
+  if (maySetHp && value.initiativeBonus !== undefined) patch.initiativeBonus = initiativeBonus(value.initiativeBonus);
   if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
   return patch;
 }

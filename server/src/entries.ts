@@ -1,3 +1,5 @@
+import { getStrahdCard, searchStrahd, strahdToken } from '../../shared/strahd';
+import { getWaterdeepCard } from "../../shared/waterdeep";
 import fs from 'node:fs';
 import path from 'node:path';
 import { EntryType, IndexEntry } from './types';
@@ -42,6 +44,8 @@ export class EntryService {
   }
 
   async get(type: EntryType, id: string): Promise<any> {
+    const builtin = type === "monster" ? (getWaterdeepCard(id) ?? getStrahdCard(id)) : undefined;
+    if (builtin) return builtin;
     const entry = this.index.find(e => e.type === type && e.id === id);
     if (!entry) throw new EntryNotFoundError(id);
     const arr = await this.loadFile(entry.bookFile);

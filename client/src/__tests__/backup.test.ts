@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SCENE_BACKUP_FORMAT, SCENE_BACKUP_VERSION, buildSceneBackup, parseSceneBackup } from '../backup';
+import { SCENE_BACKUP_FORMAT, SCENE_BACKUP_VERSION, buildSceneBackup, parseSceneBackup, importedToken } from '../backup';
 import type { Scene } from '../types';
 
 const scene: Scene = {
@@ -38,6 +38,14 @@ describe('scene backup', () => {
     expect(backup.scene).not.toHaveProperty('players');
     expect(backup.scene).not.toHaveProperty('initiative');
     expect(backup.scene.grid).toEqual({ size: 100, offset: [0, 0], snap: true });
+  });
+
+  it('preserves hidden and visible tokens through export, parsing and import', async () => {
+    for (const hidden of [true, false]) {
+      const { backup } = await buildSceneBackup({ ...scene, tokens: [{ ...scene.tokens[0], hidden }] }, null);
+      const parsed = parseSceneBackup(JSON.stringify(backup));
+      expect(importedToken(parsed.scene.tokens[0], '', 0).hidden).toBe(hidden);
+    }
   });
 
   it('parses a supported local backup and rejects unsupported versions', () => {

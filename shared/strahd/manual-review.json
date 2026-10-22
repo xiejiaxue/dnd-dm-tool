@@ -1,0 +1,58 @@
+[
+  {
+    "map": "03",
+    "region": "无编号住宅",
+    "name": "平民",
+    "quantity": "1d4成人",
+    "reason": "数量需要裁定"
+  },
+  {
+    "map": "11",
+    "region": "K56",
+    "name": "巴洛维亚巫师",
+    "quantity": "7−已在K50击败人数",
+    "reason": "数量需要裁定"
+  },
+  {
+    "map": "14",
+    "region": "传送终点K74g",
+    "name": "灰泥怪",
+    "quantity": "1",
+    "reason": "图外或未定位，按需放置"
+  },
+  {
+    "map": "14",
+    "region": "传送终点K75a",
+    "name": "埃米尔·托兰涅斯库",
+    "quantity": "1",
+    "reason": "图外或未定位，按需放置"
+  },
+  {
+    "map": "15",
+    "region": "三座城门",
+    "name": "瓦拉吉长矛警卫",
+    "quantity": "每门2",
+    "reason": "数量需要裁定"
+  },
+  {
+    "map": "15",
+    "region": "无编号住宅",
+    "name": "平民",
+    "quantity": "1d4成人",
+    "reason": "数量需要裁定"
+  },
+  {
+    "map": "20",
+    "region": "N9f篷车",
+    "name": "强盗",
+    "quantity": "每车1d4",
+    "reason": "数量需要裁定"
+  },
+  {
+    "map": "24",
+    "region": "村民住宅",
+    "name": "平民",
+    "quantity": "每屋1d4成人",
+    "reason": "数量需要裁定"
+  }
+]

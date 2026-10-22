@@ -1,3 +1,4 @@
+import BatchInitiative from './BatchInitiative';
 import { useEffect, useRef, useState } from 'react';
 import { connection, getMySessionId, useScene } from '../ws';
 
@@ -17,6 +18,7 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
   const [value, setValue] = useState('');
   const [dmName, setDmName] = useState('');
   const [dmValue, setDmValue] = useState('');
+  const [batchOpen, setBatchOpen] = useState(false);
   const entries = scene?.initiative ?? [];
   const playerValue = parseInitiativeValue(value);
   const moderatorValue = parseInitiativeValue(dmValue);
@@ -72,6 +74,14 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
     onClearSelected?.();
   };
 
+  const clearInitiative = () => {
+    const live = connection.lastState;
+    if (!connection.connected || live?.role !== 'dm' || live.scene.id !== scene?.id) return;
+    const ops = live.scene.initiative.map(entry => ({ op: 'removeFromInitiative' as const, entryId: entry.id }));
+    // The room protocol accepts at most 20 operations per command.
+    for (let i = 0; i < ops.length; i += 20) connection.sendOps(ops.slice(i, i + 20));
+  };
+
   return (
     <section className="campaign-initiative" aria-label="战斗先攻">
       <span className="panel-label shrink-0">先攻</span>
@@ -105,6 +115,9 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
           <button onClick={addDm} disabled={moderatorValue === null || (!selectedToken && !dmName.trim())} className="btn-primary">加入先攻</button>
         </div>
       )}
+      {role === 'dm' && <button onClick={() => setBatchOpen(true)} className="btn-primary shrink-0">批量先攻</button>}
+      {role === 'dm' && <button onClick={clearInitiative} disabled={!entries.length || !connection.connected} className="btn-xs shrink-0">清空先攻</button>}
+      {batchOpen && role === 'dm' && <BatchInitiative onClose={() => setBatchOpen(false)} />}
       {role === 'dm' && (
         <button
           onClick={() => connection.sendOps([{ op: 'advanceTurn' }])}

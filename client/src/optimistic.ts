@@ -46,7 +46,7 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         ? { scene, campaign }
         : { scene: { ...scene, tokens: [...scene.tokens, cloneToken(operation.token)] }, campaign };
     case 'removeToken':
-      return { scene: { ...scene, tokens: scene.tokens.filter((token) => token.id !== operation.tokenId) }, campaign };
+      return { scene: { ...scene, tokens: scene.tokens.filter((token) => token.id !== operation.tokenId), initiative: scene.initiative.filter(entry => entry.tokenId !== operation.tokenId) }, campaign };
     case 'updateToken': {
       const index = scene.tokens.findIndex((token) => token.id === operation.tokenId);
       if (index < 0) return { scene, campaign };

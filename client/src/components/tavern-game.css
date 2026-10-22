@@ -1,0 +1,216 @@
+.tavern-game { --tavern-green: #527262; --tavern-gold: #a8813d; padding-bottom: 16px; }
+.tavern-heading { align-items: center; }.tavern-heading p { margin: 12px 0 0; color: var(--muted); line-height: 1.8; }.tavern-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }.tavern-music { display: inline-flex; align-items: center; gap: 8px; }.tavern-music[aria-pressed="true"] { border-color: var(--tavern-green); color: var(--tavern-green); }
+.tavern-stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border-bottom: 1px solid var(--line); padding: 24px 0; gap: 18px; }.tavern-stats > div { display: grid; gap: 10px; }.tavern-stats span { font-size: 11px; color: var(--muted); }.tavern-stats strong { font-size: 26px; font-weight: 550; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }.tavern-stats strong small { font-size: 11px; font-weight: 400; letter-spacing: 0; color: var(--muted); }.tavern-stats small { font-size: 10px; }.tavern-stats > div:first-child strong { font-size: 23px; }.tavern-debt { grid-column: 1 / -1; color: var(--accent); }.tavern-game .loss { color: var(--accent); }.tavern-game .profit { color: var(--tavern-green); }
+.tavern-layout { display: grid; grid-template-columns: minmax(0,1fr) 286px; gap: 28px; padding-top: 28px; align-items: start; }.tavern-floor { border: 1px solid var(--line); background: #fcfbf7; min-width: 0; }.tavern-scene-wrap { position: relative; background: #d8d9cc; overflow: hidden; }.tavern-scene { display: block; width: 100%; height: auto; }.tavern-scene-label { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid #b8b6a6; background: #ece9dd; }.tavern-scene-label span { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }.tavern-scene-label small { color: var(--muted); font-size: 10px; text-align: right; }
+.tavern-stage { padding: 28px; }.tavern-stage h2 { margin: 8px 0 16px; font-size: clamp(22px,2.4vw,29px); font-weight: 600; letter-spacing: -.04em; }.tavern-stage h2:focus { outline: none; }.tavern-intro { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 0 0 24px; }.tavern-game fieldset { padding: 0; border: 0; margin: 22px 0; min-width: 0; }.tavern-game legend { font-size: 11px; color: var(--muted); padding: 0 0 12px; }
+.tavern-styles, .tavern-preparation, .tavern-marketing { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }.tavern-styles label, .tavern-preparation button, .tavern-marketing button { position: relative; padding: 16px 14px; border: 1px solid var(--line); display: grid; gap: 8px; align-content: start; text-align: left; background: transparent; min-width: 0; }.tavern-styles label { cursor: pointer; color: var(--ink); }.tavern-styles input { position: absolute; opacity: 0; width: 1px; height: 1px; }.tavern-styles label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }.tavern-styles strong, .tavern-preparation strong { font-size: 13px; font-weight: 600; }.tavern-styles span, .tavern-preparation span, .tavern-marketing small { font-size: 11px; color: var(--muted); line-height: 1.7; }.tavern-game .selected { border-color: var(--tavern-green); background: #edf1e8; }.tavern-opening { border-top: 1px solid var(--line); padding: 18px 0 24px; display: grid; gap: 9px; font-size: 12px; }.tavern-opening > span:first-child { display: flex; justify-content: space-between; gap: 12px; }.tavern-opening strong { font-size: 18px; }.tavern-opening small { font-size: 11px; color: var(--muted); line-height: 1.7; }
+.tavern-primary { width: 100%; display: flex; align-items: center; justify-content: space-between; min-height: 50px; margin-top: 22px; gap: 14px; }.tavern-primary + .button-secondary { width: 100%; margin-top: 10px; }.tavern-inline-note { color: var(--muted); font-size: 11px; line-height: 1.8; }.tavern-shift-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }.tavern-progress { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+.tavern-patrons { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 0 20px; border-bottom: 1px solid var(--line); margin: 2px 0 22px; }.tavern-patrons button { border: 1px solid var(--line); padding: 9px 10px; display: flex; align-items: center; gap: 9px; text-align: left; background: #faf8f2; min-height: 50px; }.patron-avatar { display: inline-grid; place-items: center; width: 33px; height: 33px; color: #fff; font-size: 13px; flex-shrink: 0; border-radius: 50%; }.tavern-patrons button > span:last-child { display: grid; gap: 4px; font-size: 12px; }.tavern-patrons small { color: var(--muted); font-size: 10px; }.tavern-patrons button.resolved { opacity: .5; }
+.tavern-story-identity { display: flex; align-items: center; gap: 10px; font-size: 12px; }.tavern-story-identity > span:last-child { display: grid; gap: 4px; }.tavern-story-identity small { color: var(--muted); font-size: 10px; }.tavern-story h3 { font-size: 21px; font-weight: 600; margin: 20px 0 12px; letter-spacing: -.03em; }.tavern-story > p { font-size: 14px; line-height: 2; }.tavern-story > .tavern-inline-note { font-size: 11px; margin: 14px 0 0; }.tavern-choices { display: grid; gap: 10px; margin: 20px 0 0; }.tavern-choices button { display: grid; grid-template-columns: minmax(0,1fr) 20px; align-items: center; gap: 8px 12px; padding: 17px; border: 1px solid var(--line); text-align: left; background: #f6f4ec; }.tavern-choices button:hover:not(:disabled) { background: #edf1e8; border-color: var(--tavern-green); }.tavern-choices strong { font-size: 13px; font-weight: 550; }.tavern-choices button > span { grid-column: 1; color: var(--muted); font-size: 11px; line-height: 1.6; }.tavern-choices svg { grid-column: 2; grid-row: 1 / 3; }
+.tavern-ready { padding: 20px 0; text-align: center; }.tavern-ready-mark { display: block; color: var(--tavern-gold); font-size: 36px; }.tavern-ready h3 { font-size: 17px; }.tavern-ready p { font-size: 13px; line-height: 1.9; color: var(--muted); }.tavern-resolution-log { margin-top: 22px; display: grid; gap: 8px; }.tavern-resolution-log > details { padding: 13px 14px; border-left: 2px solid var(--tavern-green); background: #f0f1e9; }.tavern-resolution-log summary { font-size: 12px; cursor: pointer; }.tavern-resolution-log small { color: var(--muted); font-size: 10px; margin-left: 12px; }.tavern-resolution-log p { margin: 10px 0 0; font-size: 12px; line-height: 1.9; }
+.tavern-sidebar { min-width: 0; }.tavern-sidebar-section { border-top: 3px solid var(--tavern-green); padding: 22px 0; }.tavern-sidebar h2 { font-size: 20px; margin: 10px 0 14px; font-weight: 600; overflow-wrap: anywhere; }.tavern-sidebar-section p { line-height: 1.9; color: var(--muted); font-size: 12px; }.tavern-preview { margin-top: 20px; }.tavern-preview > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 11px; }.tavern-preview dt { color: var(--muted); }.tavern-preview dd { margin: 0; font-variant-numeric: tabular-nums; }
+.tavern-management { border-top: 1px solid var(--line); padding: 18px 0; }.tavern-management > summary { cursor: pointer; font-size: 14px; font-weight: 550; }.tavern-management summary > small { float: right; font-size: 10px; color: var(--muted); font-weight: 400; line-height: 2; }.tavern-management > p { font-size: 11px; color: var(--muted); line-height: 1.8; }.tavern-shop-item { padding: 18px 0 0; }.tavern-shop-item strong { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 13px; }.tavern-shop-item strong small { font-size: 10px; color: var(--muted); font-weight: 400; }.tavern-shop-item p { color: var(--muted); font-size: 11px; line-height: 1.8; margin: 8px 0; }.tavern-shop-item > span { color: var(--muted); font-size: 10px; display: block; margin-bottom: 8px; }.tavern-shop-item button { min-height: 40px; width: 100%; font-size: 12px; }
+.tavern-relationship { display: flex; align-items: center; gap: 12px; padding-top: 20px; }.tavern-relationship > div { display: grid; gap: 6px; flex: 1; }.tavern-relationship strong { font-size: 12px; font-weight: 500; }.tavern-relationship progress { width: 100%; height: 4px; accent-color: var(--tavern-green); }.tavern-relationship small { font-size: 10px; color: var(--muted); }
+.tavern-statement dl { margin: 24px 0 14px; }.tavern-statement dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--line); padding: 12px 0; font-size: 13px; }.tavern-statement dt { color: var(--muted); }.tavern-statement dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }.tavern-statement small { font-size: 10px; color: var(--muted); }.tavern-statement .statement-total { padding: 20px 0; border-bottom: 2px solid var(--ink); }.statement-total dt { color: var(--ink); font-weight: 550; }.statement-total dd { font-size: 27px; }.tavern-statement > p { font-size: 11px; color: var(--muted); line-height: 1.9; }
+.tavern-ledger ol { list-style: none; padding: 0; margin: 12px 0 0; max-height: 520px; overflow: auto; }.tavern-ledger li { border-bottom: 1px solid var(--line); padding: 12px 0; }.tavern-ledger li > details > summary { display: flex; align-items: center; gap: 12px; justify-content: space-between; cursor: pointer; font-size: 12px; }.tavern-ledger li > details > summary span { display: grid; gap: 4px; }.tavern-ledger li small { font-size: 10px; color: var(--muted); }.tavern-ledger li strong { font-size: 13px; font-weight: 500; white-space: nowrap; }.tavern-ledger .tavern-statement dl > div { font-size: 11px; }.tavern-ledger .statement-total dd { font-size: 19px; }.tavern-ledger-note { font-size: 11px; line-height: 1.8; color: var(--muted); }
+.tavern-goals { display: grid; gap: 10px; margin: 24px 0; }.tavern-goals span { padding: 14px; border: 1px solid var(--line); color: var(--muted); font-size: 12px; }.tavern-goals .achieved { border-color: var(--tavern-green); color: var(--tavern-green); background: #edf1e8; }
+.tavern-rules { padding: 24px; margin-top: 24px; border: 1px solid var(--line); background: #f0f1e9; }.tavern-rules h2 { font-size: 18px; margin: 0 0 14px; }.tavern-rules p { font-size: 12px; line-height: 1.9; color: var(--muted); }.tavern-rules strong { color: var(--ink); font-weight: 600; }.tavern-rules a { color: var(--tavern-green); }.tavern-reset { padding: 18px; margin-top: 24px; background: #f3e8d9; border: 1px solid #d5c3a6; display: flex; gap: 8px; flex-wrap: wrap; }.tavern-reset p { margin: 0 0 8px; width: 100%; font-size: 12px; line-height: 1.8; }
+.tavern-footer { border-top: 1px solid var(--line); padding-top: 22px; margin-top: 32px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }.tavern-footer > div { display: flex; align-items: center; gap: 14px; }.tavern-footer button { min-height: 40px; background: none; border: none; padding: 6px 0; font-size: 11px; color: var(--muted); }.tavern-footer .tavern-restore { position: relative; overflow: hidden; display: inline-flex; align-items: center; min-height: 40px; cursor: pointer; font-size: 11px; }.tavern-restore input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }.tavern-restore:focus-within { outline: 2px solid var(--accent); }.tavern-footer > p { width: 100%; margin: 0; font-size: 10px; line-height: 1.8; }
+@media(max-width:1150px) { .tavern-layout { grid-template-columns: minmax(0,1fr) 250px; gap: 20px; }.tavern-stage { padding: 24px; }.tavern-styles,.tavern-preparation { gap: 7px; }.tavern-styles label,.tavern-preparation button { padding: 14px 10px; } }
+@media(max-width:850px) { .tavern-layout { grid-template-columns: 1fr; }.tavern-sidebar { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 24px; align-items: start; }.tavern-sidebar-section { grid-column: 1 / -1; }.tavern-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }.tavern-heading { align-items: start; }.tavern-header-actions { flex-direction: column; }.tavern-stats strong { font-size: 23px; } }
+@media(max-width:599px) { .tavern-heading { padding-top: 24px; }.tavern-heading h1 { font-size: 31px; }.tavern-heading p { font-size: 11px; max-width: 210px; }.tavern-header-actions button { font-size: 11px; padding: 8px 10px; min-height: 38px; }.tavern-header-actions .ui-icon { width: 16px; }.tavern-stats { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px 12px; padding: 20px 0; }.tavern-stats strong { font-size: 25px; }.tavern-layout { padding-top: 20px; gap: 24px; }.tavern-stage { padding: 22px 18px; }.tavern-stage h2 { font-size: 24px; }.tavern-scene-label { padding: 11px 16px; }.tavern-scene-label small { max-width: 130px; line-height: 1.7; }.tavern-styles,.tavern-preparation { grid-template-columns: 1fr; gap: 8px; }.tavern-styles label,.tavern-preparation button { grid-template-columns: 100px minmax(0,1fr); align-items: center; padding: 14px; }.tavern-marketing { gap: 6px; }.tavern-marketing button { padding: 12px 8px; font-size: 12px; }.tavern-marketing small { font-size: 10px; }.tavern-intro { font-size: 12px; }.tavern-shift-heading { align-items: start; }.tavern-progress { padding-top: 25px; font-size: 10px; }.tavern-patrons button { flex: 1 1 130px; }.tavern-story > p { font-size: 13px; }.tavern-sidebar { grid-template-columns: 1fr; }.tavern-sidebar-section { grid-column: auto; }.tavern-preview { grid-template-columns: 1fr; }.tavern-opening > span:nth-child(2) { font-size: 11px; line-height: 1.7; }.tavern-statement dl > div { font-size: 12px; }.tavern-rules { padding: 20px 16px; }.swiss-tools .navigation-rail nav { width: 100%; gap: 3px; }.swiss-tools .rail-destination { font-size: 10px; }.tavern-footer > div { width: 100%; justify-content: space-between; } }
+@media(prefers-reduced-motion:reduce) { .tavern-game * { scroll-behavior: auto; } }
+.tavern-game .tavern-heading { padding-top: 28px; padding-bottom: 22px; align-items: center; }
+.tavern-stats { padding-top: 18px; padding-bottom: 18px; }
+.tavern-scene { height: clamp(160px,16vw,195px); }
+.tavern-stage { padding: 24px; }
+.tavern-stage h2 { margin-bottom: 12px; }
+.tavern-intro { margin-bottom: 18px; }
+.tavern-game fieldset { margin-top: 18px; margin-bottom: 18px; }
+.tavern-opening { padding-top: 14px; padding-bottom: 12px; }
+@media(max-width:599px) { .tavern-game .tavern-heading { padding-top: 24px; align-items: start; }.tavern-stage { padding: 22px 18px; }.tavern-scene { height: 150px; } }
+@media(max-width:599px) { .navigation-rail .rail-destination > span:not(.nav-index) { font-size: 10px; white-space: nowrap; } }
+.tavern-story h3:focus { outline: none; }
+.navigation-rail .nav-name-short { display: none; }
+@media(max-width:599px) { .navigation-rail .nav-name-wide { display: none; }.navigation-rail .nav-name-short { display: inline; } }
+/* Log entries use a quiet paper treatment; yellow is reserved for special events. */
+.tavern-game .tavern-stage h2 { font-size: 24px; font-weight: 550; letter-spacing: 0; }
+.tavern-game .tavern-special { background: #fff5ce; border: 1px solid #ddc66d; border-left: 3px solid #ad8414; }
+.tavern-game .tavern-patrons .tavern-special { color: #604a13; }
+.tavern-game .tavern-patrons .tavern-special.selected { border-color: #9f780c; background: #ffefaf; }
+.tavern-game .tavern-patrons .tavern-special.resolved { opacity: 1; }
+.tavern-game .tavern-story.tavern-special { padding: 20px; }
+.tavern-entry-label, .tavern-entry-meta { font-size: 11px; color: var(--muted); }
+.tavern-entry-label { display: block; margin-bottom: 14px; }
+.tavern-special .tavern-entry-label, .tavern-special .tavern-entry-meta { color: #735711; }
+.tavern-entry-meta { display: flex; flex-wrap: wrap; gap: 12px; }
+.tavern-response { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+.tavern-response > summary, .tavern-resolution-log summary { cursor: pointer; font-size: 12px; }
+.tavern-observe { margin-top: 18px; width: 100%; }
+.tavern-journal-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.tavern-journal-list > li { padding: 18px; border-left: 2px solid var(--line); margin: 14px 0; background: #f5f4ed; }
+.tavern-journal-list h4 { font-size: 15px; margin: 12px 0 8px; font-weight: 550; }
+.tavern-journal-list p, .tavern-history > details > p { font-size: 12px; line-height: 1.9; margin: 8px 0; }
+.tavern-entry-result { color: var(--muted); }
+.tavern-lore { margin: 14px 0; padding-top: 12px; border-top: 1px dashed var(--line); }
+.tavern-lore strong { font-size: 12px; font-weight: 550; }
+.tavern-game .tavern-lore p { font-size: 12px; line-height: 1.9; margin: 8px 0; color: var(--muted); }
+.tavern-lore a { font-size: 11px; color: var(--tavern-green); }
+.tavern-history { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 20px; }
+.tavern-history h3 { font-size: 18px; font-weight: 550; }
+.tavern-history > details { border-bottom: 1px solid var(--line); padding: 16px 0; }
+.tavern-history > details > summary { cursor: pointer; font-size: 13px; }
+.tavern-history > details > summary small { float: right; color: var(--muted); }
+@media(max-width:599px) { .tavern-game .tavern-stage h2 { font-size: 22px; }.tavern-game .tavern-story.tavern-special, .tavern-journal-list > li { padding: 14px; } }
+.tavern-income form { display: grid; gap: 12px; margin: 16px 0; }
+.tavern-income label { display: grid; gap: 6px; font-size: 12px; }
+.tavern-income input { width: 100%; min-width: 0; }
+.tavern-income ol { padding-left: 18px; max-height: 260px; overflow: auto; }
+.tavern-income li { font-size: 12px; line-height: 1.8; padding: 6px 0; overflow-wrap: anywhere; }
+.tavern-income li strong { display: block; font-variant-numeric: tabular-nums; font-weight: 500; }
+.tavern-orders { border-top: 1px solid var(--line); padding: 16px 0; margin-top: 18px; }
+.tavern-orders summary { cursor: pointer; font-size: 13px; }
+.tavern-orders p, .tavern-drink-menu p { font-size: 12px; line-height: 1.9; color: var(--muted); }
+.tavern-orders ul, .tavern-drink-menu ul { list-style: none; padding: 0; }
+.tavern-orders li, .tavern-drink-menu li { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.tavern-orders li span, .tavern-drink-menu li span, .tavern-drink-menu li small { display: block; color: var(--muted); }
+.tavern-orders ol { padding-left: 22px; max-height: 340px; overflow-y: auto; }
+.tavern-styles label:has(input:disabled) { opacity: .6; cursor: not-allowed; background: #f0efea; }
+.tavern-job h3 { font-size: 14px; margin: 24px 0 0; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.tavern-shop-item strong { flex-wrap: wrap; }
+.tavern-shop-item .tavern-dismiss { background: transparent; border: 0; color: var(--muted); margin-top: 4px; font-size: 11px; }
+.tavern-payroll { padding: 14px 0; font-size: 12px; }
+.tavern-payroll summary { cursor: pointer; }
+.tavern-payroll ul { list-style: none; padding: 0; }
+.tavern-payroll li { display: flex; justify-content: space-between; gap: 12px; line-height: 1.8; padding: 8px 0; }
+.tavern-payroll li span { white-space: nowrap; }
+
+/* Calendar strip: Swiss grid, strong type, quiet rules, one accent. */
+.tavern-date { margin: 24px 0 32px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+.tavern-date-heading { display: grid; grid-template-columns: minmax(230px, 1fr) minmax(0, 2fr); }
+.tavern-date-current { padding: 24px 28px 24px 0; border-right: 1px solid var(--line); }
+.tavern-date-current h2 { display: flex; align-items: center; gap: 16px; margin: 18px 0; }
+.tavern-date-number { font-size: clamp(48px, 5vw, 76px); line-height: .95; font-weight: 750; letter-spacing: -.06em; font-variant-numeric: tabular-nums; }
+.tavern-date-month { font-size: 20px; font-weight: 650; line-height: 1.4; }
+.tavern-date-month small { display: block; margin-top: 5px; font-size: 11px; font-weight: 500; letter-spacing: .12em; color: var(--muted); }
+.tavern-date-phase { display: inline-block; font-size: 11px; color: var(--muted); }
+.tavern-date-controls { min-width: 0; padding: 24px 0 24px 28px; }
+.tavern-date-events { min-width: 0; padding: 24px 0; border-top: 1px solid var(--line); }
+.tavern-date-events h3 { font-size: 18px; font-weight: 650; margin: 18px 0 10px; }
+.tavern-date p { font-size: 12px; line-height: 1.8; color: var(--muted); margin: 8px 0; }
+.tavern-date-events article+article { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.tavern-date .tavern-date-empty { margin: 22px 0; }
+.tavern-date-holiday { display: block; margin-top: 16px; }
+.tavern-date-quote { margin: 10px 0; }
+.tavern-date-quote p { font-size: 13px; color: var(--ink); line-height: 1.9; max-width: 62ch; }
+.tavern-date-quote cite { display: block; font-size: 11px; font-style: normal; color: var(--muted); margin-top: 10px; }
+.tavern-date-lore { font-size: 12px; margin-top: 16px; }
+.tavern-date-lore summary { cursor: pointer; }
+.tavern-date-lore p { max-width: 65ch; border-left: 2px solid var(--line); padding-left: 12px; }
+.tavern-date-toolbar { display: flex; justify-content: flex-start; gap: 16px; flex-wrap: wrap; padding: 0 0 8px; }
+.tavern-date-actions,.tavern-date-picker { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tavern-date-picker label { font-size: 11px; margin-right: 4px; }
+.tavern-date-picker label small { display: block; font-size: 9px; color: var(--muted); margin-top: 3px; }
+.tavern-date select { max-width: 100%; min-height: 40px; padding: 8px 10px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); font-size: 12px; }
+.tavern-date-toolbar button { min-height: 40px; padding: 8px 14px; font-size: 12px; }
+.tavern-date .tavern-date-sync { font-size: 11px; margin: 4px 0 16px; }
+.tavern-date-sync span { display: inline-block; margin-left: 12px; }
+.tavern-date-settings { border-top: 1px solid var(--line); padding: 14px 0; font-size: 12px; }
+.tavern-date-settings summary { cursor: pointer; }
+.tavern-date-settings label { display: block; margin-top: 12px; }
+.tavern-date-settings select { margin-left: 8px; }
+.tavern-dm-dates { margin-top: 20px; }
+.tavern-dm-dates h3 { font-size: 16px; font-weight: 650; }
+.tavern-dm-dates ul { list-style: none; padding: 0; }
+.tavern-dm-dates li { padding: 16px 0; border-top: 1px solid var(--line); }
+.tavern-dm-dates small { display: block; color: var(--accent); margin-top: 6px; }
+@media(max-width:700px) {
+  .tavern-date-heading { grid-template-columns: 1fr; }
+  .tavern-date-current { border-right: 0; padding: 20px 0; }
+  .tavern-date-current h2 { margin: 14px 0; }
+  .tavern-date-events { border-top: 1px solid var(--line); padding: 20px 0; }
+  .tavern-date-controls { padding: 0 0 20px; }
+  .tavern-date-toolbar { gap: 14px; }
+  .tavern-date-picker { width: 100%; display: grid; grid-template-columns: 1fr auto; }
+  .tavern-date-picker label { grid-column: 1/-1; display: flex; gap: 8px; align-items: center; }
+  .tavern-date-picker label small { margin: 0; }
+  .tavern-date-sync span { display: block; margin-left: 0; }
+}
+.tavern-game .tavern-date-picker { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.tavern-game .tavern-date-picker label { display: block; width: auto; margin: 0; }
+.tavern-game .tavern-date-picker select { width: 180px; margin: 0; }
+@media(max-width:700px) {
+  .tavern-game .tavern-date-picker { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+  .tavern-game .tavern-date-picker label { display: flex; gap: 8px; }
+  .tavern-game .tavern-date-picker select { width: 100%; }
+}
+.tavern-record-date{font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line);padding-bottom:12px;font-size:12px}.tavern-record-date span{color:var(--muted)}.tavern-history-date{min-width:0;line-height:1.6;overflow-wrap:anywhere}.tavern-history-date small{display:block;font-size:10px;color:var(--muted);font-weight:400}.tavern-shift-heading .eyebrow{line-height:1.8}
+.tavern-illustration{margin:0;background:#29251f}.tavern-illustration>a{display:block}.tavern-art-image{display:block;width:100%;height:auto;object-fit:contain}.tavern-illustration figcaption{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 18px;background:var(--paper);border-bottom:1px solid var(--line);font-size:10px;color:var(--muted)}.tavern-illustration figcaption a{text-decoration:underline;text-underline-offset:3px}.tavern-art-unavailable{min-height:180px;display:grid;place-items:center;color:#eee;font-size:12px;padding:20px}
+
+/* Task order: calendar, daily operation, supporting management, records. */
+.tavern-section-nav { display:flex; flex-wrap:wrap; gap:0 28px; border-bottom:1px solid var(--line); }
+.tavern-section-nav a { padding:14px 0; font-size:11px; color:var(--muted); text-decoration:none; }
+.tavern-section-nav a:hover { color:var(--accent); }
+.tavern-game [id^="tavern-"] { scroll-margin-top:24px; }
+.tavern-date-toolbar { display:grid; justify-content:stretch; gap:16px; }
+.tavern-date-actions { flex-wrap:nowrap; }
+.tavern-date-reset { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; padding-top:14px; border-top:1px solid var(--line); }
+.tavern-date-reset span { font-size:10px; color:var(--muted); }
+.tavern-date .tavern-date-sync { margin-top:12px; margin-bottom:0; }
+.tavern-date-sync span { display:block; margin-left:0; }
+.tavern-location { border-top:2px solid var(--ink); border-bottom:1px solid var(--line); margin-bottom:20px; }
+.tavern-location > summary { cursor:pointer; font-size:12px; padding:16px 0; }
+.tavern-location .tavern-scene-label { padding:12px; gap:8px; flex-wrap:wrap; }
+.tavern-location .tavern-scene-label span { font-size:16px; }
+.tavern-game .tavern-stage { border-top:2px solid var(--ink); }
+@media(max-width:850px) { .tavern-location { grid-column:1 / -1; } }
+@media(max-width:700px) {
+ .tavern-section-nav { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+ .tavern-date-controls { padding-bottom:20px; }
+ .tavern-date-actions button { flex:1; }
+ .tavern-date-toolbar button { min-height:44px; }
+}
+
+/* Compact calendar: primary day controls first, occasional actions disclosed. */
+.tavern-date { margin:16px 0; }
+.tavern-date-heading { grid-template-columns:minmax(220px,1fr) minmax(0,2fr); }
+.tavern-date-current { padding:14px 20px 14px 0; }
+.tavern-date-current h2 { margin:8px 0; gap:10px; }
+.tavern-date-number { font-size:38px; }
+.tavern-date-month { font-size:16px; }
+.tavern-date-month small { margin-top:0; font-size:10px; }
+.tavern-date-controls { padding:14px 0 14px 20px; }
+.tavern-date-toolbar { display:flex; align-items:flex-start; gap:10px 16px; padding:0; }
+.tavern-date-adjust { flex:1; min-width:160px; font-size:12px; }
+.tavern-date-adjust > summary { cursor:pointer; min-height:40px; padding:11px 0; box-sizing:border-box; }
+.tavern-date-adjust-body { padding:12px 0; }
+.tavern-date-reset { margin-top:12px; padding-top:12px; }
+.tavern-date .tavern-date-sync { margin-top:8px; font-size:10px; }
+.tavern-date-sync span { display:none; }
+.tavern-date-events { display:block; padding:0; }
+.tavern-date-events > summary { cursor:pointer; padding:12px 0; font-size:12px; line-height:1.6; }
+.tavern-date-events > summary .eyebrow { margin-right:16px; }
+.tavern-date-event-title { font-weight:550; }
+.tavern-date-event-body { padding:0 0 14px 20px; }
+.tavern-date-event-body h3 { margin:8px 0; }
+.tavern-date-settings { padding:10px 0; font-size:11px; }
+@media(max-width:700px) {
+ .tavern-date-heading { grid-template-columns:1fr; }
+ .tavern-date-current { display:flex; align-items:center; flex-wrap:wrap; gap:8px 14px; padding:12px 0 8px; }
+ .tavern-date-current > .eyebrow { display:none; }
+ .tavern-date-current h2 { margin:0; }
+ .tavern-date-controls { padding:4px 0 12px; }
+ .tavern-date-actions { flex:1; }
+ .tavern-date-adjust { flex:0 1 auto; min-width:0; }
+ .tavern-date-adjust[open] { flex-basis:100%; }
+ .tavern-date-adjust > summary { min-height:44px; padding:12px 0; }
+ .tavern-date-events > summary .eyebrow { margin-right:8px; }
+}
+
+.tavern-cash-edit { border:0; background:transparent; color:var(--accent); font-size:11px; text-decoration:underline; cursor:pointer; padding:4px 8px; }
+.tavern-cash-form { margin-top:8px; max-width:240px; }
+.tavern-game .tavern-cash-form label { font-size:11px; margin:0 0 6px; }
+.tavern-game .tavern-cash-form input { width:100%; min-width:0; margin:0 0 8px; }
+.tavern-cash-form > div { display:flex; gap:8px; }
+.tavern-cash-form button { padding:8px 12px; font-size:12px; }
+.tavern-cash-form p { font-size:10px; line-height:1.6; color:var(--muted); }

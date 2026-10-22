@@ -1,3 +1,4 @@
+import { waterdeepHp } from '../../waterdeep';
 import { connection } from '../../ws';
 import type { Scene } from '../../types';
 
@@ -17,11 +18,13 @@ export const spawnEnemy = (scene: Scene | null, entryId: string, nameZh: string)
     token: {
       id: `t${Date.now()}-${i}`,
       kind: 'monster',
+      hidden: true,
       name: nameZh,
       entryId,
       x, y, size: 100,
       avatar: `/api/token/${encodeURIComponent(entryId)}`,
       color: '#fff',
+          hp: waterdeepHp(entryId),
     },
   }]);
 };

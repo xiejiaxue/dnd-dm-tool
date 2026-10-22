@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isValidElement, useLayoutEffect, type ReactElement, type ReactNode } from 'react';
 import type { Scene } from '../types';
 
-const state = vi.hoisted(() => ({ scene: null as Scene | null, role: 'dm', sendOps: vi.fn() }));
+const state = vi.hoisted(() => ({ scene: null as Scene | null, role: 'dm', measured: true, sendOps: vi.fn(), setters: [] as ReturnType<typeof vi.fn>[] }));
 vi.mock('react', async importOriginal => ({
   ...await importOriginal<typeof import('react')>(),
   useRef: (current: unknown) => ({ current }),
-  useState: (value: unknown) => [typeof value === 'function' ? value() : value, vi.fn()],
+  useState: (value: unknown) => { const setter = vi.fn(); state.setters.push(setter); const initial = typeof value === 'function' ? value() : value; const measured = initial && typeof initial === 'object' && 'width' in initial && 'height' in initial && state.measured ? { width: 800, height: 600 } : initial; return [measured, setter]; },
   useEffect: vi.fn(), useLayoutEffect: vi.fn(),
   useMemo: (fn: () => unknown) => fn(), useCallback: (fn: unknown) => fn,
 }));
@@ -29,12 +29,19 @@ function renderBoard(tool = 'select') {
 }
 afterEach(() => { vi.useRealTimers();vi.unstubAllGlobals(); });
 beforeEach(() => {
-  vi.clearAllMocks();state.role = 'dm';
+  vi.clearAllMocks();state.setters = [];state.role = 'dm';state.measured = true;
   const base = { name: 'token', entryId: null, x: 100, y: 100, size: 48, avatar: '', color: '#ba3526' };
   state.scene = { id: 's', name: 's', mapImage: null, mapSize: [500, 400], mapScale: 1, grid: { size: 100, color: '#fff', offset: [0, 0], snap: true }, playArea: { x: 0, y: 0, w: 500, h: 400 }, walls: [], initiative: [], favorites: [], tokens: [{ ...base, id: 'enemy', kind: 'monster' }], players: [{ ...base, id: 'own', kind: 'player', sessionId: 'me' }, { ...base, id: 'other', kind: 'player', sessionId: 'other' }] };
 });
 
 describe('board layering and movement', () => {
+  it('waits for nonzero canvas dimensions before drawing saved tokens', () => {
+    state.measured = false;
+    state.scene!.tokens[0].hidden = true;
+    expect(renderBoard().some(n => n.type === 'Stage')).toBe(false);
+    state.measured = true;
+    expect(renderBoard().some(n => n.type === 'Stage')).toBe(true);
+  });
   it.each(['dm', 'player'])('keeps player pieces above fog and enemies for %s', role => {
     state.role = role;
     const layers = renderBoard().filter(n => n.type === 'Layer');
@@ -47,7 +54,7 @@ describe('board layering and movement', () => {
     state.role = 'player';
     expect(renderBoard().filter(n => n.type === TokenShape).map(n => n.props.draggable)).toEqual([false, true, false]);
     state.role = 'dm';
-    for (const tool of ['wall', 'erase', 'erase-area', 'add']) {
+    for (const tool of ['wall', 'erase', 'erase-area', 'add', 'select-tokens']) {
       expect(renderBoard(tool).filter(n => n.type === TokenShape).every(n => !n.props.draggable)).toBe(true);
     }
   });
@@ -112,8 +119,8 @@ describe('board layering and movement', () => {
     stage.props.onTouchStart({ ...touch, evt: { touches: [{}, {}] } });stage.props.onTouchEnd();
     expect(state.sendOps).not.toHaveBeenCalled();
     stage.props.onTouchStart(touch);point = { x: 600, y: 100 };stage.props.onTouchMove(touch);
-    const reset = vi.mocked(useLayoutEffect).mock.calls.find(([, deps]) => deps?.includes('wall'))![0];
-    reset();stage.props.onTouchEnd();
+    for (const [reset, deps] of vi.mocked(useLayoutEffect).mock.calls) { if (deps?.includes('wall')) reset(); }
+    stage.props.onTouchEnd();
     expect(state.sendOps).not.toHaveBeenCalled();
   });
   it('restores controlled canvas coordinates even when grid snapping produces no state change', () => {
@@ -128,5 +135,34 @@ describe('board layering and movement', () => {
     position = { x: 175, y: 230 };
     group.props.onDragEnd({ target });
     expect(state.sendOps).toHaveBeenLastCalledWith([{ op: 'moveToken', tokenId: 'enemy', x: 200, y: 200 }]);
+  });
+});
+
+
+describe('enemy selection gestures', () => {
+  it.each(['dm', 'player'])('only the DM can marquee-select enemies (%s)', role => {
+    state.role = role;
+    const tree = renderBoard('select-tokens');
+    const stage = tree.find(n => n.type === 'Stage')!;
+    let point = {x:50,y:50};
+    (stage as Element & {ref:{current:unknown}}).ref.current = {getRelativePointerPosition:() => point};
+    expect(stage.props.draggable).toBe(false);
+    stage.props.onMouseDown({evt:{button:0}});
+    point = {x:150,y:150}; stage.props.onMouseMove({evt:{button:0}});
+    stage.props.onMouseUp();
+    const selections = state.setters.flatMap(setter => setter.mock.calls).filter(call => Array.isArray(call[0]) && call[0].length);
+    expect(selections).toEqual(role === 'dm' ? [[['enemy']]] : []);
+    expect(state.sendOps).not.toHaveBeenCalled();
+    expect(tree.some(n => n.props['aria-label'] === '批量Token可见性')).toBe(role === 'dm');
+  });
+  it('cancels a touch selection without selecting or changing tokens', () => {
+    const stage = renderBoard('select-tokens').find(n => n.type === 'Stage')!;
+    let point = {x:50,y:50};
+    (stage as Element & {ref:{current:unknown}}).ref.current = {getRelativePointerPosition:() => point};
+    stage.props.onTouchStart({evt:{touches:[{}]}});
+    point = {x:150,y:150};stage.props.onTouchMove({evt:{touches:[{}]}});
+    stage.props.onTouchCancel();stage.props.onTouchEnd();
+    expect(state.setters.flatMap(setter => setter.mock.calls).filter(call => Array.isArray(call[0]) && call[0].length)).toEqual([]);
+    expect(state.sendOps).not.toHaveBeenCalled();
   });
 });

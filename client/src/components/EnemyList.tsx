@@ -21,7 +21,7 @@ export default function EnemyList() {
   const [editName, setEditName] = useState(false);
   const [nameVal, setNameVal] = useState('');
   const [hpEdit, setHpEdit] = useState(false);
-  const tokens = scene?.tokens ?? [];
+  const tokens = (scene?.tokens ?? []).filter(t => role === 'dm' || !t.hidden);
   const isDm = role === 'dm';
   // Locate this player's own token, bound to their stable browser session id.
   const mySessionId = getMySessionId();
@@ -230,6 +230,10 @@ export default function EnemyList() {
             return (
               <div key={t.id} className="group flex items-center gap-1 px-3 py-1.5 border-b border-line hover:bg-well transition-colors duration-150">
                 <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+                {isDm && <button className="btn-xs shrink-0" title={t.hidden ? '向玩家显示此Token' : '对玩家隐藏此Token'}
+                  onClick={() => connection.sendOps([{ op: 'updateToken', tokenId: t.id, patch: { hidden: !t.hidden } }])}>
+                  {t.hidden ? '显示' : '隐藏'}
+                </button>}
                 {isDm ? (
                 <button
                   onClick={() => startHpEdit(t)}

@@ -3,7 +3,7 @@ import { isValidElement, type ReactElement, type ReactNode } from 'react';
 const state = vi.hoisted(() => ({ role: 'player', fields: ['', '', ''], index: 0, sendOps: vi.fn() }));
 vi.mock('react', async importOriginal => ({
   ...await importOriginal<typeof import('react')>(),
-  useState: () => [state.fields[state.index++], vi.fn()],
+  useState: (initial: unknown) => [state.index < state.fields.length ? state.fields[state.index++] : initial, vi.fn()],
   useRef: () => ({ current: null }), useEffect: vi.fn(),
 }));
 vi.mock('../ws', () => ({

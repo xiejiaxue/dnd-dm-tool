@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 
 const shapes = {
+  calendar: <><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M7 3v4m10-4v4M3 11h18M7 15h3m4 0h3M7 18h3"/></>,
+  tavern: <><path d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6"/><path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></>,
+  music: <><path d="M9 18V5l12-3v13M9 8l12-3"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="18" cy="15" rx="3" ry="2"/></>,
   grid: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></>,
   calculator: <><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M7 5h10v4H7zM7 13h2m6 0h2M7 17h2m6 0h2"/></>,
   dice: <path d="M12 2 21 7v10l-9 5-9-5V7l9-5ZM12 2 7 8h10L12 2ZM3 7l4 1-4 9 9 1 9-1-4-9 4-1M7 8l5 10 5-10M12 18v4"/>,

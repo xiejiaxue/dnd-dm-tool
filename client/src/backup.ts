@@ -21,6 +21,7 @@ export interface BackupAsset {
 }
 
 export interface BackupToken {
+  hidden?: boolean;
   name: string;
   entryId: string | null;
   x: number;
@@ -138,6 +139,7 @@ export async function buildSceneBackup(scene: Scene, campaign: Campaign | null):
   for (const [index, token] of scene.tokens.entries()) {
     const avatarAssetId = token.avatar ? await assetIdFor(token.avatar, `token-${index + 1}`) : undefined;
     tokens.push({
+      hidden: token.hidden ?? false,
       name: token.name,
       entryId: token.entryId,
       x: token.x,
@@ -231,6 +233,7 @@ function parseAsset(value: unknown): BackupAsset {
 
 function parseToken(value: unknown, assets: Record<string, BackupAsset>): BackupToken {
   const input = record(value, 'Token');
+  if (input.hidden !== undefined && typeof input.hidden !== 'boolean') throw new Error('Token 隐藏状态无效');
   const color = text(input.color, 'Token 颜色', 32);
   if (!/^#[0-9a-fA-F]{3,8}$|^rgba?\([0-9.,\s%]+\)$/u.test(color)) throw new Error('Token 颜色无效');
   let hp: BackupToken['hp'];
@@ -246,6 +249,7 @@ function parseToken(value: unknown, assets: Record<string, BackupAsset>): Backup
   const entryId = rawEntryId === null ? null : text(rawEntryId, '条目 ID', 180);
   const avatarAssetId = assetId(input.avatarAssetId, assets, '头像素材');
   return {
+    hidden: input.hidden === true,
     name: text(input.name, 'Token 名称', 120),
     entryId,
     x: numberIn(input.x, 'Token X 坐标', -100_000, 100_000),
@@ -393,6 +397,7 @@ export function downloadSceneBackup(backup: SceneBackup): void {
 export function importedToken(token: BackupToken, avatar: string, index: number): Token {
   return {
     id: `import-${index + 1}`,
+    hidden: token.hidden ?? false,
     kind: 'monster',
     name: token.name,
     entryId: token.entryId,

@@ -1,3 +1,5 @@
+import { getStrahdCard, searchStrahd, strahdToken } from '../../shared/strahd';
+import { waterdeepToken } from "../../shared/waterdeep";
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -44,6 +46,8 @@ export class TokenService {
   }
 
   async get(entryId: string): Promise<{ buffer: Buffer; contentType: string }> {
+    const builtin = waterdeepToken(entryId) ?? strahdToken(entryId);
+    if (builtin) return { buffer: Buffer.from(builtin), contentType: "image/svg+xml" };
     const pngPath = path.join(this.cacheDir, `${entryId}.png`);
     if (fs.existsSync(pngPath)) {
       return { buffer: fs.readFileSync(pngPath), contentType: 'image/png' };

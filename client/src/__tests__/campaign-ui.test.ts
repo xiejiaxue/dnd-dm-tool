@@ -14,9 +14,9 @@ describe('campaign board tools', () => {
     const onTool = vi.fn();
     const tree = Toolbar({ tool: 'select', onTool, pendingLabel: '哥布林' });
     const buttons = nodes(tree).filter(n => n.type === 'button');
-    expect(buttons.map(n => n.props['aria-label'])).toEqual(['选择', '放置', '画墙', '擦除']);
+    expect(buttons.map(n => n.props['aria-label'])).toEqual(['选择', '框选', '放置', '画墙', '擦除']);
     buttons.forEach(n => n.props.onClick());
-    expect(onTool.mock.calls.map(([id]) => id)).toEqual(['select', 'add', 'wall', 'erase']);
+    expect(onTool.mock.calls.map(([id]) => id)).toEqual(['select', 'select-tokens', 'add', 'wall', 'erase']);
   });
   it('does not expose an inactive placement action without a picked-up token', () => {
     const props = { tool: 'select', onTool: vi.fn() };

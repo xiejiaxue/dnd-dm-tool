@@ -1,4 +1,4 @@
-import { DRAGON_HEIST } from "./module-template";
+import { DRAGON_HEIST, CURSE_OF_STRAHD } from "./module-template";
 import { randomToken, sha256Hex, type Session } from "./auth";
 import { isRoomModerator, type RoomRole } from "./domain";
 import { HttpError, nonEmptyText } from "./http";
@@ -38,6 +38,9 @@ export async function libraryFor(env: Env, userId: string): Promise<string> {
     env.DB.prepare(
       `INSERT OR IGNORE INTO campaign_modules(id,workspace_id,created_by_user_id,name,description,template_json,created_at,updated_at) VALUES(?1,?2,?3,'深水城：龙金劫','21 个场景 · 21 张地图 · 不含 NPC 档案',?4,?5,?5)`,
     ).bind(`${DRAGON_HEIST}-${id}`, id, userId, JSON.stringify({ templateId: DRAGON_HEIST }), now),
+    env.DB.prepare(
+      `INSERT OR IGNORE INTO campaign_modules(id,workspace_id,created_by_user_id,name,description,template_json,created_at,updated_at) VALUES(?1,?2,?3,'施特拉德的诅咒','36 个场景 · 36 张地图 · 中文数据卡与场景 Token',?4,?5,?5)`
+    ).bind(`${CURSE_OF_STRAHD}-${id}`, id, userId, JSON.stringify({ templateId: CURSE_OF_STRAHD }), now),
   ]);
   return id;
 }

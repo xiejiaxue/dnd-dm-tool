@@ -20,3 +20,10 @@ output/
 
 # Browser verification output
 .playwright-cli/
+
+# Screenshot output
+outputs/
+preview-shots/
+
+# Background music is fetched by scripts/download-music.py
+client/public/music/*.mp3
