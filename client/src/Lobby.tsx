@@ -1,9 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, type CurrentUser, type RoomSummary, type RoomTemplateSummary } from './api';
+import type { StandalonePageRegistration } from './extensions/registry';
 import { looksLikeRoomEntry } from './routing';
 
 interface Props {
   inviteError?: string | null;
+  standalonePages: StandalonePageRegistration[];
+  onOpenStandalonePage: (path: string) => void;
   onOpenRoom: (slug: string) => void;
   onJoinRoom: (value: string) => void | Promise<void>;
 }
@@ -38,7 +41,7 @@ function RoomList({ rooms, deletingSlug, onOpenRoom, onDeleteRoom }: {
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium text-zinc-100" title={room.name}>{room.name}</span>
               <span className="mt-1 block truncate text-xs text-zinc-500" title={`/r/${room.slug}`}>
-                {ROLE_LABELS[room.role ?? ''] ?? room.role ?? '成员'} · /r/{room.slug}
+                {room.platformReadOnly ? '平台只读' : ROLE_LABELS[room.role ?? ''] ?? room.role ?? '成员'} · /r/{room.slug}
               </span>
             </span>
             <span className="shrink-0 text-sm text-zinc-500 transition-colors group-hover:text-amber-300">进入 →</span>
@@ -58,7 +61,7 @@ function RoomList({ rooms, deletingSlug, onOpenRoom, onDeleteRoom }: {
   );
 }
 
-export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
+export default function Lobby({ inviteError, standalonePages, onOpenStandalonePage, onOpenRoom, onJoinRoom }: Props) {
   const [me, setMe] = useState<CurrentUser | null>(null);
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [templates, setTemplates] = useState<RoomTemplateSummary[]>([]);
@@ -145,8 +148,9 @@ export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
     }
   };
 
-  const managedRooms = rooms.filter(room => MANAGER_ROLES.has(room.role ?? ''));
-  const joinedRooms = rooms.filter(room => !MANAGER_ROLES.has(room.role ?? ''));
+  const managedRooms = rooms.filter(room => !room.platformReadOnly && MANAGER_ROLES.has(room.role ?? ''));
+  const platformRooms = rooms.filter(room => room.platformReadOnly);
+  const joinedRooms = rooms.filter(room => !room.platformReadOnly && !MANAGER_ROLES.has(room.role ?? ''));
 
   return (
     <main className="h-full overflow-y-auto bg-zinc-950 px-4 py-6 sm:py-10 md:px-8">
@@ -163,6 +167,7 @@ export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
             {me && (
               <p className="w-fit shrink-0 rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1.5 text-xs text-zinc-400">
                 当前身份：<span className="text-zinc-200">{me.displayName ?? me.id}</span>
+                {me.platformRole === 'owner' && <span className="ml-1 text-amber-300">· 平台所有者</span>}
               </p>
             )}
           </div>
@@ -199,6 +204,12 @@ export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
                     <RoomList rooms={managedRooms} deletingSlug={deletingSlug} onOpenRoom={onOpenRoom} onDeleteRoom={room => { void removeRoom(room); }} />
                   </div>
                 )}
+                {platformRooms.length > 0 && (
+                  <div>
+                    <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-amber-500/80">全站房间（只读）</h3>
+                    <RoomList rooms={platformRooms} deletingSlug={deletingSlug} onOpenRoom={onOpenRoom} onDeleteRoom={room => { void removeRoom(room); }} />
+                  </div>
+                )}
                 {joinedRooms.length > 0 && (
                   <div>
                     <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">我加入的</h3>
@@ -210,6 +221,18 @@ export default function Lobby({ inviteError, onOpenRoom, onJoinRoom }: Props) {
           </section>
 
           <aside className="order-1 space-y-6 lg:order-2">
+            {standalonePages.map(page => (
+              <section key={page.id} className="rounded-xl border border-violet-500/20 bg-zinc-900/80 p-5 sm:p-6">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-500/10 text-sm font-semibold text-violet-300" aria-hidden="true">5e</div>
+                <h2 className="mt-4 text-lg font-semibold">{page.label}</h2>
+                <p className="mt-1 text-xs leading-relaxed text-zinc-500">{page.description}</p>
+                <button
+                  type="button"
+                  onClick={() => onOpenStandalonePage(page.path)}
+                  className="mt-4 w-full rounded-lg bg-violet-500/15 px-3 py-2.5 text-sm font-medium text-violet-300 hover:bg-violet-500/25"
+                >打开角色卡</button>
+              </section>
+            ))}
             <form onSubmit={joinRoom} className="rounded-xl border border-emerald-500/20 bg-zinc-900/80 p-5 sm:p-6">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-300" aria-hidden="true">↗</div>
               <h2 className="mt-4 text-lg font-semibold">进入房间</h2>

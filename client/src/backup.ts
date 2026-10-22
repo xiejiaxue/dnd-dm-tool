@@ -1,5 +1,5 @@
 import { MAX_FOG_REVEAL_RECTS } from '../../shared/fog-rects';
-import type { Campaign, Favorite, FogRect, NpcRecord, NpcStatus, Scene, Token } from './types';
+import type { Campaign, Favorite, FogRect, NpcRecord, NpcStatus, Scene, Token, TokenCondition, TokenConditionId } from './types';
 
 export const SCENE_BACKUP_FORMAT = 'dnd-dm-tool.scene-backup';
 export const SCENE_BACKUP_VERSION = 1;
@@ -28,6 +28,7 @@ export interface BackupToken {
   size: number;
   color: string;
   hp?: { current: number; max: number };
+  conditions?: TokenCondition[];
   avatarAssetId?: string;
 }
 
@@ -145,6 +146,7 @@ export async function buildSceneBackup(scene: Scene, campaign: Campaign | null):
       size: token.size,
       color: token.color,
       ...(token.hp ? { hp: { ...token.hp } } : {}),
+      ...(token.conditions?.length ? { conditions: token.conditions.map(condition => ({ ...condition })) } : {}),
       ...(avatarAssetId ? { avatarAssetId } : {}),
     });
   }
@@ -262,6 +264,7 @@ function parseToken(value: unknown, assets: Record<string, BackupAsset>): Backup
   if (rawEntryId !== null && typeof rawEntryId !== 'string') throw new Error('条目 ID 无效');
   const entryId = rawEntryId === null ? null : text(rawEntryId, '条目 ID', 180);
   const avatarAssetId = assetId(input.avatarAssetId, assets, '头像素材');
+  const conditions = parseTokenConditions(input.conditions);
   const kind = input.kind === undefined || input.kind === 'monster' ? 'monster' : input.kind === 'npc' ? 'npc' : null;
   if (!kind) throw new Error('Token 类型无效');
   return {
@@ -273,8 +276,33 @@ function parseToken(value: unknown, assets: Record<string, BackupAsset>): Backup
     size: numberIn(input.size, 'Token 尺寸', 12, 500),
     color,
     ...(hp ? { hp } : {}),
+    ...(conditions.length ? { conditions } : {}),
     ...(avatarAssetId ? { avatarAssetId } : {}),
   };
+}
+
+const CONDITION_IDS: readonly TokenConditionId[] = [
+  'prone', 'grappled', 'restrained', 'stunned', 'unconscious', 'invisible', 'concentrating', 'dead',
+];
+
+function parseTokenConditions(value: unknown): TokenCondition[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > CONDITION_IDS.length) throw new Error('Token 状态列表无效');
+  const seen = new Set<TokenConditionId>();
+  return value.map(item => {
+    const condition = record(item, 'Token 状态');
+    if (!CONDITION_IDS.includes(condition.id as TokenConditionId) || seen.has(condition.id as TokenConditionId)) {
+      throw new Error('Token 状态无效');
+    }
+    const id = condition.id as TokenConditionId;
+    seen.add(id);
+    return {
+      id,
+      remainingRounds: condition.remainingRounds === null || condition.remainingRounds === undefined
+        ? null
+        : numberIn(condition.remainingRounds, '状态持续轮数', 1, 99),
+    };
+  });
 }
 
 function parseNpc(value: unknown): NpcRecord {
@@ -480,5 +508,6 @@ export function importedToken(token: BackupToken, avatar: string, index: number)
     avatar,
     color: token.color,
     ...(token.hp ? { hp: { ...token.hp } } : {}),
+    ...(token.conditions?.length ? { conditions: token.conditions.map(condition => ({ ...condition })) } : {}),
   };
 }

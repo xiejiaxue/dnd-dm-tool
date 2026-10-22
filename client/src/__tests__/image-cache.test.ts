@@ -14,6 +14,7 @@ describe('decoded image cache', () => {
     let decodeCount = 0;
     class FakeImage {
       decoding = 'auto';
+      complete = true;
       naturalWidth = 1200;
       naturalHeight = 800;
       onload: (() => void) | null = null;

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { api } from '../api';
 
-export default function InvitePlayerButton() {
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function InvitePlayerButton({ open, onOpenChange }: Props) {
   const [invite, setInvite] = useState<{ code: string | null; url: string } | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -39,14 +44,14 @@ export default function InvitePlayerButton() {
   return (
     <>
       <button
-        onClick={() => { void createInvite(); }}
+        onClick={() => { onOpenChange(true); void createInvite(); }}
         disabled={creating}
         className="px-2 py-1 rounded bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 disabled:opacity-50 whitespace-nowrap"
         title="获取长期有效、可重复使用的玩家邀请码"
       >{creating ? '读取中…' : '邀请玩家'}</button>
-      {(invite || message) && (
+      {open && (invite || message) && (
         <div className="absolute top-12 right-3 z-30 w-80 max-w-[calc(100vw-1.5rem)] rounded border border-zinc-700 bg-zinc-800 px-3 py-3 text-xs shadow-xl text-zinc-200">
-          <button onClick={() => { setInvite(null); setMessage(null); }} className="float-right ml-3 text-zinc-500 hover:text-white" aria-label="关闭邀请提示">✕</button>
+          <button onClick={() => { onOpenChange(false); setInvite(null); setMessage(null); }} className="float-right ml-3 text-zinc-500 hover:text-white" aria-label="关闭邀请提示" title="关闭邀请提示">✕</button>
           {invite?.code && (
             <>
               <p className="pr-5 font-medium text-emerald-300">长期邀请码</p>

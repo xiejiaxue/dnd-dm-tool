@@ -1,9 +1,42 @@
-import type { Campaign, EntryType, IndexEntry, Scene } from './types';
+import type {
+  ActorClaim,
+  ActorDocument,
+  ActorDocumentType,
+  Campaign,
+  DocumentOwnership,
+  DocumentFolder,
+  FolderDocumentType,
+  EntryType,
+  IndexEntry,
+  JournalEntryDocument,
+  JournalPage,
+  JournalPageType,
+  JsonValue,
+  MacroCommand,
+  MacroDocument,
+  MacroHotbarBinding,
+  MapNote,
+  Scene,
+  SceneConfigurationPatch,
+  ActionLogEntry,
+  ActionLogType,
+  AssetSummary,
+  EncounterPresetDocument,
+  ItemDocument,
+  PlaylistDocument,
+  RollTableDocument,
+  TabletopSettings,
+  ToolDocument,
+  ToolDocumentType,
+} from './types';
+import { publishDocumentMutation } from './extensions/mutation-events';
 
 export interface CurrentUser {
   id: string;
   displayName?: string;
   isAnonymous?: boolean;
+  platformRole?: 'owner';
+  canReadAllRooms?: boolean;
 }
 
 export interface PublicSiteConfig {
@@ -28,6 +61,13 @@ export interface RoomSummary {
   name: string;
   role?: string;
   updatedAt?: string;
+  platformReadOnly?: boolean;
+}
+
+export interface RoomMemberSummary {
+  userId: string;
+  displayName: string;
+  role: 'host' | 'dm' | 'assistant_dm' | 'player' | 'spectator';
 }
 
 export interface RoomTemplateSummary {
@@ -49,7 +89,7 @@ export interface SceneSummary {
 
 export interface RoomBootstrap {
   room: RoomSummary;
-  membership?: { role?: string; roomRole?: string };
+  membership?: { role?: string; roomRole?: string; canManage?: boolean; canReadAll?: boolean };
 }
 
 export interface InviteResult {
@@ -99,15 +139,23 @@ async function json<T>(url: string, init?: RequestInit): Promise<T> {
     }
     throw new ApiError(detail || `${res.status} ${url}`, res.status, code);
   }
-  return res.json() as Promise<T>;
+  const value = await res.json() as T;
+  publishDocumentMutation(url, init?.method, value);
+  return value;
 }
 
-function jsonRequest(method: 'POST' | 'DELETE', body?: unknown): RequestInit {
+function jsonRequest(method: 'POST' | 'PATCH' | 'DELETE', body?: unknown): RequestInit {
   return {
     method,
     headers: body === undefined ? undefined : { 'content-type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   };
+}
+
+function pluginSubpath(path: string): string {
+  if (!path || path === '/') return '';
+  if (!path.startsWith('/') || path.includes('..')) throw new Error('插件接口路径无效');
+  return path;
 }
 
 /**
@@ -138,6 +186,12 @@ function publicConfig(): Promise<PublicSiteConfig> {
 export const api = {
   me,
   publicConfig,
+  /** Generic extension namespace; plugin-specific clients own their types. */
+  plugin: <T>(pluginId: string, path: string, init?: RequestInit) =>
+    json<T>(`/api/plugins/${encodeURIComponent(pluginId)}${pluginSubpath(path)}`, init),
+  /** Generic room-scoped extension namespace. */
+  roomPlugin: <T>(pluginId: string, path: string, init?: RequestInit) =>
+    json<T>(roomPath(`/plugins/${encodeURIComponent(pluginId)}${pluginSubpath(path)}`), init),
   rooms: () => json<{ rooms: RoomSummary[] }>('/api/rooms').then(response => response.rooms),
   roomTemplates: () => json<{ templates: RoomTemplateSummary[] }>('/api/room-templates').then(response => response.templates),
   createRoom: (name: string, templateId?: string) => json<{ room: RoomSummary }>(
@@ -149,7 +203,7 @@ export const api = {
     jsonRequest('DELETE'),
   ),
   bootstrap: () => json<RoomBootstrap>(roomPath()),
-
+  roomMembers: () => json<RoomMemberSummary[]>(roomPath('/members')),
   createInvite: (input: { role?: 'player' | 'spectator'; maxUses?: number; expiresInHours?: number } = {}) =>
     json<InviteResult>(roomPath('/invites'), jsonRequest('POST', { role: 'player', ...input })),
   redeemInvite: (token: string) => json<InviteResult>('/api/invites/redeem', jsonRequest('POST', { token })),
@@ -169,7 +223,120 @@ export const api = {
   scene: (id: string) => json<Scene>(roomPath(`/scenes/${encodeURIComponent(id)}`)),
   createScene: (name: string) =>
     json<Scene>(roomPath('/scenes'), jsonRequest('POST', { name })),
+  updateScene: (id: string, patch: SceneConfigurationPatch) =>
+    json<Scene>(roomPath(`/scenes/${encodeURIComponent(id)}`), jsonRequest('PATCH', patch)),
   deleteScene: (id: string) => json<{ ok: boolean }>(roomPath(`/scenes/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
+  sceneNotes: (sceneId: string) => json<MapNote[]>(roomPath(`/scenes/${encodeURIComponent(sceneId)}/notes`)),
+  createSceneNote: (sceneId: string, input: Omit<MapNote, 'id' | 'sceneId' | 'flags'>) => json<MapNote>(
+    roomPath(`/scenes/${encodeURIComponent(sceneId)}/notes`), jsonRequest('POST', input),
+  ),
+  updateSceneNote: (sceneId: string, noteId: string, input: Partial<Pick<MapNote, 'x' | 'y' | 'label' | 'visibility'>>) => json<MapNote>(
+    roomPath(`/scenes/${encodeURIComponent(sceneId)}/notes/${encodeURIComponent(noteId)}`), jsonRequest('PATCH', input),
+  ),
+  deleteSceneNote: (sceneId: string, noteId: string) => json<{ ok: boolean }>(
+    roomPath(`/scenes/${encodeURIComponent(sceneId)}/notes/${encodeURIComponent(noteId)}`), jsonRequest('DELETE'),
+  ),
+
+  actors: () => json<{ actors: ActorDocument[]; claim: ActorClaim | null }>(roomPath('/actors')),
+  createActor: (input: {
+    name: string;
+    actorType?: ActorDocumentType;
+    avatar?: string;
+    system?: Record<string, JsonValue>;
+    prototypeToken?: ActorDocument['prototypeToken'];
+    ownership?: DocumentOwnership;
+  }) => json<ActorDocument>(roomPath('/actors'), jsonRequest('POST', input)),
+  updateActor: (actorId: string, input: Partial<Pick<ActorDocument, 'name' | 'avatar' | 'system' | 'prototypeToken' | 'ownership' | 'folderId' | 'sort'>>) =>
+    json<ActorDocument>(roomPath(`/actors/${encodeURIComponent(actorId)}`), jsonRequest('PATCH', input)),
+  deleteActor: (actorId: string) => json<{ ok: boolean }>(
+    roomPath(`/actors/${encodeURIComponent(actorId)}`), jsonRequest('DELETE'),
+  ),
+  claimActor: (actorId: string) => json<ActorClaim>(
+    roomPath(`/actors/${encodeURIComponent(actorId)}/claim`), jsonRequest('POST'),
+  ),
+  releaseActor: (actorId: string) => json<{ ok: boolean }>(
+    roomPath(`/actors/${encodeURIComponent(actorId)}/claim`), jsonRequest('DELETE'),
+  ),
+
+  toolDocuments: <T extends ToolDocument = ToolDocument>(type: ToolDocumentType) =>
+    json<T[]>(roomPath(`/tools/${toolPath(type)}`)),
+  createToolDocument: <T extends ToolDocument = ToolDocument>(type: ToolDocumentType, input: {
+    name: string;
+    folder?: string;
+    data?: Record<string, JsonValue>;
+    ownership?: DocumentOwnership;
+  }) => json<T>(roomPath(`/tools/${toolPath(type)}`), jsonRequest('POST', input)),
+  updateToolDocument: <T extends ToolDocument = ToolDocument>(type: ToolDocumentType, id: string, input: {
+    name?: string;
+    folder?: string;
+    data?: Record<string, JsonValue>;
+    ownership?: DocumentOwnership;
+    locked?: boolean;
+  }) => json<T>(roomPath(`/tools/${toolPath(type)}/${encodeURIComponent(id)}`), jsonRequest('PATCH', input)),
+  deleteToolDocument: (type: ToolDocumentType, id: string) =>
+    json<{ ok: boolean }>(roomPath(`/tools/${toolPath(type)}/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
+  items: () => json<ItemDocument[]>(roomPath('/tools/items')),
+  rollTables: () => json<RollTableDocument[]>(roomPath('/tools/roll-tables')),
+  playlists: () => json<PlaylistDocument[]>(roomPath('/tools/playlists')),
+  encounterPresets: () => json<EncounterPresetDocument[]>(roomPath('/tools/encounter-presets')),
+
+  actionLog: (limit = 100) => json<ActionLogEntry[]>(roomPath(`/action-log?limit=${Math.max(1, Math.min(500, limit))}`)),
+  logAction: (input: {
+    type: ActionLogType;
+    label: string;
+    sceneId?: string | null;
+    actorId?: string | null;
+    targetTokenIds?: string[];
+    formula?: string | null;
+    total?: number | null;
+    details?: Record<string, JsonValue>;
+    visibility?: 'all' | 'gm';
+  }) => json<ActionLogEntry>(roomPath('/action-log'), jsonRequest('POST', input)),
+  clearActionLog: () => json<{ ok: boolean }>(roomPath('/action-log'), jsonRequest('DELETE')),
+  tabletopSettings: () => json<TabletopSettings>(roomPath('/settings')),
+  updateTabletopSettings: (input: Partial<TabletopSettings>) =>
+    json<TabletopSettings>(roomPath('/settings'), jsonRequest('PATCH', input)),
+  assetLibrary: (includeArchived = false) => json<AssetSummary[]>(roomPath(`/asset-library${includeArchived ? '?archived=1' : ''}`)),
+  updateAssetLibraryEntry: (id: string, input: { name?: string; archived?: boolean }) =>
+    json<{ ok: boolean }>(roomPath(`/asset-library/${encodeURIComponent(id)}`), jsonRequest('PATCH', input)),
+
+  journals: () => json<JournalEntryDocument[]>(roomPath('/journals')),
+  createJournal: (name: string, ownership?: DocumentOwnership) => json<JournalEntryDocument>(
+    roomPath('/journals'), jsonRequest('POST', { name, ...(ownership ? { ownership } : {}) }),
+  ),
+  updateJournal: (journalId: string, input: Partial<Pick<JournalEntryDocument, 'name' | 'ownership' | 'folderId' | 'sort'>>) =>
+    json<JournalEntryDocument>(roomPath(`/journals/${encodeURIComponent(journalId)}`), jsonRequest('PATCH', input)),
+  deleteJournal: (journalId: string) => json<{ ok: boolean }>(
+    roomPath(`/journals/${encodeURIComponent(journalId)}`), jsonRequest('DELETE'),
+  ),
+  createJournalPage: (journalId: string, input: { name: string; type?: JournalPageType; text?: string; assetUrl?: string }) =>
+    json<JournalPage>(roomPath(`/journals/${encodeURIComponent(journalId)}/pages`), jsonRequest('POST', input)),
+  updateJournalPage: (journalId: string, pageId: string, input: Partial<Pick<JournalPage, 'name' | 'text' | 'assetUrl'>>) =>
+    json<JournalPage>(roomPath(`/journals/${encodeURIComponent(journalId)}/pages/${encodeURIComponent(pageId)}`), jsonRequest('PATCH', input)),
+
+  macros: () => json<MacroDocument[]>(roomPath('/macros')),
+  createMacro: (input: { name: string; command: MacroCommand; icon?: string; ownership?: DocumentOwnership; folderId?: string | null; sort?: number }) =>
+    json<MacroDocument>(roomPath('/macros'), jsonRequest('POST', input)),
+  updateMacro: (macroId: string, input: Partial<Pick<MacroDocument, 'name' | 'command' | 'icon' | 'ownership' | 'folderId' | 'sort'>>) =>
+    json<MacroDocument>(roomPath(`/macros/${encodeURIComponent(macroId)}`), jsonRequest('PATCH', input)),
+  deleteMacro: (macroId: string) => json<{ ok: boolean }>(
+    roomPath(`/macros/${encodeURIComponent(macroId)}`), jsonRequest('DELETE'),
+  ),
+  macroHotbar: () => json<MacroHotbarBinding[]>(roomPath('/macros/hotbar')),
+  setMacroHotbar: (slot: number, macroId: string) => json<MacroHotbarBinding>(
+    roomPath(`/macros/hotbar/${slot}`), jsonRequest('PATCH', { macroId }),
+  ),
+  clearMacroHotbar: (slot: number) => json<{ ok: boolean }>(
+    roomPath(`/macros/hotbar/${slot}`), jsonRequest('DELETE'),
+  ),
+
+  documentFolders: (type: FolderDocumentType) => json<DocumentFolder[]>(roomPath(`/folders/${type}`)),
+  createDocumentFolder: (type: FolderDocumentType, input: { name: string; parentId?: string | null; sort?: number }) =>
+    json<DocumentFolder>(roomPath(`/folders/${type}`), jsonRequest('POST', input)),
+  updateDocumentFolder: (type: FolderDocumentType, id: string, input: { name?: string; parentId?: string | null; sort?: number }) =>
+    json<DocumentFolder>(roomPath(`/folders/${type}/${encodeURIComponent(id)}`), jsonRequest('PATCH', input)),
+  deleteDocumentFolder: (type: FolderDocumentType, id: string) =>
+    json<{ ok: boolean }>(roomPath(`/folders/${type}/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
 
   campaigns: () => json<{ id: string; name: string }[]>(roomPath('/campaigns')),
   createCampaign: (name: string) =>
@@ -177,17 +344,17 @@ export const api = {
   deleteCampaign: (id: string) => json<{ ok: boolean }>(roomPath(`/campaigns/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
   assignSceneToCampaign: (campaignId: string, sceneId: string) =>
     json<{ ok: boolean }>(roomPath(`/campaigns/${encodeURIComponent(campaignId)}/scenes`), jsonRequest('POST', { sceneId })),
-  rollInitiative: () => json<{
+  rollInitiative: (tokenIds: readonly string[]) => json<{
     rolls: { tokenId: string; name: string; value: number; modifier: number }[];
-  }>(roomPath('/initiative/roll'), jsonRequest('POST')),
+  }>(roomPath('/initiative/roll'), jsonRequest('POST', { tokenIds })),
 
-  async uploadAsset(file: File, kind: 'map' | 'token'): Promise<{ url: string }> {
+  async uploadAsset(file: File, kind: 'map' | 'token' | 'avatar' | 'attachment'): Promise<{ id: string; url: string }> {
     const body = new FormData();
     body.append('file', file);
     // `kind` is metadata only. The Worker may safely ignore it; the route's
     // authorization and content-type checks are the security boundary.
     body.append('kind', kind);
-    return json<{ url: string }>(roomPath('/assets'), { method: 'POST', body });
+    return json<{ id: string; url: string }>(roomPath('/assets'), { method: 'POST', body });
   },
 
   async uploadMap(file: File, width: number, height: number): Promise<{ url: string }> {
@@ -201,3 +368,10 @@ export const api = {
     return json<{ url: string }>(roomPath('/map'), { method: 'POST', body });
   },
 };
+
+function toolPath(type: ToolDocumentType): string {
+  if (type === 'item') return 'items';
+  if (type === 'roll_table') return 'roll-tables';
+  if (type === 'playlist') return 'playlists';
+  return 'encounter-presets';
+}

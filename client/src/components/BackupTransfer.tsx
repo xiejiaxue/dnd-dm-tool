@@ -18,6 +18,11 @@ interface PendingImport {
   sceneId: string;
 }
 
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
 type Notice = { tone: 'info' | 'success' | 'error'; text: string };
 const MAX_REVEALED_FOG_CELLS = 20_000;
 
@@ -125,9 +130,8 @@ async function restoreIntoNewScene(backup: SceneBackup, sceneId: string): Promis
  * Portable browser-side backup UI. Importing always creates a new scene, so a
  * malformed/local file cannot overwrite a live battle by accident.
  */
-export default function BackupTransfer() {
+export default function BackupTransfer({ open, onOpenChange }: Props) {
   const { scene, campaign, role } = useScene();
-  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [pendingImport, setPendingImport] = useState<PendingImport | null>(null);
@@ -209,7 +213,7 @@ export default function BackupTransfer() {
     <div className="relative">
       <button
         type="button"
-        onClick={() => setOpen(value => !value)}
+        onClick={() => onOpenChange(!open)}
         className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 disabled:opacity-50 whitespace-nowrap"
         title="导入或导出当前场景的本地备份文件"
         aria-expanded={open}

@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactElement } from 'react';
-import type { NpcImportance, NpcRecord, NpcStatus, Op } from '../../types';
+import type { NpcImportance, NpcPlayerAccess, NpcRecord, NpcStatus, Op } from '../../types';
 import { setPending } from '../../pending';
 import { connection, useScene } from '../../ws';
 import { createNpcToken, npcEntryId, npcTokenColor } from './token';
@@ -9,6 +9,8 @@ import { canonicalizeNpcRecord, deriveNpcStatReference, normalizeNpcMetadata, np
 import ExplorerRow, { ExplorerAction } from '../../components/explorer/ExplorerRow';
 import StatBlockView from '../../components/StatBlockView';
 import { useResolvedNpcData } from './useResolvedNpcData';
+import { useBoardCommands } from '../history/BoardCommandContext';
+import { useTabletopSettings } from '../settings/TabletopSettingsContext';
 
 const STATUS_LABEL: Record<NpcStatus, string> = {
   active: '活跃', missing: '失踪', inactive: '退场', dead: '死亡',
@@ -16,6 +18,10 @@ const STATUS_LABEL: Record<NpcStatus, string> = {
 
 const IMPORTANCE_LABEL: Record<NpcImportance, string> = {
   major: '主要人物', supporting: '重要配角', minor: '次要人物',
+};
+
+const PLAYER_ACCESS_LABEL: Record<NpcPlayerAccess, string> = {
+  none: '仅主持人', limited: '公开简介', observer: '公开简介与数据',
 };
 
 function sendBatches(operations: Op[]): void {
@@ -60,6 +66,8 @@ function NpcEditor({ initial, onClose }: { initial: NpcRecord; onClose: () => vo
       faction: faction.slice(0, 120),
       groupPath: [faction.slice(0, 80)],
       notesMarkdown: draft.notesMarkdown.trim().slice(0, 16_000),
+      playerAccess: draft.playerAccess ?? 'none',
+      publicDescription: (draft.publicDescription ?? '').trim().slice(0, 4_000),
       updatedAt: Date.now(),
     };
     const npc = canonicalizeNpcRecord({ ...base, statReference: deriveNpcStatReference(base) });
@@ -73,7 +81,7 @@ function NpcEditor({ initial, onClose }: { initial: NpcRecord; onClose: () => vo
   return (
     <form onSubmit={submit} className="flex-1 space-y-3 overflow-y-auto p-3">
       <div className="flex items-center gap-2">
-        <button type="button" onClick={onClose} className="text-zinc-400 hover:text-white">←</button>
+        <button type="button" onClick={onClose} aria-label="返回 NPC 列表" title="返回 NPC 列表" className="text-zinc-400 hover:text-white">←</button>
         <h3 className="font-semibold text-zinc-100">{initial.name ? '编辑 NPC' : '新建 NPC'}</h3>
       </div>
       <EditorField label="名称"><input autoFocus required value={draft.name} onChange={event => set('name', event.target.value)} maxLength={120} /></EditorField>
@@ -91,17 +99,27 @@ function NpcEditor({ initial, onClose }: { initial: NpcRecord; onClose: () => vo
           {Object.entries(IMPORTANCE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </EditorField>
+      <EditorField label="玩家权限">
+        <select value={draft.playerAccess ?? 'none'} onChange={event => set('playerAccess', event.target.value as NpcPlayerAccess)}>
+          {Object.entries(PLAYER_ACCESS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </EditorField>
       <div className="grid grid-cols-2 gap-2">
         <EditorField label="身份 / 作用"><input value={draft.role} onChange={event => set('role', event.target.value)} maxLength={120} /></EditorField>
         <EditorField label="当前位置"><input value={draft.location} onChange={event => set('location', event.target.value)} maxLength={120} /></EditorField>
       </div>
+      <EditorField label="玩家公开简介">
+        <textarea value={draft.publicDescription ?? ''} onChange={event => set('publicDescription', event.target.value)} maxLength={4_000} rows={6}
+          placeholder="只填写玩家当前已经知道的身份、外貌和背景。不会自动复制主持人私密档案。" className="resize-y leading-relaxed" />
+      </EditorField>
       <EditorField label="Markdown 档案与专属数据">
         <textarea value={draft.notesMarkdown} onChange={event => set('notesMarkdown', event.target.value)} maxLength={16_000} rows={16}
           placeholder="可写背景、线索；包含护甲等级/生命值表时会作为专属属性数据。" className="resize-y font-mono leading-relaxed" />
       </EditorField>
       {draft.sourceFile && <div className="text-[10px] text-zinc-600">来源：{draft.sourceFile}</div>}
       <div className="flex gap-2">
-        <button type="submit" className="flex-1 border border-sky-700 bg-sky-950/50 px-3 py-2 text-sky-300 hover:bg-sky-900/50">保存档案</button>
+        <button type="submit" disabled={!draft.name.trim()}
+          className="flex-1 border border-sky-700 bg-sky-950/50 px-3 py-2 text-sky-300 hover:bg-sky-900/50 disabled:cursor-not-allowed disabled:opacity-40">保存档案</button>
         <button type="button" onClick={onClose} className="border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-400 hover:bg-zinc-700">取消</button>
       </div>
     </form>
@@ -117,7 +135,7 @@ function EditorField({ label, children }: { label: string; children: ReactElemen
   );
 }
 
-function NpcDetail({ npc, records, onBack, onEdit, onPlace, onPickUp, onDelete }: {
+function NpcDetail({ npc, records, onBack, onEdit, onPlace, onPickUp, onDelete, readOnly = false }: {
   npc: NpcRecord;
   records: readonly NpcRecord[];
   onBack: () => void;
@@ -125,19 +143,28 @@ function NpcDetail({ npc, records, onBack, onEdit, onPlace, onPickUp, onDelete }
   onPlace: (data?: ResolvedNpcData) => void;
   onPickUp: (data?: ResolvedNpcData) => void;
   onDelete: () => void;
+  readOnly?: boolean;
 }) {
   const normalized = normalizeNpcMetadata(npc);
-  const { data: resolved, loading } = useResolvedNpcData(normalized, records);
+  const showRules = !readOnly || normalized.playerAccess === 'observer';
+  const { data: resolved, loading } = useResolvedNpcData(normalized, records, showRules);
+  const publicDescription = normalized.publicDescription?.trim() || (readOnly ? normalized.notesMarkdown.trim() : '');
 
   return (
     <div className="flex-1 overflow-y-auto p-3 text-sm">
       <div className="mb-2 flex items-center gap-2">
-        <button type="button" onClick={onBack} className="text-zinc-400 hover:text-white">←</button>
+        <button type="button" onClick={onBack} aria-label="返回 NPC 列表" title="返回 NPC 列表" className="text-zinc-400 hover:text-white">←</button>
         <h2 className="min-w-0 flex-1 truncate text-base font-bold text-zinc-100">{normalized.name}</h2>
         <span className="text-[10px] text-zinc-500">{STATUS_LABEL[normalized.status]}</span>
       </div>
       <div className="mb-3 truncate text-[11px] text-zinc-500">{normalized.groupPath?.join(' / ')}</div>
       {(normalized.role || normalized.location) && <div className="mb-2 text-xs text-zinc-400">{[normalized.role, normalized.location].filter(Boolean).join(' · ')}</div>}
+      {publicDescription && (
+        <div className="mb-3 whitespace-pre-wrap border-l-2 border-sky-800 pl-2 text-xs leading-relaxed text-zinc-300">
+          {publicDescription}
+        </div>
+      )}
+      {readOnly && !showRules && <div className="text-xs text-zinc-500">该 NPC 的规则数据未向玩家公开。</div>}
       {loading && <div className="text-xs text-zinc-500">正在载入数据…</div>}
       {resolved && (
         <>
@@ -145,17 +172,17 @@ function NpcDetail({ npc, records, onBack, onEdit, onPlace, onPickUp, onDelete }
           <StatBlockView stat={resolved.stat} />
         </>
       )}
-      <div className="mt-4 grid grid-cols-2 gap-2 border-t border-zinc-800 pt-3">
+      {!readOnly && <div className="mt-4 grid grid-cols-2 gap-2 border-t border-zinc-800 pt-3">
         <button type="button" onClick={() => onPlace(resolved ?? undefined)} className="border border-amber-800 bg-amber-950/40 py-1.5 text-amber-300 hover:bg-amber-900/40">添加到地图</button>
         <button type="button" onClick={() => onPickUp(resolved ?? undefined)} className="border border-zinc-700 bg-zinc-800 py-1.5 text-zinc-200 hover:bg-zinc-700">拿起放置</button>
         <button type="button" onClick={onEdit} className="border border-zinc-700 py-1.5 text-zinc-400 hover:bg-zinc-800">编辑</button>
         <button type="button" onClick={onDelete} className="border border-zinc-800 py-1.5 text-zinc-500 hover:border-red-900 hover:bg-red-950/30 hover:text-red-300">删除</button>
-      </div>
+      </div>}
     </div>
   );
 }
 
-function NpcTree({ nodes, depth, closed, onToggle, onOpen, onPlace, tokenCounts }: {
+function NpcTree({ nodes, depth, closed, onToggle, onOpen, onPlace, tokenCounts, readOnly = false }: {
   nodes: readonly NpcTreeNode[];
   depth: number;
   closed: ReadonlySet<string>;
@@ -163,6 +190,7 @@ function NpcTree({ nodes, depth, closed, onToggle, onOpen, onPlace, tokenCounts 
   onOpen: (npc: NpcRecord) => void;
   onPlace: (npc: NpcRecord) => void;
   tokenCounts: ReadonlyMap<string, number>;
+  readOnly?: boolean;
 }) {
   return <>{nodes.map(node => {
     if (node.type === 'folder') {
@@ -171,21 +199,24 @@ function NpcTree({ nodes, depth, closed, onToggle, onOpen, onPlace, tokenCounts 
         <div key={node.key}>
           <ExplorerRow depth={depth} kind="folder" expanded={!isClosed} onClick={() => onToggle(node.key)}
             label={<>{node.name} <span className="text-zinc-600">{node.count}</span></>} />
-          {!isClosed && <NpcTree nodes={node.children} depth={depth + 1} closed={closed} onToggle={onToggle} onOpen={onOpen} onPlace={onPlace} tokenCounts={tokenCounts} />}
+          {!isClosed && <NpcTree nodes={node.children} depth={depth + 1} closed={closed} onToggle={onToggle} onOpen={onOpen} onPlace={onPlace} tokenCounts={tokenCounts} readOnly={readOnly} />}
         </div>
       );
     }
     const count = tokenCounts.get(node.npc.id) ?? 0;
+    const access = node.npc.playerAccess ?? 'none';
     return (
       <ExplorerRow key={node.key} depth={depth} kind="file" onClick={() => onOpen(node.npc)} title={node.npc.name}
-        label={<>{node.npc.name}<span className="ml-1 text-[10px] text-zinc-600">{npcImportanceLabel(node.npc.importance)}</span>{count > 0 && <span className="ml-1 text-sky-500">{count}</span>}</>}
-        actions={<ExplorerAction label="+" title={`添加 ${node.npc.name} 到地图`} onClick={() => onPlace(node.npc)} />} />
+        label={<>{node.npc.name}<span className="ml-1 text-[10px] text-zinc-600">{npcImportanceLabel(node.npc.importance)}</span>{!readOnly && <span className={access === 'none' ? 'ml-1 text-[10px] text-violet-500' : 'ml-1 text-[10px] text-sky-600'}>{PLAYER_ACCESS_LABEL[access]}</span>}{count > 0 && <span className="ml-1 text-sky-500">{count}</span>}</>}
+        actions={readOnly ? undefined : <ExplorerAction label="+" title={`添加 ${node.npc.name} 到地图`} onClick={() => onPlace(node.npc)} />} />
     );
   })}</>;
 }
 
-export default function NpcPanel() {
+export default function NpcPanel({ readOnly = false }: { readOnly?: boolean }) {
   const { scene, campaign } = useScene();
+  const { performOps } = useBoardCommands();
+  const { confirmAction } = useTabletopSettings();
   const npcs = campaign?.npcs ?? [];
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<NpcRecord | null>(null);
@@ -209,7 +240,7 @@ export default function NpcPanel() {
   const place = async (npc: NpcRecord, supplied?: ResolvedNpcData) => {
     if (!scene) return;
     const data = supplied ?? await resolveNpcData(npc, npcs);
-    connection.sendOps([{ op: 'addToken', token: createNpcToken(scene, npc, `npc-token-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, data) }]);
+    performOps(`添加 ${npc.name} Token`, [{ op: 'addToken', token: createNpcToken(scene, npc, `npc-token-${crypto.randomUUID()}`, data) }]);
   };
 
   const pickUp = async (npc: NpcRecord, supplied?: ResolvedNpcData) => {
@@ -222,7 +253,7 @@ export default function NpcPanel() {
   };
 
   const remove = (npc: NpcRecord) => {
-    if (!window.confirm(`删除“${npc.name}”的 NPC 档案？地图上已放置的 Token 会保留。`)) return;
+    if (!confirmAction(`删除“${npc.name}”的 NPC 档案？地图上已放置的 Token 会保留。`)) return;
     connection.sendOps([{ op: 'removeNpc', npcId: npc.id }]);
     setSelectedId(null);
   };
@@ -257,7 +288,7 @@ export default function NpcPanel() {
   };
 
   if (selected) {
-    return <NpcDetail npc={selected} records={npcs} onBack={() => setSelectedId(null)} onEdit={() => setEditing(selected)}
+    return <NpcDetail npc={selected} records={npcs} readOnly={readOnly} onBack={() => setSelectedId(null)} onEdit={() => setEditing(selected)}
       onPlace={data => { void place(selected, data); }} onPickUp={data => { void pickUp(selected, data); }} onDelete={() => remove(selected)} />;
   }
 
@@ -266,11 +297,11 @@ export default function NpcPanel() {
       <div className="space-y-2 border-b border-zinc-800 p-2">
         <input value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索 NPC、阵营、身份或地点…"
           className="w-full border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-zinc-100 outline-none focus:border-sky-500" />
-        <div className="grid grid-cols-2 gap-1.5">
+        {!readOnly && <div className="grid grid-cols-2 gap-1.5">
           <button type="button" onClick={() => setEditing(emptyNpc())} className="border border-sky-800 bg-sky-950/40 px-2 py-1.5 text-xs text-sky-300 hover:bg-sky-900/40">新建 NPC</button>
           <button type="button" onClick={() => fileRef.current?.click()} className="border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700">导入 Markdown</button>
           <input ref={fileRef} type="file" accept=".md,.markdown,.mdown,text/markdown,text/plain" className="hidden" onChange={event => { void importMarkdown(event); }} />
-        </div>
+        </div>}
         <p className="text-[10px] leading-relaxed text-zinc-600">统一按“阵营 → 人物”两级归档；每个人物只保留一份完整档案，并按重要程度排序。</p>
         {notice && <p role="status" className="text-[10px] leading-relaxed text-amber-300">{notice}</p>}
       </div>
@@ -285,15 +316,16 @@ export default function NpcPanel() {
               <span className="block truncate text-zinc-100">{npc.name}</span>
               <span className="block truncate text-xs text-zinc-500">{[npcImportanceLabel(npc.importance), npc.role, npc.faction].filter(Boolean).join(' · ')}</span>
             </button>
+            {!readOnly && <span className={`mr-1 text-[10px] ${(npc.playerAccess ?? 'none') === 'none' ? 'text-violet-500' : 'text-sky-600'}`}>{PLAYER_ACCESS_LABEL[npc.playerAccess ?? 'none']}</span>}
             <span className="mr-1 text-[10px] text-zinc-600">{STATUS_LABEL[npc.status]}</span>
-            <button type="button" onClick={() => { void place(npc); }} className="mr-2 border border-amber-900 bg-amber-950/40 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/40">+ 添加</button>
+            {!readOnly && <button type="button" onClick={() => { void place(npc); }} className="mr-2 border border-amber-900 bg-amber-950/40 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/40">+ 添加</button>}
           </div>
         )) : (
           <NpcTree nodes={tree} depth={0} closed={closed} onToggle={key => setClosed(current => {
             const next = new Set(current);
             if (next.has(key)) next.delete(key); else next.add(key);
             return next;
-          })} onOpen={npc => setSelectedId(npc.id)} onPlace={npc => { void place(npc); }} tokenCounts={tokenCounts} />
+          })} onOpen={npc => setSelectedId(npc.id)} onPlace={npc => { void place(npc); }} tokenCounts={tokenCounts} readOnly={readOnly} />
         )}
         {filtered.length === 0 && <div className="p-4 text-center text-xs text-zinc-500">{npcs.length === 0 ? '尚无 NPC 档案。' : '没有匹配的 NPC。'}</div>}
       </div>

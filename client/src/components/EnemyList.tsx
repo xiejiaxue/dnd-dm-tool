@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { api } from '../api';
 import { connection, getMySessionId, useScene } from '../ws';
 import { uploadImage } from '../upload';
@@ -9,6 +9,9 @@ import { useMonsterHitPointHydration } from '../features/hit-points/useMonsterHi
 import NpcEncounterDrawer from '../features/npc/NpcEncounterDrawer';
 import { npcQuickReferenceForToken } from '../features/npc/token';
 import { encounterTokens, selectedEncounterTokenId } from '../features/encounter/combatants';
+import { subscribeEncounterReference } from '../features/encounter/navigation';
+import { conditionDefinition } from '../features/conditions/model';
+import { useBoardCommands } from '../features/history/BoardCommandContext';
 
 // Player token color choices (same palette the DM sees when placing a player).
 const PALETTE = ['#e53e3e', '#38a169', '#3182ce', '#d69e2e', '#805ad5', '#dd6b20', '#319795', '#d53f8c'];
@@ -20,7 +23,8 @@ interface Props {
 // Left-hand encounter panel listing monster and NPC tokens with the same HP,
 // details, deletion, and initiative controls.
 export default function EnemyList({ selectedTokenId }: Props) {
-  const { scene, campaign, role } = useScene();
+  const { scene, campaign, encounter, role, viewer } = useScene();
+  const { performOps } = useBoardCommands();
   const [detail, setDetail] = useState<
     | { kind: 'monster'; id: string; nameZh: string }
     | { kind: 'npc'; npc: NonNullable<ReturnType<typeof npcQuickReferenceForToken>> }
@@ -33,14 +37,23 @@ export default function EnemyList({ selectedTokenId }: Props) {
   const [editName, setEditName] = useState(false);
   const [nameVal, setNameVal] = useState('');
   const [hpEdit, setHpEdit] = useState(false);
+  const [aliasEditingId, setAliasEditingId] = useState<string | null>(null);
+  const [aliasDraft, setAliasDraft] = useState('');
   const [rollingInitiative, setRollingInitiative] = useState(false);
   const [initiativeMessage, setInitiativeMessage] = useState<string | null>(null);
-  const tokens = encounterTokens(scene?.tokens ?? []);
+  const [combatSelection, setCombatSelection] = useState<string[]>([]);
+  const tokens = useMemo(() => encounterTokens(scene?.tokens ?? []), [scene?.tokens]);
   const highlightedTokenId = selectedEncounterTokenId(tokens, selectedTokenId);
   const monsterTokens = tokens.filter(token => token.kind === 'monster');
   const npcs = campaign?.npcs ?? [];
   const detailNpc = detail?.kind === 'npc' ? detail.npc : null;
   const isDm = role === 'dm';
+  const canReadPrivate = isDm || viewer?.canReadAll === true;
+  const initiativeTokenIds = useMemo(() => new Set(
+    encounter?.status === 'ended'
+      ? []
+      : (encounter?.combatants ?? []).flatMap(entry => entry.tokenId ? [entry.tokenId] : []),
+  ), [encounter]);
   useMonsterHitPointHydration(scene?.id, monsterTokens, isDm);
   // Locate this player's own token, bound to their stable browser session id.
   const mySessionId = getMySessionId();
@@ -66,6 +79,28 @@ export default function EnemyList({ selectedTokenId }: Props) {
     if (!highlightedTokenId || detail) return;
     highlightedRowRef.current?.scrollIntoView({ block: 'nearest' });
   }, [highlightedTokenId, detail, tokens.length]);
+
+  useEffect(() => subscribeEncounterReference(tokenId => {
+    const target = tokens.find(token => token.id === tokenId);
+    if (!target) return;
+    if (target.kind === 'monster' && target.entryId) {
+      setDetail({ kind: 'monster', id: target.entryId, nameZh: target.name });
+      return;
+    }
+    const quickReference = npcQuickReferenceForToken(target, npcs, { allowFallback: canReadPrivate });
+    if (quickReference) setDetail({ kind: 'npc', npc: quickReference });
+  }), [tokens, npcs, canReadPrivate]);
+
+  // Combat selection is deliberately local and independent from board object
+  // selection. Prune it when switching scenes, deleting a Token, or after the
+  // selected Token has joined the Encounter.
+  useEffect(() => {
+    const selectable = new Set(tokens.flatMap(token => initiativeTokenIds.has(token.id) ? [] : [token.id]));
+    setCombatSelection(current => {
+      const next = current.filter(tokenId => selectable.has(tokenId));
+      return next.length === current.length ? current : next;
+    });
+  }, [scene?.id, tokens, initiativeTokenIds]);
 
   // Once the R2-backed URL is reflected by the optimistic/authoritative scene,
   // discard the local object URL. Until then the picker looks immediate even
@@ -93,7 +128,7 @@ export default function EnemyList({ selectedTokenId }: Props) {
       avatarUploadTarget.current = url;
       avatarPreviewCleanup.current?.();
       avatarPreviewCleanup.current = null;
-      connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: url } }]);
+      performOps('更新角色头像', [{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: url } }]);
     } catch {
       if (uploadGeneration === avatarUploadGeneration.current) {
         avatarUploadTarget.current = null;
@@ -104,8 +139,14 @@ export default function EnemyList({ selectedTokenId }: Props) {
     }
   };
 
-  const inInitiative = (tokenId: string) =>
-    (scene?.initiative ?? []).some(e => e.tokenId === tokenId);
+  const inInitiative = (tokenId: string) => initiativeTokenIds.has(tokenId);
+
+  const toggleCombatSelection = (tokenId: string) => {
+    if (initiativeTokenIds.has(tokenId)) return;
+    setCombatSelection(current => current.includes(tokenId)
+      ? current.filter(id => id !== tokenId)
+      : [...current, tokenId]);
+  };
 
   const startAdd = (t: Token) => {
     setAddingId(t.id);
@@ -113,6 +154,10 @@ export default function EnemyList({ selectedTokenId }: Props) {
   };
 
   const commitAdd = (t: Token) => {
+    if (!addValue.trim()) {
+      setAddingId(null);
+      return;
+    }
     const v = Number(addValue);
     if (Number.isFinite(v)) {
       connection.sendOps([{
@@ -128,14 +173,16 @@ export default function EnemyList({ selectedTokenId }: Props) {
   };
 
   const rollInitiative = async () => {
-    if (rollingInitiative) return;
+    if (rollingInitiative || combatSelection.length === 0) return;
     setRollingInitiative(true);
     setInitiativeMessage(null);
     try {
-      const result = await api.rollInitiative();
+      const result = await api.rollInitiative(combatSelection);
+      const rolledIds = new Set(result.rolls.map(roll => roll.tokenId));
+      setCombatSelection(current => current.filter(tokenId => !rolledIds.has(tokenId)));
       setInitiativeMessage(result.rolls.length > 0
-        ? `已为 ${result.rolls.length} 个战斗单位掷先攻`
-        : '当前场景没有怪物或 NPC token');
+        ? `已将 ${result.rolls.length} 个选中单位加入战斗并自动先攻`
+        : '没有可加入战斗的选中单位');
     } catch (error) {
       setInitiativeMessage(error instanceof Error ? error.message : '自动先攻失败，请重试');
     } finally {
@@ -144,24 +191,24 @@ export default function EnemyList({ selectedTokenId }: Props) {
   };
 
   return (
-    <aside className="w-52 border-r border-zinc-700/60 bg-zinc-900 flex flex-col text-sm relative">
+    <aside className="relative flex h-full w-full flex-col border-r border-zinc-700/60 bg-zinc-900 text-sm">
       {role === 'player' && myToken && (
         <div className="px-2 py-2 border-b border-zinc-800 bg-zinc-800/30">
           <div className="text-xs text-zinc-400 mb-1">我的角色</div>
           <div className="flex items-center gap-1.5">
             {editName ? (
               <input autoFocus value={nameVal} onChange={e => setNameVal(e.target.value)}
-                onBlur={() => { if (nameVal.trim()) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { name: nameVal.trim().slice(0, 20) } }]); setEditName(false); }}
+                onBlur={() => { if (nameVal.trim()) performOps('修改角色名称', [{ op: 'updatePlayer', tokenId: myToken.id, patch: { name: nameVal.trim().slice(0, 20) } }]); setEditName(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
                 className="flex-1 min-w-0 bg-zinc-900 rounded px-1 py-0.5 text-sm" />
             ) : (
-              <button className="flex-1 min-w-0 text-left truncate text-zinc-100"
+              <button className="flex-1 min-w-0 text-left truncate text-zinc-100" title="编辑自己的角色名称"
                 onClick={() => { setNameVal(myToken.name); setEditName(true); }}>{myToken.name} ✎</button>
             )}
             <span className="shrink-0 text-[10px] text-zinc-500">HP</span>
             {hpEdit ? (
               <input autoFocus value={hpCur} onChange={e => setHpCur(e.target.value)}
-                onBlur={() => { const c = Number(hpCur), m = Number(hpMax); if (Number.isFinite(c) && Number.isFinite(m)) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { hp: { current: c, max: m } } }]); setHpEdit(false); }}
+                onBlur={() => { const c = Number(hpCur), m = Number(hpMax); if (Number.isFinite(c) && Number.isFinite(m)) performOps('修改角色 HP', [{ op: 'updatePlayer', tokenId: myToken.id, patch: { hp: { current: c, max: m } } }]); setHpEdit(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
                 className="w-8 bg-zinc-900 rounded px-1 py-0.5 text-center text-xs" />
             ) : (
@@ -172,7 +219,7 @@ export default function EnemyList({ selectedTokenId }: Props) {
           </div>
           <div className="flex items-center gap-1 mt-1 flex-wrap">
             {PALETTE.map(c => (
-              <button key={c} onClick={() => connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { color: c } }])}
+              <button key={c} onClick={() => performOps('修改角色颜色', [{ op: 'updatePlayer', tokenId: myToken.id, patch: { color: c } }])}
                 className={`w-4 h-4 rounded-full ${myToken.color === c ? 'ring-2 ring-white' : ''}`} style={{ background: c }} />
             ))}
           </div>
@@ -191,7 +238,7 @@ export default function EnemyList({ selectedTokenId }: Props) {
                 avatarPreviewCleanup.current?.();
                 avatarPreviewCleanup.current = null;
                 setAvatarPreview(null);
-                connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: '' } }]);
+                performOps('移除角色头像', [{ op: 'updatePlayer', tokenId: myToken.id, patch: { avatar: '' } }]);
               }}
                 className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 hover:text-red-400 text-xs">移除</button>
             )}
@@ -200,15 +247,24 @@ export default function EnemyList({ selectedTokenId }: Props) {
           <div className="text-[10px] text-zinc-600 mt-1">拖动画布上的 token 可移动位置</div>
         </div>
       )}
-      <div className="px-2 py-2 border-b border-zinc-800 text-xs text-zinc-400 flex items-center justify-between gap-1">
-        <span>敌人 / NPC <span className="text-zinc-500">({tokens.length})</span></span>
+      <div className="border-b border-zinc-800 px-2 py-2 text-xs text-zinc-400">
+        <div className="flex items-center justify-between gap-1">
+          <span>敌人 / NPC <span className="text-zinc-500">({tokens.length})</span></span>
+          {isDm && <span className={combatSelection.length ? 'text-sky-300' : 'text-zinc-600'}>已选 {combatSelection.length}</span>}
+        </div>
         {isDm && (
-          <button
-            onClick={() => void rollInitiative()}
-            disabled={rollingInitiative}
-            title="对场景内所有怪物和 NPC 掷 d20+敏捷调整值，加入/重掷先攻"
-            className="shrink-0 px-1.5 py-0.5 rounded bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 disabled:opacity-50 text-[10px]"
-          >{rollingInitiative ? '掷骰中…' : '自动随机先攻'}</button>
+          <div className="mt-1.5 flex items-center gap-1">
+            <button
+              onClick={() => void rollInitiative()}
+              disabled={rollingInitiative || combatSelection.length === 0}
+              title="只将勾选的敌人和 NPC 加入当前战斗，并掷 d20+敏捷调整值"
+              className="min-w-0 flex-1 rounded bg-amber-600/20 px-1.5 py-1 text-[10px] text-amber-400 hover:bg-amber-600/30 disabled:cursor-not-allowed disabled:opacity-40"
+            >{rollingInitiative ? '掷骰中…' : `选中自动先攻${combatSelection.length ? ` (${combatSelection.length})` : ''}`}</button>
+            {combatSelection.length > 0 && (
+              <button type="button" onClick={() => setCombatSelection([])}
+                className="shrink-0 rounded px-1.5 py-1 text-[10px] text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300">清空</button>
+            )}
+          </div>
         )}
       </div>
       {initiativeMessage && (
@@ -219,15 +275,20 @@ export default function EnemyList({ selectedTokenId }: Props) {
       {detail?.kind === 'monster' ? (
         <DetailDrawer entry={{ type: 'monster', id: detail.id, nameZh: detail.nameZh }} onBack={() => setDetail(null)} />
       ) : detailNpc ? (
-        <NpcEncounterDrawer npc={detailNpc} records={npcs} onBack={() => setDetail(null)} />
+        <NpcEncounterDrawer npc={detailNpc} records={npcs} readOnly={!canReadPrivate} onBack={() => setDetail(null)} />
       ) : (
         <div className="flex-1 overflow-y-auto">
           {tokens.map(t => {
             const eid = t.entryId;
             const highlighted = highlightedTokenId === t.id;
+            const combatSelected = combatSelection.includes(t.id);
             const rowClassName = highlighted
               ? 'relative bg-amber-400/10 ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_18px_rgba(251,191,36,0.12)]'
-              : 'hover:bg-zinc-800/50';
+              : combatSelected
+                ? 'bg-sky-500/10 ring-1 ring-inset ring-sky-500/60'
+                : t.hidden
+                  ? 'bg-violet-950/15 opacity-75 hover:opacity-100'
+                  : 'hover:bg-zinc-800/50';
             if (addingId === t.id) {
               return (
                 <div
@@ -253,7 +314,7 @@ export default function EnemyList({ selectedTokenId }: Props) {
               );
             }
             const label = `${t.name}${t.number != null ? ` #${t.number}` : ''}`;
-            const quickReferenceNpc = npcQuickReferenceForToken(t, npcs);
+            const quickReferenceNpc = npcQuickReferenceForToken(t, npcs, { allowFallback: canReadPrivate });
             return (
               <div
                 key={t.id}
@@ -262,11 +323,23 @@ export default function EnemyList({ selectedTokenId }: Props) {
                 className={`border-b border-zinc-800/50 px-2 py-1.5 ${rowClassName}`}
               >
                 <div className="flex items-center gap-1">
+                  {isDm && (
+                    <input
+                      type="checkbox"
+                      checked={combatSelected}
+                      disabled={inInitiative(t.id)}
+                      onChange={() => toggleCombatSelection(t.id)}
+                      aria-label={`选择 ${label} 加入战斗`}
+                      title={inInitiative(t.id) ? '已在当前战斗中' : '勾选后可批量加入战斗并自动先攻'}
+                      className="h-3.5 w-3.5 shrink-0 accent-sky-500 disabled:cursor-not-allowed disabled:opacity-30"
+                    />
+                  )}
                   <span className="flex-1 truncate text-zinc-200">{label}</span>
                   {t.kind === 'monster' && eid && (
                     <button
                       onClick={() => setDetail({ kind: 'monster', id: eid, nameZh: t.name })}
                       title="显示详细数据"
+                      aria-label={`速查 ${label} 的怪物数据`}
                       className="shrink-0 w-6 h-6 rounded hover:bg-zinc-700 text-zinc-400 hover:text-amber-400"
                     >📖</button>
                   )}
@@ -274,13 +347,14 @@ export default function EnemyList({ selectedTokenId }: Props) {
                     <button
                       onClick={() => setDetail({ kind: 'npc', npc: quickReferenceNpc })}
                       title="速查 NPC 数据"
+                      aria-label={`速查 ${label} 的 NPC 数据`}
                       className="shrink-0 w-6 h-6 rounded hover:bg-zinc-700 text-zinc-400 hover:text-amber-400"
                     >📖</button>
                   )}
                   {isDm && !inInitiative(t.id) && (
                     <button
                       onClick={() => startAdd(t)}
-                      title="加入先攻"
+                      title="手动输入先攻并加入战斗"
                       className="shrink-0 px-1 py-0.5 rounded hover:bg-emerald-700/30 text-emerald-400 text-xs"
                     >先攻</button>
                   )}
@@ -289,17 +363,84 @@ export default function EnemyList({ selectedTokenId }: Props) {
                   )}
                   {isDm && (
                     <button
-                      onClick={() => connection.sendOps([{ op: 'removeToken', tokenId: t.id }])}
+                      onClick={() => performOps(`删除 ${label} Token`, [{ op: 'removeToken', tokenId: t.id }])}
                       title="删除 token"
+                      aria-label={`删除地图 Token ${label}`}
                       className="shrink-0 w-6 h-6 rounded hover:bg-zinc-700 text-zinc-400 hover:text-red-400"
                     >✕</button>
                   )}
                 </div>
+                {isDm && (
+                  <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => performOps('切换 Token 可见性', [{ op: 'updateToken', tokenId: t.id, patch: { hidden: !t.hidden } }])}
+                      title={t.hidden ? '让玩家看到这个 Token' : '从玩家地图和玩家端列表隐藏'}
+                      className={`rounded px-1.5 py-0.5 ${t.hidden ? 'bg-violet-500/20 text-violet-300' : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'}`}
+                    >{t.hidden ? '仅主持人' : '玩家可见'}</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = t.hpVisibility ?? 'value';
+                        const hpVisibility = current === 'value' ? 'bar' : current === 'bar' ? 'none' : 'value';
+                        performOps('切换 HP 可见性', [{ op: 'updateToken', tokenId: t.id, patch: { hpVisibility } }]);
+                      }}
+                      title="切换玩家可见的生命值信息"
+                      className="rounded bg-zinc-800 px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200"
+                    >HP：{t.hpVisibility === 'none' ? '隐藏' : t.hpVisibility === 'bar' ? '仅血条' : '数值'}</button>
+                    {aliasEditingId === t.id ? (
+                      <span className="flex min-w-0 flex-1 items-center gap-1">
+                        <input
+                          autoFocus
+                          aria-label={`${label} 玩家称谓`}
+                          value={aliasDraft}
+                          onChange={event => setAliasDraft(event.target.value)}
+                          onKeyDown={event => {
+                            if (event.key === 'Enter') {
+                              performOps('修改玩家称谓', [{ op: 'updateToken', tokenId: t.id, patch: { publicName: aliasDraft.trim().slice(0, 120) } }]);
+                              setAliasEditingId(null);
+                            }
+                            if (event.key === 'Escape') setAliasEditingId(null);
+                          }}
+                          placeholder="留空显示真实名称"
+                          className="min-w-0 flex-1 rounded bg-zinc-950 px-1.5 py-0.5 text-zinc-200 outline-none ring-1 ring-zinc-700 focus:ring-amber-500"
+                        />
+                        <button type="button" onClick={() => {
+                          performOps('修改玩家称谓', [{ op: 'updateToken', tokenId: t.id, patch: { publicName: aliasDraft.trim().slice(0, 120) } }]);
+                          setAliasEditingId(null);
+                        }} className="rounded bg-amber-600/20 px-1.5 py-0.5 text-amber-400">保存</button>
+                        <button type="button" onClick={() => setAliasEditingId(null)} className="rounded px-1 py-0.5 text-zinc-500">取消</button>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setAliasDraft(t.publicName ?? ''); setAliasEditingId(t.id); }}
+                        title="设置玩家称谓，隐藏真实姓名与怪物手册链接"
+                        className="max-w-full truncate rounded bg-zinc-800 px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200"
+                      >称谓：{t.publicName?.trim() || '真实名称'}</button>
+                    )}
+                  </div>
+                )}
+                {(t.conditions?.length ?? 0) > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {t.conditions?.map(condition => {
+                      const definition = conditionDefinition(condition.id);
+                      return (
+                        <span key={condition.id} className="rounded border border-zinc-700 bg-zinc-950 px-1 py-0.5 text-[9px] text-zinc-300"
+                          title={definition.label}>
+                          {definition.label}{condition.remainingRounds !== null ? ` ${condition.remainingRounds}` : ''}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
                 <EnemyHitPoints
                   label={label}
                   hp={t.hp}
+                  hpRatio={t.hpRatio}
+                  visibility={t.hpVisibility}
                   editable={isDm}
-                  onCommit={hp => connection.sendOps([{ op: 'updateToken', tokenId: t.id, patch: { hp } }])}
+                  onCommit={hp => performOps('修改 Token HP', [{ op: 'updateToken', tokenId: t.id, patch: { hp } }])}
                 />
               </div>
             );

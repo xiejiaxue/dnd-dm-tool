@@ -30,7 +30,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
   return (
     <div className="absolute inset-0 z-10 bg-zinc-900 overflow-y-auto p-3 text-sm">
       <div className="flex items-center gap-2 mb-2">
-        <button onClick={onBack} className="text-zinc-400 hover:text-white">←</button>
+        <button onClick={onBack} aria-label="返回列表" title="返回资料列表" className="text-zinc-400 hover:text-white">←</button>
         <h2 className="font-bold text-base">{entry.nameZh}</h2>
       </div>
       {loading && <div className="text-zinc-500">加载中…</div>}
@@ -39,6 +39,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
         {role !== 'spectator' && (
           <button
             onClick={() => connection.sendOps([{ op: 'addFavorite', favorite: { type: entry.type, entryId: entry.id } }])}
+            title={fav ? '该条目已在收藏夹中' : '加入收藏夹以便快速查找'}
             className="flex-1 rounded bg-zinc-800 py-1.5 hover:bg-zinc-700"
           >{fav ? '已收藏' : '★ 收藏'}</button>
         )}
@@ -48,6 +49,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
               kind: 'monster', name: entry.nameZh, entryId: entry.id,
               avatar: `/api/token/${entry.id}`, color: '#fff',
             })}
+            title="拿起怪物 Token；随后点击地图完成放置"
             className="flex-1 rounded bg-amber-600/20 text-amber-400 py-1.5 hover:bg-amber-600/30"
           >✋ 拿起</button>
         )}

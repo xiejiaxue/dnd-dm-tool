@@ -1,16 +1,29 @@
 import Konva from 'konva';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { zoomViewport, type BoardViewport } from './geometry';
+import type { SceneInitialView } from '../../types';
 
 /** Pan/zoom state isolated from board tools and room mutations. */
-export function useBoardView(stageRef: RefObject<Konva.Stage>) {
-  const [viewport, setViewport] = useState<BoardViewport>({ scale: 1, pos: { x: 0, y: 0 } });
+export function useBoardView(stageRef: RefObject<Konva.Stage>, sceneId?: string, initialView?: SceneInitialView) {
+  const initial = (): BoardViewport => ({
+    scale: initialView?.scale ?? 1,
+    pos: { x: initialView?.x ?? 0, y: initialView?.y ?? 0 },
+  });
+  const [viewport, setViewport] = useState<BoardViewport>(initial);
   const pendingViewport = useRef<BoardViewport | null>(null);
   const frame = useRef<number | null>(null);
 
   useEffect(() => () => {
     if (frame.current !== null) cancelAnimationFrame(frame.current);
   }, []);
+
+  useEffect(() => {
+    pendingViewport.current = null;
+    setViewport(initial());
+    // A scene switch is the reset boundary. Configuration changes should not
+    // unexpectedly move a moderator who is currently inspecting the canvas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sceneId]);
 
   const schedule = useCallback((next: BoardViewport) => {
     pendingViewport.current = next;
@@ -38,7 +51,7 @@ export function useBoardView(stageRef: RefObject<Konva.Stage>) {
     if (stage) zoomAt({ x: stage.width() / 2, y: stage.height() / 2 }, factor);
   }, [stageRef, zoomAt]);
 
-  const resetView = useCallback(() => schedule({ scale: 1, pos: { x: 0, y: 0 } }), [schedule]);
+  const resetView = useCallback(() => schedule(initial()), [schedule, initialView?.x, initialView?.y, initialView?.scale]);
 
   const handleWheel = useCallback((event: Konva.KonvaEventObject<WheelEvent>) => {
     event.evt.preventDefault();

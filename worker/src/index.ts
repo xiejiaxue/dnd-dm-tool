@@ -11,7 +11,7 @@ import {
 import { parseOnlineSearchRequest } from './online-compendium-data';
 import { monsterInitiativeModifier } from '../../shared/compendium';
 import { resolveNpcInitiativeSource } from '../../shared/npc-metadata';
-import type { NpcRecord, Op, Token } from '../../shared/types';
+import type { NpcRecord, Op, Token, ToolDocumentType } from '../../shared/types';
 import {
   callRoom,
   createAsset,
@@ -23,7 +23,9 @@ import {
   forwardRoomWebSocket,
   getAsset,
   initializeRoom,
+  isPlatformOwner,
   listRooms,
+  listRoomMembers,
   redeemRoomInvite,
   requireRoomHost,
   requireRoomModerator,
@@ -31,6 +33,49 @@ import {
   type RoomAccess,
 } from './repository';
 import { getRoomTemplateAsset, listRoomTemplates, loadRoomTemplate } from './room-templates';
+import {
+  claimActor,
+  clearMacroHotbarBinding,
+  createActor,
+  createDocumentFolder,
+  createJournal,
+  createJournalPage,
+  createMacro,
+  createSceneNote,
+  deleteActor,
+  deleteDocumentFolder,
+  deleteJournal,
+  deleteMacro,
+  deleteSceneNote,
+  listActors,
+  listDocumentFolders,
+  listJournals,
+  listMacros,
+  listMacroHotbar,
+  listSceneNotes,
+  releaseActor,
+  setMacroHotbarBinding,
+  updateActor,
+  updateDocumentFolder,
+  updateJournal,
+  updateJournalPage,
+  updateMacro,
+  updateSceneNote,
+} from './world-documents';
+import {
+  clearActionLog,
+  createActionLog,
+  createToolDocument,
+  deleteToolDocument,
+  getTabletopSettings,
+  listActionLog,
+  listAssetLibrary,
+  listToolDocuments,
+  updateAssetLibraryEntry,
+  updateTabletopSettings,
+  updateToolDocument,
+} from './tabletop-tools';
+import { routeInstalledPlugin, routeInstalledRoomPlugin } from './plugins/registry';
 
 export { RoomDurableObject } from './room';
 export { OnlineCompendiumRateLimitDurableObject };
@@ -53,6 +98,14 @@ const FIVETOOLS_IMAGE_COMMIT = 'd88261f6468d2957e95bbdf56ad65e4ec8d06c73';
 const FIVETOOLS_TOKEN_BASE_URL = `https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/${FIVETOOLS_IMAGE_COMMIT}/bestiary/tokens/`;
 const MAX_TOKEN_IMAGE_BYTES = 4 * 1024 * 1024;
 const MAX_AUTOMATIC_INITIATIVE_TOKENS = 250;
+
+function toolDocumentType(value: string): ToolDocumentType {
+  if (value === 'items') return 'item';
+  if (value === 'roll-tables') return 'roll_table';
+  if (value === 'playlists') return 'playlist';
+  if (value === 'encounter-presets') return 'encounter_preset';
+  throw new HttpError(404, 'NOT_FOUND', '找不到战役资料类型');
+}
 
 const worker: ExportedHandler<Env> = {
   async fetch(request, env, ctx): Promise<Response> {
@@ -90,7 +143,13 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, sessi
   const parts = routeParts(url.pathname);
 
   if (parts.length === 2 && parts[1] === 'me' && request.method === 'GET') {
-    return json({ id: session.userId, displayName: session.displayName, isAnonymous: true });
+    const platformOwner = await isPlatformOwner(env, session.userId);
+    return json({
+      id: session.userId,
+      displayName: session.displayName,
+      isAnonymous: true,
+      ...(platformOwner ? { platformRole: 'owner', canReadAllRooms: true } : {}),
+    });
   }
   if (parts.length === 3 && parts[1] === 'auth' && parts[2] === 'logout' && request.method === 'POST') {
     await revokeCurrentSession(env, session);
@@ -122,6 +181,9 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, sessi
   if (parts.length === 3 && parts[1] === 'token' && request.method === 'GET') {
     if (onlineEntryReference('monster', parts[2])) await consumeOnlineLookupBudget(env, request, session.userId);
     return getCompendiumToken(env, ctx, parts[2]);
+  }
+  if (parts.length >= 3 && parts[1] === 'plugins') {
+    return routeInstalledPlugin(request, env, session, parts[2], parts.slice(3));
   }
 
   if (parts.length === 2 && parts[1] === 'invites' && request.method === 'POST') {
@@ -164,6 +226,9 @@ async function routeApi(request: Request, env: Env, ctx: ExecutionContext, sessi
 }
 
 async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, access: RoomAccess, rest: string[]): Promise<Response> {
+  if (rest.length >= 2 && rest[0] === 'plugins') {
+    return routeInstalledRoomPlugin(request, env, access, rest[1], rest.slice(2));
+  }
   if (rest.length === 0 && request.method === 'DELETE') {
     requireRoomHost(access);
     // Persist the actor and target before revoking every room membership.
@@ -190,7 +255,12 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
     const payload = await response.json() as { state?: unknown; membership?: unknown };
     return json({
       room: roomSummary(access),
-      membership: { role: access.role, roomRole: access.role, canManage: access.role === 'host' || access.role === 'dm' || access.role === 'assistant_dm' },
+      membership: {
+        role: access.role,
+        roomRole: access.role,
+        canManage: access.role === 'host' || access.role === 'dm' || access.role === 'assistant_dm',
+        canReadAll: access.platformOwner === true,
+      },
       state: payload.state,
     });
   }
@@ -204,11 +274,58 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
     ctx.waitUntil(writeAudit(env, access, 'invite.create', 'room', access.roomId));
     return json(invite, { status: 201 });
   }
+  if (rest.length === 1 && rest[0] === 'members' && request.method === 'GET') {
+    return json(await listRoomMembers(env, access));
+  }
+  if (rest[0] === 'tools' && rest.length >= 2) {
+    const type = toolDocumentType(rest[1]);
+    if (rest.length === 2 && request.method === 'GET') return json(await listToolDocuments(env, access, type));
+    if (rest.length === 2 && request.method === 'POST') {
+      const document = await createToolDocument(env, access, type, await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, `${type}.create`, type, document.id));
+      return json(document, { status: 201 });
+    }
+    if (rest.length === 3 && request.method === 'PATCH') {
+      const document = await updateToolDocument(env, access, type, rest[2], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, `${type}.update`, type, document.id));
+      return json(document);
+    }
+    if (rest.length === 3 && request.method === 'DELETE') {
+      await deleteToolDocument(env, access, type, rest[2]);
+      ctx.waitUntil(writeAudit(env, access, `${type}.delete`, type, rest[2]));
+      return json({ ok: true });
+    }
+  }
+  if (rest.length === 1 && rest[0] === 'action-log') {
+    if (request.method === 'GET') return json(await listActionLog(env, access, new URL(request.url).searchParams.get('limit')));
+    if (request.method === 'POST') {
+      const entry = await createActionLog(env, access, await readJsonObject(request));
+      return json(entry, { status: 201 });
+    }
+    if (request.method === 'DELETE') {
+      await clearActionLog(env, access);
+      ctx.waitUntil(writeAudit(env, access, 'action-log.clear', 'room', access.roomId));
+      return json({ ok: true });
+    }
+  }
+  if (rest.length === 1 && rest[0] === 'settings') {
+    if (request.method === 'GET') return json(await getTabletopSettings(env, access));
+    if (request.method === 'PATCH') return json(await updateTabletopSettings(env, access, await readJsonObject(request)));
+  }
+  if (rest[0] === 'asset-library') {
+    if (rest.length === 1 && request.method === 'GET') {
+      return json(await listAssetLibrary(env, access, new URL(request.url).searchParams.get('archived') === '1'));
+    }
+    if (rest.length === 2 && request.method === 'PATCH') {
+      await updateAssetLibraryEntry(env, access, rest[1], await readJsonObject(request));
+      return json({ ok: true });
+    }
+  }
   if (rest.length === 1 && rest[0] === 'assets') {
     if (request.method === 'POST') {
       const declaredLength = Number(request.headers.get('content-length') ?? 0);
       if (Number.isFinite(declaredLength) && declaredLength > 11 * 1024 * 1024) {
-        throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '图片必须小于 10 MiB');
+        throw new HttpError(413, 'PAYLOAD_TOO_LARGE', '素材必须小于 10 MiB');
       }
       const form = await request.formData();
       const file = form.get('file');
@@ -259,14 +376,142 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
       'cross-origin-resource-policy': 'same-origin',
       'content-disposition': 'inline',
     });
+    if (asset.metadata.content_type === 'application/pdf') headers.set('content-security-policy', 'sandbox');
     return new Response(asset.object.body, { headers });
+  }
+  if (rest[0] === 'actors') {
+    if (rest.length === 1 && request.method === 'GET') return json(await listActors(env, access));
+    if (rest.length === 1 && request.method === 'POST') {
+      const actor = await createActor(env, access, await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'actor.create', 'actor', actor.id));
+      return json(actor, { status: 201 });
+    }
+    if (rest.length === 2 && request.method === 'PATCH') {
+      const actor = await updateActor(env, access, rest[1], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'actor.update', 'actor', actor.id));
+      return json(actor);
+    }
+    if (rest.length === 2 && request.method === 'DELETE') {
+      await deleteActor(env, access, rest[1]);
+      ctx.waitUntil(writeAudit(env, access, 'actor.delete', 'actor', rest[1]));
+      return json({ ok: true });
+    }
+    if (rest.length === 3 && rest[2] === 'claim' && request.method === 'POST') {
+      const claim = await claimActor(env, access, rest[1]);
+      ctx.waitUntil(writeAudit(env, access, 'actor.claim', 'actor', rest[1]));
+      return json(claim);
+    }
+    if (rest.length === 3 && rest[2] === 'claim' && request.method === 'DELETE') {
+      await releaseActor(env, access, rest[1]);
+      ctx.waitUntil(writeAudit(env, access, 'actor.release', 'actor', rest[1]));
+      return json({ ok: true });
+    }
+  }
+  if (rest[0] === 'folders' && rest[1]) {
+    if (rest.length === 2 && request.method === 'GET') return json(await listDocumentFolders(env, access, rest[1]));
+    if (rest.length === 2 && request.method === 'POST') {
+      const folder = await createDocumentFolder(env, access, rest[1], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'folder.create', 'folder', folder.id));
+      return json(folder, { status: 201 });
+    }
+    if (rest.length === 3 && request.method === 'PATCH') {
+      const folder = await updateDocumentFolder(env, access, rest[1], rest[2], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'folder.update', 'folder', folder.id));
+      return json(folder);
+    }
+    if (rest.length === 3 && request.method === 'DELETE') {
+      await deleteDocumentFolder(env, access, rest[1], rest[2]);
+      ctx.waitUntil(writeAudit(env, access, 'folder.delete', 'folder', rest[2]));
+      return json({ ok: true });
+    }
+  }
+  if (rest[0] === 'journals') {
+    if (rest.length === 1 && request.method === 'GET') return json(await listJournals(env, access));
+    if (rest.length === 1 && request.method === 'POST') {
+      const journal = await createJournal(env, access, await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'journal.create', 'journal', journal.id));
+      return json(journal, { status: 201 });
+    }
+    if (rest.length === 2 && request.method === 'PATCH') {
+      const journal = await updateJournal(env, access, rest[1], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'journal.update', 'journal', journal.id));
+      return json(journal);
+    }
+    if (rest.length === 2 && request.method === 'DELETE') {
+      await deleteJournal(env, access, rest[1]);
+      ctx.waitUntil(writeAudit(env, access, 'journal.delete', 'journal', rest[1]));
+      return json({ ok: true });
+    }
+    if (rest.length === 3 && rest[2] === 'pages' && request.method === 'POST') {
+      const page = await createJournalPage(env, access, rest[1], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'journal-page.create', 'journal-page', page.id));
+      return json(page, { status: 201 });
+    }
+    if (rest.length === 4 && rest[2] === 'pages' && request.method === 'PATCH') {
+      const page = await updateJournalPage(env, access, rest[1], rest[3], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'journal-page.update', 'journal-page', page.id));
+      return json(page);
+    }
+  }
+  if (rest[0] === 'macros') {
+    if (rest.length === 1 && request.method === 'GET') return json(await listMacros(env, access));
+    if (rest.length === 1 && request.method === 'POST') {
+      const macro = await createMacro(env, access, await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'macro.create', 'macro', macro.id));
+      return json(macro, { status: 201 });
+    }
+    if (rest.length === 2 && rest[1] === 'hotbar' && request.method === 'GET') {
+      return json(await listMacroHotbar(env, access));
+    }
+    if (rest.length === 3 && rest[1] === 'hotbar' && request.method === 'PATCH') {
+      const body = await readJsonObject(request);
+      const macroId = nonEmptyText(body.macroId, '宏 ID', 180);
+      const binding = await setMacroHotbarBinding(env, access, Number(rest[2]), macroId);
+      ctx.waitUntil(writeAudit(env, access, 'macro-hotbar.bind', 'macro', macroId));
+      return json(binding);
+    }
+    if (rest.length === 3 && rest[1] === 'hotbar' && request.method === 'DELETE') {
+      await clearMacroHotbarBinding(env, access, Number(rest[2]));
+      ctx.waitUntil(writeAudit(env, access, 'macro-hotbar.clear', 'macro-hotbar', rest[2]));
+      return json({ ok: true });
+    }
+    if (rest.length === 2 && request.method === 'PATCH') {
+      const macro = await updateMacro(env, access, rest[1], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'macro.update', 'macro', macro.id));
+      return json(macro);
+    }
+    if (rest.length === 2 && request.method === 'DELETE') {
+      await deleteMacro(env, access, rest[1]);
+      ctx.waitUntil(writeAudit(env, access, 'macro.delete', 'macro', rest[1]));
+      return json({ ok: true });
+    }
+  }
+  if (rest.length >= 3 && rest[0] === 'scenes' && rest[2] === 'notes') {
+    const sceneId = rest[1];
+    if (rest.length === 3 && request.method === 'GET') return json(await listSceneNotes(env, access, sceneId));
+    if (rest.length === 3 && request.method === 'POST') {
+      const note = await createSceneNote(env, access, sceneId, await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'scene-note.create', 'scene-note', note.id));
+      return json(note, { status: 201 });
+    }
+    if (rest.length === 4 && request.method === 'PATCH') {
+      const note = await updateSceneNote(env, access, sceneId, rest[3], await readJsonObject(request));
+      ctx.waitUntil(writeAudit(env, access, 'scene-note.update', 'scene-note', note.id));
+      return json(note);
+    }
+    if (rest.length === 4 && request.method === 'DELETE') {
+      await deleteSceneNote(env, access, sceneId, rest[3]);
+      ctx.waitUntil(writeAudit(env, access, 'scene-note.delete', 'scene-note', rest[3]));
+      return json({ ok: true });
+    }
   }
   if (rest[0] === 'scenes') {
     if (rest.length === 1 && (request.method === 'GET' || request.method === 'POST')) {
       return callRoom(env, access, request.method, '/scenes', request.method === 'POST' ? await readJsonObject(request) : undefined);
     }
-    if (rest.length === 2 && (request.method === 'GET' || request.method === 'DELETE')) {
-      return callRoom(env, access, request.method, `/scenes/${encodeURIComponent(rest[1])}`);
+    if (rest.length === 2 && (request.method === 'GET' || request.method === 'PATCH' || request.method === 'DELETE')) {
+      return callRoom(env, access, request.method, `/scenes/${encodeURIComponent(rest[1])}`,
+        request.method === 'PATCH' ? await readJsonObject(request) : undefined);
     }
   }
   if (rest[0] === 'campaigns') {
@@ -278,12 +523,13 @@ async function routeRoomApi(request: Request, env: Env, ctx: ExecutionContext, a
   }
   if (rest.length === 2 && rest[0] === 'initiative' && rest[1] === 'roll' && request.method === 'POST') {
     requireRoomModerator(access);
-    return rollRoomInitiative(env, ctx, access);
+    const body = await readJsonObject(request);
+    return rollRoomInitiative(env, ctx, access, automaticInitiativeTokenIds(body.tokenIds));
   }
   throw new HttpError(404, 'NOT_FOUND', '找不到房间接口');
 }
 
-function roomSummary(access: RoomAccess): { id: string; slug: string; name: string; role: string; status: string; campaignName: string; updatedAt: number } {
+function roomSummary(access: RoomAccess): { id: string; slug: string; name: string; role: string; status: string; campaignName: string; updatedAt: number; platformReadOnly?: boolean } {
   return {
     id: access.roomId,
     slug: access.roomSlug,
@@ -292,6 +538,7 @@ function roomSummary(access: RoomAccess): { id: string; slug: string; name: stri
     status: access.roomStatus,
     campaignName: access.campaignName,
     updatedAt: Date.now(),
+    ...(access.platformOwner && access.role === 'spectator' ? { platformReadOnly: true } : {}),
   };
 }
 
@@ -468,7 +715,7 @@ function tokenBytesResponse(bytes: Uint8Array): Response {
   });
 }
 
-async function rollRoomInitiative(env: Env, ctx: ExecutionContext, access: RoomAccess): Promise<Response> {
+async function rollRoomInitiative(env: Env, ctx: ExecutionContext, access: RoomAccess, tokenIds: readonly string[]): Promise<Response> {
   const bootstrap = await callRoom(env, access, 'GET', '/bootstrap');
   if (!bootstrap.ok) return bootstrap;
   const payload: unknown = await bootstrap.json();
@@ -481,9 +728,17 @@ async function rollRoomInitiative(env: Env, ctx: ExecutionContext, access: RoomA
   const npcs = campaign && Array.isArray(campaign.npcs)
     ? campaign.npcs.filter(isInitiativeNpc)
     : [];
-  const tokens = scene && Array.isArray(scene.tokens)
-    ? scene.tokens.filter(isEncounterToken).slice(0, MAX_AUTOMATIC_INITIATIVE_TOKENS)
+  const availableTokens = scene && Array.isArray(scene.tokens)
+    ? scene.tokens.filter(isEncounterToken)
     : [];
+  const tokensById = new Map(availableTokens.map(token => [token.id, token]));
+  const tokens = tokenIds.flatMap(tokenId => {
+    const token = tokensById.get(tokenId);
+    return token ? [token] : [];
+  });
+  if (tokens.length !== tokenIds.length) {
+    throw new HttpError(400, 'INVALID_INPUT', '所选敌人或 NPC Token 不在当前场景中');
+  }
 
   const sources = new Map(tokens.map(token => [token.id, initiativeSource(token, npcs)]));
   const entryIds = [...new Set([...sources.values()].flatMap(source => source.entryId ? [source.entryId] : []))];
@@ -530,6 +785,20 @@ async function rollRoomInitiative(env: Env, ctx: ExecutionContext, access: RoomA
     if (!applied.ok) return applied;
   }
   return json({ rolls });
+}
+
+function automaticInitiativeTokenIds(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new HttpError(400, 'INVALID_INPUT', '请至少选择一个敌人或 NPC Token');
+  }
+  if (value.length > MAX_AUTOMATIC_INITIATIVE_TOKENS || value.some(tokenId => typeof tokenId !== 'string' || tokenId.length === 0 || tokenId.length > 160)) {
+    throw new HttpError(400, 'INVALID_INPUT', '自动先攻的 Token 选择无效');
+  }
+  const tokenIds = [...new Set(value)];
+  if (tokenIds.length !== value.length) {
+    throw new HttpError(400, 'INVALID_INPUT', '自动先攻不能重复选择同一个 Token');
+  }
+  return tokenIds;
 }
 
 function isEncounterToken(value: unknown): value is Token {
@@ -602,7 +871,7 @@ async function writeAudit(env: Env, access: RoomAccess, action: string, targetTy
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, 'success', ?11)`,
   ).bind(
     crypto.randomUUID(), access.workspaceId, access.campaignId, access.roomId,
-    access.userId, access.campaignMemberId, access.memberId,
+    access.userId, access.campaignMemberId, access.campaignMemberId ? access.memberId : null,
     action, targetType, targetId, Date.now(),
   ).run();
 }

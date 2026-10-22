@@ -14,5 +14,16 @@
   --ok: #22c55e;
 }
 
+html { font-size: calc(16px * var(--tabletop-font-scale, 1)); }
+html.tabletop-compact { font-size: calc(14px * var(--tabletop-font-scale, 1)); }
 html, body, #root { height: 100%; }
 body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+html.tabletop-reduce-motion *,
+html.tabletop-reduce-motion *::before,
+html.tabletop-reduce-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}

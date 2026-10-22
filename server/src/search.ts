@@ -7,8 +7,8 @@ import { monsterHasToken, monsterHitPoints, monsterInitiativeModifier } from '..
 export interface SourceMap { [source: string]: string }
 
 export const DEFAULT_BOOKS = {
-  bestiary: ['MM', 'XMM', 'MPMM', 'PHB', 'XPHB', 'VGM', 'MTF', 'TCE', 'EGW', 'FTD', 'IDRotF', 'CoS', 'WDH', 'WDMM'],
-  spells: ['PHB', 'XPHB', 'XGE', 'TCE', 'AI', 'EGW', 'FTD', 'IDRotF', 'CoS', 'WDH', 'WDMM'],
+  bestiary: ['MM', 'XMM', 'MPMM', 'PHB', 'XPHB', 'VGM', 'MTF', 'TCE', 'EGW', 'FTD', 'ERLW', 'EFA', 'IDRotF', 'CoS', 'WDH', 'WDMM'],
+  spells: ['PHB', 'XPHB', 'XGE', 'TCE', 'AI', 'EGW', 'FTD', 'EFA', 'IDRotF', 'CoS', 'WDH', 'WDMM'],
   singles: ['items.json', 'feats.json', 'conditionsdiseases.json'],
 };
 

@@ -5,11 +5,13 @@ import { hitPointPercentage, parseHitPointDraft, type HitPoints } from './model'
 interface Props {
   label: string;
   hp: Token['hp'];
+  hpRatio?: number;
+  visibility?: Token['hpVisibility'];
   editable: boolean;
   onCommit: (hp: HitPoints) => void;
 }
 
-export default function EnemyHitPoints({ label, hp, editable, onCommit }: Props) {
+export default function EnemyHitPoints({ label, hp, hpRatio, visibility, editable, onCommit }: Props) {
   const [editing, setEditing] = useState(false);
   const [currentDraft, setCurrentDraft] = useState('');
   const [maxDraft, setMaxDraft] = useState('');
@@ -85,6 +87,25 @@ export default function EnemyHitPoints({ label, hp, editable, onCommit }: Props)
           <button type="submit" className="rounded bg-amber-600/20 px-2 py-0.5 text-[10px] text-amber-400 hover:bg-amber-600/30">保存</button>
         </div>
       </form>
+    );
+  }
+
+  if (!editable && visibility === 'none') {
+    return <div className="mt-1 px-1 py-0.5 text-[10px] text-zinc-600">HP 未公开</div>;
+  }
+
+  if (!editable && visibility === 'bar' && !hp) {
+    const percentage = Math.max(0, Math.min(100, hpRatio ?? 0));
+    return (
+      <div aria-label={`${label} 的生命状态`} className="mt-1 flex w-full items-center gap-1 px-1 py-0.5 text-[10px]">
+        <span className="shrink-0 text-zinc-500">生命状态</span>
+        <span className="ml-1 h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-zinc-800">
+          <span
+            className={`block h-full rounded-full ${percentage <= 25 ? 'bg-red-500' : percentage <= 50 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            style={{ width: `${percentage}%` }}
+          />
+        </span>
+      </div>
     );
   }
 

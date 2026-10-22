@@ -8,12 +8,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.join(ROOT, 'output', 'room-templates');
 const bucket = process.env.R2_REFERENCE_BUCKET;
-const selectedTemplateId = process.env.ROOM_TEMPLATE_ID?.trim();
+const selectedTemplateId = process.env.CONTENT_PACKAGE_ID?.trim() || process.env.ROOM_TEMPLATE_ID?.trim();
 
 if (!bucket) throw new Error('请设置 R2_REFERENCE_BUCKET（Cloudflare R2 资料库 bucket 名称）');
-if (!existsSync(path.join(sourceRoot, 'index.json'))) throw new Error('未找到模板输出；请先运行 template:build:waterdeep');
-if (selectedTemplateId && !/^[a-z0-9][a-z0-9-]{0,79}$/u.test(selectedTemplateId)) {
-  throw new Error(`ROOM_TEMPLATE_ID 格式无效：${selectedTemplateId}`);
+if (!existsSync(path.join(sourceRoot, 'index.json'))) throw new Error('未找到内容包输出；请先运行 content:build');
+if (selectedTemplateId && !/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/u.test(selectedTemplateId)) {
+  throw new Error(`CONTENT_PACKAGE_ID 格式无效：${selectedTemplateId}`);
 }
 
 const allFiles = await filesBelow(sourceRoot);
@@ -51,9 +51,9 @@ try {
       ? 'application/json'
       : assetContentTypes.get(path.resolve(entry.file)) ?? 'application/octet-stream';
     await putObject(bucket, key, entry.file, contentType);
-    console.log(`[room-template] ${index + 1}/${uploadFiles.length} ${key}`);
+    console.log(`[content-package] ${index + 1}/${uploadFiles.length} ${key}`);
   }
-  console.log(`[room-template] 已发布 ${uploadFiles.length} 个模板对象到 ${bucket}`);
+  console.log(`[content-package] 已发布 ${uploadFiles.length} 个对象到 ${bucket}`);
 } finally {
   if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
 }
@@ -113,7 +113,7 @@ function getObject(targetBucket, key) {
 function putObject(targetBucket, key, file, contentType) {
   return retry(
     () => putObjectOnce(targetBucket, key, file, contentType),
-    error => console.warn(`[room-template] 上传失败，准备重试 ${key}: ${error.message}`),
+    error => console.warn(`[content-package] 上传失败，准备重试 ${key}: ${error.message}`),
   );
 }
 
