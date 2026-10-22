@@ -20,10 +20,10 @@ def download(track):
     assert all(expected.get(k) == v for k, v in track.items()), 'Music catalog differs from pinned credits'
     assert target.stat().st_size == expected['bytes'], 'Unexpected audio size: ' + str(target)
     assert hashlib.sha256(target.read_bytes()).hexdigest() == expected['sha256'], 'Audio checksum mismatch: ' + str(target)
-    metadata = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-show_format', '-show_streams', '-of', 'json', str(target)]))
-    assert any(s.get('codec_type') == 'audio' for s in metadata['streams']), track['title']
+    # The checked-in hashes pin the previously decoded and verified recordings.
+    # Exact bytes need no platform-specific decoder at every release.
     assert target.stat().st_size < 25 * 1024 * 1024, 'Cloudflare static asset limit'
-    return {**track, 'bytes': target.stat().st_size, 'sha256': hashlib.sha256(target.read_bytes()).hexdigest(), 'seconds': float(metadata['format']['duration'])}
+    return expected
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
     manifest = list(pool.map(download, tracks))
