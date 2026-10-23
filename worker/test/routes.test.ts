@@ -64,8 +64,10 @@ it('routes every endpoint, wrong method and unknown path to the same outcome', a
     [spectator, 'GET', c], [spectator, 'GET', `${c}/waterdeep-deployment`], [spectator, 'POST', `${c}/scenes`, { name: 'x' }],
     [spectator, 'POST', `${c}/archive`, {}], [spectator, 'GET', `${c}/members`],
     [dm, 'GET', `${c}/archive`], [dm, 'PUT', `${c}/restore`, {}], [dm, 'GET', `${c}/archive/x`],
-    [dm, 'POST', `${c}/archive`, {}], [dm, 'POST', `${c}/restore`, {}], [dm, 'DELETE', `${c}/restore`, {}],
-    [dm, 'GET', c], [dm, 'POST', '/api/auth/logout', {}], [dm, 'GET', '/api/auth/logout'],
+    [dm, 'POST', `${c}/archive`, {}], [dm, 'POST', `${c}/restore`, {}],
+    // DELETE only deletes at the campaign root; on the status paths it is a wrong method.
+    [dm, 'DELETE', `${c}/restore`, {}], [dm, 'DELETE', `${c}/archive`, {}], [dm, 'GET', c],
+    [dm, 'DELETE', c, {}], [dm, 'GET', c], [dm, 'POST', '/api/auth/logout', {}], [dm, 'GET', '/api/auth/logout'],
   ];
   const results: string[] = [];
   for (const [cookie, method, path, body] of requests) {
@@ -76,6 +78,7 @@ it('routes every endpoint, wrong method and unknown path to the same outcome', a
 });
 
 // Recorded from the hand-written router this table replaced; any difference is a behaviour change.
+// Since then only DELETE on /archive and /restore changed, from deleting the campaign to 405.
 const EXPECTED: string[] = [
   'dm GET /api/me -> 200',
   'dm GET /api/calendar -> 200',
@@ -150,7 +153,10 @@ const EXPECTED: string[] = [
   'dm GET /api/campaigns/:slug/archive/x -> 404 NOT_FOUND',
   'dm POST /api/campaigns/:slug/archive -> 200',
   'dm POST /api/campaigns/:slug/restore -> 200',
-  'dm DELETE /api/campaigns/:slug/restore -> 200',
+  'dm DELETE /api/campaigns/:slug/restore -> 405 METHOD_NOT_ALLOWED',
+  'dm DELETE /api/campaigns/:slug/archive -> 405 METHOD_NOT_ALLOWED',
+  'dm GET /api/campaigns/:slug -> 200',
+  'dm DELETE /api/campaigns/:slug -> 200',
   'dm GET /api/campaigns/:slug -> 404 CAMPAIGN_NOT_FOUND',
   'dm POST /api/auth/logout -> 200',
   'dm GET /api/auth/logout -> 404 NOT_FOUND',
