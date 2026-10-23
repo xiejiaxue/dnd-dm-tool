@@ -24,7 +24,7 @@ Cloudflare 的 Static Assets 提供 SPA；`/api/*` 被 `run_worker_first` 保留
 
 | 目录 | 内容 |
 | --- | --- |
-| `worker/src/` | 唯一后端：`index.ts` 路由与入口，`room.ts` 战役 DO，`domain.ts` 纯状态机与操作校验，`campaign-store.ts` DO SQLite 持久化，`campaigns.ts` / `repository.ts` D1 业务，`auth.ts` / `http.ts` 会话与 HTTP 工具，`modules/` 冒险模组注册表，其余为资料库、日历等功能模块 |
+| `worker/src/` | 唯一后端：`index.ts` 入口（会话、错误处理、日志），`routes/` 按功能分组的路由表（`routes/index.ts` 汇总 `/api` 与 `/api/campaigns/:slug` 两张表），`room.ts` 战役 DO，`domain.ts` 纯状态机与操作校验，`campaign-store.ts` DO SQLite 持久化，`campaigns.ts` / `repository.ts` D1 业务，`auth.ts` / `http.ts` 会话与 HTTP 工具，`modules/` 冒险模组注册表，其余为资料库、日历等功能模块 |
 | `worker/campaign-migrations/` | D1 schema（`wrangler.jsonc` 的 `migrations_dir`） |
 | `shared/` | 前后端共用的类型与纯逻辑：`types.ts`、`fog.ts`、`calendar/model.ts`、模组数据（`strahd/`、`waterdeep/`） |
 | `client/` | React 前端 |
