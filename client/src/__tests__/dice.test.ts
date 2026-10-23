@@ -51,12 +51,16 @@ describe('rectangular throwing space',()=>{
       }
     }
   });
-  it('releases the hand near the front rail and throws towards the backstop',()=>{
-    const bounds=spaceBounds(830,430);
+  it('releases the hand by a side rail on the thrower\'s half and lobs every die inwards',()=>{
+    for(const [width,height] of [[350,320],[830,430]])for(const size of ['small','large'] as TraySize[])
     for(const edge of [0,.5,.999999])for(const count of [1,6,24]){
-      const launches=throwLaunches(count,bounds,()=>edge);
-      expect(Math.max(...launches.map(({position})=>position[2]))).toBeGreaterThan(bounds.halfDepth/2);
-      for(const {velocity:[vx,vy,vz]} of launches){expect(vz).toBeLessThan(0);expect(Math.abs(vx)).toBeLessThan(-vz);expect(vy).toBeGreaterThan(0);}
+      const bounds=spaceBounds(width,height,size,'octagon',count),launches=throwLaunches(count,bounds,()=>edge);
+      const side=Math.sign(launches[0].position[0]),mean=(axis:number,of:'position'|'velocity')=>launches.reduce((sum,l)=>sum+l[of][axis],0)/count;
+      expect(Math.max(...launches.map(({position})=>side*position[0]))).toBeGreaterThan(bounds.halfWidth/2);
+      expect(mean(2,'position')).toBeGreaterThanOrEqual(0);
+      for(const {velocity:[vx,vy]} of launches){expect(side*vx).toBeLessThan(0);expect(vy).toBeGreaterThan(0);}
+      // The handful comes in at a slant, but it heads across the tray, not along the rail.
+      expect(Math.abs(mean(2,'velocity'))).toBeLessThan(3*Math.abs(mean(0,'velocity')));
     }
   });
   it('rejects points beyond the rectangular boundaries',()=>{
