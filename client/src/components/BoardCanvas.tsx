@@ -466,7 +466,6 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-faint tracking-label">连接中…</div>;
 
   const grid = scene.grid;
-  const area = scene.playArea;
   const displayedMapScale = mapZoom.value;
   const fogBounds = fogGeometry(scene, displayedMapScale);
   const tokenInteractionKey = `${tool}:${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;

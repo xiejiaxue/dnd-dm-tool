@@ -70,12 +70,6 @@ export function isRoomModerator(role: RoomRole): boolean {
   return role === 'host' || role === 'dm' || role === 'assistant_dm';
 }
 
-export function legacyRole(role: RoomRole): Role {
-  // The existing board only has two display roles. Spectators deliberately use
-  // the player projection and receive no writable capabilities.
-  return isRoomModerator(role) ? 'dm' : 'player';
-}
-
 export function newOpaqueId(prefix: string): string {
   return `${prefix}-${crypto.randomUUID()}`;
 }
