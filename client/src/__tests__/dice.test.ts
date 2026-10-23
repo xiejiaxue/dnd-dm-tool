@@ -1,13 +1,17 @@
 import {describe,it,expect} from 'vitest';
 import {Quaternion,Vector3} from 'three';
 import {makeDieGeometry,detectResult} from '../dice/geometry';
-import {parseDiceExpression,physicalDice,percentileValue,summarizeDice,simpleRoll} from '../dice/rules';
+import {naturalTwenties,parseDiceExpression,physicalDice,percentileValue,summarizeDice,simpleRoll} from '../dice/rules';
 describe('dice expressions and totals',()=>{
   it('parses mixed pools and signed modifiers without evaluating code',()=>{
     expect(parseDiceExpression('D20 + 2d6 - 3')).toEqual({terms:[{count:1,sides:20},{count:2,sides:6}],modifier:-3,normalized:'1d20+2d6-3',physicalCount:3});
     const e=parseDiceExpression('d20+d4+5');expect(summarizeDice(e,{'0':17,'1':3}).reduce((s,d)=>s+d.value,e.modifier)).toBe(25);
   });
   it.each(['','5','0d20','d7','25d6','13d100','d6++2','d20-d4','d6+10000','alert(1)','1.5d6'])('rejects invalid or excessive %s',input=>expect(()=>parseDiceExpression(input)).toThrow());
+  it('counts raw 20s on d20s only, not d100 or totals',()=>{
+    expect(naturalTwenties([{sides:20,value:20},{sides:20,value:19},{sides:20,value:20}])).toBe(2);
+    expect(naturalTwenties([{sides:100,value:20,components:[20,0]},{sides:12,value:12},{sides:20,value:1}])).toBe(0);
+  });
   it('represents d100 as two physical d10 and handles 00 + 0',()=>{
     const e=parseDiceExpression('2d100');expect(physicalDice(e)).toHaveLength(4);
     expect(percentileValue(10,10)).toBe(100);expect(percentileValue(10,7)).toBe(7);expect(percentileValue(9,10)).toBe(90);
