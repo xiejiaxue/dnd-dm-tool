@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { DIE_SIDES, parseDiceExpression, physicalDice, simpleRoll, summarizeDice, type DiceExpression, type DiceResult, type DieSides, type PhysicalDie, type RollRecord } from '../dice/rules';
+import { DIE_SIDES, naturalTwenties, parseDiceExpression, physicalDice, simpleRoll, summarizeDice, type DiceExpression, type DiceResult, type DieSides, type PhysicalDie, type RollRecord } from '../dice/rules';
 import Icon from './Icon';
 import DiceSymbol from '../dice/DiceSymbol';
 import SimpleDiceTray from '../dice/SimpleDiceTray';
@@ -64,6 +64,7 @@ export default function DiceRoller(){
   const poolCounts = new Map<DieSides, number>();
   try { for (const term of parseDiceExpression(expression).terms) poolCounts.set(term.sides, (poolCounts.get(term.sides) ?? 0) + term.count); } catch { /* Invalid input is reported on submit. */ }
   const natural=record?.results.length===1&&record.results[0].sides===20?record.results[0].value:null;
+  const twenties=record?naturalTwenties(record.results):0;
   return <div className="tool-content dice-page">
     <header className="tool-heading"><div><span className="eyebrow">04 / DICE</span><h1>掷骰</h1></div><span className="tool-status">本机掷骰</span></header>
     <div className="dice-layout">
@@ -78,6 +79,7 @@ export default function DiceRoller(){
         <div className="dice-stage-header"><div className="dice-mode" role="group" aria-label="掷骰模式"><button aria-pressed={mode==='physics'} disabled={phase==='rolling'} onClick={()=>changeMode('physics')}>3D 骰盘</button><button aria-pressed={mode==='simple'} disabled={phase==='rolling'} onClick={()=>changeMode('simple')}>简洁模式</button></div><span className="dice-status" role="status">{phase==='rolling'?'正在投掷':phase==='done'?'投掷完成':mode==='physics'&&!ready?'加载引擎…':'就绪'}</span></div>
         <div className={`dice-stage ${mode==='simple'?'is-simple':`theme-${tray.theme}`} ${tray.view==='free'?'is-free-view':''}`} aria-label={mode==='physics'?'三维物理骰盘':'简洁骰盘'}>
           {mode==='physics'?<Suspense fallback={<div className="dice-canvas-fallback">正在加载 3D 骰盘…</div>}><DiceTray settings={tray} onViewChange={onViewChange} rollId={session?.id||'preview'} dice={session?.dice||[]} results={values} complete={phase==='done'||phase==='error'} onComplete={onComplete} onError={onError} onReady={onReady}/></Suspense>:<SimpleDiceTray results={record?.results}/>}
+          {record&&twenties>0&&<div key={record.id} className="dice-crit" aria-hidden="true"><span className="dice-crit-flash"/><span className="dice-crit-ring"/><span className="dice-crit-ring"/><strong>20</strong><span className="dice-crit-caption">{natural===20?'自然 20 · NATURAL TWENTY':`${twenties} 颗 d20 掷出 20`}</span></div>}
           {record&&<div className="dice-tray-total"><span>总和</span><strong>{record.total}</strong></div>}
           <div className="dice-stage-caption"><span>{session?.expression.normalized||'D4 / D6 / D8 / D10 / D12 / D20 / D100'}</span><span>{mode==='physics'?'PHYSICS / 3D':'RANDOM / 2D'}</span></div>
         </div>
@@ -95,7 +97,7 @@ export default function DiceRoller(){
         <details className="dice-rules"><summary>读数规则与限制</summary><p>d4 按最高顶点的数字读取；d100 使用十位和个位两颗 d10，00 + 0 = 100。每次最多 24 颗实体骰。</p><p>3D 模式读取停稳后的实际姿态；简洁模式使用浏览器加密随机数。自然 20 / 1 仅标记单颗 d20 的原始结果，是否触发暴击由当前规则决定。本页结果不广播到房间。</p></details>
       </section>
       <aside className="dice-result-panel" aria-label="掷骰结果">
-        <section className="dice-result" aria-live="polite" aria-atomic="true"><span className="eyebrow">RESULT / 总和</span><div className="dice-total">{phase==='rolling'?'…':record?.total??'—'}</div><div className="result-formula">{phase==='rolling'?session?.expression.normalized:record?.expression||'未投掷'}</div>{natural===20||natural===1?<span className="natural-result">自然 {natural}</span>:null}
+        <section className={`dice-result ${twenties?'is-critical':''}`} aria-live="polite" aria-atomic="true"><span className="eyebrow">RESULT / 总和</span><div className="dice-total">{phase==='rolling'?'…':record?.total??'—'}</div><div className="result-formula">{phase==='rolling'?session?.expression.normalized:record?.expression||'未投掷'}</div>{natural===20||natural===1?<span className={`natural-result ${natural===20?'is-twenty':''}`}>自然 {natural}</span>:twenties?<span className="natural-result is-twenty">d20 掷出 20 ×{twenties}</span>:null}
           {record&&<><div className="dice-result-breakdown">{record.results.map((die,index)=><div key={index}><span className="result-die-type"><DiceSymbol sides={die.sides}/><span>d{die.sides}</span><small>#{String(index+1).padStart(2,'0')}</small></span><strong>{die.value}</strong>{die.components&&<small>{String(die.components[0]).padStart(2,'0')} + {die.components[1]}</small>}</div>)}</div><div className="dice-modifier"><span>修正值</span><strong>{record.modifier>=0?'+':''}{record.modifier}</strong></div></>}
         </section>
         <section className="dice-history"><header><h2>历史记录 <span>{history.length}</span></h2><button type="button" disabled={!history.length||phase==='rolling'} onClick={()=>setHistory([])}>清空</button></header>{storageError&&<p className="tool-error">历史记录未能保存到本机</p>}{!history.length?<p className="dice-history-empty">暂无记录</p>:<ol>{history.map(item=><li key={item.id}><div><strong>{item.expression}</strong><small>{new Date(item.createdAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})} · {item.mode==='physics'?'3D':'简洁'}</small><span>[{item.results.map(d=>d.value).join(', ')}]{item.modifier?` ${item.modifier>0?'+':''}${item.modifier}`:''}</span></div><b>{item.total}</b></li>)}</ol>}</section>

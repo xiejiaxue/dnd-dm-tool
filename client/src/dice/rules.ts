@@ -46,6 +46,8 @@ export function summarizeDice(expression:DiceExpression,values:Record<string,num
     }else{const value=values[String(index)];if(!Number.isInteger(value)||value<1||value>term.sides)throw new Error('骰子结果不完整');result.push({sides:term.sides,value});}
   }return result;
 }
+/** Raw 20s on d20s (not d100), the rolls that get the critical flourish. */
+export function naturalTwenties(results:DiceResult[]):number{return results.filter(d=>d.sides===20&&d.value===20).length;}
 export function randomUnit():number{return crypto.getRandomValues(new Uint32Array(1))[0]/4294967296;}
 export function randomDie(sides:number):number{
   const limit=4294967296-4294967296%sides;let value:number;

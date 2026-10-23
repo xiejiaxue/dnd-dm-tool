@@ -1,8 +1,8 @@
 import { CROWN_PATH } from './crown';
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ConvexHullCollider, CuboidCollider, Physics, RigidBody, useAfterPhysicsStep, CoefficientCombineRule, type RapierRigidBody } from '@react-three/rapier';
-import { BoxGeometry, CanvasTexture, DoubleSide, EdgesGeometry, Euler, Float32BufferAttribute, PerspectiveCamera, Quaternion, SRGBColorSpace, Shape, ShapeGeometry, Vector2, Vector3 } from 'three';
+import { AdditiveBlending, BoxGeometry, CanvasTexture, DoubleSide, EdgesGeometry, Euler, Float32BufferAttribute, PerspectiveCamera, Quaternion, SRGBColorSpace, Shape, ShapeGeometry, Vector2, Vector3, type BufferGeometry, type Mesh, type MeshBasicMaterial, type MeshStandardMaterial, type PointLight, type PointsMaterial } from 'three';
 import { detectResult, isTabletopLanding, labelRotation, makeDieGeometry, type DieGeometry } from './geometry';
 import { randomUnit, type PhysicalDie } from './rules';
 import { DICE_MOTION as motion, GUARD_TOP, RAIL_HEIGHT, RAIL_THICKNESS, dieScale, spaceBounds, throwLaunches, trayOutline, wallSegments, type SpaceBounds } from './tray';
@@ -24,11 +24,45 @@ function FaceLabel({text,position,rotation,size,highlight,look}:{text:string;pos
   return <mesh position={position} quaternion={rotation} renderOrder={2}><planeGeometry args={[size,size]}/><meshBasicMaterial map={numberTexture(text,highlight,look)} transparent depthWrite={false} polygonOffset polygonOffsetFactor={-2} toneMapped={false}/></mesh>;
 }
 const COLLIDER_COLOR='#2fd47a';
-function DieMesh({die,result,look,showCollider}:{die:PhysicalDie;result?:number;look:DiceLook;showCollider:boolean}){
+// A d20 that lands on 20 pulses gold, then keeps a faint glow while the result is shown.
+const CRIT_GOLD='#ffc44d',CRIT_TIME=2.4;
+const reducedMotion=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** Seconds since this component first rendered a frame; the canvas keeps rendering for `CRIT_TIME` after a 20 lands. */
+function useCritClock(onFrame:(t:number)=>void){
+  const start=useRef<number|null>(null);
+  useFrame(({clock})=>{start.current??=clock.elapsedTime;onFrame(clock.elapsedTime-start.current);});
+}
+function CritGlow({material}:{material:RefObject<MeshStandardMaterial>}){
+  const still=useMemo(reducedMotion,[]);
+  useEffect(()=>{const value=material.current;if(!value)return;value.emissive.set(CRIT_GOLD);return()=>{value.emissiveIntensity=0;};},[material]);
+  useCritClock(t=>{const value=material.current;if(value)value.emissiveIntensity=still||t>=CRIT_TIME?.22:.22+.78*Math.exp(-t*1.3)*(.65+.35*Math.cos(t*10));});
+  return null;
+}
+/** Two gold rings across the felt, a flash of light and a spray of sparks around a d20 that rolled 20. */
+function CritBurst({position:[x,,z]}:{position:[number,number,number]}){
+  const rings=useRef<(Mesh|null)[]>([]),light=useRef<PointLight>(null),sparks=useRef<BufferGeometry>(null),sparkMaterial=useRef<PointsMaterial>(null);
+  const seeds=useMemo(()=>Array.from({length:32},()=>({angle:Math.random()*Math.PI*2,speed:3+Math.random()*6,rise:9+Math.random()*9})),[]);
+  const positions=useMemo(()=>new Float32Array(seeds.length*3),[seeds]);
+  useCritClock(t=>{
+    rings.current.forEach((ring,i)=>{if(!ring)return;const local=(t-i*.22)/1.1;ring.visible=local>0&&local<1;ring.scale.setScalar(1+Math.max(0,local)*5);(ring.material as MeshBasicMaterial).opacity=(1-local)*.85;});
+    if(light.current)light.current.intensity=45*Math.exp(-t*2.2);
+    seeds.forEach(({angle,speed,rise},i)=>{const r=speed*t;positions[i*3]=Math.cos(angle)*r;positions[i*3+1]=Math.max(.05,1+rise*t-14*t*t);positions[i*3+2]=Math.sin(angle)*r;});
+    if(sparks.current)sparks.current.attributes.position.needsUpdate=true;
+    if(sparkMaterial.current)sparkMaterial.current.opacity=Math.max(0,1-t/1.3);
+  });
+  return <group position={[x,0,z]}>
+    <pointLight ref={light} position={[0,3,0]} color={CRIT_GOLD} intensity={0} distance={30}/>
+    {[0,1].map(i=><mesh key={i} ref={ring=>{rings.current[i]=ring;}} rotation={[-Math.PI/2,0,0]} position={[0,.03,0]} visible={false}><ringGeometry args={[.9,1.05,64]}/><meshBasicMaterial color={CRIT_GOLD} transparent depthWrite={false} toneMapped={false} blending={AdditiveBlending}/></mesh>)}
+    <points frustumCulled={false}><bufferGeometry ref={sparks}><bufferAttribute attach="attributes-position" args={[positions,3]}/></bufferGeometry><pointsMaterial ref={sparkMaterial} color={CRIT_GOLD} size={.32} transparent depthWrite={false} toneMapped={false} blending={AdditiveBlending}/></points>
+  </group>;
+}
+function DieMesh({die,result,look,showCollider,critical=false}:{die:PhysicalDie;result?:number;look:DiceLook;showCollider:boolean;critical?:boolean}){
   const shape=definition(die.sides);
+  const material=useRef<MeshStandardMaterial>(null);
   const edges=useMemo(()=>new EdgesGeometry(shape.geometry,15),[shape]);useEffect(()=>()=>edges.dispose(),[edges]);
   return <group>
-    <mesh geometry={shape.geometry} castShadow receiveShadow><meshStandardMaterial color={look.body} roughness={look.roughness} metalness={look.metalness} flatShading/></mesh>
+    <mesh geometry={shape.geometry} castShadow receiveShadow><meshStandardMaterial ref={material} color={look.body} roughness={look.roughness} metalness={look.metalness} flatShading/></mesh>
+    {critical&&<CritGlow material={material}/>}
     <lineSegments geometry={edges}>{showCollider?<lineBasicMaterial color={COLLIDER_COLOR} depthTest={false} transparent opacity={.9}/>:<lineBasicMaterial color={look.edge} transparent opacity={.28}/>}</lineSegments>
     {shape.faces.flatMap((face,index)=>{
       if(die.sides===4)return face.vertices.map((vertex,i)=>{
@@ -204,8 +238,9 @@ function Simulation({dice,results,complete,onComplete,onError,onReady,bounds,set
       {walls.map((wall,index)=><CuboidCollider key={index} args={[wall.length/2,(GUARD_TOP+.6)/2,RAIL_THICKNESS/2]} position={[wall.x,(GUARD_TOP-.6)/2,wall.z]} rotation={[0,wall.angle,0]} friction={motion.railFriction} restitution={motion.railRestitution}/>)}
     </RigidBody>
     {launches.map(({die,position,rotation,velocity,spin})=><RigidBody key={die.id} ref={body=>{if(body)bodies.current.set(die.id,body);else bodies.current.delete(die.id);}} position={position} rotation={rotation} linearVelocity={velocity} angularVelocity={spin} colliders={false} linearDamping={motion.linearDamping} angularDamping={motion.angularDamping} friction={motion.friction} restitution={motion.restitution} ccd canSleep>
-      <ConvexHullCollider args={[colliderPoints.get(die.sides)!]} density={motion.density} restitutionCombineRule={CoefficientCombineRule.Min}/><group scale={size}><DieMesh die={die} result={results[die.id]} look={look} showCollider={settings.showColliders}/></group>
+      <ConvexHullCollider args={[colliderPoints.get(die.sides)!]} density={motion.density} restitutionCombineRule={CoefficientCombineRule.Min}/><group scale={size}><DieMesh die={die} result={results[die.id]} look={look} showCollider={settings.showColliders} critical={complete&&die.sides===20&&results[die.id]===20}/></group>
     </RigidBody>)}
+    {complete&&!reducedMotion()&&dice.filter(die=>die.sides===20&&results[die.id]===20).map(die=>{const at=bodies.current.get(die.id)?.translation();return at?<CritBurst key={die.id} position={[at.x,at.y,at.z]}/>:null;})}
   </>;
 }
 class CanvasBoundary extends Component<{children:ReactNode;onError:()=>void},{failed:boolean}>{
@@ -225,7 +260,11 @@ function DiceSpace({onViewChange,orbit,...props}:SimulationProps&{onViewChange:(
 }
 export default function DiceTray({rollId,...props}:SimulationProps&{rollId:string;onViewChange:(view:TrayView)=>void}){
   const orbit=useRef<OrbitState>({target:{...VIEW_ANGLES[props.settings.view==='free'?'angled':props.settings.view],zoom:1},current:null});
-  return <CanvasBoundary onError={()=>props.onError('3D 骰盘加载失败，可切换简洁模式')}><Canvas frameloop={props.dice.length&&!props.complete?'always':'demand'} camera={{fov:30,near:.5,far:300,position:[0,24,16]}} shadows dpr={[1,1.5]} gl={{antialias:true,alpha:false,powerPreference:'high-performance'}} fallback={<div className="dice-canvas-fallback">此设备不支持 WebGL，请切换简洁模式</div>}>
+  // A settled roll renders on demand, except while a 20's flourish plays out.
+  const critical=props.complete&&props.dice.some(die=>die.sides===20&&props.results[die.id]===20);
+  const [celebrating,setCelebrating]=useState(false);
+  useEffect(()=>{if(!critical)return;setCelebrating(true);const timer=setTimeout(()=>setCelebrating(false),CRIT_TIME*1000+300);return()=>{clearTimeout(timer);setCelebrating(false);};},[critical,rollId]);
+  return <CanvasBoundary onError={()=>props.onError('3D 骰盘加载失败，可切换简洁模式')}><Canvas frameloop={(props.dice.length&&!props.complete)||celebrating?'always':'demand'} camera={{fov:30,near:.5,far:300,position:[0,24,16]}} shadows dpr={[1,1.5]} gl={{antialias:true,alpha:false,powerPreference:'high-performance'}} fallback={<div className="dice-canvas-fallback">此设备不支持 WebGL，请切换简洁模式</div>}>
     <ContextEvents onError={props.onError}/>
     <DiceSpace key={rollId} orbit={orbit.current} {...props}/>
   </Canvas></CanvasBoundary>;

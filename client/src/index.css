@@ -561,3 +561,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .dice-tray-hint { grid-column: 1 / -1; margin: 0; font-size: 11px; line-height: 1.7; color: var(--muted); }
 @media (max-width: 1150px) { .dice-tray-settings { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .dice-tray-choice button { padding: 0 8px; } }
+/* A d20 that lands on 20: a short flourish over the tray that clears itself, then a lasting accent in the result panel. */
+.dice-crit { --crit: #f2b640; position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; animation: dice-crit-out 2.4s ease forwards; }
+.dice-stage.theme-swiss .dice-crit { --crit: var(--accent); }
+.dice-crit-flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--crit) 50%, transparent), transparent 62%); opacity: 0; animation: dice-crit-flash 1.1s ease-out forwards; }
+.dice-crit-ring { position: absolute; left: 50%; top: 50%; width: 140px; height: 140px; margin: -70px 0 0 -70px; border: 2px solid var(--crit); border-radius: 50%; opacity: 0; animation: dice-crit-ring 1.1s cubic-bezier(.2,.7,.3,1) forwards; }
+.dice-crit-ring + .dice-crit-ring { animation-delay: .2s; }
+.dice-crit strong { position: relative; color: var(--crit); font-size: clamp(110px,15vw,190px); font-weight: 700; line-height: .86; letter-spacing: -.07em; font-variant-numeric: tabular-nums; text-shadow: 0 4px 28px rgb(0 0 0 / .45); animation: dice-crit-number 1.4s cubic-bezier(.18,.9,.3,1.25) both; }
+.dice-crit-caption { position: relative; margin-top: 14px; padding-top: 10px; border-top: 2px solid var(--crit); color: #fffaf0; font-size: 12px; font-weight: 600; letter-spacing: .22em; text-shadow: 0 1px 6px rgb(0 0 0 / .6); animation: dice-crit-caption 1.4s ease both; }
+.dice-stage.theme-swiss .dice-crit-caption { color: var(--ink); text-shadow: none; }
+@keyframes dice-crit-out { 0%, 72% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+@keyframes dice-crit-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes dice-crit-ring { 0% { opacity: .95; transform: scale(.3); } 100% { opacity: 0; transform: scale(3.4); } }
+@keyframes dice-crit-number { 0% { opacity: 0; transform: scale(2.2); filter: blur(10px); } 35% { opacity: 1; transform: scale(.94); filter: blur(0); } 55%, 100% { opacity: 1; transform: scale(1); } }
+@keyframes dice-crit-caption { 0%, 30% { opacity: 0; clip-path: inset(0 50% 0 50%); } 60%, 100% { opacity: 1; clip-path: inset(0 0 0 0); } }
+.flat-die.is-critical { transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 10px rgb(242 182 64 / .85)); animation: dice-crit-die 1.2s cubic-bezier(.18,.9,.3,1.25) both; }
+@keyframes dice-crit-die { 0% { transform: scale(.6); filter: drop-shadow(0 0 0 rgb(242 182 64 / 0)); } 40% { transform: scale(1.12); filter: drop-shadow(0 0 26px rgb(242 182 64 / 1)); } 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgb(242 182 64 / .85)); } }
+.dice-result.is-critical .dice-total { color: var(--accent); animation: dice-crit-total .7s cubic-bezier(.18,.9,.3,1.3) both; transform-origin: left center; }
+@keyframes dice-crit-total { 0% { transform: scale(1.35); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.natural-result.is-twenty { background: var(--accent); color: var(--paper); font-weight: 600; }
+
