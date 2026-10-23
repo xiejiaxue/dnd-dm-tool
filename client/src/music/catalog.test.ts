@@ -37,7 +37,9 @@ describe('Apple Music links', () => {
       expect(credit.instruments).not.toMatch(/choir|voice|vocal|singer/i);
       expect(track.appleMusic).toBeUndefined();
     }
-  });
+    // Reads and hashes every shipped recording (about 108 MiB). That takes well under a second on a
+    // warm cache but has passed vitest's 5 s default right after `npm ci` or beside other heavy suites.
+  }, 30_000);
   it('embeds official recordings for Jarlaxle and the infernal battle', () => {
     const track = waterdeep.find(t => t.id === 'pirate')!;
     expect(track.title).toBe('Tank!');
