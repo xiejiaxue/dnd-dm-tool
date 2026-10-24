@@ -91,7 +91,10 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
           <button
             className="shrink-0 text-faint hover:text-accent transition-colors duration-150"
             title="删除场景" disabled={visible.length <= 1}
-            onClick={() => { api.deleteScene(s.id).then(reload, error => fail(error, '删除场景失败')); }}
+            onClick={() => {
+              if (!window.confirm(`删除场景「${s.name}」？地图、Token、墙体、迷雾和先攻都会一起删除，无法恢复。`)) return;
+              api.deleteScene(s.id).then(reload, error => fail(error, '删除场景失败'));
+            }}
           >✕</button>
         </div>
       ))}

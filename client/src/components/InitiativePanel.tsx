@@ -77,6 +77,7 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
   const clearInitiative = () => {
     const live = connection.lastState;
     if (!connection.connected || live?.role !== 'dm' || live.scene.id !== scene?.id) return;
+    if (!window.confirm(`清空全部 ${live.scene.initiative.length} 条先攻？`)) return;
     const ops = live.scene.initiative.map(entry => ({ op: 'removeFromInitiative' as const, entryId: entry.id }));
     // The room protocol accepts at most 20 operations per command.
     for (let i = 0; i < ops.length; i += 20) connection.sendOps(ops.slice(i, i + 20));

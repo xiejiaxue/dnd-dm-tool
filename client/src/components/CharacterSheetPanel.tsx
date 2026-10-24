@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, type CharacterSheet } from '../api';
 import type { EntryType } from '../types';
 import DetailDrawer from './DetailDrawer';
+import ConfirmButton from './ConfirmButton';
 import { formatCompendiumEntry } from '../format';
 
 export default function CharacterSheetPanel({ onClose }: { onClose: () => void }) {
@@ -40,7 +41,8 @@ export default function CharacterSheetPanel({ onClose }: { onClose: () => void }
             <button onClick={() => setDetail({ type: entry.type, id: entry.entryId, nameZh: entry.name })} className="min-w-0 flex-1 text-left">
               <span className="block truncate text-zinc-200">{entry.name}</span><span className="text-xs text-zinc-500">{entry.type} · {entry.source}</span>
             </button>
-            <button onClick={() => { void api.removeCharacterEntry(entry.id).then(() => api.characterSheet()).then(setSheet); }} className="text-zinc-600 hover:text-red-400">✕</button>
+            <ConfirmButton title={`从角色卡移除 ${entry.name}`} confirmLabel="移除？" className="shrink-0 text-xs text-zinc-600 hover:text-red-400"
+              onConfirm={() => { setError(''); void api.removeCharacterEntry(entry.id).then(() => api.characterSheet()).then(setSheet, error => setError(error instanceof Error ? error.message : '移除失败')); }}>✕</ConfirmButton>
           </div>
         ))}
         {sheet && sheet.entries.length === 0 && <p className="p-6 text-center text-sm text-zinc-500">暂无条目</p>}

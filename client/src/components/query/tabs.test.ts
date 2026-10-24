@@ -5,6 +5,7 @@ import type { Campaign, IndexEntry, Scene } from '../../types';
 import { connection } from '../../ws';
 import { setPending } from '../../pending';
 import CampaignTab from './CampaignTab';
+import ConfirmButton from '../ConfirmButton';
 import CompendiumTab from './CompendiumTab';
 import FavoritesTab from './FavoritesTab';
 import SearchControls from './SearchControls';
@@ -88,7 +89,10 @@ describe('CampaignTab', () => {
   it('keeps DM pick-up and removal, with one scene-management entry outside the library', () => {
     const tree = CampaignTab({ scene, campaign, role: 'dm', directory: directory() });
     button(tree, '拿起放置').props.onClick(); expect(setPending).toHaveBeenCalledWith({ kind: 'monster', name: '哥布林', entryId: 'goblin', avatar: '/api/token/goblin', color: '#fff' });
-    button(tree, '移出战役库').props.onClick(); expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'removeEnemy', entryId: 'goblin' }]);
+    // Removal goes through the two-step ConfirmButton; its confirm callback sends the op.
+    const remove = elements(tree).find(e => e.type === ConfirmButton && e.props.title === '移出战役库');
+    expect(remove).toBeDefined();
+    remove!.props.onConfirm(); expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'removeEnemy', entryId: 'goblin' }]);
     expect(renderToStaticMarkup(tree)).not.toContain('密室');
     expect(renderToStaticMarkup(tree)).not.toContain('一键放入当前场景');
     expect(connection.sendControl).not.toHaveBeenCalled();

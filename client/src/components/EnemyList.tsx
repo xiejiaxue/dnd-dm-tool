@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } fro
 import { connection, getMySessionId, useScene } from '../ws';
 import { uploadImage } from '../upload';
 import DetailDrawer from './DetailDrawer';
+import ConfirmButton from './ConfirmButton';
 import type { PlayerToken, Token } from '../types';
 
 // Player token color choices (same palette the DM sees when placing a player).
@@ -274,11 +275,12 @@ export default function EnemyList() {
                   <span title="已在先攻列表" className="shrink-0 px-1 text-[10px] font-bold text-accent">已入</span>
                 )}
                 {isDm && (
-                  <button
-                    onClick={() => connection.sendOps([{ op: 'removeToken', tokenId: t.id }])}
+                  <ConfirmButton
+                    onConfirm={() => connection.sendOps([{ op: 'removeToken', tokenId: t.id }])}
                     title="移除棋子"
+                    confirmLabel="移除？"
                     className="shrink-0 h-6 px-1 inline-flex items-center text-xs text-faint hover:text-accent hover:bg-panel transition-colors duration-150"
-                  >✕</button>
+                  >✕</ConfirmButton>
                 )}
               </div>
             );
