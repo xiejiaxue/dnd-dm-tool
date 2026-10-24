@@ -351,6 +351,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .campaign-revoked { position: absolute; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(246, 245, 240, .82); }
 .campaign-revoked > div { width: min(420px, 100%); padding: 22px 24px; border: 1px solid #20221e; border-top: 3px solid var(--accent); background: #fcfbf8; }
 .campaign-revoked h2 { font-size: 16px; font-weight: 700; }
+.campaign-unread { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; margin-left: 5px; padding: 0 4px; background: var(--accent); color: white; font-size: 10px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.campaign-chat-alert { border-color: var(--accent); color: var(--accent); }
 .campaign-revoked p { margin: 8px 0 18px; color: #62645c; font-size: 12px; line-height: 1.7; }
 .campaign-initiative { display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 8px 22px; border-bottom: 1px solid #d6d7cd; background: #faf9f6; }
 .campaign-turn-order { flex: 1; min-width: 60px; overflow-x: auto; display: flex; align-items: center; gap: 6px; }

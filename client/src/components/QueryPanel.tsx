@@ -14,10 +14,11 @@ import { useFavoriteNames } from './query/useFavoriteNames';
 import { useSceneDirectory } from './query/useSceneDirectory';
 import type { DetailEntry } from './query/types';
 
-type Tab = 'chat' | 'query' | 'waterdeep' | 'strahd' | 'camp' | 'journal' | 'fav';
+export type QueryTab = 'chat' | 'query' | 'waterdeep' | 'strahd' | 'camp' | 'journal' | 'fav';
+type Tab = QueryTab;
 const tabs: { id: Tab; label: string }[] = [{ id: 'chat', label: '聊天' }, { id: 'query', label: '查询' }, { id: 'waterdeep', label: '深水城' }, { id: 'strahd', label: '施特拉德' }, { id: 'camp', label: '战役库' }, { id: 'journal', label: '日志' }, { id: 'fav', label: '收藏' }];
 const moduleTabs: Partial<Record<Tab, string>> = { waterdeep: 'waterdeep-dragon-heist', strahd: 'curse-of-strahd' };
-interface Props { collapsed: boolean; onToggleCollapsed: () => void; templateId?: string }
+interface Props { collapsed: boolean; onToggleCollapsed: () => void; templateId?: string; tab: Tab; onTab: (tab: Tab) => void; unreadChat: number }
 
 /** Module NPC libraries are DM reference (stats, factions, spoilers). A
  * campaign built from one module shows only that module; a blank or legacy
@@ -31,8 +32,7 @@ export function visibleTabs(role: string, templateId: string | undefined): Tab[]
   });
 }
 
-export default function QueryPanel({ collapsed, onToggleCollapsed, templateId }: Props) {
-  const [tab, setTab] = useState<Tab>('query');
+export default function QueryPanel({ collapsed, onToggleCollapsed, templateId, tab, onTab, unreadChat }: Props) {
   const [detail, setDetail] = useState<DetailEntry | null>(null);
   const { scene, role, campaign } = useScene();
   const search = useCompendiumSearch();
@@ -45,7 +45,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed, templateId }:
 
   return <aside id="campaign-query" className="campaign-query-panel" aria-label="战役资料" onKeyDown={e => { if (e.key === 'Escape') onToggleCollapsed(); }}>
     <div className="campaign-query-heading"><span className="panel-label">资料</span><button onClick={onToggleCollapsed} aria-label="收起资料面板" className="campaign-panel-close">×</button></div>
-    <nav className="campaign-tabs" aria-label="资料分类">{tabs.filter(t => shown.includes(t.id)).map(t => <button key={t.id} aria-current={current === t.id ? 'page' : undefined} onClick={() => { setTab(t.id); setDetail(null); }} className={current === t.id ? 'is-active' : ''}>{t.label}</button>)}</nav>
+    <nav className="campaign-tabs" aria-label="资料分类">{tabs.filter(t => shown.includes(t.id)).map(t => <button key={t.id} aria-current={current === t.id ? 'page' : undefined} onClick={() => { onTab(t.id); setDetail(null); }} className={current === t.id ? 'is-active' : ''}>{t.label}{t.id === 'chat' && unreadChat > 0 && <span className="campaign-unread" aria-label={`${unreadChat} 条未读`}>{unreadChat > 99 ? '99+' : unreadChat}</span>}</button>)}</nav>
     {current === 'chat' ? <ChatPanel /> : current === 'journal' ? <JournalPanel /> : detail ? <DetailDrawer entry={detail} onBack={() => setDetail(null)} /> : <>
       {current === 'query' && <><SearchControls {...search} /><CompendiumTab scene={scene} role={role} campaign={campaign} search={search} setDetail={setDetail} /></>}
       {current === 'strahd' && <StrahdTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}

@@ -346,6 +346,45 @@ describe("Campaign control plane", () => {
       sockets.forEach(ws => ws.close());
     }
   });
+  it("sends chat as small frames that respect visibility and rolls shared notation", async () => {
+    const host = await visitor(), player = await visitor(), spectator = await visitor();
+    const campaign = await create(host);
+    await join(player, await invite(host, campaign.slug));
+    await join(spectator, await invite(host, campaign.slug, "spectator"));
+    await character(player, campaign);
+    const sockets: WebSocket[] = [];
+    const frames: any[][] = [];
+    for (const cookie of [host, player, spectator]) {
+      const response = await api(`/api/campaigns/${campaign.slug}/ws`, { headers: { ...headers(cookie), upgrade: "websocket" } });
+      const ws = response.webSocket!;
+      ws.accept();
+      const list: any[] = [];
+      ws.addEventListener("message", (event) => list.push(JSON.parse(String(event.data))));
+      ws.send(JSON.stringify({ type: "capabilities", patches: 1 }));
+      sockets.push(ws); frames.push(list);
+    }
+    const chats = (index: number) => frames[index].filter((frame) => frame.type === "chat");
+    const settle = async (count: number) => {
+      for (let i = 0; i < 50 && frames.some((_, index) => chats(index).length < count); i++) await new Promise((r) => setTimeout(r, 20));
+    };
+    try {
+      await new Promise((r) => setTimeout(r, 50));
+      sockets[1].send(JSON.stringify({ type: "chat", id: "secret", text: "/r 2d20kh1+3", visibility: "gm" }));
+      await settle(1);
+      const [toHost, toPlayer, toSpectator] = [chats(0)[0], chats(1)[0], chats(2)[0]];
+      expect(toHost.message).toMatchObject({ kind: "roll", formula: "2d20kh1+3", visibility: "gm" });
+      expect(toHost.message.rolls).toHaveLength(2);
+      expect(toHost.message.dropped).toHaveLength(1);
+      expect(toPlayer.message.id).toBe(toHost.message.id);
+      // The spectator only learns that the revision moved on.
+      expect(toSpectator).toEqual({ type: "chat", revision: toHost.revision });
+      sockets[1].send(JSON.stringify({ type: "chat", id: "bad", text: "/r 2d20kh5", visibility: "public" }));
+      for (let i = 0; i < 50 && !frames[1].some((frame) => frame.type === "error"); i++) await new Promise((r) => setTimeout(r, 20));
+      expect(frames[1].find((frame) => frame.type === "error").message).toContain("骰子公式无效");
+    } finally {
+      sockets.forEach((ws) => ws.close());
+    }
+  });
   it("persists only the affected scene and reconstructs state from SQL", async () => {
     const host = await visitor(),
       c = await create(host);
