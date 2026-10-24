@@ -297,7 +297,8 @@ function authorizePlayerOperation(value: Record<string, unknown>, state: Persist
     case 'updatePlayer': {
       const tokenId = id(value.tokenId);
       if (!own || own.id !== tokenId) throw new DomainError('FORBIDDEN', '只能编辑自己的角色');
-      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, false) };
+      // Players keep their own character's HP; initiative bonuses stay DM-only.
+      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, true, false) };
     }
     case 'submitInitiative': {
       if (!own) throw new DomainError('FORBIDDEN', '尚未认领角色');
@@ -665,14 +666,14 @@ function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avat
   return patch;
 }
 
-function playerPatch(value: unknown, maySetHp: boolean): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> {
+function playerPatch(value: unknown, maySetHp: boolean, maySetInitiative = maySetHp): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
   const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> = {};
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.color !== undefined) patch.color = color(value.color);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
   if (maySetHp && value.hp !== undefined) patch.hp = hp(value.hp);
-  if (maySetHp && value.initiativeBonus !== undefined) patch.initiativeBonus = initiativeBonus(value.initiativeBonus);
+  if (maySetInitiative && value.initiativeBonus !== undefined) patch.initiativeBonus = initiativeBonus(value.initiativeBonus);
   if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
   return patch;
 }

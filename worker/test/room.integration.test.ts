@@ -467,6 +467,15 @@ describe("Campaign control plane", () => {
     ).toEqual([
       expect.objectContaining({ title: "第一章", content: "矿坑入口" }),
     ]);
+    const [journal] = (await (await get(`/api/campaigns/${c.slug}/journals`, host)).json()) as any[];
+    const remove = (cookie: string) => api(`/api/campaigns/${c.slug}/journals/${journal.id}`, { method: "DELETE", headers: headers(cookie) });
+    expect((await remove(spectator)).status).toBe(403);
+    expect((await remove(host)).status).toBe(200);
+    expect((await remove(host)).status).toBe(404);
+    expect(await (await get(`/api/campaigns/${c.slug}/journals`, spectator)).json()).toEqual([]);
+    // A full-length Chinese journal fits the body cap; one character more is refused.
+    expect((await post(`/api/campaigns/${c.slug}/journals`, host, { title: "长篇", content: "字".repeat(50_000) })).status).toBe(201);
+    expect((await post(`/api/campaigns/${c.slug}/journals`, host, { title: "长篇", content: "字".repeat(50_001) })).status).toBe(400);
   });
   it('persists a recovered legacy fog stride without rewriting revealed bits', async () => {
     const host = await visitor(), campaign = await create(host);

@@ -32,7 +32,7 @@ export default function CharacterSheetPanel({ onClose }: { onClose: () => void }
         <div><p className="text-xs text-zinc-500">D&D 5e 角色卡</p><h2 className="font-semibold">{sheet?.character.name ?? '加载中…'}</h2></div>
         {sheet && <div className="ml-4 text-xs text-zinc-400"><span style={{ color: sheet.character.color }}>●</span> 最大生命 {sheet.character.maxHp}</div>}
         <button disabled={!sheet || exporting} onClick={() => void exportPdf()} className="ml-auto px-3 py-2 text-sm">{exporting ? '导出中…' : '导出 PDF'}</button>
-        <button aria-label="关闭角色卡" onClick={onClose} className="ml-auto text-zinc-400 hover:text-zinc-100">✕</button>
+        <button aria-label="关闭角色卡" onClick={onClose} className="ml-2 text-zinc-400 hover:text-zinc-100">✕</button>
       </div>
       <div className="relative flex-1 overflow-y-auto">
         {error && <p role="alert" className="tool-error">{error}</p>}

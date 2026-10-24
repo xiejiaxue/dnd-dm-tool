@@ -171,7 +171,7 @@ export default function EnemyList() {
           <div className="flex items-center gap-1.5">
             {editName ? (
               <input autoFocus value={nameVal} onChange={e => setNameVal(e.target.value)}
-                onBlur={() => { if (nameVal.trim()) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { name: nameVal.trim().slice(0, 20) } }]); setEditName(false); }}
+                onBlur={() => { if (nameVal.trim()) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { name: nameVal.trim().slice(0, 80) } }]); setEditName(false); }}
                 onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
                 className="field-sm flex-1 min-w-0" />
             ) : (
