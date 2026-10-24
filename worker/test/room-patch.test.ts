@@ -30,6 +30,7 @@ describe('room operation patches', () => {
     applyOperation(state, addEnemy);
     expect(projectPatchOperations(state, [addEnemy], player)).toEqual([]);
     expect(projectPatchOperations(state, [{ op: 'advanceTurn' }], host)).toEqual([{ op: 'advanceTurn' }]);
+    expect(projectPatchOperations(state, [{ op: 'previousTurn' }], host)).toEqual([{ op: 'previousTurn' }]);
     expect(projectPatchOperations(state, [{ op: 'addToInitiative', name: 'Goblin', value: 12, source: 'dm', tokenId: null }], host)).toBeNull();
   });
 });
