@@ -16,7 +16,7 @@ export default function WaterdeepTab({ scene, role, campaign, setDetail }: Query
     <button className="btn-xs" aria-pressed={mode === 'npc'} onClick={() => setMode('npc')}>NPC 档案</button>
     <button className="btn-xs" aria-pressed={mode === 'quests'} onClick={() => setMode('quests')}>派系任务链</button>
   </div>;
-  if (mode === 'quests' && role === 'dm') return <div className="flex-1 flex flex-col min-h-0">{modeSwitch}<FactionQuests campaign={campaign} npcCount={name => waterdeepIndex.filter(n => n.faction === name).length} onShowNpcs={showNpcs} /></div>;
+  if (mode === 'quests' && role === 'dm') return <div className="flex-1 flex flex-col min-h-0">{modeSwitch}<FactionQuests campaign={campaign} scene={scene} npcCount={name => waterdeepIndex.filter(n => n.faction === name).length} onShowNpcs={showNpcs} /></div>;
   const rows = waterdeepIndex.filter(n => (!combatOnly || n.combat) && (!faction || n.faction === faction) && `${n.nameZh} ${n.nameEn} ${n.location} ${n.template}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   return <div className="flex-1 flex flex-col min-h-0">
     {modeSwitch}
