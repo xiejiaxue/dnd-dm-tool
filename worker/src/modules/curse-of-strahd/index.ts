@@ -1,7 +1,8 @@
 import { getStrahdCard, searchStrahd, strahdToken } from '../../../../shared/strahd';
 import { HttpError } from '../../http';
+import { presetSceneRoute } from '../preset-encounters';
 import type { AdventureModule } from '../types';
-import { initializeStrahdTokens, strahdSceneFor, strahdScenes, strahdTokens } from './scenes';
+import { initializeStrahdTokens, strahdScenes } from './scenes';
 
 export const curseOfStrahd: AdventureModule = {
   id: 'curse-of-strahd',
@@ -17,25 +18,5 @@ export const curseOfStrahd: AdventureModule = {
     },
   },
   compendium: { search: searchStrahd, monsterCard: getStrahdCard, token: strahdToken },
-  routes: [{
-    path: 'strahd-scene', param: true, methods: ['GET', 'POST'], moderatorOnly: true,
-    async handle({ method, param, state, body, mutate }) {
-      const scene = state().scenes[param!];
-      if (!scene) return { status: 404, body: { error: '找不到场景' } };
-      const preset = strahdSceneFor(scene);
-      if (method === 'GET') return { body: preset ?? null };
-      const input = await body();
-      const spec = preset?.encounters.find(e => e.key === input.encounterKey);
-      const count = input.count;
-      if (!spec || typeof count !== 'number' || !Number.isInteger(count) || count < 1 || count > 100)
-        return { status: 400, body: { error: '请选择本场景遭遇，数量须为 1–100' } };
-      return { body: mutate(input.id, 'scene.strahd-encounter', next => {
-        const target = next.scenes[scene.id];
-        const offset = target.tokens.filter(t => t.entryId === spec.entryId).length;
-        const tokens = strahdTokens(target, spec, count, offset).map(t => ({ ...t, id: crypto.randomUUID() }));
-        target.tokens.push(...tokens);
-        return { added: tokens.length };
-      }, [scene.id]) };
-    },
-  }],
+  routes: [presetSceneRoute('strahd-scene', 'scene.strahd-encounter', 'cos', strahdScenes)],
 };
