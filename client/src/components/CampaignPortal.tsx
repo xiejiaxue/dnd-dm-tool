@@ -10,17 +10,23 @@ interface Props {
   onLeave: () => void;
 }
 export default function CampaignPortal({ room, onReady, onLeave }: Props) {
-  const [characters, setCharacters] = useState<CampaignCharacterSummary[]>([]);
+  const [characters, setCharacters] = useState<CampaignCharacterSummary[] | null>(null);
+  // Kept as text so clearing the field does not turn into NaN mid-edit.
   const [name, setName] = useState(""),
     [color, setColor] = useState("#ba3526"),
-    [hp, setHp] = useState(10);
+    [hp, setHp] = useState("10");
+  const maxHp = Number(hp);
+  const hpValid = Number.isInteger(maxHp) && maxHp >= 1 && maxHp <= 9999;
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   useEffect(() => {
     void api
       .characters(room.campaign.id!)
       .then(setCharacters)
-      .catch((e) => setError(e.message));
+      .catch((e) => {
+        setCharacters([]);
+        setError(e instanceof Error ? e.message : "读取角色失败");
+      });
   }, [room.campaign.id]);
   const select = async (action: () => Promise<unknown>) => {
     if (busy) return;
@@ -37,13 +43,13 @@ export default function CampaignPortal({ room, onReady, onLeave }: Props) {
   };
   const create = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !hpValid) return;
     void select(async () => {
       const c = await api.createCharacter({
         campaignId: room.campaign.id!,
         name: name.trim(),
         color,
-        maxHp: hp,
+        maxHp,
       });
       await api.selectCharacter(room.campaign.id!, c.id);
     });
@@ -66,7 +72,8 @@ export default function CampaignPortal({ room, onReady, onLeave }: Props) {
           <section>
             <h2 className="mb-4 text-lg font-semibold">选择角色</h2>
             <div className="grid gap-3">
-              {characters.map((c) => (
+              {characters === null && <p className="supporting" role="status">正在读取角色…</p>}
+              {characters?.map((c) => (
                 <button
                   key={c.id}
                   disabled={busy}
@@ -87,7 +94,7 @@ export default function CampaignPortal({ room, onReady, onLeave }: Props) {
                   </span>
                 </button>
               ))}
-              {!characters.length && <p className="supporting">暂无角色</p>}
+              {characters?.length === 0 && <p className="supporting">还没有角色，在右侧新建一个</p>}
             </div>
           </section>
           <form onSubmit={create} className="campaign-character-form">
@@ -118,11 +125,12 @@ export default function CampaignPortal({ room, onReady, onLeave }: Props) {
                   min="1"
                   max="9999"
                   value={hp}
-                  onChange={(e) => setHp(Number(e.target.value))}
+                  onChange={(e) => setHp(e.target.value)}
+                  aria-invalid={!hpValid}
                 />
               </label>
             </div>
-            <button className="button-primary" disabled={busy || !name.trim()}>
+            <button className="button-primary" disabled={busy || !name.trim() || !hpValid}>
               {busy ? "进入中…" : "创建并进入"}
             </button>
           </form>

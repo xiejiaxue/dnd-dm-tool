@@ -1,6 +1,7 @@
 import { getWaterdeepCard, searchWaterdeep, waterdeepToken } from '../../../../shared/waterdeep';
 import type { AdventureModule } from '../types';
 import { deployWaterdeep } from './deployment';
+import factionQuests from '../../../../shared/waterdeep/faction-quests.json';
 
 export const waterdeepDragonHeist: AdventureModule = {
   id: 'waterdeep-dragon-heist',
@@ -16,5 +17,9 @@ export const waterdeepDragonHeist: AdventureModule = {
       const input = await body();
       return { body: mutate(input.id, 'scene.deploy-waterdeep', next => deployWaterdeep(next, actor, true), []) };
     },
+  }, {
+    // DM notes with spoilers: served to moderators only and never shipped in the client bundle.
+    path: 'waterdeep-faction-quests', param: false, methods: ['GET'], moderatorOnly: true,
+    handle: () => ({ body: factionQuests }),
   }],
 };

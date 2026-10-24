@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, type CharacterSheet } from '../api';
 import type { EntryType } from '../types';
 import DetailDrawer from './DetailDrawer';
+import ConfirmButton from './ConfirmButton';
 import { formatCompendiumEntry } from '../format';
 
 export default function CharacterSheetPanel({ onClose }: { onClose: () => void }) {
@@ -31,7 +32,7 @@ export default function CharacterSheetPanel({ onClose }: { onClose: () => void }
         <div><p className="text-xs text-zinc-500">D&D 5e 角色卡</p><h2 className="font-semibold">{sheet?.character.name ?? '加载中…'}</h2></div>
         {sheet && <div className="ml-4 text-xs text-zinc-400"><span style={{ color: sheet.character.color }}>●</span> 最大生命 {sheet.character.maxHp}</div>}
         <button disabled={!sheet || exporting} onClick={() => void exportPdf()} className="ml-auto px-3 py-2 text-sm">{exporting ? '导出中…' : '导出 PDF'}</button>
-        <button aria-label="关闭角色卡" onClick={onClose} className="ml-auto text-zinc-400 hover:text-zinc-100">✕</button>
+        <button aria-label="关闭角色卡" onClick={onClose} className="ml-2 text-zinc-400 hover:text-zinc-100">✕</button>
       </div>
       <div className="relative flex-1 overflow-y-auto">
         {error && <p role="alert" className="tool-error">{error}</p>}
@@ -40,7 +41,8 @@ export default function CharacterSheetPanel({ onClose }: { onClose: () => void }
             <button onClick={() => setDetail({ type: entry.type, id: entry.entryId, nameZh: entry.name })} className="min-w-0 flex-1 text-left">
               <span className="block truncate text-zinc-200">{entry.name}</span><span className="text-xs text-zinc-500">{entry.type} · {entry.source}</span>
             </button>
-            <button onClick={() => { void api.removeCharacterEntry(entry.id).then(() => api.characterSheet()).then(setSheet); }} className="text-zinc-600 hover:text-red-400">✕</button>
+            <ConfirmButton title={`从角色卡移除 ${entry.name}`} confirmLabel="移除？" className="shrink-0 text-xs text-zinc-600 hover:text-red-400"
+              onConfirm={() => { setError(''); void api.removeCharacterEntry(entry.id).then(() => api.characterSheet()).then(setSheet, error => setError(error instanceof Error ? error.message : '移除失败')); }}>✕</ConfirmButton>
           </div>
         ))}
         {sheet && sheet.entries.length === 0 && <p className="p-6 text-center text-sm text-zinc-500">暂无条目</p>}

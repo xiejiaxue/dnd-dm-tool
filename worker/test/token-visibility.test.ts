@@ -27,6 +27,7 @@ it('hides new tokens and initiative, reveals and re-hides without losing positio
   applyOperation(state, move);
   expect(projectPatchOperations(state, [move], player)).toBeNull();
   expect(projectPatchOperations(state, [{ op: 'advanceTurn' }], player)).toBeNull();
+  expect(projectPatchOperations(state, [{ op: 'previousTurn' }], player)).toBeNull();
   applyOperation(state, { op: 'removeToken', tokenId: token.id });
   expect(projectRoomState(state, player).scene.initiative).toEqual([]);
 });

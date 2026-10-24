@@ -34,7 +34,7 @@ export default function SimpleDiceTray({ results }: { results?: DiceResult[] }) 
     {dice.length ? dice.map((die, index) => {
       const p = positions[index];
       const x = 320 + p.x * size, y = 278 + p.y * size;
-      return <g key={index} className="flat-die" data-sides={die.sides} data-value={die.value}>
+      return <g key={index} className={`flat-die ${die.sides === 20 && die.value === 20 ? 'is-critical' : ''}`} data-sides={die.sides} data-value={die.value}>
         <title>{`d${die.sides}：${die.value}${die.components ? `（${String(die.components[0]).padStart(2, '0')} + ${die.components[1]}）` : ''}`}</title>
         <g transform={`translate(${x - size / 2} ${y - size / 2}) scale(${size / 100})`}>
           <DiceFaces sides={die.sides} value={die.value} />

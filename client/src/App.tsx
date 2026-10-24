@@ -9,7 +9,8 @@ import FilingFooter from './components/FilingFooter';
 import TopBar from './components/TopBar';
 import Toolbar from './components/Toolbar';
 import InitiativePanel from './components/InitiativePanel';
-import QueryPanel from './components/QueryPanel';
+import QueryPanel, { type QueryTab } from './components/QueryPanel';
+import { useUnreadChat } from './hooks/useUnreadChat';
 import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
 import CampaignPortal from './components/CampaignPortal';
@@ -114,6 +115,8 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
   const toggleEncounter = () => { setEncounterOpen(open => !open); if (window.matchMedia('(max-width: 1100px)').matches) setQueryCollapsed(true); };
   const toggleQuery = () => { setQueryCollapsed(collapsed => !collapsed); if (window.matchMedia('(max-width: 1100px)').matches) setEncounterOpen(false); };
   const [brushSize, setBrushSize] = useState(1);
+  const [queryTab, setQueryTab] = useState<QueryTab>('query');
+  const unreadChat = useUnreadChat(sceneState.messages, sceneState.viewer?.userId, !queryCollapsed && queryTab === 'chat', Boolean(scene));
 
   useLayoutEffect(() => {
     clearPendingToken(null);
@@ -129,8 +132,17 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
 
 
   return (
-    <div className="campaign-shell h-full flex flex-col">
-      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} />
+    <div className="campaign-shell h-full flex flex-col relative">
+      {sceneState.revoked && (
+        <div className="campaign-revoked" role="alertdialog" aria-labelledby="campaign-revoked-title">
+          <div>
+            <h2 id="campaign-revoked-title">已无法继续访问这个战役</h2>
+            <p>你可能已被移出名册，或战役已被归档。画面停留在断开前的状态，不会再同步。</p>
+            <button className="btn-accent" onClick={onLeaveRoom}>返回大厅</button>
+          </div>
+        </div>
+      )}
+      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} unreadChat={unreadChat} onOpenChat={() => { setQueryTab('chat'); if (queryCollapsed) toggleQuery(); }} />
       <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
       <div className="campaign-workspace flex-1 flex min-h-0" data-role={role}>
         <Toolbar
@@ -153,7 +165,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             brushSize={brushSize}
           />
         </div>
-        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} tab={queryTab} onTab={setQueryTab} unreadChat={unreadChat} />
       </div>
     </div>
   );

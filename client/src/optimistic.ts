@@ -1,4 +1,6 @@
 import { resolveFogBasisScale, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
+import { removeFromTurnOrder, stepTurn } from '../../shared/initiative';
+import { applyCampaignTracking } from '../../shared/faction-quests';
 import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
 
 /** The active-room projection that may be predicted locally. */
@@ -46,7 +48,7 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         ? { scene, campaign }
         : { scene: { ...scene, tokens: [...scene.tokens, cloneToken(operation.token)] }, campaign };
     case 'removeToken':
-      return { scene: { ...scene, tokens: scene.tokens.filter((token) => token.id !== operation.tokenId), initiative: scene.initiative.filter(entry => entry.tokenId !== operation.tokenId) }, campaign };
+      return { scene: { ...scene, ...removeFromTurnOrder(scene, entry => entry.tokenId === operation.tokenId), tokens: scene.tokens.filter((token) => token.id !== operation.tokenId) }, campaign };
     case 'updateToken': {
       const index = scene.tokens.findIndex((token) => token.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
@@ -58,7 +60,7 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         ? { scene, campaign }
         : { scene: { ...scene, players: [...scene.players, clonePlayer(operation.player)] }, campaign };
     case 'removePlayer':
-      return { scene: { ...scene, players: scene.players.filter((player) => player.id !== operation.tokenId) }, campaign };
+      return { scene: { ...scene, players: scene.players.filter((player) => player.id !== operation.tokenId), ...removeFromTurnOrder(scene, (entry) => entry.tokenId === operation.tokenId) }, campaign };
     case 'updatePlayer': {
       const index = scene.players.findIndex((player) => player.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
@@ -97,14 +99,19 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     case 'removeEnemy':
       if (!campaign) return null;
       return { scene, campaign: { ...campaign, enemies: campaign.enemies.filter((entry) => entry.entryId !== operation.entryId) } };
+    case 'setQuestStatus':
+    case 'setFactionNote':
+      if (!campaign) return null;
+      return { scene, campaign: { ...campaign, ...applyCampaignTracking(campaign, operation) } };
     case 'switchCampaign':
     case 'submitInitiative':
     case 'addToInitiative':
       return null;
     case 'removeFromInitiative':
-      return { scene: { ...scene, initiative: scene.initiative.filter((entry) => entry.id !== operation.entryId) }, campaign };
+      return { scene: { ...scene, ...removeFromTurnOrder(scene, (entry) => entry.id === operation.entryId) }, campaign };
     case 'advanceTurn':
-      return { scene: { ...scene, initiative: advanceInitiative(scene.initiative) }, campaign };
+    case 'previousTurn':
+      return { scene: { ...scene, ...stepTurn(scene, operation.op === 'advanceTurn' ? 1 : -1) }, campaign };
     case 'reorderInitiative':
       return { scene: { ...scene, initiative: reorderInitiative(scene.initiative, operation.order) }, campaign };
     case 'addFavorite':
@@ -172,13 +179,4 @@ function reorderInitiative(entries: readonly InitiativeEntry[], order: readonly 
     }
   }
   return [...ordered, ...byId.values()];
-}
-
-function advanceInitiative(entries: readonly InitiativeEntry[]): InitiativeEntry[] {
-  if (entries.length === 0) return entries as InitiativeEntry[];
-  const next = entries.map((entry) => ({ ...entry, active: false }));
-  const active = entries.find((entry) => entry.active);
-  const nextIndex = active ? (next.findIndex((entry) => entry.id === active.id) + 1) % next.length : 0;
-  next[nextIndex].active = true;
-  return next;
 }

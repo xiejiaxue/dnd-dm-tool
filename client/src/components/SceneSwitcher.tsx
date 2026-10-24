@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api, type WaterdeepDeploymentResult } from '../api';
 import { connection, useScene } from '../ws';
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
-  const { campaign, scene, role } = useScene();
+  const { campaign, scene, role, revision, connected } = useScene();
   const [deployment, setDeployment] = useState<WaterdeepDeploymentResult | null>(null);
   const [deployBusy, setDeployBusy] = useState(false);
   const [deployError, setDeployError] = useState('');
@@ -17,17 +17,30 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [actionError, setActionError] = useState('');
 
-  const reload = () => api.scenes().then(setScenes);
-  useEffect(() => { reload(); }, []);
+  const fail = (error: unknown, fallback: string) => setActionError(error instanceof Error ? error.message : fallback);
+  const reload = useCallback(() => api.scenes().then(setScenes).catch(error => fail(error, '读取场景失败')), []);
+  // Rename, unlock and switch go over the socket; re-read the list once the
+  // room has applied them (the revision changes) rather than racing the command.
+  useEffect(() => { void reload(); }, [reload, revision]);
+  // A rejected rename/unlock leaves no new revision; drop the optimistic copy.
+  useEffect(() => connection.onMessage(msg => { if (msg.type === 'error') void reload(); }), [reload]);
   const visible = scenes.filter(s => (campaign?.sceneIds ?? []).includes(s.id));
+
+  const control = (message: Record<string, unknown>) => {
+    if (connection.sendControl(message)) { setActionError(''); return true; }
+    setActionError('连接已断开，重连后再试');
+    return false;
+  };
+  const patchScene = (id: string, patch: Partial<{ name: string; unlocked: boolean }>) =>
+    setScenes(list => list.map(item => item.id === id ? { ...item, ...patch } : item));
 
   const commitRename = (id: string) => {
     const v = renameValue.trim();
-    if (v) connection.sendControl({ type: 'renameScene', sceneId: id, name: v });
+    if (v && control({ type: 'renameScene', sceneId: id, name: v })) patchScene(id, { name: v });
     setRenamingId(null);
     setRenameValue('');
-    reload();
   };
 
   return (
@@ -59,14 +72,15 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
           ) : (
             <button
               className="flex-1 min-w-0 text-left truncate text-ink"
-              disabled={s.id === scene?.id}
+              disabled={s.id === scene?.id || !connected}
               aria-current={s.id === scene?.id ? 'page' : undefined}
-              onClick={() => { connection.sendControl({ type: 'switchScene', sceneId: s.id }); onClose(); }}
+              onClick={() => { if (control({ type: 'switchScene', sceneId: s.id })) onClose(); }}
             >{s.name}</button>
           )}
           <button
             title={s.unlocked ? '锁定场景（玩家不可见）' : '解锁场景（玩家可见）'}
-            onClick={() => { connection.sendControl({ type: 'updateSceneUnlock', sceneId: s.id, unlocked: !s.unlocked }); reload(); }}
+            disabled={!connected}
+            onClick={() => { if (control({ type: 'updateSceneUnlock', sceneId: s.id, unlocked: !s.unlocked })) patchScene(s.id, { unlocked: !s.unlocked }); }}
             className={`shrink-0 text-xs transition-colors duration-150 ${s.unlocked ? 'text-ink font-medium' : 'text-faint hover:text-accent'}`}
           >{s.unlocked ? '已解锁' : '已锁定'}</button>
           <button
@@ -77,10 +91,14 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
           <button
             className="shrink-0 text-faint hover:text-accent transition-colors duration-150"
             title="删除场景" disabled={visible.length <= 1}
-            onClick={() => { api.deleteScene(s.id).then(reload); }}
+            onClick={() => {
+              if (!window.confirm(`删除场景「${s.name}」？地图、Token、墙体、迷雾和先攻都会一起删除，无法恢复。`)) return;
+              api.deleteScene(s.id).then(reload, error => fail(error, '删除场景失败'));
+            }}
           >✕</button>
         </div>
       ))}
+      {actionError && <p role="alert" className="mt-2 text-xs text-accent">{actionError}</p>}
       <div className="flex gap-1.5 mt-2 border-t border-line pt-2">
         <input
           value={name}
@@ -90,15 +108,15 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
         />
         <button
           onClick={() => {
-            if (name.trim()) {
-              api.createScene(name.trim()).then(s => {
-                // A room has one fixed campaign. The room service adds a new
-                // scene to it atomically, then this command selects it.
-                connection.sendControl({ type: 'switchScene', sceneId: s.id });
-                reload();
-              });
-            }
-            setName('');
+            const value = name.trim();
+            if (!value) return;
+            api.createScene(value).then(s => {
+              // A room has one fixed campaign. The room service adds a new
+              // scene to it atomically, then this command selects it.
+              setName('');
+              control({ type: 'switchScene', sceneId: s.id });
+              void reload();
+            }, error => fail(error, '新建场景失败'));
           }}
           className="btn-primary" disabled={!name.trim()} aria-label="新建场景"
         >＋</button>

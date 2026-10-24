@@ -77,6 +77,26 @@ describe('Connection 竞态修复（订阅晚于初始 state）', () => {
     connection.disconnect();
   });
 
+  it('增量聊天帧追加消息并推进版本，版本跳号时请求重同步', async () => {
+    const { connection } = await import('../ws');
+    connection.connect('chat-room');
+    await new Promise(r => setTimeout(r, 10));
+    const ws = FakeWS.instances[0];
+    recv(ws, { type: 'state', scene, role: 'dm', revision: 4, messages: [] });
+    const message = { id: 'm1', campaignId: 'c', userId: 'u', author: 'A', kind: 'chat', text: 'hi', visibility: 'public', createdAt: 1 };
+    recv(ws, { type: 'chat', revision: 5, message });
+    expect(connection.lastState?.messages.map(m => m.id)).toEqual(['m1']);
+    expect(connection.lastState?.revision).toBe(5);
+    // A private message for someone else only bumps the revision.
+    recv(ws, { type: 'chat', revision: 6 });
+    expect(connection.lastState?.revision).toBe(6);
+    expect(connection.lastState?.messages).toHaveLength(1);
+    recv(ws, { type: 'chat', revision: 9, message: { ...message, id: 'm2' } });
+    expect(ws.sent.map(frame => JSON.parse(frame))).toContainEqual({ type: 'resync' });
+    expect(connection.lastState?.messages).toHaveLength(1);
+    connection.disconnect();
+  });
+
   it('useScene 初始状态能读取已到达的 lastState', async () => {
     const { connection } = await import('../ws');
     connection.connect('test-room');

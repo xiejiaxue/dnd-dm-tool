@@ -1,4 +1,6 @@
 import { resolveFogBasisScale, clipFogRectangle, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
+import { insertByValue, removeFromTurnOrder, stepTurn } from '../../shared/initiative';
+import { applyCampaignTracking, FACTION_NOTE_LIMIT, QUEST_STATUSES, type QuestStatus } from '../../shared/faction-quests';
 import {
   type Campaign,
   type ChatMessage,
@@ -121,12 +123,7 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
   if (!scene || !campaign) throw new Error('Room state has no active scene or campaign');
 
   const canManage = isRoomModerator(actor.role);
-  const messages = (state.messages ?? []).filter((message) => {
-    if (message.campaignId !== state.campaign.id) return false;
-    if (message.visibility === 'public') return true;
-    if (message.visibility === 'self') return message.userId === actor.userId;
-    return canManage || message.userId === actor.userId;
-  });
+  const messages = (state.messages ?? []).filter((message) => message.campaignId === state.campaign.id && canSeeMessage(message, actor));
   if (canManage) {
     return {
       type: 'state',
@@ -159,12 +156,19 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
     revision: state.revision,
     role: 'player',
     scene: playerScene,
-    // Encounter-library contents are DM-only. The campaign name and unlocked
-    // scene ids are enough for the existing player board.
-    campaign: { ...structuredClone(campaign), enemies: [] },
+    // Encounter-library contents and faction quest tracking are DM-only. The
+    // campaign name and unlocked scene ids are enough for the player board.
+    campaign: { ...structuredClone(campaign), enemies: [], questProgress: undefined, factionNotes: undefined },
     viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage: false },
     messages: structuredClone(messages),
   };
+}
+
+/** Public messages reach everyone, 'gm' the author and moderators, 'self' only the author. */
+export function canSeeMessage(message: ChatMessage, actor: RoomActor): boolean {
+  if (message.visibility === 'public') return true;
+  if (message.visibility === 'self') return message.userId === actor.userId;
+  return isRoomModerator(actor.role) || message.userId === actor.userId;
 }
 
 export function ensurePlayerToken(state: PersistedRoomState, actor: RoomActor): boolean {
@@ -228,6 +232,13 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
       return { op, entryId: shortText(value.entryId, 180), nameZh: shortText(value.nameZh, 120) };
     case 'removeEnemy':
       return { op, entryId: shortText(value.entryId, 180) };
+    case 'setQuestStatus':
+      if (!QUEST_STATUSES.includes(value.status as QuestStatus)) throw new DomainError('INVALID', '任务状态无效');
+      return { op, questId: shortText(value.questId, 180), status: value.status as QuestStatus };
+    case 'setFactionNote': {
+      if (typeof value.note !== 'string' || value.note.length > FACTION_NOTE_LIMIT) throw new DomainError('INVALID', `派系备注不能超过 ${FACTION_NOTE_LIMIT} 字`);
+      return { op, factionId: shortText(value.factionId, 80), note: value.note };
+    }
     case 'submitInitiative':
       return {
         op,
@@ -241,6 +252,7 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
     case 'removeFromInitiative':
       return { op, entryId: id(value.entryId) };
     case 'advanceTurn':
+    case 'previousTurn':
       return { op };
     case 'reorderInitiative':
       return { op, order: idList(value.order, 250) };
@@ -287,7 +299,8 @@ function authorizePlayerOperation(value: Record<string, unknown>, state: Persist
     case 'updatePlayer': {
       const tokenId = id(value.tokenId);
       if (!own || own.id !== tokenId) throw new DomainError('FORBIDDEN', '只能编辑自己的角色');
-      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, false) };
+      // Players keep their own character's HP; initiative bonuses stay DM-only.
+      return { op: 'updatePlayer', tokenId, patch: playerPatch(value.patch, true, false) };
     }
     case 'submitInitiative': {
       if (!own) throw new DomainError('FORBIDDEN', '尚未认领角色');
@@ -324,8 +337,8 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       return;
     }
     case 'removeToken':
+      Object.assign(scene, removeFromTurnOrder(scene, (item) => item.tokenId === op.tokenId));
       scene.tokens = scene.tokens.filter((item) => item.id !== op.tokenId);
-      scene.initiative = scene.initiative.filter((item) => item.tokenId !== op.tokenId);
       return;
     case 'updateToken': {
       const target = scene.tokens.find((item) => item.id === op.tokenId);
@@ -337,6 +350,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       return;
     case 'removePlayer':
       scene.players = scene.players.filter((item) => item.id !== op.tokenId);
+      Object.assign(scene, removeFromTurnOrder(scene, (item) => item.tokenId === op.tokenId));
       return;
     case 'updatePlayer': {
       const target = scene.players.find((item) => item.id === op.tokenId);
@@ -375,31 +389,35 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'removeEnemy':
       activeCampaign(state).enemies = activeCampaign(state).enemies.filter((entry) => entry.entryId !== op.entryId);
       return;
+    case 'setQuestStatus':
+    case 'setFactionNote': {
+      const campaign = activeCampaign(state);
+      Object.assign(campaign, applyCampaignTracking(campaign, op));
+      return;
+    }
     case 'switchCampaign': { throw new DomainError('INVALID', '请从大厅进入其他战役'); }
     case 'submitInitiative': {
       const existing = op.sessionId
         ? scene.initiative.find((entry) => entry.sessionId === op.sessionId)
         : scene.initiative.find((entry) => entry.source === 'player' && entry.name === op.name);
-      if (existing) {
-        existing.name = op.name;
-        existing.value = op.value;
-        existing.tokenId = op.tokenId ?? existing.tokenId;
-      } else {
-        scene.initiative.push({
-          id: newOpaqueId('initiative'),
-          name: op.name,
-          value: op.value,
-          source: 'player',
-          sessionId: op.sessionId ?? null,
-          tokenId: op.tokenId,
-          active: false,
-        });
-      }
-      scene.initiative = sortInitiative(scene.initiative);
+      // A changed value moves the entry to its new place; other entries keep
+      // any manual tie-break order the DM set.
+      const others = existing ? scene.initiative.filter((entry) => entry !== existing) : scene.initiative;
+      scene.initiative = insertByValue(others, existing
+        ? { ...existing, name: op.name, value: op.value, tokenId: op.tokenId ?? existing.tokenId }
+        : {
+            id: newOpaqueId('initiative'),
+            name: op.name,
+            value: op.value,
+            source: 'player',
+            sessionId: op.sessionId ?? null,
+            tokenId: op.tokenId,
+            active: false,
+          });
       return;
     }
     case 'addToInitiative':
-      scene.initiative.push({
+      scene.initiative = insertByValue(scene.initiative, {
         id: newOpaqueId('initiative'),
         name: op.name,
         value: op.value,
@@ -408,13 +426,13 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
         tokenId: op.tokenId,
         active: false,
       });
-      scene.initiative = sortInitiative(scene.initiative);
       return;
     case 'removeFromInitiative':
-      scene.initiative = scene.initiative.filter((entry) => entry.id !== op.entryId);
+      Object.assign(scene, removeFromTurnOrder(scene, (entry) => entry.id === op.entryId));
       return;
     case 'advanceTurn':
-      scene.initiative = advanceInitiative(scene.initiative);
+    case 'previousTurn':
+      Object.assign(scene, stepTurn(scene, op.op === 'advanceTurn' ? 1 : -1));
       return;
     case 'reorderInitiative': {
       const byId = new Map(scene.initiative.map((entry) => [entry.id, entry]));
@@ -522,19 +540,6 @@ function ensureFog(scene: Scene): boolean[] {
 
 function findToken(scene: Scene, tokenId: string): Token | PlayerToken | undefined {
   return scene.tokens.find((token) => token.id === tokenId) ?? scene.players.find((token) => token.id === tokenId);
-}
-
-function sortInitiative(entries: InitiativeEntry[]): InitiativeEntry[] {
-  return [...entries].sort((a, b) => b.value - a.value);
-}
-
-function advanceInitiative(entries: InitiativeEntry[]): InitiativeEntry[] {
-  const next = entries.map((entry) => ({ ...entry, active: false }));
-  if (next.length === 0) return next;
-  const current = entries.find((entry) => entry.active);
-  const index = current ? (next.findIndex((entry) => entry.id === current.id) + 1) % next.length : 0;
-  next[index].active = true;
-  return next;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -669,14 +674,14 @@ function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avat
   return patch;
 }
 
-function playerPatch(value: unknown, maySetHp: boolean): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> {
+function playerPatch(value: unknown, maySetHp: boolean, maySetInitiative = maySetHp): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
   const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> = {};
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.color !== undefined) patch.color = color(value.color);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
   if (maySetHp && value.hp !== undefined) patch.hp = hp(value.hp);
-  if (maySetHp && value.initiativeBonus !== undefined) patch.initiativeBonus = initiativeBonus(value.initiativeBonus);
+  if (maySetInitiative && value.initiativeBonus !== undefined) patch.initiativeBonus = initiativeBonus(value.initiativeBonus);
   if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
   return patch;
 }

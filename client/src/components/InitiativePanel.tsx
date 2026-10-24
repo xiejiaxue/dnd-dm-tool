@@ -1,6 +1,7 @@
 import BatchInitiative from './BatchInitiative';
 import { useEffect, useRef, useState } from 'react';
 import { connection, getMySessionId, useScene } from '../ws';
+import { isDefeated } from '../../../shared/initiative';
 
 interface Props {
   selectedTokenId?: string | null;
@@ -19,6 +20,7 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
   const [dmName, setDmName] = useState('');
   const [dmValue, setDmValue] = useState('');
   const [batchOpen, setBatchOpen] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
   const entries = scene?.initiative ?? [];
   const playerValue = parseInitiativeValue(value);
   const moderatorValue = parseInitiativeValue(dmValue);
@@ -74,9 +76,23 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
     onClearSelected?.();
   };
 
+  // Drag an entry onto another to place it before (left half) or after it;
+  // mainly for breaking ties, which keep their order when entries are added.
+  const dropOn = (targetId: string, after: boolean) => {
+    const moving = dragId;
+    setDragId(null);
+    if (!moving || moving === targetId) return;
+    const order = entries.map(e => e.id).filter(id => id !== moving);
+    const at = order.indexOf(targetId);
+    if (at < 0) return;
+    order.splice(after ? at + 1 : at, 0, moving);
+    connection.sendOps([{ op: 'reorderInitiative', order }]);
+  };
+
   const clearInitiative = () => {
     const live = connection.lastState;
     if (!connection.connected || live?.role !== 'dm' || live.scene.id !== scene?.id) return;
+    if (!window.confirm(`清空全部 ${live.scene.initiative.length} 条先攻？`)) return;
     const ops = live.scene.initiative.map(entry => ({ op: 'removeFromInitiative' as const, entryId: entry.id }));
     // The room protocol accepts at most 20 operations per command.
     for (let i = 0; i < ops.length; i += 20) connection.sendOps(ops.slice(i, i + 20));
@@ -85,13 +101,26 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
   return (
     <section className="campaign-initiative" aria-label="战斗先攻">
       <span className="panel-label shrink-0">先攻</span>
+      {scene?.round !== undefined && <span className="shrink-0 text-xs font-bold tabular-nums text-accent" aria-live="polite">第 {scene.round} 轮</span>}
       {/* 先攻条目：固定长度的可滚动区，条目多时滚动而右侧控件不被推出屏幕 */}
       <div ref={scrollRef} className="campaign-turn-order">
-        {entries.map(e => (
+        {entries.map(e => {
+          const defeated = scene ? isDefeated(scene, e) : false;
+          return (
           <div key={e.id} data-ini={e.id}
+            draggable={role === 'dm'}
+            onDragStart={event => { setDragId(e.id); event.dataTransfer.effectAllowed = 'move'; }}
+            onDragEnd={() => setDragId(null)}
+            onDragOver={event => { if (dragId) event.preventDefault(); }}
+            onDrop={event => {
+              event.preventDefault();
+              const box = event.currentTarget.getBoundingClientRect();
+              dropOn(e.id, event.clientX > box.left + box.width / 2);
+            }}
+            title={role === 'dm' ? (defeated ? '已倒下，轮到时自动跳过；拖动可调整顺序' : '拖动可调整顺序') : defeated ? '已倒下' : undefined}
             className={`shrink-0 px-2 flex items-center gap-1.5 border transition-colors duration-150 ${
               e.active ? 'border-ink bg-ink text-white' : 'border-line bg-panel text-ink'
-            }`}>
+            } ${defeated ? 'opacity-50 line-through' : ''} ${role === 'dm' ? 'cursor-grab' : ''} ${dragId === e.id ? 'opacity-40' : ''}`}>
             <span className="text-xs">{e.name}</span>
             <span className={`text-xs font-bold tabular-nums ${e.active ? 'text-[#ff5140]' : 'text-ink'}`}>{e.value}</span>
             {role === 'dm' && (
@@ -100,7 +129,8 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
                 onClick={() => connection.sendOps([{ op: 'removeFromInitiative', entryId: e.id }])}>✕</button>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
       {role === 'dm' && (
         <div className="shrink-0 flex items-center gap-1.5">
@@ -118,6 +148,15 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
       {role === 'dm' && <button onClick={() => setBatchOpen(true)} className="btn-primary shrink-0">批量先攻</button>}
       {role === 'dm' && <button onClick={clearInitiative} disabled={!entries.length || !connection.connected} className="btn-xs shrink-0">清空先攻</button>}
       {batchOpen && role === 'dm' && <BatchInitiative onClose={() => setBatchOpen(false)} />}
+      {role === 'dm' && (
+        <button
+          onClick={() => connection.sendOps([{ op: 'previousTurn' }])}
+          disabled={!activeId}
+          title="回到上一个行动者"
+          className="btn-xs shrink-0">
+          上一回合
+        </button>
+      )}
       {role === 'dm' && (
         <button
           onClick={() => connection.sendOps([{ op: 'advanceTurn' }])}

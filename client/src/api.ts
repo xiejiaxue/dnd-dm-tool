@@ -1,4 +1,5 @@
 import type { StrahdScene } from '../../shared/strahd-types';
+import type { FactionQuestBook } from '../../shared/faction-quests';
 import type { EntryType, IndexEntry, Scene } from './types';
 
 export interface CurrentUser {
@@ -32,6 +33,8 @@ export interface CampaignSummary {
   status?: string;
   moduleId?: string;
   moduleName?: string;
+  /** Built-in adventure module the campaign was created from, when any. */
+  templateId?: string;
 }
 
 export interface CampaignBootstrap {
@@ -138,6 +141,7 @@ export const api = {
   strahdScene: (sceneId: string) => json<StrahdScene | null>(roomPath(`/strahd-scene/${encodeURIComponent(sceneId)}`)),
   addStrahdEncounter: (sceneId: string, encounterKey: string, count: number) => json<{added:number}>(roomPath(`/strahd-scene/${encodeURIComponent(sceneId)}`), {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({id:crypto.randomUUID(),encounterKey,count})}),
 
+  waterdeepFactionQuests: () => json<FactionQuestBook>(roomPath('/waterdeep-faction-quests')),
   previewWaterdeepDeployment: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment')),
   deployWaterdeep: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment'), jsonRequest('POST', {id: crypto.randomUUID()})),
   me,
@@ -191,6 +195,8 @@ export const api = {
     json<CampaignJournal>(roomPath('/journals'), jsonRequest('POST', input)),
   updateJournal: (id: string, input: { title: string; content: string; visibility: 'dm' | 'players' }) =>
     json<CampaignJournal>(roomPath(`/journals/${encodeURIComponent(id)}`), jsonRequest('POST', input)),
+  deleteJournal: (id: string) =>
+    json<{ ok: boolean }>(roomPath(`/journals/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
 
   async uploadAsset(file: File, kind: 'map' | 'token'): Promise<{ url: string }> {
     const body = new FormData();

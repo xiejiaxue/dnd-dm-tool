@@ -1,3 +1,4 @@
+import type { QuestStatus } from './faction-quests';
 import type { FogRectangle } from './fog';
 export type Role = 'dm' | 'player';
 
@@ -76,6 +77,8 @@ export interface Scene {
   players: PlayerToken[];
   walls: Wall[];
   initiative: InitiativeEntry[];
+  // Combat round, starting at 1 on the first advance; absent outside combat.
+  round?: number;
   favorites: Favorite[];
   // Revealed flags in the frozen image-space raster: row * fogGridSize(scene).cols + col.
   fog?: boolean[];
@@ -96,6 +99,9 @@ export interface Campaign {
   name: string;
   sceneIds: string[];        // 战役内的场景 id，一个场景只属于一个战役
   enemies: EnemyTemplate[];  // 按 entryId 去重，保持加入顺序
+  // DM-only faction quest tracking (Dragon Heist); stripped from player projections.
+  questProgress?: Record<string, QuestStatus>;  // questId → status; 'open' is stored as absent
+  factionNotes?: Record<string, string>;        // factionId → DM note
 }
 
 export interface ChatMessage {
@@ -107,6 +113,8 @@ export interface ChatMessage {
   text: string;
   formula?: string;
   rolls?: number[];
+  // Indices into rolls discarded by keep-highest/lowest (e.g. 2d20kh1).
+  dropped?: number[];
   total?: number;
   visibility: 'public' | 'gm' | 'self';
   createdAt: number;
@@ -132,6 +140,9 @@ export type Op =
   | { op: 'addToInitiative'; name: string; value: number; source: 'dm'; tokenId: string | null }
   | { op: 'removeFromInitiative'; entryId: string }
   | { op: 'advanceTurn' }
+  | { op: 'previousTurn' }
+  | { op: 'setQuestStatus'; questId: string; status: QuestStatus }
+  | { op: 'setFactionNote'; factionId: string; note: string }
   | { op: 'reorderInitiative'; order: string[] }
   | { op: 'addFavorite'; favorite: Favorite }
   | { op: 'removeFavorite'; type: EntryType; entryId: string }
