@@ -4,7 +4,7 @@
 // their text, since those files are not part of the app.
 import fs from 'node:fs';
 import path from 'node:path';
-import type { FactionChain, FactionQuest, FactionQuestBook, QuestSection } from '../shared/faction-quests';
+import type { FactionChain, FactionQuest, FactionQuestBook, QuestCheck, QuestEncounter, QuestEnemy, QuestSection } from '../shared/faction-quests';
 
 // File number → stable id, kind and the faction name used by shared/waterdeep/index.json.
 const CHAINS: Record<string, { id: string; kind: FactionChain['kind']; npcFaction?: string; codePrefix?: string }> = {
@@ -30,6 +30,8 @@ if (!source || !fs.existsSync(path.join(source, 'README.md'))) {
   process.exit(1);
 }
 const output = path.resolve('shared/waterdeep/faction-quests.json');
+// Named Waterdeep NPCs are written as 深水城:姓名 in encounter tables and resolved to their card ids.
+const npcIds = new Map<string, string>((JSON.parse(fs.readFileSync(path.resolve('shared/waterdeep/index.json'), 'utf8')) as { id: string; nameZh: string }[]).map(npc => [npc.nameZh, npc.id]));
 
 const read = (file: string) => fs.readFileSync(path.join(source, file), 'utf8').replace(/\r\n/g, '\n');
 const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
@@ -94,22 +96,98 @@ function questTable(table: Table, factionId: string): FactionQuest[] | null {
   }));
 }
 
+function statCard(cell: string, where: string): string | undefined {
+  const value = cell.trim();
+  if (!value || value === '—' || value === '-') return undefined;
+  if (value.startsWith('深水城:')) {
+    const id = npcIds.get(value.slice(4));
+    if (!id) throw new Error(`${where}: unknown Waterdeep NPC ${value}`);
+    return id;
+  }
+  if (!/^[A-Za-z]+__\S.*$/.test(value)) throw new Error(`${where}: stat card must be SOURCE__Name or 深水城:姓名, got ${value}`);
+  return value;
+}
+
+/**
+ * Pull the structured parts out of a quest card: **建议等级：** N, the 检定 table
+ * and any number of 战斗[：标题] tables. The rest of the card stays as Markdown.
+ */
+function readCard(lines: string[], quest: FactionQuest): FactionQuest {
+  const where = quest.id;
+  const before: string[] = [];
+  const after: string[] = [];
+  const checks: QuestCheck[] = [];
+  const encounters: QuestEncounter[] = [];
+  for (let at = 0; at < lines.length; at += 1) {
+    const heading = /^####\s+(检定|战斗)(?:[：:]\s*(.+))?$/.exec(lines[at].trim());
+    if (!heading) {
+      // The level becomes a badge in the app, so drop it from the prose.
+      const level = /\*\*建议等级：\*\*\s*(\d+)[\s　]*/.exec(lines[at]);
+      if (level && quest.level === undefined) quest.level = Number(level[1]);
+      const line = level ? lines[at].replace(level[0], '') : lines[at];
+      if (!level || line.trim()) (checks.length || encounters.length ? after : before).push(line);
+      continue;
+    }
+    // The table follows the heading (blank lines allowed); it ends at the first non-table line.
+    let start = at + 1;
+    while (start < lines.length && !lines[start].trim()) start += 1;
+    const [table] = tables(lines.slice(start));
+    if (!table || table.start !== 0) throw new Error(`${where}: #### ${heading[1]} has no table`);
+    at = start + table.end - 1;
+    const column = (label: string) => {
+      const index = table.header.indexOf(label);
+      if (index < 0) throw new Error(`${where}: ${heading[1]} table lacks column ${label}`);
+      return index;
+    };
+    if (heading[1] === '检定') {
+      const [situation, check, dc, success, failure] = ['情境', '检定', 'DC', '成功', '失败'].map(column);
+      for (const row of table.rows) checks.push({ situation: unlink(row[situation]), check: unlink(row[check]), dc: row[dc], success: unlink(row[success]), failure: unlink(row[failure]) });
+    } else {
+      const [name, count, cr, card, notes] = ['敌人', '数量', 'CR', '数据卡', '位置与战术'].map(column);
+      const enemies: QuestEnemy[] = table.rows.map(row => {
+        const number = Number(row[count]);
+        if (!Number.isInteger(number) || number < 1) throw new Error(`${where}: bad count ${row[count]}`);
+        const entryId = statCard(row[card], where);
+        return { name: unlink(row[name]), count: number, cr: row[cr], ...(entryId ? { entryId } : {}), notes: unlink(row[notes]) };
+      });
+      encounters.push({ title: heading[2]?.trim() || '遭遇', enemies });
+    }
+  }
+  return {
+    ...quest,
+    body: toMarkdown(before),
+    ...(toMarkdown(after) ? { outcome: toMarkdown(after) } : {}),
+    ...(checks.length ? { checks } : {}),
+    ...(encounters.length ? { encounters } : {}),
+  };
+}
+
 function buildChain(file: string, meta: typeof CHAINS[string], index: Map<string, { contact: string; goal: string }>): FactionChain {
   const parsed = parse(file);
   const quests: FactionQuest[] = [];
   const sections: QuestSection[] = [];
   let summary: Table | null = null;
+  // Cards: "### 任务一：标题" (mercenary chain) or "### H1 标题" (the 任务卡 section).
+  const cardTitle = (line: string): { code: string; title: string } | null => {
+    const numbered = /^### 任务([一二三四五六七八九十]+)：(.+)$/.exec(line);
+    if (numbered) return { code: `${meta.codePrefix ?? 'Q'}${CHINESE_NUMBERS.indexOf(numbered[1]) + 1}`, title: numbered[2].trim() };
+    const coded = /^### ([A-Z]\d+)\s+(.+)$/.exec(line);
+    return coded ? { code: coded[1], title: coded[2].trim() } : null;
+  };
+  const cards: { code: string; title: string; lines: string[] }[] = [];
+  let questNote: string | undefined;
   for (const section of parsed.sections) {
-    // A chain written as one ### card per quest (the mercenary chain).
-    const cards = section.lines.filter(line => /^### 任务[一二三四五六七八九十]+：/.test(line));
-    if (cards.length) {
+    if (section.lines.some(line => cardTitle(line))) {
+      const before: string[] = [];
       section.lines.forEach((line, at) => {
-        const match = /^### 任务([一二三四五六七八九十]+)：(.+)$/.exec(line);
-        if (!match) return;
+        const title = cardTitle(line);
+        if (!title) { if (!section.lines.slice(0, at).some(previous => cardTitle(previous))) before.push(line); return; }
         const next = section.lines.findIndex((candidate, after) => after > at && candidate.startsWith('### '));
-        const code = `${meta.codePrefix ?? 'Q'}${CHINESE_NUMBERS.indexOf(match[1]) + 1}`;
-        quests.push({ id: `${meta.id}:${code}`, code, title: match[2].trim(), fields: [], body: toMarkdown(section.lines.slice(at + 1, next < 0 ? undefined : next)) });
+        cards.push({ ...title, lines: section.lines.slice(at + 1, next < 0 ? undefined : next) });
       });
+      const lead = toMarkdown(before);
+      if (section.heading === '任务卡（带团用）') questNote = lead.replace(/^>\s?/gm, '') || undefined;
+      else if (lead) sections.push({ heading: sectionHeading(section.heading), markdown: lead });
       continue;
     }
     const lines = [...section.lines];
@@ -125,10 +203,18 @@ function buildChain(file: string, meta: typeof CHAINS[string], index: Map<string
     const markdown = toMarkdown(lines);
     if (markdown) sections.push({ heading: sectionHeading(section.heading), markdown });
   }
+  // Merge each card into the quest of the same code from the quest table, or add it.
+  for (const card of cards) {
+    const id = `${meta.id}:${card.code}`;
+    const index = quests.findIndex(quest => quest.id === id);
+    const base: FactionQuest = index >= 0 ? quests[index] : { id, code: card.code, title: card.title, fields: [] };
+    const quest = readCard(card.lines, base);
+    if (index >= 0) quests[index] = quest; else quests.push(quest);
+  }
   // Card-style chains list outcome, pay and outposts in a summary table; attach them to the cards.
   if (summary) {
     const titleColumn = summary.header.indexOf('任务');
-    for (const quest of quests.filter(item => item.body)) {
+    for (const quest of quests.filter(item => item.fields.length === 0)) {
       const row = summary.rows.find(candidate => candidate[titleColumn] === quest.title);
       if (row) quest.fields = summary.header.map((label, column) => ({ label, text: unlink(row[column]) })).filter((_, column) => column !== titleColumn && summary!.header[column] !== '顺序参考');
     }
@@ -143,6 +229,7 @@ function buildChain(file: string, meta: typeof CHAINS[string], index: Map<string
     ...(listed?.goal ? { goal: listed.goal } : {}),
     ...(meta.npcFaction ? { npcFaction: meta.npcFaction } : {}),
     notes: parsed.notes,
+    ...(questNote ? { questNote } : {}),
     quests,
     sections,
   };
