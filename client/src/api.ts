@@ -32,6 +32,8 @@ export interface CampaignSummary {
   status?: string;
   moduleId?: string;
   moduleName?: string;
+  /** Built-in adventure module the campaign was created from, when any. */
+  templateId?: string;
 }
 
 export interface CampaignBootstrap {

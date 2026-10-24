@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import { connection, getMySessionId, useScene } from '../ws';
 import { uploadImage } from '../upload';
 import DetailDrawer from './DetailDrawer';
@@ -16,6 +16,9 @@ export default function EnemyList() {
   const [addingId, setAddingId] = useState<string | null>(null);
   const [addValue, setAddValue] = useState('');
   const [hpEditId, setHpEditId] = useState<string | null>(null);
+  // Mirrors hpEditId synchronously so a blur fired while the row unmounts
+  // (after Enter or Escape) cannot commit a second time or undo a cancel.
+  const hpEditRef = useRef<string | null>(null);
   const [hpCur, setHpCur] = useState('');
   const [hpMax, setHpMax] = useState('');
   const [editName, setEditName] = useState(false);
@@ -98,15 +101,18 @@ export default function EnemyList() {
   };
 
   const startHpEdit = (t: Token) => {
+    hpEditRef.current = t.id;
     setHpEditId(t.id);
     setHpCur(t.hp ? String(t.hp.current) : '');
     setHpMax(t.hp ? String(t.hp.max) : '');
   };
 
   const commitHp = (t: Token) => {
+    if (hpEditRef.current !== t.id) return;
+    hpEditRef.current = null;
     const cur = Number(hpCur);
     const max = Number(hpMax);
-    if (Number.isFinite(cur) && Number.isFinite(max)) {
+    if (hpCur.trim() && hpMax.trim() && Number.isFinite(cur) && Number.isFinite(max)) {
       connection.sendOps([{ op: 'updateToken', tokenId: t.id, patch: { hp: { current: cur, max } } }]);
     }
     setHpEditId(null);
@@ -202,26 +208,33 @@ export default function EnemyList() {
               );
             }
             if (hpEditId === t.id) {
+              const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') commitHp(t);
+                if (e.key === 'Escape') { hpEditRef.current = null; setHpEditId(null); }
+              };
+              // Commit only when focus leaves both fields; moving from 当前 to
+              // 最大 must keep the row open so the maximum can be edited.
               return (
-                <div key={t.id} className="flex items-center gap-1 px-3 py-1.5 border-b border-line bg-well">
+                <div key={t.id} className="flex items-center gap-1 px-3 py-1.5 border-b border-line bg-well"
+                  onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) commitHp(t); }}>
                   <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
                   <span className="text-[10px] text-faint shrink-0">HP</span>
                   <input
                     autoFocus
                     value={hpCur}
                     onChange={e => setHpCur(e.target.value)}
-                    onBlur={() => commitHp(t)}
-                    onKeyDown={e => { if (e.key === 'Enter') commitHp(t); if (e.key === 'Escape') { setHpEditId(null); } }}
+                    onKeyDown={onKeyDown}
                     placeholder="当前"
+                    aria-label={`${t.name} 当前 HP`}
                     className="field-sm w-9 text-center tabular-nums"
                   />
                   <span className="text-faint text-xs">/</span>
                   <input
                     value={hpMax}
                     onChange={e => setHpMax(e.target.value)}
-                    onBlur={() => commitHp(t)}
-                    onKeyDown={e => { if (e.key === 'Enter') commitHp(t); }}
+                    onKeyDown={onKeyDown}
                     placeholder="最大"
+                    aria-label={`${t.name} 最大 HP`}
                     className="field-sm w-9 text-center tabular-nums"
                   />
                 </div>

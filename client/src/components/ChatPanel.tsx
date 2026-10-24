@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { connection, useScene } from '../ws';
 
 export default function ChatPanel() {
-  const { messages } = useScene();
+  const { messages, connected } = useScene();
   const [text, setText] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'gm' | 'self'>('public');
   const endRef = useRef<HTMLDivElement>(null);
@@ -13,8 +13,8 @@ export default function ChatPanel() {
     event.preventDefault();
     const value = text.trim();
     if (!value) return;
-    connection.sendControl({ type: 'chat', id: crypto.randomUUID(), text: value, visibility });
-    setText('');
+    // Chat is not queued while reconnecting; keep the draft until it is sent.
+    if (connection.sendControl({ type: 'chat', id: crypto.randomUUID(), text: value, visibility })) setText('');
   };
 
   const roll = (faces: number) => {
@@ -45,7 +45,7 @@ export default function ChatPanel() {
       <div className="border-t border-line p-2">
         <div className="mb-2 grid grid-cols-7 gap-1">
           {[4, 6, 8, 10, 12, 20, 100].map(faces => (
-            <button key={faces} onClick={() => roll(faces)} className="btn-xs tabular-nums hover:border-ink hover:text-ink">d{faces}</button>
+            <button key={faces} disabled={!connected} onClick={() => roll(faces)} className="btn-xs tabular-nums hover:border-ink hover:text-ink">d{faces}</button>
           ))}
         </div>
         <form onSubmit={send} className="flex gap-1.5">
@@ -54,7 +54,7 @@ export default function ChatPanel() {
           </select>
           <input value={text} onChange={event => setText(event.target.value)} placeholder="消息或 /r 2d20+5"
             className="field-sm min-w-0 flex-1" />
-          <button className="btn-primary">发送</button>
+          <button className="btn-primary" disabled={!connected} title={connected ? undefined : '正在重新连接'}>发送</button>
         </form>
       </div>
     </div>
