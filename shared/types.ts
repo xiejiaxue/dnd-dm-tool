@@ -76,6 +76,8 @@ export interface Scene {
   players: PlayerToken[];
   walls: Wall[];
   initiative: InitiativeEntry[];
+  // Combat round, starting at 1 on the first advance; absent outside combat.
+  round?: number;
   favorites: Favorite[];
   // Revealed flags in the frozen image-space raster: row * fogGridSize(scene).cols + col.
   fog?: boolean[];
@@ -132,6 +134,7 @@ export type Op =
   | { op: 'addToInitiative'; name: string; value: number; source: 'dm'; tokenId: string | null }
   | { op: 'removeFromInitiative'; entryId: string }
   | { op: 'advanceTurn' }
+  | { op: 'previousTurn' }
   | { op: 'reorderInitiative'; order: string[] }
   | { op: 'addFavorite'; favorite: Favorite }
   | { op: 'removeFavorite'; type: EntryType; entryId: string }

@@ -1,5 +1,5 @@
 import { resolveFogBasisScale, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
-import { advanceInitiative, removeInitiativeEntries } from '../../shared/initiative';
+import { removeFromTurnOrder, stepTurn } from '../../shared/initiative';
 import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
 
 /** The active-room projection that may be predicted locally. */
@@ -47,7 +47,7 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         ? { scene, campaign }
         : { scene: { ...scene, tokens: [...scene.tokens, cloneToken(operation.token)] }, campaign };
     case 'removeToken':
-      return { scene: { ...scene, tokens: scene.tokens.filter((token) => token.id !== operation.tokenId), initiative: removeInitiativeEntries(scene.initiative, entry => entry.tokenId === operation.tokenId) }, campaign };
+      return { scene: { ...scene, ...removeFromTurnOrder(scene, entry => entry.tokenId === operation.tokenId), tokens: scene.tokens.filter((token) => token.id !== operation.tokenId) }, campaign };
     case 'updateToken': {
       const index = scene.tokens.findIndex((token) => token.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
@@ -59,7 +59,7 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         ? { scene, campaign }
         : { scene: { ...scene, players: [...scene.players, clonePlayer(operation.player)] }, campaign };
     case 'removePlayer':
-      return { scene: { ...scene, players: scene.players.filter((player) => player.id !== operation.tokenId), initiative: removeInitiativeEntries(scene.initiative, (entry) => entry.tokenId === operation.tokenId) }, campaign };
+      return { scene: { ...scene, players: scene.players.filter((player) => player.id !== operation.tokenId), ...removeFromTurnOrder(scene, (entry) => entry.tokenId === operation.tokenId) }, campaign };
     case 'updatePlayer': {
       const index = scene.players.findIndex((player) => player.id === operation.tokenId);
       if (index < 0) return { scene, campaign };
@@ -103,9 +103,10 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     case 'addToInitiative':
       return null;
     case 'removeFromInitiative':
-      return { scene: { ...scene, initiative: removeInitiativeEntries(scene.initiative, (entry) => entry.id === operation.entryId) }, campaign };
+      return { scene: { ...scene, ...removeFromTurnOrder(scene, (entry) => entry.id === operation.entryId) }, campaign };
     case 'advanceTurn':
-      return { scene: { ...scene, initiative: advanceInitiative(scene.initiative) }, campaign };
+    case 'previousTurn':
+      return { scene: { ...scene, ...stepTurn(scene, operation.op === 'advanceTurn' ? 1 : -1) }, campaign };
     case 'reorderInitiative':
       return { scene: { ...scene, initiative: reorderInitiative(scene.initiative, operation.order) }, campaign };
     case 'addFavorite':

@@ -1,5 +1,5 @@
 import { resolveFogBasisScale, clipFogRectangle, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
-import { advanceInitiative, removeInitiativeEntries } from '../../shared/initiative';
+import { insertByValue, removeFromTurnOrder, stepTurn } from '../../shared/initiative';
 import {
   type Campaign,
   type ChatMessage,
@@ -248,6 +248,7 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
     case 'removeFromInitiative':
       return { op, entryId: id(value.entryId) };
     case 'advanceTurn':
+    case 'previousTurn':
       return { op };
     case 'reorderInitiative':
       return { op, order: idList(value.order, 250) };
@@ -331,8 +332,8 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       return;
     }
     case 'removeToken':
+      Object.assign(scene, removeFromTurnOrder(scene, (item) => item.tokenId === op.tokenId));
       scene.tokens = scene.tokens.filter((item) => item.id !== op.tokenId);
-      scene.initiative = removeInitiativeEntries(scene.initiative, (item) => item.tokenId === op.tokenId);
       return;
     case 'updateToken': {
       const target = scene.tokens.find((item) => item.id === op.tokenId);
@@ -344,7 +345,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       return;
     case 'removePlayer':
       scene.players = scene.players.filter((item) => item.id !== op.tokenId);
-      scene.initiative = removeInitiativeEntries(scene.initiative, (item) => item.tokenId === op.tokenId);
+      Object.assign(scene, removeFromTurnOrder(scene, (item) => item.tokenId === op.tokenId));
       return;
     case 'updatePlayer': {
       const target = scene.players.find((item) => item.id === op.tokenId);
@@ -388,26 +389,24 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       const existing = op.sessionId
         ? scene.initiative.find((entry) => entry.sessionId === op.sessionId)
         : scene.initiative.find((entry) => entry.source === 'player' && entry.name === op.name);
-      if (existing) {
-        existing.name = op.name;
-        existing.value = op.value;
-        existing.tokenId = op.tokenId ?? existing.tokenId;
-      } else {
-        scene.initiative.push({
-          id: newOpaqueId('initiative'),
-          name: op.name,
-          value: op.value,
-          source: 'player',
-          sessionId: op.sessionId ?? null,
-          tokenId: op.tokenId,
-          active: false,
-        });
-      }
-      scene.initiative = sortInitiative(scene.initiative);
+      // A changed value moves the entry to its new place; other entries keep
+      // any manual tie-break order the DM set.
+      const others = existing ? scene.initiative.filter((entry) => entry !== existing) : scene.initiative;
+      scene.initiative = insertByValue(others, existing
+        ? { ...existing, name: op.name, value: op.value, tokenId: op.tokenId ?? existing.tokenId }
+        : {
+            id: newOpaqueId('initiative'),
+            name: op.name,
+            value: op.value,
+            source: 'player',
+            sessionId: op.sessionId ?? null,
+            tokenId: op.tokenId,
+            active: false,
+          });
       return;
     }
     case 'addToInitiative':
-      scene.initiative.push({
+      scene.initiative = insertByValue(scene.initiative, {
         id: newOpaqueId('initiative'),
         name: op.name,
         value: op.value,
@@ -416,13 +415,13 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
         tokenId: op.tokenId,
         active: false,
       });
-      scene.initiative = sortInitiative(scene.initiative);
       return;
     case 'removeFromInitiative':
-      scene.initiative = removeInitiativeEntries(scene.initiative, (entry) => entry.id === op.entryId);
+      Object.assign(scene, removeFromTurnOrder(scene, (entry) => entry.id === op.entryId));
       return;
     case 'advanceTurn':
-      scene.initiative = advanceInitiative(scene.initiative);
+    case 'previousTurn':
+      Object.assign(scene, stepTurn(scene, op.op === 'advanceTurn' ? 1 : -1));
       return;
     case 'reorderInitiative': {
       const byId = new Map(scene.initiative.map((entry) => [entry.id, entry]));
@@ -530,10 +529,6 @@ function ensureFog(scene: Scene): boolean[] {
 
 function findToken(scene: Scene, tokenId: string): Token | PlayerToken | undefined {
   return scene.tokens.find((token) => token.id === tokenId) ?? scene.players.find((token) => token.id === tokenId);
-}
-
-function sortInitiative(entries: InitiativeEntry[]): InitiativeEntry[] {
-  return [...entries].sort((a, b) => b.value - a.value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
