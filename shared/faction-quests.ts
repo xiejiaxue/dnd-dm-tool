@@ -10,6 +10,33 @@ export interface QuestSection {
 
 export interface QuestField { label: string; text: string }
 
+/** One row of a quest card's 检定 table. */
+export interface QuestCheck {
+  situation: string;
+  /** Ability (skill) or save, as written, e.g. 智力（调查）. */
+  check: string;
+  /** Usually a number; may read 13／16 or 对抗 for contested rolls. */
+  dc: string;
+  success: string;
+  failure: string;
+}
+
+/** One row of a quest card's 战斗 table. */
+export interface QuestEnemy {
+  name: string;
+  count: number;
+  /** As written: 1/2, 3, or — for scenery without a stat block. */
+  cr: string;
+  /** Compendium or Waterdeep NPC id, when the creature has a stat card to place. */
+  entryId?: string;
+  notes: string;
+}
+
+export interface QuestEncounter {
+  title: string;
+  enemies: QuestEnemy[];
+}
+
 export interface FactionQuest {
   /** Stable across rebuilds: `<factionId>:<code>`; keys the campaign's progress record. */
   id: string;
@@ -18,8 +45,14 @@ export interface FactionQuest {
   title: string;
   /** Columns of the quest table (goal, reward, follow-ups…), labelled as in the notes. */
   fields: QuestField[];
-  /** Full quest card, for chains written as one section per quest. */
+  /** Quest card text before its tables: briefing, scene, options. */
   body?: string;
+  /** Quest card text after its tables: adjustments, rewards, failure. */
+  outcome?: string;
+  /** Suggested character level for four characters. */
+  level?: number;
+  checks?: QuestCheck[];
+  encounters?: QuestEncounter[];
 }
 
 export interface FactionChain {
@@ -35,6 +68,8 @@ export interface FactionChain {
   npcFaction?: string;
   /** Lead-in notes printed under the title. */
   notes: string[];
+  /** How to read the quest cards (level baseline, DC policy). */
+  questNote?: string;
   quests: FactionQuest[];
   /** Everything else (how to make contact, boundaries, sources), in note order. */
   sections: QuestSection[];
