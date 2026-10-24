@@ -193,6 +193,8 @@ export const api = {
     json<CampaignJournal>(roomPath('/journals'), jsonRequest('POST', input)),
   updateJournal: (id: string, input: { title: string; content: string; visibility: 'dm' | 'players' }) =>
     json<CampaignJournal>(roomPath(`/journals/${encodeURIComponent(id)}`), jsonRequest('POST', input)),
+  deleteJournal: (id: string) =>
+    json<{ ok: boolean }>(roomPath(`/journals/${encodeURIComponent(id)}`), jsonRequest('DELETE')),
 
   async uploadAsset(file: File, kind: 'map' | 'token'): Promise<{ url: string }> {
     const body = new FormData();

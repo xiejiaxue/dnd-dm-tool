@@ -323,7 +323,7 @@ export async function createCampaignJournal(
 ): Promise<CampaignJournalSummary> {
   requireRoomModerator(access);
   const title = nonEmptyText(input.title, "日志标题", 160);
-  const content = (input.content ?? "").trim().slice(0, 50_000);
+  const content = journalContent(input.content);
   const visibility = input.visibility === "players" ? "players" : "dm";
   const id = crypto.randomUUID();
   const now = Date.now();
@@ -344,7 +344,7 @@ export async function updateCampaignJournal(
 ): Promise<CampaignJournalSummary> {
   requireRoomModerator(access);
   const title = nonEmptyText(input.title, "日志标题", 160);
-  const content = (input.content ?? "").trim().slice(0, 50_000);
+  const content = journalContent(input.content);
   const visibility = input.visibility === "players" ? "players" : "dm";
   const now = Date.now();
   const result = await env.DB.prepare(
@@ -356,6 +356,32 @@ export async function updateCampaignJournal(
   if (result.meta.changes !== 1)
     throw new HttpError(404, "JOURNAL_NOT_FOUND", "找不到战役日志");
   return { id: journalId, title, content, visibility, updatedAt: now };
+}
+
+export const JOURNAL_CONTENT_LIMIT = 50_000;
+
+// Reject rather than silently cut a long journal; the editor shows the limit.
+function journalContent(value: string | undefined): string {
+  const content = (value ?? "").trim();
+  if (content.length > JOURNAL_CONTENT_LIMIT)
+    throw new HttpError(400, "JOURNAL_TOO_LONG", `日志内容不能超过 ${JOURNAL_CONTENT_LIMIT} 字`);
+  return content;
+}
+
+export async function deleteCampaignJournal(
+  env: Env,
+  access: RoomAccess,
+  journalId: string,
+): Promise<void> {
+  requireRoomModerator(access);
+  const result = await env.DB.prepare(
+    `UPDATE campaign_journals SET deleted_at = ?3
+      WHERE id = ?1 AND campaign_id = ?2 AND deleted_at IS NULL`,
+  )
+    .bind(journalId, access.campaignId, Date.now())
+    .run();
+  if (result.meta.changes !== 1)
+    throw new HttpError(404, "JOURNAL_NOT_FOUND", "找不到战役日志");
 }
 
 export const createRoomInvite = createCampaignInvite;
