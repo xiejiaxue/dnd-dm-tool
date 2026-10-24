@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useScene } from '../ws';
+import { connection, useScene } from '../ws';
 import { useInvite } from '../hooks/useInvite';
 import { useMapUpload } from '../hooks/useMapUpload';
 import BackupTransfer from './BackupTransfer';
@@ -21,7 +21,7 @@ interface Props {
 const roleLabel: Record<string, string> = { host: '主持人', owner: '主持人', dm: 'DM', assistant_dm: '协作 DM', co_dm: '协作 DM', player: '玩家', spectator: '旁观者' };
 
 export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen, onToggleEncounter, queryOpen, onToggleQuery }: Props) {
-  const { scene, role, roomRole, online, campaign, connected } = useScene();
+  const { scene, role, roomRole, online, campaign, connected, revoked } = useScene();
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [characterSheetOpen, setCharacterSheetOpen] = useState(false);
@@ -44,6 +44,12 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
     return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', close); };
   }, []);
 
+  // A rejected command is rolled back locally; say why instead of leaving the
+  // DM to guess from a token snapping back.
+  useEffect(() => connection.onMessage(msg => {
+    if (msg.type === 'error' && typeof msg.message === 'string') setInviteMessage(msg.message);
+  }), [setInviteMessage]);
+
   return (
     <header className="campaign-header" ref={headerRef}>
       <div className="campaign-identity">
@@ -55,7 +61,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
         <span className="campaign-role">{roleLabel[roomRole] ?? roomRole}</span>
       </div>
       <div className="campaign-header-actions">
-        <span className={`campaign-connection ${connected ? 'is-connected' : ''}`} role="status"><i aria-hidden="true" />{connected ? `在线 ${online}` : '连接中'}</span>
+        <span className={`campaign-connection ${connected ? 'is-connected' : ''}`} role="status"><i aria-hidden="true" />{connected ? `在线玩家 ${online}` : revoked ? '已断开' : scene ? '重连中…' : '连接中'}</span>
         {onToggleEncounter && <button className="btn-quiet campaign-panel-toggle" aria-pressed={encounterOpen} aria-controls="campaign-encounter" onClick={onToggleEncounter}><CampaignIcon name="actors" />遭遇</button>}
         {onToggleQuery && <button className="btn-quiet campaign-panel-toggle" aria-pressed={queryOpen} aria-controls="campaign-query" onClick={onToggleQuery}><CampaignIcon name="library" />资料</button>}
         {roomRole === 'player' && <button className="btn-quiet" onClick={() => { setCharacterSheetOpen(!characterSheetOpen); setSwitcherOpen(false); setMembersOpen(false); }}>角色卡</button>}

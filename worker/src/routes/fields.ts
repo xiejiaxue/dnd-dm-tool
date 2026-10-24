@@ -9,6 +9,7 @@ export function roomSummary(access: RoomAccess): {
   status: string;
   campaignName: string;
   updatedAt: number;
+  templateId?: string;
 } {
   return {
     id: access.roomId,
@@ -18,6 +19,8 @@ export function roomSummary(access: RoomAccess): {
     status: access.roomStatus,
     campaignName: access.campaignName,
     updatedAt: Date.now(),
+    // Lets the table show only the adventure module's own reference tabs.
+    ...(access.templateId ? { templateId: access.templateId } : {}),
   };
 }
 

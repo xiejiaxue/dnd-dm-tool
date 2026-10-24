@@ -1,4 +1,5 @@
 import { resolveFogBasisScale, clipFogRectangle, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
+import { advanceInitiative, removeInitiativeEntries } from '../../shared/initiative';
 import {
   type Campaign,
   type ChatMessage,
@@ -331,7 +332,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     }
     case 'removeToken':
       scene.tokens = scene.tokens.filter((item) => item.id !== op.tokenId);
-      scene.initiative = scene.initiative.filter((item) => item.tokenId !== op.tokenId);
+      scene.initiative = removeInitiativeEntries(scene.initiative, (item) => item.tokenId === op.tokenId);
       return;
     case 'updateToken': {
       const target = scene.tokens.find((item) => item.id === op.tokenId);
@@ -343,6 +344,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       return;
     case 'removePlayer':
       scene.players = scene.players.filter((item) => item.id !== op.tokenId);
+      scene.initiative = removeInitiativeEntries(scene.initiative, (item) => item.tokenId === op.tokenId);
       return;
     case 'updatePlayer': {
       const target = scene.players.find((item) => item.id === op.tokenId);
@@ -417,7 +419,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       scene.initiative = sortInitiative(scene.initiative);
       return;
     case 'removeFromInitiative':
-      scene.initiative = scene.initiative.filter((entry) => entry.id !== op.entryId);
+      scene.initiative = removeInitiativeEntries(scene.initiative, (entry) => entry.id === op.entryId);
       return;
     case 'advanceTurn':
       scene.initiative = advanceInitiative(scene.initiative);
@@ -532,15 +534,6 @@ function findToken(scene: Scene, tokenId: string): Token | PlayerToken | undefin
 
 function sortInitiative(entries: InitiativeEntry[]): InitiativeEntry[] {
   return [...entries].sort((a, b) => b.value - a.value);
-}
-
-function advanceInitiative(entries: InitiativeEntry[]): InitiativeEntry[] {
-  const next = entries.map((entry) => ({ ...entry, active: false }));
-  if (next.length === 0) return next;
-  const current = entries.find((entry) => entry.active);
-  const index = current ? (next.findIndex((entry) => entry.id === current.id) + 1) % next.length : 0;
-  next[index].active = true;
-  return next;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

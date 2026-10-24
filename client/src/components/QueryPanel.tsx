@@ -16,26 +16,42 @@ import type { DetailEntry } from './query/types';
 
 type Tab = 'chat' | 'query' | 'waterdeep' | 'strahd' | 'camp' | 'journal' | 'fav';
 const tabs: { id: Tab; label: string }[] = [{ id: 'chat', label: '聊天' }, { id: 'query', label: '查询' }, { id: 'waterdeep', label: '深水城' }, { id: 'strahd', label: '施特拉德' }, { id: 'camp', label: '战役库' }, { id: 'journal', label: '日志' }, { id: 'fav', label: '收藏' }];
-interface Props { collapsed: boolean; onToggleCollapsed: () => void }
+const moduleTabs: Partial<Record<Tab, string>> = { waterdeep: 'waterdeep-dragon-heist', strahd: 'curse-of-strahd' };
+interface Props { collapsed: boolean; onToggleCollapsed: () => void; templateId?: string }
 
-export default function QueryPanel({ collapsed, onToggleCollapsed }: Props) {
+/** Module NPC libraries are DM reference (stats, factions, spoilers). A
+ * campaign built from one module shows only that module; a blank or legacy
+ * campaign keeps both available to the DM. */
+export function visibleTabs(role: string, templateId: string | undefined): Tab[] {
+  const known = Object.values(moduleTabs).includes(templateId ?? '');
+  return tabs.map(t => t.id).filter(id => {
+    const module = moduleTabs[id];
+    if (!module) return true;
+    return role === 'dm' && (!known || module === templateId);
+  });
+}
+
+export default function QueryPanel({ collapsed, onToggleCollapsed, templateId }: Props) {
   const [tab, setTab] = useState<Tab>('query');
   const [detail, setDetail] = useState<DetailEntry | null>(null);
   const { scene, role, campaign } = useScene();
   const search = useCompendiumSearch();
   const favNames = useFavoriteNames(scene?.favorites);
   const directory = useSceneDirectory(campaign?.sceneIds);
+  const shown = visibleTabs(role, templateId);
+  // A role change (e.g. while reconnecting) may remove the open tab.
+  const current = shown.includes(tab) ? tab : 'query';
   if (collapsed) return null;
 
   return <aside id="campaign-query" className="campaign-query-panel" aria-label="战役资料" onKeyDown={e => { if (e.key === 'Escape') onToggleCollapsed(); }}>
     <div className="campaign-query-heading"><span className="panel-label">资料</span><button onClick={onToggleCollapsed} aria-label="收起资料面板" className="campaign-panel-close">×</button></div>
-    <nav className="campaign-tabs" aria-label="资料分类">{tabs.filter(t => t.id !== 'strahd' || role === 'dm').map(t => <button key={t.id} aria-current={tab === t.id ? 'page' : undefined} onClick={() => { setTab(t.id); setDetail(null); }} className={tab === t.id ? 'is-active' : ''}>{t.label}</button>)}</nav>
-    {tab === 'chat' ? <ChatPanel /> : tab === 'journal' ? <JournalPanel /> : detail ? <DetailDrawer entry={detail} onBack={() => setDetail(null)} /> : <>
-      {tab === 'query' && <><SearchControls {...search} /><CompendiumTab scene={scene} role={role} campaign={campaign} search={search} setDetail={setDetail} /></>}
-      {tab === 'strahd' && role === 'dm' && <StrahdTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
-      {tab === 'waterdeep' && <WaterdeepTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
-      {tab === 'fav' && <FavoritesTab favorites={scene?.favorites ?? []} favNames={favNames} role={role} setDetail={setDetail} />}
-      {tab === 'camp' && <CampaignTab scene={scene} role={role} campaign={campaign} directory={directory} />}
+    <nav className="campaign-tabs" aria-label="资料分类">{tabs.filter(t => shown.includes(t.id)).map(t => <button key={t.id} aria-current={current === t.id ? 'page' : undefined} onClick={() => { setTab(t.id); setDetail(null); }} className={current === t.id ? 'is-active' : ''}>{t.label}</button>)}</nav>
+    {current === 'chat' ? <ChatPanel /> : current === 'journal' ? <JournalPanel /> : detail ? <DetailDrawer entry={detail} onBack={() => setDetail(null)} /> : <>
+      {current === 'query' && <><SearchControls {...search} /><CompendiumTab scene={scene} role={role} campaign={campaign} search={search} setDetail={setDetail} /></>}
+      {current === 'strahd' && <StrahdTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
+      {current === 'waterdeep' && <WaterdeepTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
+      {current === 'fav' && <FavoritesTab favorites={scene?.favorites ?? []} favNames={favNames} role={role} setDetail={setDetail} />}
+      {current === 'camp' && <CampaignTab scene={scene} role={role} campaign={campaign} directory={directory} />}
     </>}
   </aside>;
 }

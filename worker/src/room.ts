@@ -948,7 +948,7 @@ export function projectPatchOperations(
   if (!canManage && operations.some(op =>
     ['addToken', 'updateToken', 'removeToken'].includes(op.op)
     || (op.op === 'moveToken' && scene.tokens.some(t => t.id === op.tokenId && t.hidden))
-    || (scene.tokens.some(t => t.hidden) && ['advanceTurn', 'reorderInitiative', 'removeFromInitiative'].includes(op.op))
+    || (scene.tokens.some(t => t.hidden) && ['advanceTurn', 'reorderInitiative', 'removeFromInitiative', 'removePlayer'].includes(op.op))
   )) return null;
   const projected: Op[] = [];
   for (const operation of operations) {

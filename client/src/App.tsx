@@ -129,7 +129,16 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
 
 
   return (
-    <div className="campaign-shell h-full flex flex-col">
+    <div className="campaign-shell h-full flex flex-col relative">
+      {sceneState.revoked && (
+        <div className="campaign-revoked" role="alertdialog" aria-labelledby="campaign-revoked-title">
+          <div>
+            <h2 id="campaign-revoked-title">已无法继续访问这个战役</h2>
+            <p>你可能已被移出名册，或战役已被归档。画面停留在断开前的状态，不会再同步。</p>
+            <button className="btn-accent" onClick={onLeaveRoom}>返回大厅</button>
+          </div>
+        </div>
+      )}
       <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} />
       <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
       <div className="campaign-workspace flex-1 flex min-h-0" data-role={role}>
@@ -153,7 +162,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             brushSize={brushSize}
           />
         </div>
-        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} />
       </div>
     </div>
   );

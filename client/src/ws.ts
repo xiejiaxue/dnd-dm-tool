@@ -20,6 +20,8 @@ export interface SceneState {
   revision: number | null;
   online: number;
   connected: boolean;
+  /** The room closed this socket because membership was revoked or the campaign archived. */
+  revoked: boolean;
   campaign: Campaign | null;
   messages: ChatMessage[];
 }
@@ -120,6 +122,7 @@ class Connection {
   lastState: RoomSnapshot | null = null;
   lastOnline = 0;
   connected = false;
+  revoked = false;
   viewer: Viewer | null = null;
 
   get roomSlug(): string | null {
@@ -166,6 +169,7 @@ class Connection {
     this.previews = [];
     this.lastOnline = 0;
     this.connected = false;
+    this.revoked = false;
     this.viewer = null;
     this.emit({ type: 'reset' });
   }
@@ -214,7 +218,13 @@ class Connection {
       this.ws = null;
       this.connected = false;
       this.emit({ type: 'disconnected' });
-      if(event?.code===4003){this.emit({type:'error',message:'战役访问权限已变更，请返回大厅'});return;}
+      if (event?.code === 4003) {
+        // Reconnecting cannot succeed; keep the last view and let the table
+        // explain why instead of retrying forever.
+        this.revoked = true;
+        this.emit({ type: 'revoked' });
+        return;
+      }
       if (this.activeRoomSlug !== roomSlug) return;
       const delay = Math.min(1000 * 2 ** this.retry, 10_000);
       this.retry += 1;
@@ -349,13 +359,18 @@ class Connection {
     };
   }
 
-  /** Raw room controls (scene switching, legacy commands) remain authoritative. */
-  sendControl(msg: unknown): void {
-    this.sendRaw(msg);
+  /**
+   * Raw room controls (scene switching, chat) remain authoritative and are not
+   * queued: returns false when the socket is not open so callers can keep input.
+   */
+  sendControl(msg: unknown): boolean {
+    return this.sendRaw(msg);
   }
 
-  private sendRaw(msg: unknown): void {
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(msg));
+  private sendRaw(msg: unknown): boolean {
+    if (this.ws?.readyState !== WebSocket.OPEN) return false;
+    this.ws.send(JSON.stringify(msg));
+    return true;
   }
 
   onMessage(cb: Listener): () => void {
@@ -392,6 +407,7 @@ export function useScene(): SceneState {
     revision: connection.lastState?.revision ?? null,
     online: connection.lastOnline,
     connected: connection.connected,
+    revoked: connection.revoked,
     campaign: connection.lastState?.campaign ?? null,
     messages: connection.lastState?.messages ?? [],
   }));
@@ -413,7 +429,13 @@ export function useScene(): SceneState {
       }));
     } else if (msg.type === 'meta') {
       setState(current => ({ ...current, online: typeof msg.online === 'number' ? msg.online : 0, connected: true }));
-    } else if (msg.type === 'reset' || msg.type === 'disconnected') {
+    } else if (msg.type === 'disconnected') {
+      // Keep the last projection on screen while reconnecting; a brief network
+      // drop must not blank the board or demote a DM's controls.
+      setState(current => ({ ...current, connected: false }));
+    } else if (msg.type === 'revoked') {
+      setState(current => ({ ...current, connected: false, revoked: true }));
+    } else if (msg.type === 'reset') {
       setState({
         scene: null,
         role: 'player',
@@ -422,6 +444,7 @@ export function useScene(): SceneState {
         revision: null,
         online: 0,
         connected: false,
+        revoked: false,
         campaign: null,
         messages: [],
       });
