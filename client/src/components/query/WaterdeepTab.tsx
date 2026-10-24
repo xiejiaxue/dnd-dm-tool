@@ -2,15 +2,24 @@ import { useState } from 'react';
 import { waterdeepIndex } from '../../waterdeep';
 import { connection } from '../../ws';
 import { spawnEnemy } from './actions';
+import FactionQuests from './FactionQuests';
 import type { DetailEntry, QuerySceneState } from './types';
 
 export default function WaterdeepTab({ scene, role, campaign, setDetail }: QuerySceneState & { setDetail: (entry: DetailEntry) => void }) {
   const [query, setQuery] = useState('');
   const [faction, setFaction] = useState('');
   const [combatOnly, setCombatOnly] = useState(true);
+  const [mode, setMode] = useState<'npc' | 'quests'>('npc');
   const factions = [...new Set(waterdeepIndex.map(n => n.faction))];
+  const showNpcs = (name: string) => { setFaction(name); setQuery(''); setCombatOnly(false); setMode('npc'); };
+  const modeSwitch = role === 'dm' && <div className="flex gap-2 border-b border-line px-3 py-2">
+    <button className="btn-xs" aria-pressed={mode === 'npc'} onClick={() => setMode('npc')}>NPC 档案</button>
+    <button className="btn-xs" aria-pressed={mode === 'quests'} onClick={() => setMode('quests')}>派系任务链</button>
+  </div>;
+  if (mode === 'quests' && role === 'dm') return <div className="flex-1 flex flex-col min-h-0">{modeSwitch}<FactionQuests campaign={campaign} npcCount={name => waterdeepIndex.filter(n => n.faction === name).length} onShowNpcs={showNpcs} /></div>;
   const rows = waterdeepIndex.filter(n => (!combatOnly || n.combat) && (!faction || n.faction === faction) && `${n.nameZh} ${n.nameEn} ${n.location} ${n.template}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   return <div className="flex-1 flex flex-col min-h-0">
+    {modeSwitch}
     <div className="p-3 border-b border-line space-y-2">
       <div className="flex items-center justify-between"><strong className="text-sm">深水城 NPC</strong><span className="text-xs text-muted">{rows.length} 人 · 2014 版</span></div>
       <input aria-label="搜索深水城NPC" placeholder="姓名、别名、地点或模板" value={query} onChange={e => setQuery(e.target.value)} className="w-full bg-well border border-line rounded px-2 py-1.5 text-sm" />

@@ -1,4 +1,5 @@
 import type { StrahdScene } from '../../shared/strahd-types';
+import type { FactionQuestBook } from '../../shared/faction-quests';
 import type { Campaign, EntryType, IndexEntry, Scene } from './types';
 
 export interface CurrentUser {
@@ -140,6 +141,7 @@ export const api = {
   strahdScene: (sceneId: string) => json<StrahdScene | null>(roomPath(`/strahd-scene/${encodeURIComponent(sceneId)}`)),
   addStrahdEncounter: (sceneId: string, encounterKey: string, count: number) => json<{added:number}>(roomPath(`/strahd-scene/${encodeURIComponent(sceneId)}`), {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({id:crypto.randomUUID(),encounterKey,count})}),
 
+  waterdeepFactionQuests: () => json<FactionQuestBook>(roomPath('/waterdeep-faction-quests')),
   previewWaterdeepDeployment: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment')),
   deployWaterdeep: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment'), jsonRequest('POST', {id: crypto.randomUUID()})),
   me,
