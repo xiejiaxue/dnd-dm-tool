@@ -1,4 +1,4 @@
-import type { StrahdScene } from '../../shared/strahd-types';
+import type { PresetScene } from '../../shared/encounter-presets';
 import type { FactionQuestBook } from '../../shared/faction-quests';
 import type { Campaign, EntryType, IndexEntry, Scene } from './types';
 
@@ -138,8 +138,9 @@ function publicConfig(): Promise<PublicSiteConfig> {
 
 export interface WaterdeepDeploymentResult { applied: boolean; added: number; rows: Array<{scene: string; existing: number; added: number; total: number; hidden: number; note: string}> }
 export const api = {
-  strahdScene: (sceneId: string) => json<StrahdScene | null>(roomPath(`/strahd-scene/${encodeURIComponent(sceneId)}`)),
-  addStrahdEncounter: (sceneId: string, encounterKey: string, count: number) => json<{added:number}>(roomPath(`/strahd-scene/${encodeURIComponent(sceneId)}`), {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({id:crypto.randomUUID(),encounterKey,count})}),
+  /** A module's moderator-only scene preset route, such as `strahd-scene` or `phandelver-scene`. */
+  presetScene: (route: string, sceneId: string) => json<PresetScene | null>(roomPath(`/${route}/${encodeURIComponent(sceneId)}`)),
+  addPresetEncounter: (route: string, sceneId: string, encounterKey: string, count: number) => json<{added:number}>(roomPath(`/${route}/${encodeURIComponent(sceneId)}`), {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({id:crypto.randomUUID(),encounterKey,count})}),
 
   waterdeepFactionQuests: () => json<FactionQuestBook>(roomPath('/waterdeep-faction-quests')),
   previewWaterdeepDeployment: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment')),

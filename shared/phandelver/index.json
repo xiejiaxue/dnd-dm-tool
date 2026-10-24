@@ -1,0 +1,1234 @@
+[
+  {
+    "id": "LMOP__bugbear",
+    "type": "monster",
+    "nameZh": "熊地精",
+    "nameEn": "Bugbear",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "03",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__commoner",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "Commoner",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "LMOP__cultist",
+    "type": "monster",
+    "nameZh": "邪教徒",
+    "nameEn": "Cultist",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "LMOP__doppelganger",
+    "type": "monster",
+    "nameZh": "变形怪",
+    "nameEn": "Doppelganger",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 4,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "LMOP__evil-mage",
+    "type": "monster",
+    "nameZh": "邪恶魔法师",
+    "nameEn": "Evil Mage",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "LMOP__flameskull",
+    "type": "monster",
+    "nameZh": "燃焰之颅",
+    "nameEn": "Flameskull",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "4",
+    "hp": 40,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__ghoul",
+    "type": "monster",
+    "nameZh": "食尸鬼",
+    "nameEn": "Ghoul",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "00",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__giant-spider",
+    "type": "monster",
+    "nameZh": "巨蜘蛛",
+    "nameEn": "Giant Spider",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 26,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "05",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__goblin",
+    "type": "monster",
+    "nameZh": "地精",
+    "nameEn": "Goblin",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 7,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "克拉摩地精",
+      "岩骨地精"
+    ],
+    "chapters": [
+      "总览",
+      "第 1 部分 · 地精箭头",
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "00",
+      "01",
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__grick",
+    "type": "monster",
+    "nameZh": "穴居攫怪",
+    "nameEn": "Grick",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "2",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "04",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__hobgoblin",
+    "type": "monster",
+    "nameZh": "大地精",
+    "nameEn": "Hobgoblin",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/2",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "00",
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__nothic",
+    "type": "monster",
+    "nameZh": "诺斯异怪",
+    "nameEn": "Nothic",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "2",
+    "hp": 45,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__ochre-jelly",
+    "type": "monster",
+    "nameZh": "赭冻怪",
+    "nameEn": "Ochre Jelly",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "2",
+    "hp": 45,
+    "initiativeBonus": -2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__ogre",
+    "type": "monster",
+    "nameZh": "食人魔",
+    "nameEn": "Ogre",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "2",
+    "hp": 59,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "LMOP__orc",
+    "type": "monster",
+    "nameZh": "兽人",
+    "nameEn": "Orc",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/2",
+    "hp": 15,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "LMOP__owlbear",
+    "type": "monster",
+    "nameZh": "枭熊",
+    "nameEn": "Owlbear",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "3",
+    "hp": 59,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "00",
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__redbrand-ruffian",
+    "type": "monster",
+    "nameZh": "红标帮恶霸",
+    "nameEn": "Redbrand Ruffian",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/2",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "红标帮"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02",
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__skeleton",
+    "type": "monster",
+    "nameZh": "骷髅",
+    "nameEn": "Skeleton",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 13,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "03",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__spectator",
+    "type": "monster",
+    "nameZh": "观察者眼魔",
+    "nameEn": "Spectator",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "3",
+    "hp": 39,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__stirge",
+    "type": "monster",
+    "nameZh": "蚊蝠",
+    "nameEn": "Stirge",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/8",
+    "hp": 2,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "00",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__twig-blight",
+    "type": "monster",
+    "nameZh": "枯枝怪",
+    "nameEn": "Twig Blight",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/8",
+    "hp": 4,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "LMOP__wolf",
+    "type": "monster",
+    "nameZh": "狼",
+    "nameEn": "Wolf",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 11,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 1 部分 · 地精箭头",
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "00",
+      "01",
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__young-green-dragon",
+    "type": "monster",
+    "nameZh": "幼年绿龙",
+    "nameEn": "Young Green Dragon",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "8",
+    "hp": 136,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "LMOP__zombie",
+    "type": "monster",
+    "nameZh": "僵尸",
+    "nameEn": "Zombie",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 22,
+    "initiativeBonus": -2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "00",
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__ash-zombie",
+    "type": "monster",
+    "nameZh": "灰烬僵尸",
+    "nameEn": "Ash Zombie",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 22,
+    "initiativeBonus": -2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "LMOP__klarg",
+    "type": "monster",
+    "nameZh": "克拉格",
+    "nameEn": "Klarg",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "克拉克"
+    ],
+    "chapters": [
+      "第 1 部分 · 地精箭头"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "LMOP__yeemik",
+    "type": "monster",
+    "nameZh": "伊米克",
+    "nameEn": "Yeemik",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 12,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "耶米克"
+    ],
+    "chapters": [
+      "第 1 部分 · 地精箭头"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "LMOP__ripper",
+    "type": "monster",
+    "nameZh": "裂皮",
+    "nameEn": "Ripper",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 11,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "撕裂者"
+    ],
+    "chapters": [
+      "第 1 部分 · 地精箭头"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "LMOP__sildar",
+    "type": "monster",
+    "nameZh": "修达·霍温特",
+    "nameEn": "Sildar Hallwinter",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [
+      "西达尔",
+      "西达尔·霍尔温特"
+    ],
+    "chapters": [
+      "第 1 部分 · 地精箭头",
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "01",
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__mosk",
+    "type": "monster",
+    "nameZh": "莫斯克",
+    "nameEn": "Mosk",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__droop",
+    "type": "monster",
+    "nameZh": "德鲁普",
+    "nameEn": "Droop",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 7,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__glasstaff",
+    "type": "monster",
+    "nameZh": "玻璃手杖（伊阿诺·阿布雷克）",
+    "nameEn": "Iarno \"Glasstaff\" Albrek",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "玻璃杖",
+      "玻璃杖·伊阿诺",
+      "伊阿诺",
+      "Glasstaff"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__hamun-kost",
+    "type": "monster",
+    "nameZh": "哈姆·科斯特",
+    "nameEn": "Hamun Kost",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "红袍巫师",
+      "哈蒙·科斯特"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "LMOP__reidoth",
+    "type": "monster",
+    "nameZh": "里多斯",
+    "nameEn": "Reidoth",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "德鲁伊 · 翠绿闲庭",
+    "aliases": [
+      "德鲁伊里多斯",
+      "雷多斯"
+    ],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "LMOP__venomfang",
+    "type": "monster",
+    "nameZh": "毒牙",
+    "nameEn": "Venomfang",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "8",
+    "hp": 136,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "LMOP__favric",
+    "type": "monster",
+    "nameZh": "法乌里",
+    "nameEn": "Favric",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "LMOP__brughor",
+    "type": "monster",
+    "nameZh": "布洛戈·咬斧者",
+    "nameEn": "Brughor Axe-Biter",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/2",
+    "hp": 30,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "LMOP__gog",
+    "type": "monster",
+    "nameZh": "高格",
+    "nameEn": "Gog",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "2",
+    "hp": 59,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "LMOP__yegg",
+    "type": "monster",
+    "nameZh": "耶格",
+    "nameEn": "Yegg",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 12,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__lhupo",
+    "type": "monster",
+    "nameZh": "卢波",
+    "nameEn": "Lhupo",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 12,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__grol",
+    "type": "monster",
+    "nameZh": "格罗尔王",
+    "nameEn": "King Grol",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1",
+    "hp": 45,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "格罗尔"
+    ],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__snar",
+    "type": "monster",
+    "nameZh": "斯纳尔",
+    "nameEn": "Snar",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/4",
+    "hp": 18,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__vyerith",
+    "type": "monster",
+    "nameZh": "维耶里斯",
+    "nameEn": "Vyerith",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 4,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__targor",
+    "type": "monster",
+    "nameZh": "塔戈·血剑",
+    "nameEn": "Targor Bloodsword",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "1/2",
+    "hp": 20,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__mormesk",
+    "type": "monster",
+    "nameZh": "缚灵·墨梅斯克",
+    "nameEn": "Mormesk the Wraith",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "3",
+    "hp": 45,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__vhalak",
+    "type": "monster",
+    "nameZh": "维哈拉克",
+    "nameEn": "Vhalak",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 4,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__nezznar",
+    "type": "monster",
+    "nameZh": "黑蜘蛛·涅兹纳尔",
+    "nameEn": "Nezznar the Black Spider",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "2",
+    "hp": 27,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [
+      "黑蜘蛛",
+      "奈兹纳尔",
+      "涅兹纳尔"
+    ],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__gundren",
+    "type": "monster",
+    "nameZh": "甘德伦·寻岩者",
+    "nameEn": "Gundren Rockseeker",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [
+      "贡德伦",
+      "贡德伦·岩寻"
+    ],
+    "chapters": [
+      "第 3 部分 · 蜘蛛之网"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "LMOP__nundro",
+    "type": "monster",
+    "nameZh": "南卓·寻岩者",
+    "nameEn": "Nundro Rockseeker",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [
+      "南德罗",
+      "南德罗·岩寻"
+    ],
+    "chapters": [
+      "第 4 部分 · 潮音洞穴"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "LMOP__mirna",
+    "type": "monster",
+    "nameZh": "米尔娜·丹卓",
+    "nameEn": "Mirna Dendrar",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__nars-nilsa",
+    "type": "monster",
+    "nameZh": "纳斯与奈莎",
+    "nameEn": "Nars & Nilsa Dendrar",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "LMOP__agatha",
+    "type": "monster",
+    "nameZh": "阿加莎",
+    "nameEn": "Agatha",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "女妖 · 兔莓附近的巢穴",
+    "aliases": [
+      "女妖"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "LMOP__toblen",
+    "type": "monster",
+    "nameZh": "托布伦·石丘",
+    "nameEn": "Toblen Stonehill",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "石丘旅馆老板",
+    "aliases": [
+      "托布伦"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__barthen",
+    "type": "monster",
+    "nameZh": "艾尔玛·巴森",
+    "nameEn": "Elmar Barthen",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "巴森补给老板",
+    "aliases": [
+      "巴森"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__daran",
+    "type": "monster",
+    "nameZh": "达朗·埃德玛",
+    "nameEn": "Daran Edermath",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "果园主 · 铁手教团",
+    "aliases": [
+      "达兰·埃德玛斯",
+      "达朗"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__linene",
+    "type": "monster",
+    "nameZh": "莱妮·灰风",
+    "nameEn": "Linene Graywind",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "狮盾小贩负责人",
+    "aliases": [
+      "琳妮·格雷温",
+      "莱妮"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__halia",
+    "type": "monster",
+    "nameZh": "哈利娅·桑顿",
+    "nameEn": "Halia Thornton",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "矿工兑换所会长 · 散塔林会",
+    "aliases": [
+      "哈莉亚·索恩顿",
+      "哈利娅"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__qelline",
+    "type": "monster",
+    "nameZh": "奎琳·阿德里夫",
+    "nameEn": "Qelline Alderleaf",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "半身人农夫",
+    "aliases": [
+      "奎琳·奥德利夫",
+      "奎琳"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__garaele",
+    "type": "monster",
+    "nameZh": "加莉尔修女",
+    "nameEn": "Sister Garaele",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "幸运圣坛侍僧 · 竖琴手同盟",
+    "aliases": [
+      "加拉尔修女",
+      "加莉尔"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__harbin",
+    "type": "monster",
+    "nameZh": "哈宾·威斯特",
+    "nameEn": "Harbin Wester",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "凡达林镇长",
+    "aliases": [
+      "哈宾"
+    ],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "LMOP__grista",
+    "type": "monster",
+    "nameZh": "格里斯塔",
+    "nameEn": "Grista",
+    "source": "凡戴尔的失落矿坑",
+    "bookFile": "builtin/phandelver",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "沉睡巨人酒馆老板",
+    "aliases": [],
+    "chapters": [
+      "第 2 部分 · 凡达林"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  }
+]
