@@ -23,6 +23,8 @@ export default function CampaignMembers({
     void load();
   }, []);
   const remove = async (id: string) => {
+    const member = members.find(item => item.id === id);
+    if (!window.confirm(`将「${member?.name ?? '该成员'}」移出战役？对方会立即断开，并且无法再进入，除非重新邀请。`)) return;
     setBusy(true);
     setError("");
     try {

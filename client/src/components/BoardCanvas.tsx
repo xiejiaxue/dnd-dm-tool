@@ -433,6 +433,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     if (scene.tokens.some(t => t.id === selectedId)) {
       connection.sendOps([{ op: 'removeToken', tokenId: selectedId }]);
     } else if (scene.players.some(p => p.id === selectedId)) {
+      // A player's token is their presence on the board; removing it is rarer
+      // and more disruptive than clearing a monster, so ask first.
+      const player = scene.players.find(p => p.id === selectedId)!;
+      if (!window.confirm(`从棋盘移除玩家「${player.name}」的棋子？其先攻条目也会一起移除。`)) return;
       connection.sendOps([{ op: 'removePlayer', tokenId: selectedId }]);
     }
     onSelect(null);

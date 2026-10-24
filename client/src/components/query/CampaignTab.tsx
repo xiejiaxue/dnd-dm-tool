@@ -1,5 +1,6 @@
 import { connection } from '../../ws';
 import { setPending } from '../../pending';
+import ConfirmButton from '../ConfirmButton';
 import type { QuerySceneState } from './types';
 import type { useSceneDirectory } from './useSceneDirectory';
 
@@ -19,8 +20,8 @@ export default function CampaignTab({ role, campaign, directory }: Props) {
 
               <button onClick={() => setPending({ kind: 'monster', name: e.nameZh, entryId: e.entryId, avatar: `/api/token/${encodeURIComponent(e.entryId)}`, color: '#fff' })}
                 title="拿起放置" className="btn-xs">放置</button>
-              <button onClick={() => connection.sendOps([{ op: 'removeEnemy', entryId: e.entryId }])}
-                title="移出战役库" className="shrink-0 w-6 h-6 inline-flex items-center justify-center text-xs text-faint hover:text-accent transition-colors duration-150">✕</button>
+              <ConfirmButton onConfirm={() => connection.sendOps([{ op: 'removeEnemy', entryId: e.entryId }])} confirmLabel="移出？"
+                title="移出战役库" className="shrink-0 h-6 min-w-6 px-1 inline-flex items-center justify-center text-xs text-faint hover:text-accent transition-colors duration-150">✕</ConfirmButton>
             </div>
           ))}
           {(campaign?.enemies.length ?? 0) === 0 && <div className="p-3 text-muted text-xs">战役库为空，搜索怪物后点「入库」</div>}
