@@ -1,3 +1,4 @@
+import type { QuestStatus } from './faction-quests';
 import type { FogRectangle } from './fog';
 export type Role = 'dm' | 'player';
 
@@ -98,6 +99,9 @@ export interface Campaign {
   name: string;
   sceneIds: string[];        // 战役内的场景 id，一个场景只属于一个战役
   enemies: EnemyTemplate[];  // 按 entryId 去重，保持加入顺序
+  // DM-only faction quest tracking (Dragon Heist); stripped from player projections.
+  questProgress?: Record<string, QuestStatus>;  // questId → status; 'open' is stored as absent
+  factionNotes?: Record<string, string>;        // factionId → DM note
 }
 
 export interface ChatMessage {
@@ -137,6 +141,8 @@ export type Op =
   | { op: 'removeFromInitiative'; entryId: string }
   | { op: 'advanceTurn' }
   | { op: 'previousTurn' }
+  | { op: 'setQuestStatus'; questId: string; status: QuestStatus }
+  | { op: 'setFactionNote'; factionId: string; note: string }
   | { op: 'reorderInitiative'; order: string[] }
   | { op: 'addFavorite'; favorite: Favorite }
   | { op: 'removeFavorite'; type: EntryType; entryId: string }

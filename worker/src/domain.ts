@@ -1,5 +1,6 @@
 import { resolveFogBasisScale, clipFogRectangle, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
 import { insertByValue, removeFromTurnOrder, stepTurn } from '../../shared/initiative';
+import { applyCampaignTracking, FACTION_NOTE_LIMIT, QUEST_STATUSES, type QuestStatus } from '../../shared/faction-quests';
 import {
   type Campaign,
   type ChatMessage,
@@ -161,9 +162,9 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
     revision: state.revision,
     role: 'player',
     scene: playerScene,
-    // Encounter-library contents are DM-only. The campaign name and unlocked
-    // scene ids are enough for the existing player board.
-    campaign: { ...structuredClone(campaign), enemies: [] },
+    // Encounter-library contents and faction quest tracking are DM-only. The
+    // campaign name and unlocked scene ids are enough for the player board.
+    campaign: { ...structuredClone(campaign), enemies: [], questProgress: undefined, factionNotes: undefined },
     viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage: false },
     messages: structuredClone(messages),
   };
@@ -237,6 +238,13 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
       return { op, entryId: shortText(value.entryId, 180), nameZh: shortText(value.nameZh, 120) };
     case 'removeEnemy':
       return { op, entryId: shortText(value.entryId, 180) };
+    case 'setQuestStatus':
+      if (!QUEST_STATUSES.includes(value.status as QuestStatus)) throw new DomainError('INVALID', '任务状态无效');
+      return { op, questId: shortText(value.questId, 180), status: value.status as QuestStatus };
+    case 'setFactionNote': {
+      if (typeof value.note !== 'string' || value.note.length > FACTION_NOTE_LIMIT) throw new DomainError('INVALID', `派系备注不能超过 ${FACTION_NOTE_LIMIT} 字`);
+      return { op, factionId: shortText(value.factionId, 80), note: value.note };
+    }
     case 'submitInitiative':
       return {
         op,
@@ -387,6 +395,12 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'removeEnemy':
       activeCampaign(state).enemies = activeCampaign(state).enemies.filter((entry) => entry.entryId !== op.entryId);
       return;
+    case 'setQuestStatus':
+    case 'setFactionNote': {
+      const campaign = activeCampaign(state);
+      Object.assign(campaign, applyCampaignTracking(campaign, op));
+      return;
+    }
     case 'switchCampaign': { throw new DomainError('INVALID', '请从大厅进入其他战役'); }
     case 'submitInitiative': {
       const existing = op.sessionId

@@ -1,5 +1,6 @@
 import { resolveFogBasisScale, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
 import { removeFromTurnOrder, stepTurn } from '../../shared/initiative';
+import { applyCampaignTracking } from '../../shared/faction-quests';
 import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
 
 /** The active-room projection that may be predicted locally. */
@@ -98,6 +99,10 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     case 'removeEnemy':
       if (!campaign) return null;
       return { scene, campaign: { ...campaign, enemies: campaign.enemies.filter((entry) => entry.entryId !== operation.entryId) } };
+    case 'setQuestStatus':
+    case 'setFactionNote':
+      if (!campaign) return null;
+      return { scene, campaign: { ...campaign, ...applyCampaignTracking(campaign, operation) } };
     case 'switchCampaign':
     case 'submitInitiative':
     case 'addToInitiative':

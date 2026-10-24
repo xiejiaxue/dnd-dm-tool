@@ -224,7 +224,7 @@ export class RoomDurableObject extends DurableObject<Env> {
           operations.some(
             (op) =>
               isRecord(op) &&
-              ["addEnemy", "removeEnemy"].includes(String(op.op)),
+              ["addEnemy", "removeEnemy", "setQuestStatus", "setFactionNote"].includes(String(op.op)),
           ),
         );
         this.safeSend(ws, {
@@ -1040,7 +1040,9 @@ export function projectPatchOperations(
       }
       case "addEnemy":
       case "removeEnemy":
-        // Player projections intentionally omit the DM's encounter library.
+      case "setQuestStatus":
+      case "setFactionNote":
+        // Player projections intentionally omit the DM's encounter library and quest tracking.
         if (canManage) projected.push(structuredClone(operation));
         break;
       // Initiative additions can get a server-created ID; scene/campaign

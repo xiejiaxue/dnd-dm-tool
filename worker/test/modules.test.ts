@@ -68,6 +68,19 @@ describe('module routes through the Worker and Durable Object', () => {
     expect((await call(route, spectator)).status).toBe(403);
     expect((await call(route, spectator, 'POST', { id: crypto.randomUUID() })).status).toBe(403);
   });
+  it('serves the faction quest book to moderators only', async () => {
+    const dm = await visitor();
+    const { slug } = ((await (await call('/api/campaigns', dm, 'POST', {})).json()) as any).campaign;
+    const route = `/api/campaigns/${slug}/waterdeep-faction-quests`;
+    const book = (await (await call(route, dm)).json()) as any;
+    expect(book.chains.length).toBeGreaterThan(10);
+    expect(book.chains.find((chain: any) => chain.id === 'harpers').quests[0].id).toBe('harpers:H1');
+    const invite = await call(`/api/campaigns/${slug}/invites`, dm, 'POST', { role: 'spectator' });
+    const token = new URL(((await invite.json()) as any).inviteUrl, base).hash.slice(8);
+    const spectator = await visitor();
+    expect((await call('/api/invites/redeem', spectator, 'POST', { token })).status).toBe(200);
+    expect((await call(route, spectator)).status).toBe(403);
+  });
   it('returns 404 for a module route with the wrong shape or method', async () => {
     const dm = await visitor();
     const { slug } = ((await (await call('/api/campaigns', dm, 'POST', {})).json()) as any).campaign;
