@@ -6,7 +6,7 @@ import {
   createCampaignInvite,
   redeemCampaignInvite,
 } from "./campaigns";
-import { isRoomModerator, type RoomActor, type RoomRole } from "./domain";
+import { isRoomModerator, type RoomActor } from "./domain";
 import { HttpError, nonEmptyText } from "./http";
 
 export interface RoomAccess extends RoomActor {
@@ -642,27 +642,6 @@ function compendiumEntryType(value: string): string {
   ]);
   if (!allowed.has(value))
     throw new HttpError(400, "INVALID_INPUT", "资料类型无效");
-  return value;
-}
-
-function boundedInteger(
-  value: unknown,
-  minimum: number,
-  maximum: number,
-  label: string,
-): number {
-  if (
-    typeof value !== "number" ||
-    !Number.isInteger(value) ||
-    value < minimum ||
-    value > maximum
-  ) {
-    throw new HttpError(
-      400,
-      "INVALID_INPUT",
-      `${label}必须是 ${minimum} 到 ${maximum} 的整数`,
-    );
-  }
   return value;
 }
 
