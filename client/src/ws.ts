@@ -81,6 +81,12 @@ function uiRole(value: unknown): RoomViewRole {
   return value === 'spectator' ? 'spectator' : 'player';
 }
 
+function asChatMessage(value: unknown): ChatMessage | null {
+  if (!value || typeof value !== 'object') return null;
+  const message = value as Partial<ChatMessage>;
+  return typeof message.id === 'string' && typeof message.createdAt === 'number' ? message as ChatMessage : null;
+}
+
 function rawRole(value: unknown): string {
   return typeof value === 'string' ? value : 'player';
 }
@@ -205,6 +211,10 @@ class Connection {
         this.acceptAck(msg);
         return;
       }
+      if (msg.type === 'chat') {
+        this.acceptChat(msg);
+        return;
+      }
       if (msg.type === 'meta') {
         this.lastOnline = typeof msg.online === 'number' ? msg.online : 0;
         this.connected = true;
@@ -268,6 +278,23 @@ class Connection {
     }
     this.authoritative = { ...this.authoritative, ...applied, revision };
     this.connected = true;
+    this.dropConfirmed(revision);
+    this.rebuildVisible();
+  }
+
+  /** A new chat message (absent when it is private to someone else) and its revision. */
+  private acceptChat(msg: SocketMessage): void {
+    const revision = typeof msg.revision === 'number' ? msg.revision : null;
+    if (!this.authoritative || revision === null || this.authoritative.revision === null
+      || revision !== this.authoritative.revision + 1) {
+      this.requestResync();
+      return;
+    }
+    const message = asChatMessage(msg.message);
+    const messages = message && !this.authoritative.messages.some((existing) => existing.id === message.id)
+      ? [...this.authoritative.messages, message].slice(-500)
+      : this.authoritative.messages;
+    this.authoritative = { ...this.authoritative, messages, revision };
     this.dropConfirmed(revision);
     this.rebuildVisible();
   }

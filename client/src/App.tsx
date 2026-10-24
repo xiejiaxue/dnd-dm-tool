@@ -9,7 +9,8 @@ import FilingFooter from './components/FilingFooter';
 import TopBar from './components/TopBar';
 import Toolbar from './components/Toolbar';
 import InitiativePanel from './components/InitiativePanel';
-import QueryPanel from './components/QueryPanel';
+import QueryPanel, { type QueryTab } from './components/QueryPanel';
+import { useUnreadChat } from './hooks/useUnreadChat';
 import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
 import CampaignPortal from './components/CampaignPortal';
@@ -114,6 +115,8 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
   const toggleEncounter = () => { setEncounterOpen(open => !open); if (window.matchMedia('(max-width: 1100px)').matches) setQueryCollapsed(true); };
   const toggleQuery = () => { setQueryCollapsed(collapsed => !collapsed); if (window.matchMedia('(max-width: 1100px)').matches) setEncounterOpen(false); };
   const [brushSize, setBrushSize] = useState(1);
+  const [queryTab, setQueryTab] = useState<QueryTab>('query');
+  const unreadChat = useUnreadChat(sceneState.messages, sceneState.viewer?.userId, !queryCollapsed && queryTab === 'chat', Boolean(scene));
 
   useLayoutEffect(() => {
     clearPendingToken(null);
@@ -139,7 +142,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
           </div>
         </div>
       )}
-      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} />
+      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} unreadChat={unreadChat} onOpenChat={() => { setQueryTab('chat'); if (queryCollapsed) toggleQuery(); }} />
       <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
       <div className="campaign-workspace flex-1 flex min-h-0" data-role={role}>
         <Toolbar
@@ -162,7 +165,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             brushSize={brushSize}
           />
         </div>
-        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} tab={queryTab} onTab={setQueryTab} unreadChat={unreadChat} />
       </div>
     </div>
   );

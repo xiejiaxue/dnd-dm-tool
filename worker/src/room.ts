@@ -1,6 +1,7 @@
 import { findModuleRoute } from './modules/registry';
 import type { ModuleRoute } from './modules/types';
 import { resolveFogBasisScale } from '../../shared/fog';
+import { chatRollExpression, parseRollNotation, rollNotation } from '../../shared/dice-notation';
 import { DurableObject } from "cloudflare:workers";
 import { CampaignStore } from "./campaign-store";
 import type { Campaign, Op, PlayerToken, Scene } from "../../shared/types";
@@ -8,6 +9,7 @@ import type { ChatMessage } from "../../shared/types";
 import {
   activeCampaign,
   activeScene,
+  canSeeMessage,
   addScene,
   applyOperation,
   authorizeOperation,
@@ -263,7 +265,8 @@ export class RoomDurableObject extends DurableObject<Env> {
           [],
         );
         this.safeSend(ws, { type: "ack", revision: result.revision });
-        this.broadcastState();
+        if (result.duplicate) this.safeSend(ws, projectRoomState(this.requireState(), actor));
+        else this.broadcastChat(result.payload.messageId, result.revision);
         return;
       }
       if (data.type === "renameScene") {
@@ -781,6 +784,29 @@ export class RoomDurableObject extends DurableObject<Env> {
   }
 
   /**
+   * A chat message changes nothing but the message list. Patch-capable tabs get
+   * just that message (or only the revision bump when it is private to someone
+   * else) instead of a full scene snapshot with up to 500 messages.
+   */
+  private broadcastChat(messageId: string, revision: number): void {
+    const state = this.requireState();
+    const message = state.messages?.find((candidate) => candidate.id === messageId);
+    for (const socket of this.ctx.getWebSockets()) {
+      const actor = socketActor(socket);
+      if (!actor) continue;
+      if (!actor.supportsPatches || !message) {
+        this.safeSend(socket, projectRoomState(state, actor));
+        continue;
+      }
+      this.safeSend(socket, {
+        type: "chat",
+        revision,
+        ...(canSeeMessage(message, actor) ? { message: structuredClone(message) } : {}),
+      });
+    }
+  }
+
+  /**
    * Existing tabs keep receiving projected snapshots.  Newer tabs explicitly
    * opt into small, already-authorized operation patches after their initial
    * snapshot, avoiding a full scene clone/JSON round-trip for edits such as a
@@ -1103,42 +1129,31 @@ function createChatMessage(
   input: string,
   visibility: ChatMessage["visibility"],
 ): ChatMessage {
-  const rollMatch =
-    /^\/(?:r|roll)\s+(\d{1,2})d(\d{1,4})(?:\s*([+-])\s*(\d{1,4}))?$/iu.exec(
-      input.trim(),
-    );
-  if (!rollMatch) {
-    return {
-      id: crypto.randomUUID(),
-      campaignId,
-      userId: actor.userId,
-      author: actor.displayName || "冒险者",
-      kind: "chat",
-      text: input,
-      visibility,
-      createdAt: Date.now(),
-    };
-  }
-  const count = Math.min(50, Number(rollMatch[1]));
-  const faces = Math.min(10_000, Number(rollMatch[2]));
-  if (count < 1 || faces < 2) throw new DomainError("INVALID", "骰子公式无效");
-  const modifier = rollMatch[4]
-    ? Number(rollMatch[4]) * (rollMatch[3] === "-" ? -1 : 1)
-    : 0;
-  const rolls = Array.from({ length: count }, () => randomDie(faces));
-  const total = rolls.reduce((sum, value) => sum + value, modifier);
-  return {
+  const base = {
     id: crypto.randomUUID(),
     campaignId,
     userId: actor.userId,
     author: actor.displayName || "冒险者",
-    kind: "roll",
     text: input,
-    formula: `${count}d${faces}${modifier ? (modifier > 0 ? `+${modifier}` : modifier) : ""}`,
-    rolls,
-    total,
     visibility,
     createdAt: Date.now(),
+  };
+  const expression = chatRollExpression(input);
+  if (expression === null) return { ...base, kind: "chat" };
+  const parsed = parseRollNotation(expression);
+  if (!parsed)
+    throw new DomainError(
+      "INVALID",
+      "骰子公式无效，例如 /r d20、/r 2d6+3、/r 2d20kh1（优势）",
+    );
+  const { formula, rolls, dropped, total } = rollNotation(parsed, randomDie);
+  return {
+    ...base,
+    kind: "roll",
+    formula,
+    rolls,
+    ...(dropped.length ? { dropped } : {}),
+    total,
   };
 }
 

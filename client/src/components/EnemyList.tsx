@@ -4,6 +4,7 @@ import { uploadImage } from '../upload';
 import DetailDrawer from './DetailDrawer';
 import ConfirmButton from './ConfirmButton';
 import type { PlayerToken, Token } from '../types';
+import { resolveHpInput } from '../hp-input';
 
 // Player token color choices (same palette the DM sees when placing a player).
 const PALETTE = ['#e53e3e', '#38a169', '#3182ce', '#d69e2e', '#805ad5', '#dd6b20', '#319795', '#d53f8c'];
@@ -27,6 +28,7 @@ export default function EnemyList() {
   const [hpEdit, setHpEdit] = useState(false);
   const tokens = (scene?.tokens ?? []).filter(t => role === 'dm' || !t.hidden);
   const isDm = role === 'dm';
+  const players = scene?.players ?? [];
   // Locate this player's own token, bound to their stable browser session id.
   const mySessionId = getMySessionId();
   const myToken: PlayerToken | undefined = scene?.players.find(p => p.sessionId === mySessionId);
@@ -111,14 +113,54 @@ export default function EnemyList() {
   const commitHp = (t: Token) => {
     if (hpEditRef.current !== t.id) return;
     hpEditRef.current = null;
-    const cur = Number(hpCur);
-    const max = Number(hpMax);
-    if (hpCur.trim() && hpMax.trim() && Number.isFinite(cur) && Number.isFinite(max)) {
-      connection.sendOps([{ op: 'updateToken', tokenId: t.id, patch: { hp: { current: cur, max } } }]);
+    // An empty maximum keeps the old one, or takes the typed value for a token without HP.
+    const typedMax = hpMax.trim() ? Number(hpMax) : undefined;
+    const cur = resolveHpInput(hpCur, t.hp?.current, typedMax ?? t.hp?.max ?? Number.MAX_SAFE_INTEGER);
+    const max = typedMax ?? t.hp?.max ?? cur;
+    if (cur !== null && max !== null && Number.isSafeInteger(max) && max > 0) {
+      const hp = { current: cur, max };
+      connection.sendOps([t.kind === 'player'
+        ? { op: 'updatePlayer', tokenId: t.id, patch: { hp } }
+        : { op: 'updateToken', tokenId: t.id, patch: { hp } }]);
     }
     setHpEditId(null);
     setHpCur('');
     setHpMax('');
+  };
+
+  const renderHpEditor = (t: Token) => {
+    const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') commitHp(t);
+      if (e.key === 'Escape') { hpEditRef.current = null; setHpEditId(null); }
+    };
+    // Commit only when focus leaves both fields; moving from 当前 to
+    // 最大 must keep the row open so the maximum can be edited.
+    return (
+      <div key={t.id} className="flex items-center gap-1 px-3 py-1.5 border-b border-line bg-well"
+        onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) commitHp(t); }}>
+        <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
+        <span className="text-[10px] text-faint shrink-0">HP</span>
+        <input
+          autoFocus
+          value={hpCur}
+          onChange={e => setHpCur(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="当前/±"
+          title="输入数字直接设定；-7 扣血，+5 治疗"
+          aria-label={`${t.name} 当前 HP`}
+          className="field-sm w-12 text-center tabular-nums"
+        />
+        <span className="text-faint text-xs">/</span>
+        <input
+          value={hpMax}
+          onChange={e => setHpMax(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="最大"
+          aria-label={`${t.name} 最大 HP`}
+          className="field-sm w-9 text-center tabular-nums"
+        />
+      </div>
+    );
   };
 
   return (
@@ -138,10 +180,15 @@ export default function EnemyList() {
             )}
             <span className="shrink-0 text-[10px] text-faint">HP</span>
             {hpEdit ? (
-              <input autoFocus value={hpCur} onChange={e => setHpCur(e.target.value)}
-                onBlur={() => { const c = Number(hpCur), m = Number(hpMax); if (Number.isFinite(c) && Number.isFinite(m)) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { hp: { current: c, max: m } } }]); setHpEdit(false); }}
+              <input autoFocus value={hpCur} onChange={e => setHpCur(e.target.value)} title="输入数字直接设定；-7 扣血，+5 治疗"
+                onBlur={() => {
+                  const max = myToken.hp?.max;
+                  const current = resolveHpInput(hpCur, myToken.hp?.current, max ?? Number.MAX_SAFE_INTEGER);
+                  if (current !== null) connection.sendOps([{ op: 'updatePlayer', tokenId: myToken.id, patch: { hp: { current, max: max ?? current } } }]);
+                  setHpEdit(false);
+                }}
                 onKeyDown={e => { if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); } }}
-                className="field-sm w-9 text-center tabular-nums" />
+                className="field-sm w-12 text-center tabular-nums" />
             ) : (
               <button className="shrink-0 text-xs font-medium tabular-nums text-ink" onClick={() => { setHpCur(String(myToken.hp?.current ?? '')); setHpMax(String(myToken.hp?.max ?? '')); setHpEdit(true); }}>
                 {myToken.hp ? `${myToken.hp.current}/${myToken.hp.max}` : '—'}
@@ -187,6 +234,20 @@ export default function EnemyList() {
         <DetailDrawer entry={detail} onBack={() => setDetail(null)} />
       ) : (
         <div className="flex-1 overflow-y-auto">
+          {isDm && players.length > 0 && <>
+            <div className="px-3 py-1.5 panel-label bg-well border-b border-line">玩家角色 <span className="tabular-nums">({players.length})</span></div>
+            {players.map(p => hpEditId === p.id ? renderHpEditor(p) : (
+              <div key={p.id} className="flex items-center gap-1.5 px-3 py-1.5 border-b border-line hover:bg-well transition-colors duration-150">
+                <span className="w-2 h-2 shrink-0" style={{ background: p.color }} aria-hidden="true" />
+                <span className="flex-1 truncate text-ink">{p.name}</span>
+                <button onClick={() => startHpEdit(p)} title="修改 HP"
+                  className={`shrink-0 px-1 py-0.5 text-xs font-medium tabular-nums hover:bg-panel ${!p.hp ? 'text-faint' : p.hp.current <= 0 ? 'text-accent' : 'text-ink'}`}>
+                  {p.hp ? `${p.hp.current}/${p.hp.max}` : 'HP:—'}
+                </button>
+              </div>
+            ))}
+            <div className="px-3 py-1.5 panel-label bg-well border-b border-line">敌人</div>
+          </>}
           {tokens.map(t => {
             const eid = t.entryId;
             if (addingId === t.id) {
@@ -208,39 +269,7 @@ export default function EnemyList() {
                 </div>
               );
             }
-            if (hpEditId === t.id) {
-              const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === 'Enter') commitHp(t);
-                if (e.key === 'Escape') { hpEditRef.current = null; setHpEditId(null); }
-              };
-              // Commit only when focus leaves both fields; moving from 当前 to
-              // 最大 must keep the row open so the maximum can be edited.
-              return (
-                <div key={t.id} className="flex items-center gap-1 px-3 py-1.5 border-b border-line bg-well"
-                  onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) commitHp(t); }}>
-                  <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>
-                  <span className="text-[10px] text-faint shrink-0">HP</span>
-                  <input
-                    autoFocus
-                    value={hpCur}
-                    onChange={e => setHpCur(e.target.value)}
-                    onKeyDown={onKeyDown}
-                    placeholder="当前"
-                    aria-label={`${t.name} 当前 HP`}
-                    className="field-sm w-9 text-center tabular-nums"
-                  />
-                  <span className="text-faint text-xs">/</span>
-                  <input
-                    value={hpMax}
-                    onChange={e => setHpMax(e.target.value)}
-                    onKeyDown={onKeyDown}
-                    placeholder="最大"
-                    aria-label={`${t.name} 最大 HP`}
-                    className="field-sm w-9 text-center tabular-nums"
-                  />
-                </div>
-              );
-            }
+            if (hpEditId === t.id) return renderHpEditor(t);
             return (
               <div key={t.id} className="group flex items-center gap-1 px-3 py-1.5 border-b border-line hover:bg-well transition-colors duration-150">
                 <span className="flex-1 truncate text-ink">{t.name}{t.number != null ? ` #${t.number}` : ''}</span>

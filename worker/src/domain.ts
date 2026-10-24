@@ -128,12 +128,7 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
   if (!scene || !campaign) throw new Error('Room state has no active scene or campaign');
 
   const canManage = isRoomModerator(actor.role);
-  const messages = (state.messages ?? []).filter((message) => {
-    if (message.campaignId !== state.campaign.id) return false;
-    if (message.visibility === 'public') return true;
-    if (message.visibility === 'self') return message.userId === actor.userId;
-    return canManage || message.userId === actor.userId;
-  });
+  const messages = (state.messages ?? []).filter((message) => message.campaignId === state.campaign.id && canSeeMessage(message, actor));
   if (canManage) {
     return {
       type: 'state',
@@ -172,6 +167,13 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
     viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage: false },
     messages: structuredClone(messages),
   };
+}
+
+/** Public messages reach everyone, 'gm' the author and moderators, 'self' only the author. */
+export function canSeeMessage(message: ChatMessage, actor: RoomActor): boolean {
+  if (message.visibility === 'public') return true;
+  if (message.visibility === 'self') return message.userId === actor.userId;
+  return isRoomModerator(actor.role) || message.userId === actor.userId;
 }
 
 export function ensurePlayerToken(state: PersistedRoomState, actor: RoomActor): boolean {

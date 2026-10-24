@@ -16,11 +16,13 @@ interface Props {
   onToggleEncounter?: () => void;
   queryOpen?: boolean;
   onToggleQuery?: () => void;
+  unreadChat?: number;
+  onOpenChat?: () => void;
 }
 
 const roleLabel: Record<string, string> = { host: '主持人', owner: '主持人', dm: 'DM', assistant_dm: '协作 DM', co_dm: '协作 DM', player: '玩家', spectator: '旁观者' };
 
-export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen, onToggleEncounter, queryOpen, onToggleQuery }: Props) {
+export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen, onToggleEncounter, queryOpen, onToggleQuery, unreadChat = 0, onOpenChat }: Props) {
   const { scene, role, roomRole, online, campaign, connected, revoked } = useScene();
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -64,6 +66,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
         <span className={`campaign-connection ${connected ? 'is-connected' : ''}`} role="status"><i aria-hidden="true" />{connected ? `在线玩家 ${online}` : revoked ? '已断开' : scene ? '重连中…' : '连接中'}</span>
         {onToggleEncounter && <button className="btn-quiet campaign-panel-toggle" aria-pressed={encounterOpen} aria-controls="campaign-encounter" onClick={onToggleEncounter}><CampaignIcon name="actors" />遭遇</button>}
         {onToggleQuery && <button className="btn-quiet campaign-panel-toggle" aria-pressed={queryOpen} aria-controls="campaign-query" onClick={onToggleQuery}><CampaignIcon name="library" />资料</button>}
+        {unreadChat > 0 && onOpenChat && <button className="btn-quiet campaign-chat-alert" onClick={onOpenChat} title="打开聊天">聊天<span className="campaign-unread">{unreadChat > 99 ? '99+' : unreadChat}</span></button>}
         {roomRole === 'player' && <button className="btn-quiet" onClick={() => { setCharacterSheetOpen(!characterSheetOpen); setSwitcherOpen(false); setMembersOpen(false); }}>角色卡</button>}
         {isDm && <>
           <button className="btn-quiet campaign-upload" disabled={uploadingMap} onClick={() => fileRef.current?.click()} title="上传地图底图"><CampaignIcon name="map" />{uploadingMap ? '上传中…' : '上传地图'}</button>

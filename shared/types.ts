@@ -109,6 +109,8 @@ export interface ChatMessage {
   text: string;
   formula?: string;
   rolls?: number[];
+  // Indices into rolls discarded by keep-highest/lowest (e.g. 2d20kh1).
+  dropped?: number[];
   total?: number;
   visibility: 'public' | 'gm' | 'self';
   createdAt: number;
