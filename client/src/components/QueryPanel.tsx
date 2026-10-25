@@ -1,3 +1,4 @@
+import HoardRemixTab from './query/HoardRemixTab';
 import HoardTab from './query/HoardTab';
 import PhandelverTab from './query/PhandelverTab';
 import StrahdTab from './query/StrahdTab';
@@ -16,10 +17,10 @@ import { useFavoriteNames } from './query/useFavoriteNames';
 import { useSceneDirectory } from './query/useSceneDirectory';
 import type { DetailEntry } from './query/types';
 
-export type QueryTab = 'chat' | 'query' | 'waterdeep' | 'strahd' | 'phandelver' | 'hoard' | 'camp' | 'journal' | 'fav';
+export type QueryTab = 'chat' | 'query' | 'waterdeep' | 'strahd' | 'phandelver' | 'hoard' | 'hoardRemix' | 'camp' | 'journal' | 'fav';
 type Tab = QueryTab;
-const tabs: { id: Tab; label: string }[] = [{ id: 'chat', label: '聊天' }, { id: 'query', label: '查询' }, { id: 'waterdeep', label: '深水城' }, { id: 'strahd', label: '施特拉德' }, { id: 'phandelver', label: '凡戴尔' }, { id: 'hoard', label: '龙后' }, { id: 'camp', label: '战役库' }, { id: 'journal', label: '日志' }, { id: 'fav', label: '收藏' }];
-const moduleTabs: Partial<Record<Tab, string>> = { waterdeep: 'waterdeep-dragon-heist', strahd: 'curse-of-strahd', phandelver: 'lost-mine-of-phandelver', hoard: 'hoard-of-the-dragon-queen' };
+const tabs: { id: Tab; label: string }[] = [{ id: 'chat', label: '聊天' }, { id: 'query', label: '查询' }, { id: 'waterdeep', label: '深水城' }, { id: 'strahd', label: '施特拉德' }, { id: 'phandelver', label: '凡戴尔' }, { id: 'hoard', label: '龙后' }, { id: 'hoardRemix', label: '龙后重置版' }, { id: 'camp', label: '战役库' }, { id: 'journal', label: '日志' }, { id: 'fav', label: '收藏' }];
+const moduleTabs: Partial<Record<Tab, string>> = { waterdeep: 'waterdeep-dragon-heist', strahd: 'curse-of-strahd', phandelver: 'lost-mine-of-phandelver', hoard: 'hoard-of-the-dragon-queen', hoardRemix: 'hoard-of-the-dragon-queen-remix' };
 interface Props { collapsed: boolean; onToggleCollapsed: () => void; templateId?: string; tab: Tab; onTab: (tab: Tab) => void; unreadChat: number }
 
 /** Module NPC libraries are DM reference (stats, factions, spoilers). A
@@ -53,6 +54,7 @@ export default function QueryPanel({ collapsed, onToggleCollapsed, templateId, t
       {current === 'strahd' && <StrahdTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
       {current === 'phandelver' && <PhandelverTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
       {current === 'hoard' && <HoardTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
+      {current === 'hoardRemix' && <HoardRemixTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
       {current === 'waterdeep' && <WaterdeepTab scene={scene} role={role} campaign={campaign} setDetail={setDetail} />}
       {current === 'fav' && <FavoritesTab favorites={scene?.favorites ?? []} favNames={favNames} role={role} setDetail={setDetail} />}
       {current === 'camp' && <CampaignTab scene={scene} role={role} campaign={campaign} directory={directory} />}

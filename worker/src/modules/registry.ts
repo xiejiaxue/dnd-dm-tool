@@ -1,6 +1,7 @@
 import type { IndexEntry } from '../../../shared/types';
 import { curseOfStrahd } from './curse-of-strahd';
 import { hoardOfTheDragonQueen } from './hoard-of-the-dragon-queen';
+import { hoardOfTheDragonQueenRemix } from './hoard-of-the-dragon-queen-remix';
 import { lostMineOfPhandelver } from './lost-mine-of-phandelver';
 import type { AdventureModule, ModuleRoute } from './types';
 import { waterdeepDragonHeist } from './waterdeep-dragon-heist';
@@ -10,7 +11,7 @@ import { waterdeepDragonHeist } from './waterdeep-dragon-heist';
  * AdventureModule and list it here; nothing else in the Worker names a specific module.
  * Order matters: search results and token or card lookups try modules in this order.
  */
-export const MODULES: readonly AdventureModule[] = [waterdeepDragonHeist, curseOfStrahd, lostMineOfPhandelver, hoardOfTheDragonQueen];
+export const MODULES: readonly AdventureModule[] = [waterdeepDragonHeist, curseOfStrahd, lostMineOfPhandelver, hoardOfTheDragonQueen, hoardOfTheDragonQueenRemix];
 
 /** Campaigns created before templateId was stored were Dragon Heist; their shared maps still resolve under it. */
 export const LEGACY_TEMPLATE_ID = waterdeepDragonHeist.id;

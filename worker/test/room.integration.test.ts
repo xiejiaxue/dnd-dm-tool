@@ -82,7 +82,7 @@ describe("Campaign control plane", () => {
     for (const scene of scenes) await env.REFERENCE_DATA.put(`${prefix}assets/${scene.map.assetId}`, 'image', { httpMetadata: { contentType: 'image/jpeg' } });
     const cookie = await visitor();
     const modules = await (await get('/api/modules', cookie)).json() as any[];
-    expect(modules).toHaveLength(5);
+    expect(modules).toHaveLength(6);
     const moduleId = modules.find(m => m.name === '深水城：龙金劫').id;
     const a = await create(cookie, { moduleId }), b = await create(cookie, { moduleId });
     const first = (await boot(cookie, a.slug)).state;
@@ -154,7 +154,7 @@ describe("Campaign control plane", () => {
       await env.DB.prepare("SELECT COUNT(*) AS n FROM campaign_modules").first(
         "n",
       ),
-    ).toBe(5);
+    ).toBe(6);
     expect(
       await env.DB.prepare(
         "SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='rooms'",
