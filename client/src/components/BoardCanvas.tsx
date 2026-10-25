@@ -94,7 +94,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   // Fit once on entry; later pan/zoom and panel resizing remain under user control.
   const fittedStrahdScene = useRef<string | null>(null);
   useLayoutEffect(() => {
-    const key = /-map-(cos|lmop|hdq)-/.test(scene?.mapImage ?? '') ? `${scene!.id}:${scene!.mapImage}` : null;
+    const key = /-map-(cos|lmop|hdqr?)-/.test(scene?.mapImage ?? '') ? `${scene!.id}:${scene!.mapImage}` : null;
     if (!key) { fittedStrahdScene.current = null; return; }
     if (!scene || fittedStrahdScene.current === key || stageSize.width <= 0 || stageSize.height <= 0) return;
     const width = scene.mapSize[0] * (scene.mapScale ?? 1);
