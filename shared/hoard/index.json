@@ -1,0 +1,2783 @@
+[
+  {
+    "id": "HDQ__ambush-drake",
+    "type": "monster",
+    "nameZh": "伏击龙兽",
+    "nameEn": "Ambush Drake",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "01",
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__langdedrosa-cyanwrath",
+    "type": "monster",
+    "nameZh": "兰德卓萨·青怒",
+    "nameEn": "Langdedrosa Cyanwrath",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "4",
+    "hp": 57,
+    "initiativeBonus": 1,
+    "role": "龙巫教与巨龙",
+    "aliases": [
+      "青怒"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "01",
+      "02",
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__captain-othelstan",
+    "type": "monster",
+    "nameZh": "奥瑟斯坦队长",
+    "nameEn": "Captain Othelstan",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 93,
+    "initiativeBonus": 0,
+    "role": "帕纳斯特",
+    "aliases": [
+      "欧瑟斯坦",
+      "奥瑟斯坦"
+    ],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "11"
+    ]
+  },
+  {
+    "id": "HDQ__blagothkus",
+    "type": "monster",
+    "nameZh": "布拉戈提库斯",
+    "nameEn": "Blagothkus",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "9",
+    "hp": 138,
+    "initiativeBonus": 1,
+    "role": "通天堡",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__frulam-mondath",
+    "type": "monster",
+    "nameZh": "弗鲁兰·蒙达斯",
+    "nameEn": "Frulam Mondath",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 44,
+    "initiativeBonus": 0,
+    "role": "龙巫教与巨龙",
+    "aliases": [
+      "蒙达斯"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "01",
+      "02",
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__dralmorrer-borngray",
+    "type": "monster",
+    "nameZh": "德拉莫瑞·灰生",
+    "nameEn": "Dralmorrer Borngray",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 2,
+    "role": "亡者沼泽各方",
+    "aliases": [
+      "灰生"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "HDQ__guard-drake",
+    "type": "monster",
+    "nameZh": "护卫龙兽",
+    "nameEn": "Guard Drake",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 52,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场",
+      "第 6 章 · 涅瑞塔堡",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "02",
+      "03",
+      "05",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__rath-modar",
+    "type": "monster",
+    "nameZh": "拉斯·莫达",
+    "nameEn": "Rath Modar",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "6",
+    "hp": 71,
+    "initiativeBonus": 3,
+    "role": "塞尔红袍法师",
+    "aliases": [
+      "拉斯"
+    ],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__pharblex-spattergoo",
+    "type": "monster",
+    "nameZh": "法布列斯·溅黏",
+    "nameEn": "Pharblex Spattergoo",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 59,
+    "initiativeBonus": 1,
+    "role": "亡者沼泽各方",
+    "aliases": [
+      "法布列斯"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "06",
+      "08"
+    ]
+  },
+  {
+    "id": "HDQ__rezmir",
+    "type": "monster",
+    "nameZh": "瑞兹米尔",
+    "nameEn": "Rezmir",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "7",
+    "hp": 90,
+    "initiativeBonus": 3,
+    "role": "龙巫教与巨龙",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 2 章 · 劫掠者营地",
+      "第 6 章 · 涅瑞塔堡",
+      "第 7 章 · 狩猎旅舍",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "00",
+      "02",
+      "05",
+      "07",
+      "09",
+      "11",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__talis-the-white",
+    "type": "monster",
+    "nameZh": "白之塔利斯",
+    "nameEn": "Talis the White",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "狩猎旅舍",
+    "aliases": [
+      "塔利斯"
+    ],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__jamna-gleamsilver",
+    "type": "monster",
+    "nameZh": "贾姆娜·烁银",
+    "nameEn": "Jamna Gleamsilver",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 3,
+    "role": "商路与散塔林会",
+    "aliases": [
+      "烁银"
+    ],
+    "chapters": [
+      "总览",
+      "第 5 章 · 前方施工"
+    ],
+    "sceneKeys": [
+      "00",
+      "04"
+    ]
+  },
+  {
+    "id": "HDQ__azbara-jos",
+    "type": "monster",
+    "nameZh": "阿兹巴拉·乔斯",
+    "nameEn": "Azbara Jos",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "4",
+    "hp": 39,
+    "initiativeBonus": 3,
+    "role": "塞尔红袍法师",
+    "aliases": [
+      "乔斯"
+    ],
+    "chapters": [
+      "总览",
+      "第 2 章 · 劫掠者营地",
+      "第 6 章 · 涅瑞塔堡",
+      "第 7 章 · 狩猎旅舍",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "00",
+      "02",
+      "05",
+      "09",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__dragonclaw",
+    "type": "monster",
+    "nameZh": "龙爪",
+    "nameEn": "Dragonclaw",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 16,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [
+      "龙巫教龙爪"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场",
+      "第 6 章 · 涅瑞塔堡",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "01",
+      "02",
+      "03",
+      "05",
+      "11"
+    ]
+  },
+  {
+    "id": "HDQ__cloud-giant",
+    "type": "monster",
+    "nameZh": "云巨人",
+    "nameEn": "Cloud Giant",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "9",
+    "hp": 200,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__ettercap",
+    "type": "monster",
+    "nameZh": "伊特怪",
+    "nameEn": "Ettercap",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 44,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__acolyte",
+    "type": "monster",
+    "nameZh": "侍僧",
+    "nameEn": "Acolyte",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 9,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地"
+    ],
+    "sceneKeys": [
+      "01",
+      "02"
+    ]
+  },
+  {
+    "id": "HDQ__orc",
+    "type": "monster",
+    "nameZh": "兽人",
+    "nameEn": "Orc",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 15,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 5 章 · 前方施工"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "HDQ__vampire-spawn",
+    "type": "monster",
+    "nameZh": "初生吸血鬼",
+    "nameEn": "Vampire Spawn",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [
+      "吸血鬼衍体"
+    ],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__bandit",
+    "type": "monster",
+    "nameZh": "匪徒",
+    "nameEn": "Bandit",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/8",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 5 章 · 前方施工"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "HDQ__doppelganger",
+    "type": "monster",
+    "nameZh": "变形怪",
+    "nameEn": "Doppelganger",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 4,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__vampire",
+    "type": "monster",
+    "nameZh": "吸血鬼",
+    "nameEn": "Vampire",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "13",
+    "hp": 144,
+    "initiativeBonus": 4,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__bullywug",
+    "type": "monster",
+    "nameZh": "啵灵蛙",
+    "nameEn": "Bullywug",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [
+      "狂蛙人",
+      "蛙人"
+    ],
+    "chapters": [
+      "第 5 章 · 前方施工",
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "04",
+      "05",
+      "06",
+      "08"
+    ]
+  },
+  {
+    "id": "HDQ__hobgoblin",
+    "type": "monster",
+    "nameZh": "大地精",
+    "nameEn": "Hobgoblin",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__hobgoblin-captain",
+    "type": "monster",
+    "nameZh": "大地精长官",
+    "nameEn": "Hobgoblin Captain",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 39,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__wight",
+    "type": "monster",
+    "nameZh": "尸妖",
+    "nameEn": "Wight",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 45,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__giant-frog",
+    "type": "monster",
+    "nameZh": "巨蛙",
+    "nameEn": "Giant Frog",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 18,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 5 章 · 前方施工",
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "04",
+      "05",
+      "08"
+    ]
+  },
+  {
+    "id": "HDQ__giant-centipede",
+    "type": "monster",
+    "nameZh": "巨蜈蚣",
+    "nameEn": "Giant Centipede",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 4,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "蜈蚣"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__giant-spider",
+    "type": "monster",
+    "nameZh": "巨蜘蛛",
+    "nameEn": "Giant Spider",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 26,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "00",
+      "05",
+      "07"
+    ]
+  },
+  {
+    "id": "HDQ__giant-lizard",
+    "type": "monster",
+    "nameZh": "巨蜥",
+    "nameEn": "Giant Lizard",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 19,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [
+      "巨蜥蜴"
+    ],
+    "chapters": [
+      "第 5 章 · 前方施工",
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "04",
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__giant-toad",
+    "type": "monster",
+    "nameZh": "巨蟾",
+    "nameEn": "Giant Toad",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 39,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__troll",
+    "type": "monster",
+    "nameZh": "巨魔",
+    "nameEn": "Troll",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 84,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 5 章 · 前方施工",
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "04",
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__giant-crocodile",
+    "type": "monster",
+    "nameZh": "巨鳄鱼",
+    "nameEn": "Giant Crocodile",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 85,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__winged-kobold",
+    "type": "monster",
+    "nameZh": "带翼狗头人",
+    "nameEn": "Winged Kobold",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 7,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "01",
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__commoner",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "Commoner",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 5 章 · 前方施工",
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "00",
+      "01",
+      "02",
+      "04",
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__helmed-horror",
+    "type": "monster",
+    "nameZh": "恐怖铠甲",
+    "nameEn": "Helmed Horror",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "4",
+    "hp": 60,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__yuan-ti-malison",
+    "type": "monster",
+    "nameZh": "恶咒蛇人",
+    "nameEn": "Yuan-ti Malison",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 66,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "原体蛇人"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__specter",
+    "type": "monster",
+    "nameZh": "恶灵",
+    "nameEn": "Specter",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "幽灵"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "HDQ__adult-white-dragon",
+    "type": "monster",
+    "nameZh": "成年白龙",
+    "nameEn": "Adult White Dragon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "13",
+    "hp": 200,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__adult-blue-dragon",
+    "type": "monster",
+    "nameZh": "成年蓝龙",
+    "nameEn": "Adult Blue Dragon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "16",
+    "hp": 225,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__adult-black-dragon",
+    "type": "monster",
+    "nameZh": "成年黑龙",
+    "nameEn": "Adult Black Dragon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "14",
+    "hp": 195,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__scout",
+    "type": "monster",
+    "nameZh": "斥候",
+    "nameEn": "Scout",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__swarm-of-insects",
+    "type": "monster",
+    "nameZh": "昆虫集群",
+    "nameEn": "Swarm of Insects",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 22,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [
+      "蜈蚣群",
+      "虫群"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "HDQ__air-elemental",
+    "type": "monster",
+    "nameZh": "气元素",
+    "nameEn": "Air Elemental",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 90,
+    "initiativeBonus": 5,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__animated-armor",
+    "type": "monster",
+    "nameZh": "活化盔甲",
+    "nameEn": "Animated Armor",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 33,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__gray-ooze",
+    "type": "monster",
+    "nameZh": "灰泥怪",
+    "nameEn": "Gray Ooze",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 22,
+    "initiativeBonus": -2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "HDQ__bugbear",
+    "type": "monster",
+    "nameZh": "熊地精",
+    "nameEn": "Bugbear",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__berserker",
+    "type": "monster",
+    "nameZh": "狂战士",
+    "nameEn": "Berserker",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 67,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__kobold",
+    "type": "monster",
+    "nameZh": "狗头人",
+    "nameEn": "Kobold",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/8",
+    "hp": 5,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "狗头人侍从"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场",
+      "第 7 章 · 狩猎旅舍",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "01",
+      "02",
+      "03",
+      "09",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__griffon",
+    "type": "monster",
+    "nameZh": "狮鹫",
+    "nameEn": "Griffon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 59,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__gargoyle",
+    "type": "monster",
+    "nameZh": "石像鬼",
+    "nameEn": "Gargoyle",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 52,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡",
+      "第 7 章 · 狩猎旅舍",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "07",
+      "09",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__stone-giant",
+    "type": "monster",
+    "nameZh": "石巨人",
+    "nameEn": "Stone Giant",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "7",
+    "hp": 126,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__roper",
+    "type": "monster",
+    "nameZh": "石绳怪",
+    "nameEn": "Roper",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 93,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [
+      "树绳妖"
+    ],
+    "chapters": [
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__stone-golem",
+    "type": "monster",
+    "nameZh": "石魔像",
+    "nameEn": "Stone Golem",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "10",
+    "hp": 178,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__priest",
+    "type": "monster",
+    "nameZh": "祭司",
+    "nameEn": "Priest",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 27,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__troglodyte",
+    "type": "monster",
+    "nameZh": "穴蜥人",
+    "nameEn": "Troglodyte",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 13,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [
+      "战蜥人"
+    ],
+    "chapters": [
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__violet-fungus",
+    "type": "monster",
+    "nameZh": "紫腐菌",
+    "nameEn": "Violet Fungus",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 18,
+    "initiativeBonus": -5,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__yuan-ti-pureblood",
+    "type": "monster",
+    "nameZh": "纯血蛇人",
+    "nameEn": "Yuan-ti Pureblood",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 40,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [
+      "原体蛇人"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__veteran",
+    "type": "monster",
+    "nameZh": "老兵",
+    "nameEn": "Veteran",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 2 章 · 劫掠者营地",
+      "第 5 章 · 前方施工",
+      "第 7 章 · 狩猎旅舍",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "00",
+      "02",
+      "04",
+      "10",
+      "11"
+    ]
+  },
+  {
+    "id": "HDQ__shambling-mound",
+    "type": "monster",
+    "nameZh": "蔓生怪",
+    "nameEn": "Shambling Mound",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 136,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__stirge",
+    "type": "monster",
+    "nameZh": "蚊蝠",
+    "nameEn": "Stirge",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/8",
+    "hp": 2,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 3 章 · 育龙场"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "HDQ__lizardfolk",
+    "type": "monster",
+    "nameZh": "蜥蜴人",
+    "nameEn": "Lizardfolk",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 22,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 5 章 · 前方施工",
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "04",
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__guard",
+    "type": "monster",
+    "nameZh": "警卫",
+    "nameEn": "Guard",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/8",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览",
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场",
+      "第 5 章 · 前方施工",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "00",
+      "01",
+      "02",
+      "03",
+      "04",
+      "11"
+    ]
+  },
+  {
+    "id": "HDQ__noble",
+    "type": "monster",
+    "nameZh": "贵族",
+    "nameEn": "Noble",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__elk",
+    "type": "monster",
+    "nameZh": "赤鹿",
+    "nameEn": "Elk",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 13,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [
+      "麋鹿",
+      "金色牡鹿"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__cultist",
+    "type": "monster",
+    "nameZh": "邪教徒",
+    "nameEn": "Cultist",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿",
+      "第 2 章 · 劫掠者营地",
+      "第 3 章 · 育龙场",
+      "第 5 章 · 前方施工",
+      "第 6 章 · 涅瑞塔堡",
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__cult-fanatic",
+    "type": "monster",
+    "nameZh": "邪教狂信者",
+    "nameEn": "Cult Fanatic",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 33,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__spy",
+    "type": "monster",
+    "nameZh": "间谍",
+    "nameEn": "Spy",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [
+      "密探"
+    ],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__rug-of-smothering",
+    "type": "monster",
+    "nameZh": "闷人毯",
+    "nameEn": "Rug of Smothering",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 33,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__wyvern",
+    "type": "monster",
+    "nameZh": "飞龙",
+    "nameEn": "Wyvern",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "6",
+    "hp": 110,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "11",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__ogre",
+    "type": "monster",
+    "nameZh": "食人魔",
+    "nameEn": "Ogre",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 59,
+    "initiativeBonus": -1,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 5 章 · 前方施工",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "04",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__ghoul",
+    "type": "monster",
+    "nameZh": "食尸鬼",
+    "nameEn": "Ghoul",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__otyugh",
+    "type": "monster",
+    "nameZh": "食腐兽",
+    "nameEn": "Otyugh",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "5",
+    "hp": 114,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__knight",
+    "type": "monster",
+    "nameZh": "骑士",
+    "nameEn": "Knight",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__will-o-wisp",
+    "type": "monster",
+    "nameZh": "鬼火",
+    "nameEn": "Will-o'-Wisp",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 22,
+    "initiativeBonus": 9,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__mage",
+    "type": "monster",
+    "nameZh": "魔法师",
+    "nameEn": "Mage",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "6",
+    "hp": 40,
+    "initiativeBonus": 2,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__crocodile",
+    "type": "monster",
+    "nameZh": "鳄鱼",
+    "nameEn": "Crocodile",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 19,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__deer",
+    "type": "monster",
+    "nameZh": "鹿",
+    "nameEn": "Deer",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__peryton",
+    "type": "monster",
+    "nameZh": "鹿鹰",
+    "nameEn": "Peryton",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 33,
+    "initiativeBonus": 1,
+    "role": "",
+    "aliases": [
+      "鹿鹰兽"
+    ],
+    "chapters": [
+      "总览",
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "00",
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__swarm-of-rats",
+    "type": "monster",
+    "nameZh": "鼠集群",
+    "nameEn": "Swarm of Rats",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/4",
+    "hp": 24,
+    "initiativeBonus": 0,
+    "role": "",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__dragonwing",
+    "type": "monster",
+    "nameZh": "龙翼",
+    "nameEn": "Dragonwing",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 32,
+    "initiativeBonus": 3,
+    "role": "",
+    "aliases": [
+      "龙巫教龙翼"
+    ],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡",
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "06",
+      "07",
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__tarbaw-nighthill",
+    "type": "monster",
+    "nameZh": "塔巴·夜山",
+    "nameEn": "Tarbaw Nighthill",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "夜山镇长"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__escobert-the-red",
+    "type": "monster",
+    "nameZh": "埃斯科伯特",
+    "nameEn": "Escobert the Red",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "红发·卡斯特兰·埃斯科伯特"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__linan-swift",
+    "type": "monster",
+    "nameZh": "利南·斯威夫特",
+    "nameEn": "Linan Swift",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "0",
+    "hp": 8,
+    "initiativeBonus": 0,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "利南"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__cuth",
+    "type": "monster",
+    "nameZh": "卡斯",
+    "nameEn": "Cuth",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__sergeant-markguth",
+    "type": "monster",
+    "nameZh": "玛古斯军士",
+    "nameEn": "Sergeant Markguth",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "玛古斯",
+      "Markguth"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__eadyan-falconmoon",
+    "type": "monster",
+    "nameZh": "伊迪安·隼月",
+    "nameEn": "Eadyan Falconmoon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "隼月"
+    ],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__leosin-erlanthar",
+    "type": "monster",
+    "nameZh": "莱奥森·厄兰泽",
+    "nameEn": "Leosin Erlanthar",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "莱奥森·厄兰塔尔",
+      "莱奥森",
+      "厄兰塔尔"
+    ],
+    "chapters": [
+      "总览",
+      "第 2 章 · 劫掠者营地"
+    ],
+    "sceneKeys": [
+      "00",
+      "02"
+    ]
+  },
+  {
+    "id": "HDQ__nesim-waladra",
+    "type": "monster",
+    "nameZh": "内斯姆·瓦拉德拉",
+    "nameEn": "Nesim Waladra",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "内斯姆"
+    ],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__ontharr-frume",
+    "type": "monster",
+    "nameZh": "安塔尔·弗鲁姆",
+    "nameEn": "Ontharr Frume",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "弗鲁姆"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__ackyn-selebon",
+    "type": "monster",
+    "nameZh": "阿肯·赛拉波",
+    "nameEn": "Ackyn Selebon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "赛拉波"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__carlon-amoffel",
+    "type": "monster",
+    "nameZh": "卡隆·阿莫费尔",
+    "nameEn": "Carlon Amoffel",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "至绿镇与调查盟友",
+    "aliases": [
+      "阿莫费尔"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__lennithon",
+    "type": "monster",
+    "nameZh": "兰尼松",
+    "nameEn": "Lennithon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "16",
+    "hp": 225,
+    "initiativeBonus": 0,
+    "role": "龙巫教与巨龙",
+    "aliases": [],
+    "chapters": [
+      "第 1 章 · 火中至绿"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "HDQ__arietta-innevar",
+    "type": "monster",
+    "nameZh": "阿莉埃塔·英尼瓦",
+    "nameEn": "Arietta Innevar",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 4,
+    "role": "商路与散塔林会",
+    "aliases": [
+      "阿莉埃塔"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__zelina-innevar",
+    "type": "monster",
+    "nameZh": "塞琳娜·英尼瓦",
+    "nameEn": "Zelina Innevar",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 52,
+    "initiativeBonus": 4,
+    "role": "商路与散塔林会",
+    "aliases": [
+      "塞琳娜"
+    ],
+    "chapters": [
+      "总览"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
+  },
+  {
+    "id": "HDQ__ardred-briferhew",
+    "type": "monster",
+    "nameZh": "阿德瑞德·布里弗休",
+    "nameEn": "Ardred Briferhew",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "卡纳特客栈",
+    "aliases": [
+      "布里弗休"
+    ],
+    "chapters": [
+      "第 5 章 · 前方施工"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "HDQ__bog-luck",
+    "type": "monster",
+    "nameZh": "博格·卢克",
+    "nameEn": "Bog Luck",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "卡纳特客栈",
+    "aliases": [
+      "伯格",
+      "博格"
+    ],
+    "chapters": [
+      "第 5 章 · 前方施工"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "HDQ__gristle-pete",
+    "type": "monster",
+    "nameZh": "格雷索·皮特",
+    "nameEn": "Gristle Pete",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "卡纳特客栈",
+    "aliases": [
+      "格雷索"
+    ],
+    "chapters": [
+      "第 5 章 · 前方施工"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "HDQ__snapjaw",
+    "type": "monster",
+    "nameZh": "钳嘴",
+    "nameEn": "Snapjaw",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 22,
+    "initiativeBonus": 0,
+    "role": "亡者沼泽各方",
+    "aliases": [],
+    "chapters": [
+      "第 6 章 · 涅瑞塔堡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "HDQ__suncaller",
+    "type": "monster",
+    "nameZh": "唤日者",
+    "nameEn": "Suncaller",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "亡者沼泽各方",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__voaraghamanthar",
+    "type": "monster",
+    "nameZh": "沃拉格哈曼萨",
+    "nameEn": "Voaraghamanthar",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "14",
+    "hp": 195,
+    "initiativeBonus": 2,
+    "role": "亡者沼泽各方",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__waervaerendor",
+    "type": "monster",
+    "nameZh": "瓦尔法兰多",
+    "nameEn": "Waervaerendor",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "14",
+    "hp": 195,
+    "initiativeBonus": 2,
+    "role": "亡者沼泽各方",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__trepsin",
+    "type": "monster",
+    "nameZh": "特雷普森",
+    "nameEn": "Trepsin",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "6",
+    "hp": 84,
+    "initiativeBonus": 1,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__craggnor",
+    "type": "monster",
+    "nameZh": "克拉格诺",
+    "nameEn": "Craggnor",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__miresella",
+    "type": "monster",
+    "nameZh": "米瑞塞拉",
+    "nameEn": "Miresella",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1/2",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__brother-caemon",
+    "type": "monster",
+    "nameZh": "凯蒙修士",
+    "nameEn": "Brother Caemon",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "2",
+    "hp": 27,
+    "initiativeBonus": 0,
+    "role": "狩猎旅舍",
+    "aliases": [
+      "凯蒙"
+    ],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__gastyn",
+    "type": "monster",
+    "nameZh": "加斯汀",
+    "nameEn": "Gastyn",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__arlaenga",
+    "type": "monster",
+    "nameZh": "阿兰加",
+    "nameEn": "Arlaenga",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__angrath-woodwise",
+    "type": "monster",
+    "nameZh": "安格拉斯·伍德华斯",
+    "nameEn": "Angrath Woodwise",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "狩猎旅舍",
+    "aliases": [
+      "伍德华斯"
+    ],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "09"
+    ]
+  },
+  {
+    "id": "HDQ__maelgot",
+    "type": "monster",
+    "nameZh": "梅尔戈",
+    "nameEn": "Maelgot",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__sorvic",
+    "type": "monster",
+    "nameZh": "索维克",
+    "nameEn": "Sorvic",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__kusphia",
+    "type": "monster",
+    "nameZh": "库思菲亚",
+    "nameEn": "Kusphia",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "1",
+    "hp": 16,
+    "initiativeBonus": 3,
+    "role": "狩猎旅舍",
+    "aliases": [],
+    "chapters": [
+      "第 7 章 · 狩猎旅舍"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "HDQ__lord-marsten",
+    "type": "monster",
+    "nameZh": "马斯滕领主",
+    "nameEn": "Lord Marsten",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "狩猎旅舍",
+    "aliases": [
+      "马斯滕"
+    ],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__gundalin",
+    "type": "monster",
+    "nameZh": "甘达林",
+    "nameEn": "Gundalin",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "帕纳斯特",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "11"
+    ]
+  },
+  {
+    "id": "HDQ__raggnar-redtooth",
+    "type": "monster",
+    "nameZh": "拉格纳·红牙",
+    "nameEn": "Raggnar Redtooth",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "帕纳斯特",
+    "aliases": [
+      "拉格纳"
+    ],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "11"
+    ]
+  },
+  {
+    "id": "HDQ__esclarotta",
+    "type": "monster",
+    "nameZh": "艾丝克拉萝塔",
+    "nameEn": "Esclarotta",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "通天堡",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__wigluf",
+    "type": "monster",
+    "nameZh": "威格鲁夫",
+    "nameEn": "Wigluf",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "7",
+    "hp": 126,
+    "initiativeBonus": 2,
+    "role": "通天堡",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__hulde",
+    "type": "monster",
+    "nameZh": "赫尔德",
+    "nameEn": "Hulde",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "7",
+    "hp": 126,
+    "initiativeBonus": 2,
+    "role": "通天堡",
+    "aliases": [],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__sandesyl-morgia",
+    "type": "monster",
+    "nameZh": "桑德塞尔·莫吉亚",
+    "nameEn": "Sandesyl Morgia",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "13",
+    "hp": 144,
+    "initiativeBonus": 4,
+    "role": "通天堡",
+    "aliases": [
+      "桑德塞尔"
+    ],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__glazhael-the-cloudchaser",
+    "type": "monster",
+    "nameZh": "格拉兹哈尔·逐云者",
+    "nameEn": "Glazhael the Cloudchaser",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "13",
+    "hp": 200,
+    "initiativeBonus": 0,
+    "role": "通天堡",
+    "aliases": [
+      "格拉兹哈尔",
+      "逐云者"
+    ],
+    "chapters": [
+      "第 8 章 · 云中城堡"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "HDQ__severin",
+    "type": "monster",
+    "nameZh": "塞维林",
+    "nameEn": "Severin",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "背景人物",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__varram-the-white",
+    "type": "monster",
+    "nameZh": "白之瓦拉姆",
+    "nameEn": "Varram the White",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "背景人物",
+    "aliases": [
+      "瓦拉姆"
+    ],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__dharva-scatterheart",
+    "type": "monster",
+    "nameZh": "德哈瓦·散心",
+    "nameEn": "Dharva Scatterheart",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "背景人物",
+    "aliases": [
+      "散心"
+    ],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__achreny-ulyeltin",
+    "type": "monster",
+    "nameZh": "阿什利·乌延廷",
+    "nameEn": "Achreny Ulyeltin",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__aldor-urnpoleshurst",
+    "type": "monster",
+    "nameZh": "阿尔多·瓮极洲",
+    "nameEn": "Aldor Urnpoleshurst",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__beyd-sechepol",
+    "type": "monster",
+    "nameZh": "贝德·塞奇波",
+    "nameEn": "Beyd Sechepol",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__edhelri-lewel",
+    "type": "monster",
+    "nameZh": "艾德丽·莱维",
+    "nameEn": "Edhelri Lewel",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__eldkin-agetul",
+    "type": "monster",
+    "nameZh": "埃达金·阿格图尔",
+    "nameEn": "Eldkin Agetul",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__enom-tobun",
+    "type": "monster",
+    "nameZh": "伊诺姆·东文",
+    "nameEn": "Enom Tobun",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__green-imsa",
+    "type": "monster",
+    "nameZh": "格林·伊姆沙",
+    "nameEn": "Green Imsa",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__lai-angesstun",
+    "type": "monster",
+    "nameZh": "莱伊·安格斯顿",
+    "nameEn": "Lai Angesstun",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__lasfelro-the-silent",
+    "type": "monster",
+    "nameZh": "沉默者·拉斯费罗",
+    "nameEn": "Lasfelro the Silent",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__leda-widris",
+    "type": "monster",
+    "nameZh": "莉达·韦德里斯",
+    "nameEn": "Leda Widris",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__losvius-longnose",
+    "type": "monster",
+    "nameZh": "洛斯维斯·长鼻",
+    "nameEn": "Losvius Longnose",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__noohar-serelim",
+    "type": "monster",
+    "nameZh": "努哈·塞雷利姆",
+    "nameEn": "Noohar Serelim",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__nyerhite-verther",
+    "type": "monster",
+    "nameZh": "奈尔亥特·维尔瑟",
+    "nameEn": "Nyerhite Verther",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__orvustia-esseren",
+    "type": "monster",
+    "nameZh": "奥维斯蒂亚·艾瑟伦",
+    "nameEn": "Orvustia Esseren",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__oyn-evenmor",
+    "type": "monster",
+    "nameZh": "奥延·埃文默",
+    "nameEn": "Oyn Evenmor",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__radecere-perethun",
+    "type": "monster",
+    "nameZh": "拉迪赛尔·佩雷森",
+    "nameEn": "Radecere Perethun",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__samardag-the-hoper",
+    "type": "monster",
+    "nameZh": "期望者萨马巴格",
+    "nameEn": "Samardag the Hoper",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__sulesdeg-the-pole",
+    "type": "monster",
+    "nameZh": "高杆苏莱斯德",
+    "nameEn": "Sulesdeg the Pole",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__tyjit-skesh",
+    "type": "monster",
+    "nameZh": "泰吉·斯克什",
+    "nameEn": "Tyjit Skesh",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__werond-torohar",
+    "type": "monster",
+    "nameZh": "维隆·托罗哈",
+    "nameEn": "Werond Torohar",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "HDQ__selvek",
+    "type": "monster",
+    "nameZh": "萨维卡",
+    "nameEn": "Selvek",
+    "source": "龙后的宝山",
+    "bookFile": "builtin/hoard",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "role": "商队旅伴",
+    "aliases": [],
+    "chapters": [],
+    "sceneKeys": []
+  }
+]
