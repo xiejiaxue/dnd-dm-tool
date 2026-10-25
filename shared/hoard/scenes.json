@@ -1,0 +1,5579 @@
+[
+  {
+    "key": "00",
+    "name": "00 · 剑湾总览",
+    "chapter": "总览",
+    "sourcePage": 4,
+    "map": {
+      "assetId": "map-hdq-00-5a8dc8364429",
+      "width": 1988,
+      "height": 2849,
+      "mapScale": 1
+    },
+    "tokenSize": 40,
+    "notes": "剑湾区域图，用于旅行与第 4 章商路（本章没有专用战术图，需要旅店布局时可借用卡纳特客栈图）。《巨龙僭政》第一部：角色从 1 级开始，结束时约 7–8 级，可直接接《提亚马特崛起》；理想队伍四人，人数不同时增减预设遭遇的一两个敌人。里程碑：除第 5 章外每章结尾升一级。\n\n背景：龙巫教新首领红之塞维林相信龙的力量应属于活龙而非龙巫妖；提亚马特向他揭示了五副巨龙面具，集齐后融合为龙后面具，可将她从九层地狱解放。邪教一边寻找面具，一边召集龙类、为龙后建造巨大宝库；与塞尔红袍法师的叛离派系（拉斯·莫达）结盟。前三章碰到的“邪教徒”大多是收钱的雇佣兵。\n\n路线：至绿镇（第 1–3 章）→ 艾尔托瑞尔（约六天骑程、200 里）→ 冲萨河乘船两三天到博德之门 → 随商队沿贸易公路北上，经匕首滩到深水城（750 里，约两个月）→ 深水城以北卡纳特客栈（第 5 章）→ 亡者沼泽涅瑞塔堡（第 6 章）→ 传送门到灰峰山脉狩猎旅舍（第 7 章）→ 帕纳斯特与通天堡（第 8 章）。\n\n第 4 章随机道路事件：每天 d20，16 早上、17 第一次休息、18 下午、19 夜晚、20 早上一次外加下午或夜里再一次；按情况挑选或 d12 随机。成功解决建议每人 300 XP，理想情况下经历八到九个事件；里程碑在旅程结束时升到 5 级。随时可插入日间强盗或夜间怪物袭击。",
+    "encounters": [
+      {
+        "entryId": "HDQ__ontharr-frume",
+        "section": "在场人物",
+        "region": "艾尔托瑞尔 · 一对黑鹿角",
+        "quantity": "1",
+        "count": 1,
+        "condition": "臂铠教团的托姆圣武士；安排船只与北上任务。",
+        "source": "p.27",
+        "position": [
+          0.585,
+          0.79
+        ],
+        "automatic": false,
+        "key": "00-0e2f44a241a1",
+        "name": "安塔尔·弗鲁姆",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__leosin-erlanthar",
+        "section": "在场人物",
+        "region": "艾尔托瑞尔 · 一对黑鹿角",
+        "quantity": "1",
+        "count": 1,
+        "condition": "竖琴手成员；拒绝任务时交出 1,200 gp 红宝石。",
+        "source": "p.27",
+        "position": [
+          0.59,
+          0.785
+        ],
+        "automatic": false,
+        "key": "00-df2a1b1afe9e",
+        "name": "莱奥森·厄兰泽",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ackyn-selebon",
+        "section": "在场人物",
+        "region": "博德之门 · 黑门",
+        "quantity": "1",
+        "count": 1,
+        "condition": "弗鲁姆的联络人，经营马车整备；可作雇佣担保。",
+        "source": "p.28",
+        "position": [
+          0.385,
+          0.765
+        ],
+        "automatic": false,
+        "key": "00-1043cd268f0d",
+        "name": "阿肯·赛拉波",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "条件遭遇",
+        "region": "博德之门 · 帘轿",
+        "quantity": "1",
+        "count": 1,
+        "condition": "买下五辆马车后带 8 名警卫先行北上，第 6 章前不再出现。",
+        "source": "p.28",
+        "position": [
+          0.38,
+          0.76
+        ],
+        "automatic": false,
+        "key": "00-f2c909c34207",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "条件遭遇",
+        "region": "邪教车队 · 警卫",
+        "quantity": "12",
+        "count": 12,
+        "condition": "每辆车一人兼车夫副手，另 9 人分两组暗中保护车队。",
+        "source": "p.31",
+        "position": [
+          0.375,
+          0.7
+        ],
+        "automatic": false,
+        "key": "00-591d8076cfd9",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__azbara-jos",
+        "section": "条件遭遇",
+        "region": "匕首滩 · 加入车队",
+        "quantity": "1",
+        "count": 1,
+        "condition": "戴羊毛帽遮掩纹身光头（DC 15 感知（察觉）），坐在邪教马车上。",
+        "source": "p.29",
+        "position": [
+          0.37,
+          0.51
+        ],
+        "automatic": false,
+        "key": "00-0b7d0018e2b2",
+        "name": "阿兹巴拉·乔斯",
+        "hp": 39,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__jamna-gleamsilver",
+        "section": "条件遭遇",
+        "region": "匕首滩 · 加入车队",
+        "quantity": "1",
+        "count": 1,
+        "condition": "散塔林会特工；“是敌是友”“最卑劣的谋杀”的幕后人。",
+        "source": "p.30",
+        "position": [
+          0.375,
+          0.515
+        ],
+        "automatic": false,
+        "key": "00-8783f250eb35",
+        "name": "贾姆娜·烁银",
+        "hp": 22,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 1 冒险生涯",
+        "quantity": "5",
+        "count": null,
+        "condition": "带着道具武器的演员，遇险时毫无用处。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-c01543e437a1",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__noble",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 2 虐畜",
+        "quantity": "1",
+        "count": null,
+        "condition": "虐待马匹的贵族。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-4aab504c121d",
+        "name": "贵族",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__knight",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 2 虐畜",
+        "quantity": "1",
+        "count": null,
+        "condition": "贵族的保镖。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-f0e7f45ccded",
+        "name": "骑士",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__mage",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 2 虐畜",
+        "quantity": "1",
+        "count": null,
+        "condition": "贵族的保镖。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-c5045d2338af",
+        "name": "魔法师",
+        "hp": 40,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__peryton",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 3 山祸",
+        "quantity": "2",
+        "count": null,
+        "condition": "DC 15 智力（自然）提前发现，否则遭突袭。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-0e8c986ec3c6",
+        "name": "鹿鹰",
+        "hp": 33,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__deer",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 7 金色牡鹿",
+        "quantity": "鹿群",
+        "count": null,
+        "condition": "附近山丘吃草的鹿群。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-4f6aea8c51c3",
+        "name": "鹿",
+        "hp": 4,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__elk",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 7 金色牡鹿",
+        "quantity": "1",
+        "count": null,
+        "condition": "金毛铂角的牡鹿（赤鹿数据）。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-27c38274f6ef",
+        "name": "赤鹿",
+        "hp": 13,
+        "initiativeBonus": 0,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__carlon-amoffel",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 8 报复",
+        "quantity": "1",
+        "count": null,
+        "condition": "被埋在路中央的竖琴手密探，昏迷脱水。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-3dedeee19dc8",
+        "name": "卡隆·阿莫费尔",
+        "hp": 27,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__veteran",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 9 旅店客满",
+        "quantity": "4",
+        "count": null,
+        "condition": "乔装成贵族和随从的老兵，开打后撕下伪装。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-24cc08854e41",
+        "name": "老兵",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__arietta-innevar",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 10 路边邂逅",
+        "quantity": "1",
+        "count": null,
+        "condition": "变形怪；同伴落败后咒骂着逃走。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-a2197c070d6b",
+        "name": "阿莉埃塔·英尼瓦",
+        "hp": 52,
+        "initiativeBonus": 4,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__zelina-innevar",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 10 路边邂逅",
+        "quantity": "1",
+        "count": null,
+        "condition": "变形怪；与阿莉埃塔一起诱骗落单者。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-49d98f7bcf5f",
+        "name": "塞琳娜·英尼瓦",
+        "hp": 52,
+        "initiativeBonus": 4,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ettercap",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 11 蜘蛛森林",
+        "quantity": "3",
+        "count": null,
+        "condition": "两只追马、一只牵制车队；巢穴约半里外。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-6dee96cbf508",
+        "name": "伊特怪",
+        "hp": 44,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-spider",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 11 蜘蛛森林",
+        "quantity": "2",
+        "count": null,
+        "condition": "牵制车队；巢穴中会被伊特怪赶开 6 轮。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-064a66595810",
+        "name": "巨蜘蛛",
+        "hp": 26,
+        "initiativeBonus": 3,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__noble",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 12 困境",
+        "quantity": "1",
+        "count": null,
+        "condition": "被困的商人，在车下用弩防守。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-529c670e75da",
+        "name": "贵族",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 12 困境",
+        "quantity": "3",
+        "count": null,
+        "condition": "商人的警卫。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-a26c34aca532",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__hobgoblin",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 12 困境",
+        "quantity": "6",
+        "count": null,
+        "condition": "乌沙尼大地精，打算日落后进攻。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-db1b0005c8f7",
+        "name": "大地精",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__hobgoblin-captain",
+        "section": "随机遭遇",
+        "region": "贸易公路事件 · 12 困境",
+        "quantity": "1",
+        "count": null,
+        "condition": "乌沙尼大地精的首领。每天 d20，16+ 发生。",
+        "source": "p.32",
+        "position": null,
+        "automatic": false,
+        "key": "00-7b11a8b95adb",
+        "name": "大地精长官",
+        "hp": 39,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "至绿镇",
+        "name": "至绿镇（第 1–3 章）",
+        "text": "乌尔登商道上唯一成规模的小镇，由半身人德哈瓦·散心建立，夜山镇长管理。冒险从蓝龙与龙巫教的夜袭开始；之后追踪劫掠者到东南约十二里的高原营地与育龙场。"
+      },
+      {
+        "key": "艾尔托瑞尔",
+        "name": "艾尔托瑞尔",
+        "text": "俯瞰冲萨河的有序大城，上空漂浮着日夜长明、令不死生物痛苦的魔法光芒。问安塔尔·弗鲁姆，人人都会带角色去臂铠教团的“总部”——酒馆“一对黑鹿角”；莱奥森离开至绿镇一旬内到达，他和门徒还在这里。弗鲁姆是托姆的豪爽圣武士，爱喝酒、掰手腕、赛马和善意的打斗；赢几场较量、讲讲英勇事迹能给他留下好印象。\n\n深夜密会：弗鲁姆与莱奥森邀请角色加入臂铠教团与竖琴手同盟（不加入也会尽量支援）。竖琴手徽记是新月犄角间的银竖琴，臂铠教团的象征是握住剑刃的铁护手。任务：混进北上的邪教车队，查明赃物去向与用途。他已安排第二天一早的船（三天，夜航两天）到博德之门，并给每人 50 gp 旅费。拒绝时弗鲁姆不悦地离开，莱奥森则交出一枚 1,200 gp 的红宝石：接受任务的话，深水城的竖琴手特工会再付一枚。弗鲁姆建议角色朴素地改变外貌。"
+      },
+      {
+        "key": "博德之门",
+        "name": "博德之门与受雇",
+        "text": "分为上城区、下城区与城墙外的外城区。货车、牲口不许进城，货物须在外城区卸下由搬运工穿城再装车，所以北行车队都在黑门重新雇保镖。弗鲁姆的联络人阿肯·赛拉波在黑门经营整备业务（马车、绳索、车轮、修车），可作雇佣担保。\n\n几天后角色认出邪教营地的熟面孔，他们陪着瑞兹米尔的帘轿到赛拉波的院子买了五辆马车与补给。每名角色魅力（游说）或力量（运动）决定受雇：0–5 没人雇，作为旅客同行（保镖辞职或死亡时可递补）；6–10 普通警卫，每日 5 gp 包食宿；11–15 警卫队长，每日 8 gp，管理二到五名警卫；16+ 某商人的贴身保镖，每日 10 gp。目的地都是深水城。"
+      },
+      {
+        "key": "商旅生活",
+        "name": "商旅生活",
+        "text": "博德之门到深水城 750 里，马车每天约走 15 里（每天约八小时），每六天休息一天，全程约两个月。出发时邪教马车 2d4+3 辆，白天不扎堆、晚上也不在一起扎营，车夫常把乘客赶走。瑞兹米尔和 8 名警卫在出发前就先行北上去涅瑞塔堡，第 6 章前不会再遇到；她留下 12 名警卫：每车一人兼车夫副手，另 9 人分成两组暗中保护车队。高墙旅馆隔几天才有一家。头几天进入“死亡之地”：古战场、墓园与废矿遍布，夜里在土丘上点火会吸引几里外的怪物。\n\n关键 NPC 都在匕首滩（深水城南约 120 里，最后一个休整一整天的地方）加入：红袍法师阿兹巴拉·乔斯戴着包住耳朵脖子的羊毛帽遮掩纹身光头（DC 15 感知（察觉）看到纹身边缘），自称塞尔难民，在一辆邪教马车上买了位置；散塔林会侏儒特工贾姆娜·烁银也要查清货物与去向，若到深水城还查不到就启动 B 计划——大规模屠杀。\n\n第 4 章旅伴：卡片库有 21 位可选商队旅伴（商人、警卫、车夫、旅行者），可随意调整细节。"
+      },
+      {
+        "key": "事件",
+        "name": "贸易公路事件 d12",
+        "text": "1 冒险生涯：吹嘘的“冒险者”顶替了角色的雇主保镖，其实是 5 名带着道具武器的平民演员；救下他们后前雇主以略高薪酬重新雇佣角色。\n2 虐畜：一名贵族勒紧马具、狠鞭饥饿的马，想买角色的马，最后可能把累垮的马打死或丢下等死；随行一名骑士与一名魔法师当保镖。\n3 山祸：2 只鹿鹰兽在高空寻找产卵前的心脏，像普通的鹰；每人 DC 15 智力（自然），成功在俯冲前发现，失败遭突袭。\n4 走私：一辆邪教马车侧翻，箱子摔开露出几十件羊毛包裹的珠宝。瑞兹米尔下令保密，对此感兴趣或提问的人会被灭口（失踪或“意外”，DC 10 感知（医药）看出是中毒），也可借帮忙修车拉近关系。\n5 总有个价：有人一直低价纠缠想买角色的某件物品，某夜物品失踪；公开指责他会树敌——真正的贼另有其人，借这段纠缠作掩护，只能暗中搜行李马车找回。\n6 巨大真菌：两天风雨后满地尖叫蕈（DC 15 智力（自然），10–14 误以为致命有毒），商人不敢走，牲口受惊。清理需六工时，参与者 DC 10 体质豁免，失败吸入微毒孢子陷入悲伤，1d20 分钟后受不了，几天噩梦。\n7 金色牡鹿：鹿群中一只金毛铂角的牡鹿（赤鹿数据），车队几乎人人想猎。森林中每 500 码 DC 10 感知（求生），追 1,500 码到长满苔藓的废墟，三选一：它被逼到绝境战死，当地农民索赔 500 gp；它用木族语、精灵语或蹩脚通用语指路“沿着黄金之河，直到空中的城堡”，留下一把 +1 长弓和一句“不是所有的人都能活下来……”；或是受诅咒的木精灵王子，求角色护送他到深水城解咒，无力付酬但每人 500 XP。\n8 报复：路中央露出一颗人头，额头写着“失信者”——竖琴手密探卡隆·阿莫费尔被埋在土里，昏迷脱水；治疗魔法或喂水加 DC 10 感知（医药）唤醒。商人们觉得他罪有应得。挖出来需两人两小时，回填一小时。他手臂上有竖琴手纹身，对竖琴手角色说出真相：邪教徒目睹他传递情报，诬陷他给强盗通风报信。到深水城后是有用的盟友。\n9 旅店客满：寒雨之夜，旅店称客房全满，休息室只供一名贵族老爷和三名随从聚会，他们嘲笑并羞辱角色，连马厩都不让用，任何理由和钱都没用；即使角色不动手，车队的人也会动手。他们其实是 4 名乔装的老兵，开打后撕下伪装。\n10 路边邂逅：英尼瓦双胞胎姐妹阿莉埃塔与塞琳娜（变形怪）与旅伴整夜攀谈，挑选目标后在夜里用熟悉的嗓音呼救把人引开；打败一个，另一个咒骂着扬言复仇逃走。\n11 蜘蛛森林：3 只伊特怪与 2 只巨蜘蛛袭击车队，主要想要马：两只伊特怪追马（3 轮解开一匹），另一只和蜘蛛牵制车队，然后牵马退回树林。雇主坚持要角色追回。DC 10 感知（求生）跟踪约半里到巢穴；直接冲进去遭全部攻击，先观察几分钟会看到伊特怪把蜘蛛赶开准备吃马，角色有 6 轮时间只对付伊特怪。\n12 困境（适合死亡之地）：一辆驮兽已死的马车被困，一名商人（贵族）与 3 名警卫在车下用弩防守，6 名大地精与 1 名大地精长官（乌沙尼大地精，披狼皮、盾画狼头）打算围到日落再借黑暗进攻。"
+      },
+      {
+        "key": "规划事件",
+        "name": "规划事件",
+        "text": "贾姆娜与乔斯加入后必然发生，时机由主持人决定。\n\n识破：在劫掠者营地混迹过的话，第一天每人秘密魅力检定，最低者在某个戏剧性时刻被某个现为车夫的邪教徒认出（好则被当成逃兵，坏则被当成间谍）。DC 15 感知（洞悉）发现那个怀疑者在暗中记录角色的一举一动；拖延的话他会尝试夜间刺杀或制造事故（松车轮、断车轴、惊马）。唯一永久的解决办法是在他告诉别人之前消灭他。\n\n不必要的关注：离开匕首滩第二天每人感知（洞悉）（受训欺瞒者可改用魅力（欺瞒））：9 以下无发现；10–12 注意到侏儒对坐邪教马车的那个人类（乔斯）特别感兴趣，常偷听、在无人看守的邪教马车附近徘徊；13–15 注意到她对角色特别感兴趣，到处问无伤大雅的问题；16+ 两者都注意到，并感觉她也发现了角色在关注她。有人向她亮出竖琴手徽章，她只说“把它藏好，傻瓜”。\n\n是敌是友：两天后（离深水城四天）早餐时她把匕首刺进角色的燕麦粥，挑出一颗“骨片”——吞下后会在体内伸直刺穿内脏——“今晚我们谈谈吧。”其实是她自己藏在匕首背后的。DC 15 智力（调查）找到几块像骨片又像燕麦壳的碎块，并注意到两名邪教徒在偷看。当晚她说：“我们不是为同样的人工作，但我们站在同一条战线上……我需要知道他们在这些马车里装了什么，以及他们要去哪儿。”她只套话不给情报，点出乔斯是红袍法师，自称也为竖琴手工作，从不提散塔林会；洞悉 15+ 只怀疑她没说全部实话。\n\n最卑劣的谋杀：再过两天，一名邪教警卫被剑从背后刺死在邪教马车下（伤口太大不可能是匕首）。同伴立即指控一名角色并要求检查武器，任何剑都被当成凶器。DC 10 智力（调查）看出脚印都是早上围观的人，地面夜里被扫过。角色此时应已很受欢迎，很多人替他辩护；有人提议让车主开箱检查有无损失，指控就烟消云散——乔斯会罕见地站出来缓和局势。最后无人目击，不了了之，但邪教徒从此公开敌视被指控者（第 5 章“旗鼓相当”）。凶手是贾姆娜：她在偷货时被警卫撞见。"
+      },
+      {
+        "key": "深水城以北",
+        "name": "深水城以北与亡者沼泽",
+        "text": "第 5 章：沿大公路北上约 200 里到卡纳特客栈，沿途在宝剑山脉与大海之间的丘陵蜿蜒，第七天夜里望见亡者沼泽。第 6 章：从客栈地道穿过 15 里沼泽到涅瑞塔堡，再经传送门到灰峰山脉的狩猎旅舍，翻过山约五里便是帕纳斯特村与停在雾谷中的通天堡。"
+      }
+    ]
+  },
+  {
+    "key": "01",
+    "name": "01 · 至绿镇",
+    "chapter": "第 1 章 · 火中至绿",
+    "sourcePage": 9,
+    "map": {
+      "assetId": "map-hdq-01-145d96992128",
+      "width": 955,
+      "height": 707,
+      "mapScale": 2
+    },
+    "tokenSize": 40,
+    "notes": "至绿镇正遭蓝龙兰尼松与龙巫教劫掠（地图无网格，比例尺 100 尺约 95 像素，人物标记较小）。角色日落（约晚 9 点）抵达，最后一批劫掠者凌晨 4 点撤离；每个任务约 1 小时，短休的那一小时不能做任务。第一场遭遇必须是“前往楼堡”，其余任务顺序由主持人安排。\n\n常见地形：燃烧建筑与半月提供微光，楼堡内明亮。三条小溪最深 3 尺、砂砾河床可轻松涉过；溪边茂密灌木中每回合只能移动 5 尺。\n\n游荡遭遇：隐匿前进时每人 DC 10 敏捷（隐匿），每两人失败遭遇一次（沿溪床前进有优势）；不隐匿则每移动 100 尺骰 d8，5+ 遭遇，再骰 d8 查表。任一劫掠小队 50% 带着赃物，价值 d6×10 gp。\n\n审问俘虏（任务“囚犯”）：狗头人只说对方想听的话（为龙巫教和“龙女士”瑞兹米尔收集财宝）；雇佣兵、强盗照实说（在营地听过龙蛋传闻）；邪教徒需 DC 10 威吓或 DC 12 游说，才承认“为龙后君临建造巨大宝库”，营地洞穴里有重兵把守的龙蛋。\n\n里程碑：本章结束升到 2 级。治疗者带医疗包照料伤员（感知（医药）+4），夜山赠两瓶治疗药水；若角色牺牲人质，夜山不再提供任何帮助。",
+    "encounters": [
+      {
+        "entryId": "HDQ__linan-swift",
+        "section": "条件遭遇",
+        "region": "前往楼堡 · 街头",
+        "quantity": "1",
+        "count": 1,
+        "condition": "持盾断后，掩护家人逃往楼堡；8 HP。",
+        "source": "p.8",
+        "position": [
+          0.43,
+          0.47
+        ],
+        "automatic": false,
+        "key": "01-1254159d675c",
+        "name": "利南·斯威夫特",
+        "hp": 8,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cuth",
+        "section": "条件遭遇",
+        "region": "前往楼堡 · 街头",
+        "quantity": "1",
+        "count": 1,
+        "condition": "只剩 2 HP，带着三个孩子逃跑。",
+        "source": "p.8",
+        "position": [
+          0.43,
+          0.47
+        ],
+        "automatic": false,
+        "key": "01-0d01252a01d0",
+        "name": "卡斯",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "条件遭遇",
+        "region": "前往楼堡 · 街头",
+        "quantity": "8",
+        "count": 8,
+        "condition": "追杀利南一家，把角色当成邪教徒而无视他们。",
+        "source": "p.8",
+        "position": [
+          0.41,
+          0.45
+        ],
+        "automatic": false,
+        "key": "01-1080323d37cb",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "条件遭遇",
+        "region": "前往楼堡 · 途中三组劫掠者",
+        "quantity": "每组 1d6",
+        "count": null,
+        "condition": "共三组，每组 1d6 狗头人 + 1d4 邪教徒；六只的那组含带翼狗头人。",
+        "source": "p.8",
+        "position": null,
+        "automatic": false,
+        "key": "01-5870a19a0c50",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "条件遭遇",
+        "region": "前往楼堡 · 途中三组劫掠者",
+        "quantity": "每组 1d4",
+        "count": null,
+        "condition": "与狗头人同组。",
+        "source": "p.8",
+        "position": null,
+        "automatic": false,
+        "key": "01-e248cd064839",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__winged-kobold",
+        "section": "条件遭遇",
+        "region": "前往楼堡 · 途中三组劫掠者",
+        "quantity": "1",
+        "count": 1,
+        "condition": "只在狗头人掷出 6 的那组出现。",
+        "source": "p.8",
+        "position": null,
+        "automatic": false,
+        "key": "01-40b2995e2a8f",
+        "name": "带翼狗头人",
+        "hp": 7,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__tarbaw-nighthill",
+        "section": "在场人物",
+        "region": "1 · 楼堡护墙",
+        "quantity": "1",
+        "count": 1,
+        "condition": "有空中威胁时在堡楼里；带角色上护墙观察战况、分派任务。",
+        "source": "p.7",
+        "position": [
+          0.53,
+          0.53
+        ],
+        "automatic": true,
+        "key": "01-c11ad6ab6712",
+        "name": "塔巴·夜山",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__escobert-the-red",
+        "section": "在场人物",
+        "region": "1 · 楼堡",
+        "quantity": "1",
+        "count": 1,
+        "condition": "掌管楼堡与钥匙，推荐老旧地道。",
+        "source": "p.7",
+        "position": [
+          0.545,
+          0.555
+        ],
+        "automatic": true,
+        "key": "01-82ee4f2642e4",
+        "name": "埃斯科伯特",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__sergeant-markguth",
+        "section": "在场人物",
+        "region": "1 · 楼堡",
+        "quantity": "1",
+        "count": 1,
+        "condition": "半龙斗士的人质是他的妹妹和外甥；无人应战时他出战（警卫）。",
+        "source": "p.12",
+        "position": [
+          0.525,
+          0.56
+        ],
+        "automatic": true,
+        "key": "01-66cfe7d9df51",
+        "name": "玛古斯军士",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__acolyte",
+        "section": "条件遭遇",
+        "region": "1 · 隘口准备室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "夜里撞破隘口旧门；准备室 10×20 尺。",
+        "source": "p.9",
+        "position": [
+          0.505,
+          0.55
+        ],
+        "automatic": false,
+        "key": "01-6624f4394d8a",
+        "name": "侍僧",
+        "hp": 9,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "条件遭遇",
+        "region": "1 · 隘口准备室",
+        "quantity": "4",
+        "count": 4,
+        "condition": "与侍僧、伏击龙兽一起守住准备室。",
+        "source": "p.9",
+        "position": [
+          0.505,
+          0.55
+        ],
+        "automatic": false,
+        "key": "01-c1d9d54c8a2d",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ambush-drake",
+        "section": "条件遭遇",
+        "region": "1 · 隘口准备室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "与侍僧一起守住准备室。",
+        "source": "p.9",
+        "position": [
+          0.505,
+          0.55
+        ],
+        "automatic": false,
+        "key": "01-824b5d62b008",
+        "name": "伏击龙兽",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lennithon",
+        "section": "条件遭遇",
+        "region": "巨龙进攻 · 楼堡上空",
+        "quantity": "1",
+        "count": 1,
+        "condition": "午夜后在护墙 25 尺外吐息；受 24 点以上伤害或一记重击后离去。",
+        "source": "p.9",
+        "position": [
+          0.56,
+          0.5
+        ],
+        "automatic": false,
+        "key": "01-58aca9297394",
+        "name": "兰尼松",
+        "hp": 225,
+        "initiativeBonus": 0,
+        "tokenScale": 3
+      },
+      {
+        "entryId": "HDQ__swarm-of-rats",
+        "section": "固定遭遇",
+        "region": "2 · 地道溪岸端",
+        "quantity": "2",
+        "count": 2,
+        "condition": "受惊扰后攻击，死掉一半后剩下的逃跑。",
+        "source": "p.8",
+        "position": [
+          0.605,
+          0.6
+        ],
+        "automatic": true,
+        "key": "01-f9c7609df092",
+        "name": "鼠集群",
+        "hp": 24,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "2 · 溪岸",
+        "quantity": "2",
+        "count": 2,
+        "condition": "沿溪岸搜寻躲藏镇民；第 4 轮仍有存活者会跑去求援。",
+        "source": "p.8",
+        "position": [
+          0.63,
+          0.63
+        ],
+        "automatic": true,
+        "key": "01-8cb638feb7bc",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "2 · 溪岸",
+        "quantity": "6",
+        "count": 6,
+        "condition": "与邪教徒一起搜寻镇民。",
+        "source": "p.8",
+        "position": [
+          0.63,
+          0.63
+        ],
+        "automatic": true,
+        "key": "01-71ecceae5eb7",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "条件遭遇",
+        "region": "2 · 溪岸援军",
+        "quantity": "2",
+        "count": 2,
+        "condition": "求援成功 10 分钟后到达并守住地道口。",
+        "source": "p.8",
+        "position": [
+          0.64,
+          0.64
+        ],
+        "automatic": false,
+        "key": "01-a49c8b151ea6",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "条件遭遇",
+        "region": "2 · 溪岸援军",
+        "quantity": "10",
+        "count": 10,
+        "condition": "与邪教徒援军同到。",
+        "source": "p.8",
+        "position": [
+          0.64,
+          0.64
+        ],
+        "automatic": false,
+        "key": "01-34f5975bebaa",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ambush-drake",
+        "section": "条件遭遇",
+        "region": "2 · 溪岸援军",
+        "quantity": "1",
+        "count": 1,
+        "condition": "与邪教徒援军同到。",
+        "source": "p.8",
+        "position": [
+          0.64,
+          0.64
+        ],
+        "automatic": false,
+        "key": "01-916524d30e86",
+        "name": "伏击龙兽",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonclaw",
+        "section": "固定遭遇",
+        "region": "3 · 神庙前门（A 组）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "A 组头领。",
+        "source": "p.11",
+        "position": [
+          0.845,
+          0.625
+        ],
+        "automatic": true,
+        "key": "01-a777e74ff012",
+        "name": "龙爪",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "3 · 神庙前门（A 组）",
+        "quantity": "2",
+        "count": 2,
+        "condition": "举着攻城锤撞门；大门 30 HP，每击 1d6。",
+        "source": "p.11",
+        "position": [
+          0.845,
+          0.625
+        ],
+        "automatic": true,
+        "key": "01-569f94f338e3",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "3 · 神庙前门（A 组）",
+        "quantity": "6",
+        "count": 6,
+        "condition": "警戒镇上反击；B 组经过前门时分心。",
+        "source": "p.11",
+        "position": [
+          0.845,
+          0.625
+        ],
+        "automatic": true,
+        "key": "01-229ed260924f",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "3 · 绕神庙巡逻（B 组）",
+        "quantity": "3",
+        "count": 3,
+        "condition": "50 尺长队绕神庙一圈约 8 分钟。",
+        "source": "p.11",
+        "position": [
+          0.805,
+          0.67
+        ],
+        "automatic": true,
+        "key": "01-980a2728a254",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "3 · 绕神庙巡逻（B 组）",
+        "quantity": "10",
+        "count": 10,
+        "condition": "蹦跳转圈。",
+        "source": "p.11",
+        "position": [
+          0.805,
+          0.67
+        ],
+        "automatic": true,
+        "key": "01-360a47157013",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ambush-drake",
+        "section": "固定遭遇",
+        "region": "3 · 绕神庙巡逻（B 组）",
+        "quantity": "2",
+        "count": 2,
+        "condition": "随巡逻队行动。",
+        "source": "p.11",
+        "position": [
+          0.805,
+          0.67
+        ],
+        "automatic": true,
+        "key": "01-f81d86fc79e2",
+        "name": "伏击龙兽",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "3 · 神庙后门（C 组）",
+        "quantity": "2",
+        "count": 2,
+        "condition": "堆稻草制造浓烟；避开 B 组可潜近突袭。",
+        "source": "p.11",
+        "position": [
+          0.89,
+          0.725
+        ],
+        "automatic": true,
+        "key": "01-1d0e50e109b2",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "3 · 神庙后门（C 组）",
+        "quantity": "6",
+        "count": 6,
+        "condition": "聚集在后门。",
+        "source": "p.11",
+        "position": [
+          0.89,
+          0.725
+        ],
+        "automatic": true,
+        "key": "01-55357280a212",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__eadyan-falconmoon",
+        "section": "在场人物",
+        "region": "3 · 神庙内",
+        "quantity": "1",
+        "count": 1,
+        "condition": "神庙里唯一冷静的人，期待角色拿出好计划。",
+        "source": "p.11",
+        "position": [
+          0.865,
+          0.665
+        ],
+        "automatic": true,
+        "key": "01-a55869b3da11",
+        "name": "伊迪安·隼月",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "条件遭遇",
+        "region": "4 · 磨坊阁楼伏兵",
+        "quantity": "每名角色 1",
+        "count": null,
+        "condition": "藏在阁楼；DC 20 感知（察觉）发现。",
+        "source": "p.10",
+        "position": [
+          0.1,
+          0.71
+        ],
+        "automatic": false,
+        "key": "01-3a1d8f0c526c",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "条件遭遇",
+        "region": "4 · 磨坊阁楼伏兵",
+        "quantity": "每名角色 1",
+        "count": null,
+        "condition": "先用矛齐射再跳下肉搏。",
+        "source": "p.10",
+        "position": [
+          0.1,
+          0.71
+        ],
+        "automatic": false,
+        "key": "01-16d9e1f9e969",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__frulam-mondath",
+        "section": "条件遭遇",
+        "region": "囚犯 · 镇中",
+        "quantity": "1",
+        "count": 1,
+        "condition": "身穿紫袍，从护墙上可以看到；镇长劝角色别挑战她。",
+        "source": "p.10",
+        "position": [
+          0.38,
+          0.33
+        ],
+        "automatic": false,
+        "key": "01-84ee1c3146fe",
+        "name": "弗鲁兰·蒙达斯",
+        "hp": 44,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "条件遭遇",
+        "region": "囚犯 · 镇中",
+        "quantity": "12",
+        "count": 12,
+        "condition": "蒙达斯的护卫。",
+        "source": "p.10",
+        "position": [
+          0.38,
+          0.33
+        ],
+        "automatic": false,
+        "key": "01-e20be16025d3",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__langdedrosa-cyanwrath",
+        "section": "条件遭遇",
+        "region": "半龙斗士 · 楼堡门前",
+        "quantity": "1",
+        "count": 1,
+        "condition": "劫掠者撤离前要求单挑；荣誉感强，不搞把戏。",
+        "source": "p.12",
+        "position": [
+          0.52,
+          0.6
+        ],
+        "automatic": false,
+        "key": "01-b351371e3770",
+        "name": "兰德卓萨·青怒",
+        "hp": 57,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "条件遭遇",
+        "region": "半龙斗士 · 楼堡门前",
+        "quantity": "6",
+        "count": 6,
+        "condition": "青怒的亲卫，看守女人质；有人干扰决斗就杀她。",
+        "source": "p.12",
+        "position": [
+          0.52,
+          0.62
+        ],
+        "automatic": false,
+        "key": "01-48c8d8ed49f2",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "条件遭遇",
+        "region": "半龙斗士 · 楼堡门前",
+        "quantity": "4",
+        "count": 4,
+        "condition": "玛古斯的妹妹与三个孩子（孩子先放，女人战后放）。",
+        "source": "p.12",
+        "position": [
+          0.51,
+          0.61
+        ],
+        "automatic": false,
+        "key": "01-805ead6cc050",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 1",
+        "quantity": "6",
+        "count": null,
+        "condition": "6 只狗头人。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-681843d2d31f",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 2",
+        "quantity": "3",
+        "count": null,
+        "condition": "3 只狗头人和 1 只伏击龙兽。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-44220b9e35c5",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ambush-drake",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 2",
+        "quantity": "1",
+        "count": null,
+        "condition": "与 3 只狗头人同行。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-17fad5fdc056",
+        "name": "伏击龙兽",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 3",
+        "quantity": "6",
+        "count": null,
+        "condition": "6 名邪教徒。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-d75cb61908cb",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 4",
+        "quantity": "4",
+        "count": null,
+        "condition": "4 名邪教徒和 1 名警卫。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-9f213bdd00f1",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 4",
+        "quantity": "1",
+        "count": null,
+        "condition": "与 4 名邪教徒同行。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-c4bb0cb8765f",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 5",
+        "quantity": "2",
+        "count": null,
+        "condition": "2 名邪教徒和 1 名侍僧（命令术替换圣域术）。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-5d3f592dd633",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__acolyte",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 5",
+        "quantity": "1",
+        "count": null,
+        "condition": "命令术替换圣域术。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-82ac637a99f2",
+        "name": "侍僧",
+        "hp": 9,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 6",
+        "quantity": "3",
+        "count": null,
+        "condition": "3 名警卫和 1 名侍僧（命令术替换圣域术）。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-93ecb38f6556",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__acolyte",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 6",
+        "quantity": "1",
+        "count": null,
+        "condition": "与 3 名警卫同行。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-9554128640df",
+        "name": "侍僧",
+        "hp": 9,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 7",
+        "quantity": "1d6",
+        "count": null,
+        "condition": "镇民正被劫掠者猎杀（再骰 d6 决定劫掠者）。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-58fa1a4fc061",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "随机遭遇",
+        "region": "第 1 章遭遇 d8 · 8",
+        "quantity": "1d6",
+        "count": null,
+        "condition": "镇民正在躲藏。",
+        "source": "p.7",
+        "position": null,
+        "automatic": false,
+        "key": "01-286b5f2c15eb",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "楼堡",
+        "text": "镇中心的石砌楼堡，是至绿镇唯一安全的地方。夜山镇长（脸、右臂缠着绷带）在护墙上指挥；红发埃斯科伯特掌管楼堡与整串铜钥匙。角色是大门关闭前最后一批进入的队伍，之后劫掠者团团围住楼堡（正门再出不去，可夜里从后墙悬绳爬下或走老旧地道）。\n\n隘口（西墙）：夜里劫掠者撞破旧大门涌入，埃斯科伯特敲响警钟并请角色封住隘口。准备室 10×20 尺内有 1 侍僧、4 狗头人、1 伏击龙兽；夺回后门已严重损毁，五道修复术（5 分钟）可修好，堡内有位会这个戏法的 NPC。\n\n巨龙进攻：午夜后兰尼松在护墙上空 25 尺外吐息，墙上 20 名守兵，每次吐息杀死 1d4、打伤 1d6。它起初不针对角色，NPC 攻击无效；承受 24 点以上伤害或一记重击后离去。赶走它每人 50 XP（守兵死亡 10 人以上则 25 XP）。\n\n半龙斗士：所有劫掠者撤离前，兰德卓萨·青怒带 6 狗头人押着 4 名俘虏（玛古斯军士的妹妹和她的三个孩子）在门前约 8 码处要求单挑。DC 15 智力（奥秘或自然）认出半龙。条件：孩子立即释放，女人在战后释放；有人干扰就杀人质；旁观者须保持距离、站在他与楼堡之间。青怒通常获胜并对倒地者补刀（杀死玛古斯，或令角色记一次死亡豁免失败）；他输了狗头人会把他拖走。有人应战每人 50 XP。"
+      },
+      {
+        "key": "2",
+        "name": "溪岸地道口",
+        "text": "老旧地道从楼堡地窖通往这里，宽度只够排成一列；楼堡一侧是包铁大门（门前堆着桶和箱子，钥匙在埃斯科伯特的铁环上，无钥匙用盗贼工具 DC 10 敏捷），溪岸一侧是锈蚀的铁格栅：有钥匙 DC 10、无钥匙 DC 20 开锁，失败 5 以上钥匙或工具断在锁里，之后只能 DC 15 力量撬开。\n\n溪岸那端几码处栖着 2 群鼠集群，受惊扰会攻击，死掉一半后逃散。\n\n敌人：出口外 2 邪教徒与 6 狗头人沿溪岸搜寻镇民。用钥匙或工具顺利开锁则先发现对方（可躲开或突袭）；开锁失败则直接开战；硬撬格栅则对方埋伏并获得突袭轮。第 4 轮仍有邪教徒存活就有一人跑去求援，10 分钟后 2 邪教徒、10 狗头人和 1 伏击龙兽守住地道口。\n\n奖励：地道保持隐蔽可安全进出。之后每次从地道离开骰 d6：1 被发现并遭攻击（查第 1 章遭遇表），2 被发现但劫掠者设伏，下次出来时突袭。"
+      },
+      {
+        "key": "3",
+        "name": "裳提亚神庙（圣地）",
+        "text": "几十名镇民躲在粗石神庙里，劫掠者正用临时攻城锤撞门。A 组在前门撞门：1 龙爪（头领）、2 邪教徒举锤、6 狗头人警戒（B 组经过前门时分心）。B 组绕神庙吵闹巡逻：3 邪教徒、10 狗头人、2 伏击龙兽排成 50 尺长队，绕一圈约 8 分钟。C 组在后门点稻草：2 邪教徒、6 狗头人；浓烟覆盖神庙后侧及周围 30 尺（轻度遮蔽，15 尺外重度遮蔽），避开 B 组后可潜近获得突袭轮。\n\n最稳妥的方案是解决 C 组、控制后门，让镇民撤往楼堡或地道。惊慌的镇民只听 DC 15 魅力（游说）的指挥，或找半精灵祭司伊迪安·隼月协助。\n\n大门 30 HP，攻城锤每次 1d6：低于 20 出现裂缝，低于 10 摇摇欲坠，低于 5 下一击就倒；掷骰间隔按队伍节奏 10–30 秒。门破后狗头人优先攻击镇民，每只每轮杀一人。救出镇民每人 100 XP（死亡超过十人则 50 XP）。"
+      },
+      {
+        "key": "4",
+        "name": "磨坊",
+        "text": "离楼堡约 500 尺（沿溪与地道隐蔽前进路程加倍）。40×20 尺谷仓加外设办公室，水车带动的石磨仍在轰轰运转；阁楼储面粉，可从东墙木阶梯或滑轮绳索上去。\n\n外面的劫掠小队（骰 d6 查第 1 章遭遇表）只是假装点火；先观察一两分钟可 DC 15 感知（洞悉）或魅力（表演）识破。两名以上劫掠者被杀后狗头人逃跑。\n\n陷阱：阁楼藏着每名角色各 1 名邪教徒与 1 名警卫，等角色进门后用矛齐射再跳下肉搏；DC 20 感知（察觉）发现伏兵（进门就扫视阁楼的有优势）。第二场战斗后 10 分钟，12 名守兵来换防。识破陷阱每人额外 50 XP，及时发现伏兵避免突袭则 25 XP。"
+      },
+      {
+        "key": "前往楼堡",
+        "name": "前往楼堡（第一场遭遇）",
+        "text": "一家五口冲过街道，母亲利南·斯威夫特（平民，8 HP，长矛 +2，1d6 穿刺）持盾和破矛断后，丈夫卡斯只剩 2 HP，三个孩子速度 20（被抱着的角色攻击劣势、不能用双手武器）。8 只狗头人把角色当成邪教徒，专心杀那个女人。\n\n抵达楼堡前还要通过三组劫掠者，每组 1d6 狗头人和 1d4 邪教徒（六只狗头人的那组含一只带翼狗头人）。可战斗、潜行、撤退或唬骗；敌方察觉或识破由整组进行一次带优势的检定。每次撤退绕路会再遇到 1d6 名逃难镇民，每多带四名镇民多遇一组劫掠者。每个活着抵达楼堡的 NPC 给队伍 50 XP。"
+      },
+      {
+        "key": "囚犯",
+        "name": "囚犯",
+        "text": "夜山想要审问俘虏，最好是指挥官。在护墙上可以指出身穿紫袍的弗鲁兰·蒙达斯和她身边的 12 名警卫（镇长劝角色不必挑战她）。正门已出不去，可乌云遮月时悬绳下墙或走地道，也可和“拯救磨坊”“圣地”一并完成。俘虏必须活着带到镇长面前，每人 25 XP（私下审问再转述不算）。审问结果见场景概况。"
+      }
+    ]
+  },
+  {
+    "key": "02",
+    "name": "02 · 劫掠者营地",
+    "chapter": "第 2 章 · 劫掠者营地",
+    "sourcePage": 16,
+    "map": {
+      "assetId": "map-hdq-02-180e6e955ce7",
+      "width": 1191,
+      "height": 882,
+      "mapScale": 2
+    },
+    "tokenSize": 40,
+    "notes": "夜山镇长悬赏每人 250 gp：查明营地位置、人数、首领、袭击原因与下一步计划；追回赃物物归原主是次要任务。武僧内斯姆·瓦拉德拉请角色在营地寻找失踪的导师莱奥森（只找到他的断手杖和绘有银龙的皮项圈）。地图无网格，比例尺 100 尺约 90 像素。\n\n追踪：草原踪迹很容易跟；DC 15 感知（察觉）看出许多脚印撤退时比进攻时更深（背着战利品）。向南约十二里进入陡峭的高原地带。\n\n营地马蹄形洼地，岩壁高 150 尺。石块与 4–6 尺灌木丛为困难地形、提供四分之三掩护；边缘浅洞可安全长休。两座 20 尺警戒塔（入口处由狗头人把守，高原顶上由武装人类把守），都带角号。悬崖可徒手攀爬，匆忙时 DC 10 力量（运动），求安静 DC 10 敏捷（隐匿）。第 1 层是狗头人的粗陋营帐，第 2 层是邪教徒的营房，部分用来关押囚犯。\n\n营地警报：劫掠后第一天营地混乱松懈，无人盘查，简单伪装即可混入；每名角色 DC 5 魅力检定，失败则某个戏剧性时刻被人认出（穿着殿后部队制服的有劣势，与青怒决斗过的再 -4）。第一天夜晚后入口有 5 名警卫，需编个故事并 DC 10 魅力（欺瞒）。人类尸体被发现会全营警报，此时每人 DC 15 魅力检定，失败即被识破；拖延周旋会被角色人数五倍的邪教徒包围。营中约 100 狗头人和 80 名强盗、警卫与邪教徒，增援无限。\n\n被捕：被带到蒙达斯面前审问。被认出或承认来自至绿镇则次日清晨处决，绑在莱奥森旁边过夜；用魅力（欺瞒）对抗她的感知可骗过（被放但遭监视）。都失败时莱奥森说出靴子里藏着小刀。\n\n探索营地可打探的情报（每条每人 25 XP）：营地属于龙巫教；许多人只是新教徒或佣兵；狗头人崇拜巨龙易受操纵；猎物部分藏进洞穴喂幼崽；龙巫教在广大地区劫掠，至绿镇收获最丰；囚犯被当劳力，死了喂护卫龙兽或幼崽；区域 4 洞穴“保育场”是禁区；瑞兹米尔数月前来此扎营，蒙达斯打理日常；青怒是蒙达斯的左右手；巨龙之母必将归来；瑞兹米尔特别关注那个武僧；掠来的财宝存放在洞穴里。\n\n奖励：进出营地未引发警报或被捕 100 XP/人，完全未引起怀疑再 100 XP/人；救出莱奥森 250 XP/人，留假人或诱饵再 50 XP/人；每名活着带出的囚犯 25 XP/人。回到至绿镇，夜山支付每人 250 gp。里程碑：本章结束升到 3 级。",
+    "encounters": [
+      {
+        "entryId": "HDQ__cultist",
+        "section": "条件遭遇",
+        "region": "散兵 · 途中低洼处",
+        "quantity": "4",
+        "count": 4,
+        "condition": "人类首先去拿武器；不肯回话，需 DC 15 威吓。",
+        "source": "p.14",
+        "position": null,
+        "automatic": false,
+        "key": "02-3d9a0f1e28fd",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "条件遭遇",
+        "region": "散兵 · 途中低洼处",
+        "quantity": "8",
+        "count": 8,
+        "condition": "第 4 轮重组后只用投石索；人类全倒后逃走。",
+        "source": "p.14",
+        "position": null,
+        "automatic": false,
+        "key": "02-6c6ea7efef72",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__veteran",
+        "section": "条件遭遇",
+        "region": "殿后部队 · 峭壁山路",
+        "quantity": "1",
+        "count": 1,
+        "condition": "藏在路面上方 12–15 尺岩石中，四分之三掩护。",
+        "source": "p.14",
+        "position": null,
+        "automatic": false,
+        "key": "02-8f2c91db24e7",
+        "name": "老兵",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "条件遭遇",
+        "region": "殿后部队 · 峭壁山路",
+        "quantity": "6",
+        "count": 6,
+        "condition": "先推巨石（DC 11 敏捷豁免，2d12 钝击），再持矛远程攻击。",
+        "source": "p.14",
+        "position": null,
+        "automatic": false,
+        "key": "02-25046618ff06",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__acolyte",
+        "section": "条件遭遇",
+        "region": "殿后部队 · 峭壁山路",
+        "quantity": "2",
+        "count": 2,
+        "condition": "与殿后部队一起埋伏。",
+        "source": "p.14",
+        "position": null,
+        "automatic": false,
+        "key": "02-0654e3dd456c",
+        "name": "侍僧",
+        "hp": 9,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "入口警戒塔",
+        "quantity": "数只",
+        "count": 3,
+        "condition": "20 尺高塔由狗头人把守，带角号。",
+        "source": "p.15",
+        "position": [
+          0.225,
+          0.17
+        ],
+        "automatic": true,
+        "key": "02-3a3a7350a44b",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "固定遭遇",
+        "region": "高原警戒塔",
+        "quantity": "数名",
+        "count": 3,
+        "condition": "高原顶上的塔由武装人类把守，带角号。",
+        "source": "p.15",
+        "position": [
+          0.745,
+          0.3
+        ],
+        "automatic": true,
+        "key": "02-953990654400",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "条件遭遇",
+        "region": "入口岗哨（第一天夜晚后）",
+        "quantity": "5",
+        "count": 5,
+        "condition": "恢复常规盘查后的岗哨；需好故事与 DC 10 欺瞒。",
+        "source": "p.17",
+        "position": [
+          0.2,
+          0.27
+        ],
+        "automatic": false,
+        "key": "02-c5c8aef15e15",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "在场人物",
+        "region": "1 · 囚犯营帐",
+        "quantity": "8",
+        "count": 8,
+        "condition": "5 名至绿镇居民、3 名外村俘虏；夜里被拷在柱子上。",
+        "source": "p.15",
+        "position": [
+          0.445,
+          0.765
+        ],
+        "automatic": true,
+        "key": "02-939b25a2760e",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonclaw",
+        "section": "固定遭遇",
+        "region": "1 · 囚犯营帐",
+        "quantity": "4",
+        "count": 4,
+        "condition": "白天监督囚犯劳作。",
+        "source": "p.15",
+        "position": [
+          0.47,
+          0.75
+        ],
+        "automatic": true,
+        "key": "02-53064df20666",
+        "name": "龙爪",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__veteran",
+        "section": "固定遭遇",
+        "region": "2 · 首领大帐",
+        "quantity": "4",
+        "count": 4,
+        "condition": "日夜看守，只放行熟面孔。",
+        "source": "p.16",
+        "position": [
+          0.755,
+          0.55
+        ],
+        "automatic": true,
+        "key": "02-5ccc010d7ec1",
+        "name": "老兵",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard-drake",
+        "section": "固定遭遇",
+        "region": "2 · 首领大帐",
+        "quantity": "4",
+        "count": 4,
+        "condition": "与老兵一起看守大帐。",
+        "source": "p.16",
+        "position": [
+          0.775,
+          0.52
+        ],
+        "automatic": true,
+        "key": "02-a371dfba7dd1",
+        "name": "护卫龙兽",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__frulam-mondath",
+        "section": "在场人物",
+        "region": "2 · 首领大帐",
+        "quantity": "1",
+        "count": 1,
+        "condition": "负责营地日常；审问被捕的角色。",
+        "source": "p.16",
+        "position": [
+          0.765,
+          0.535
+        ],
+        "automatic": false,
+        "key": "02-d94dfda29481",
+        "name": "弗鲁兰·蒙达斯",
+        "hp": 44,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__langdedrosa-cyanwrath",
+        "section": "在场人物",
+        "region": "2 · 首领大帐",
+        "quantity": "1",
+        "count": 1,
+        "condition": "蒙达斯的左右手，很少离开她身边。",
+        "source": "p.16",
+        "position": [
+          0.765,
+          0.535
+        ],
+        "automatic": false,
+        "key": "02-13616e6fbb0e",
+        "name": "兰德卓萨·青怒",
+        "hp": 57,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "在场人物",
+        "region": "2 · 首领大帐",
+        "quantity": "1",
+        "count": 1,
+        "condition": "营地最高指挥官，特别关注被俘的武僧。",
+        "source": "p.16",
+        "position": [
+          0.765,
+          0.535
+        ],
+        "automatic": false,
+        "key": "02-6985b6ba146e",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__azbara-jos",
+        "section": "在场人物",
+        "region": "2 · 首领大帐",
+        "quantity": "1",
+        "count": 1,
+        "condition": "与首领们同住大帐的红袍法师。",
+        "source": "p.16",
+        "position": [
+          0.765,
+          0.535
+        ],
+        "automatic": false,
+        "key": "02-aaded418181b",
+        "name": "阿兹巴拉·乔斯",
+        "hp": 39,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__leosin-erlanthar",
+        "section": "在场人物",
+        "region": "3 · 木桩",
+        "quantity": "1",
+        "count": 1,
+        "condition": "被殴打、断水断粮；速度 20 尺，战斗视为平民且攻击劣势。",
+        "source": "p.18",
+        "position": [
+          0.72,
+          0.725
+        ],
+        "automatic": true,
+        "key": "02-e79bdc0e7875",
+        "name": "莱奥森·厄兰泽",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "固定遭遇",
+        "region": "4 · 保育场洞口",
+        "quantity": "少量",
+        "count": 2,
+        "condition": "禁区，未经蒙达斯与瑞兹米尔许可不得入内。",
+        "source": "p.18",
+        "position": [
+          0.865,
+          0.63
+        ],
+        "automatic": true,
+        "key": "02-a7e59e695954",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "4 · 保育场洞口",
+        "quantity": "少量",
+        "count": 3,
+        "condition": "与警卫一同驻守洞穴。",
+        "source": "p.18",
+        "position": [
+          0.865,
+          0.63
+        ],
+        "automatic": true,
+        "key": "02-e38cfffd0a27",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "散兵",
+        "name": "散兵（途中）",
+        "text": "几里外就能看见炊烟：4 名人类邪教徒与 8 只狗头人在滚石散乱的低洼处烤野鸡，互不信任；人类的武器靠在一块岩石上。不干预的话狗头人会带着一半午餐走到约 50 码外去吃。可轻松绕过，但回程会再遇到他们。\n\n除非大摇大摆，否则角色可获得突袭轮。人类第一轮去拿武器和盾牌；狗头人丢下食物四散，第 4 轮重组后只用投石索反击，人类全倒后逃走不回。\n\nDC 15 魅力（威吓）后邪教徒透露：会留殿后部队；主力约在前方一里的峭壁小路上；营地位置与状况；有至绿镇俘虏但不知是谁；被要求搜刮金银宝石、禁止中饱私囊，“光耀龙后的宝库”。狗头人有问必答但多是谎话。每名邪教徒带 28 sp，狗头人只有锡烛台、镀银餐盘和裳提亚宗教雕刻。"
+      },
+      {
+        "key": "殿后",
+        "name": "殿后部队（途中）",
+        "text": "1 名老兵、6 名邪教徒、2 名侍僧占据两片岩层露头间的蜿蜒山路，藏在路面上方 12–15 尺的岩石中。知道地点可完全绕开（最好在他们刚报完“一切正常”后动手）。\n\n侦测埋伏：散兵说出具体地点时 200 码外 DC 10 感知（察觉）；只知道有殿后部队时 100 码外 DC 15；一无所知则需靠近 20 码内 DC 20；声明在找埋伏点的有优势。\n\n进入埋伏圈时邪教徒推下巨石（视为突袭轮）：每人 DC 11 敏捷豁免，失败 2d12 钝击，成功减半。之后远程攻击，享有四分之三掩护（AC +5）；攀爬 10–15 尺岩地为困难地形。他们自认能应付五六人的小队，七人以上会派人给蒙达斯送信。\n\n他们是虔诚教徒，被俘后需 DC 20 魅力（威吓）才透露：属于龙巫教，首领是瑞兹米尔（最高指挥）、蒙达斯和青怒，袭击至绿镇是为巨龙收集财宝。黑皮革长袍与黑披风可用来混入营地。"
+      },
+      {
+        "key": "1",
+        "name": "营地入口与囚犯营帐",
+        "text": "洼地入口处（第 1 层）是装饰着动物头骨的狗头人营帐，入口警戒塔由狗头人把守。区域 1 关押着 8 名囚犯（5 人来自至绿镇，3 人来自东部和南部的村庄农场），莱奥森不在其中；白天由 4 名龙爪监督劳作，夜里拷在小屋柱子上。锁链可用警卫身上的钥匙打开、盗贼工具 DC 10 敏捷，或 DC 20 力量撬开。需要战斗时囚犯按平民处理。"
+      },
+      {
+        "key": "2",
+        "name": "首领大帐",
+        "text": "第 2 层与其他营房隔开的大营帐，是瑞兹米尔、弗鲁兰·蒙达斯、阿兹巴拉·乔斯和兰德卓萨·青怒的住所。4 名老兵与 4 只护卫龙兽日夜看守：当值时不睡觉，不理会哄骗、故事或请求，只放行认得出面孔和嗓音的警卫或侍僧。"
+      },
+      {
+        "key": "3",
+        "name": "莱奥森的木桩",
+        "text": "营地后方，莱奥森被绑在木桩上，遭殴打并断水断粮。他故意混入撤退的劫掠者打探情报，日出后被瑞兹米尔发现擒获；他已知道“探索营地”的大部分情报，并不急着被救，但虚弱得无力抗拒。速度 20 尺、无需搀扶，战斗视为平民且攻击劣势；角色不带他走他也会自己逃出来。\n\n他消失 5 分钟后守卫发现并拉响全营警报；立个假人可延到 20 分钟；用死去或昏迷的邪教徒（最好是半精灵）顶替可争取两小时以上。"
+      },
+      {
+        "key": "4",
+        "name": "保育场洞穴",
+        "text": "营地后方的洞穴是禁区，除非蒙达斯和瑞兹米尔首肯否则不得入内，里面驻守着少量警卫和狗头人。营中公开的秘密：瑞兹米尔打算在这里孵化龙蛋，掠来的财宝也存在洞里。见第 3 章育龙场。"
+      }
+    ]
+  },
+  {
+    "key": "03",
+    "name": "03 · 育龙场",
+    "chapter": "第 3 章 · 育龙场",
+    "sourcePage": 22,
+    "map": {
+      "assetId": "map-hdq-03-7a977e30944c",
+      "width": 955,
+      "height": 707,
+      "mapScale": 6.38
+    },
+    "tokenSize": 100,
+    "notes": "劫掠者营地后方的洞穴（1 格 = 5 尺）。营地已撤离，蒙达斯带着近卫和狗头人留守照料龙蛋。除注明外洞内黑暗，区域 7–9 有闪烁油灯提供微光。数字不是固定战斗人数，需结合警报与增援。\n\n陷阱（找到并解除每个 100 XP）：区域 3 阶梯底（任意骰奇数触发）、区域 6 毒倒钩门帘、区域 4–7 之间尖刺坑（每次经过 d10 掷 1–2 踩中）、区域 7→8 坍塌石阶（任意骰奇数触发）、区域 9 强酸喷雾。狗头人与警卫都知道如何避开。\n\n奖励：给树绳妖肉食而不与其死战 1,800 XP；每摧毁或带走一枚龙蛋 250 XP。里程碑：本章结束升到 4 级。之后角色应前往艾尔托瑞尔赴莱奥森与安塔尔·弗鲁姆之约，也可跟踪车辙：向西到贝尔苟斯特，再沿贸易公路北上，车队至少领先一天。",
+    "encounters": [
+      {
+        "entryId": "HDQ__dragonclaw",
+        "section": "固定遭遇",
+        "region": "1 · 洞口",
+        "quantity": "2",
+        "count": 2,
+        "condition": "洞内约 30 尺处警戒；发现来人则退到区域 2 伏击。",
+        "source": "p.20",
+        "position": [
+          0.165,
+          0.5
+        ],
+        "automatic": true,
+        "key": "03-560db36e651a",
+        "name": "龙爪",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__violet-fungus",
+        "section": "固定遭遇",
+        "region": "3 · 真菌花园右路",
+        "quantity": "4",
+        "count": 4,
+        "condition": "混在普通真菌中，DC 15 智力（自然）分辨。",
+        "source": "p.20",
+        "position": [
+          0.5,
+          0.545
+        ],
+        "automatic": true,
+        "key": "03-2f4957aa0b96",
+        "name": "紫腐菌",
+        "hp": 18,
+        "initiativeBonus": -5,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__stirge",
+        "section": "固定遭遇",
+        "region": "4 · 蚊蝠巢穴",
+        "quantity": "10",
+        "count": 10,
+        "condition": "藏在洞顶蝙蝠中；蝙蝠惊飞时趁乱攻击，AC +2。",
+        "source": "p.21",
+        "position": [
+          0.675,
+          0.42
+        ],
+        "automatic": true,
+        "key": "03-6626f3e94ace",
+        "name": "蚊蝠",
+        "hp": 2,
+        "initiativeBonus": 3,
+        "tokenScale": 0.5
+      },
+      {
+        "entryId": "HDQ__troglodyte",
+        "section": "条件遭遇",
+        "region": "5 · 垃圾场",
+        "quantity": "4",
+        "count": 4,
+        "condition": "只在角色花时间搜索垃圾时从窄缝钻出攻击。",
+        "source": "p.21",
+        "position": [
+          0.77,
+          0.2
+        ],
+        "automatic": false,
+        "key": "03-f986c8d5bc9f",
+        "name": "穴蜥人",
+        "hp": 13,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "7 · 龙兽孵育场上层",
+        "quantity": "4",
+        "count": 4,
+        "condition": "在油灯微光下照看龙兽。",
+        "source": "p.22",
+        "position": [
+          0.6,
+          0.3
+        ],
+        "automatic": true,
+        "key": "03-8bdb66300434",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__winged-kobold",
+        "section": "固定遭遇",
+        "region": "7 · 龙兽孵育场上层",
+        "quantity": "1",
+        "count": 1,
+        "condition": "与狗头人一同在上层。",
+        "source": "p.22",
+        "position": [
+          0.61,
+          0.27
+        ],
+        "automatic": true,
+        "key": "03-14bc86364798",
+        "name": "带翼狗头人",
+        "hp": 7,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard-drake",
+        "section": "固定遭遇",
+        "region": "7 · 龙兽孵育场下层",
+        "quantity": "3",
+        "count": 3,
+        "condition": "快驯完的龙兽，各只有 33 HP；进坑即攻击。",
+        "source": "p.22",
+        "position": [
+          0.5,
+          0.235
+        ],
+        "automatic": true,
+        "currentHp": 33,
+        "key": "03-53f17743f760",
+        "name": "护卫龙兽",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "8 · 狗头人营房",
+        "quantity": "6",
+        "count": 6,
+        "condition": "不当值；区域 7 龙兽嚎叫或坍塌陷阱触发时赶来。",
+        "source": "p.22",
+        "position": [
+          0.33,
+          0.3
+        ],
+        "automatic": true,
+        "key": "03-4fdfcdf7e314",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__winged-kobold",
+        "section": "固定遭遇",
+        "region": "8 · 狗头人营房",
+        "quantity": "6",
+        "count": 6,
+        "condition": "区域 8 原文 6 名；区域 7 增援描述为 3 名。",
+        "source": "p.22",
+        "position": [
+          0.31,
+          0.25
+        ],
+        "automatic": true,
+        "key": "03-c98294c86058",
+        "name": "带翼狗头人",
+        "hp": 7,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__langdedrosa-cyanwrath",
+        "section": "固定遭遇",
+        "region": "9 · 巨龙圣坛",
+        "quantity": "1",
+        "count": 1,
+        "condition": "认出至绿镇的对手；单挑不受打扰。已死则由同数据半龙替代。",
+        "source": "p.23",
+        "position": [
+          0.6,
+          0.6
+        ],
+        "automatic": true,
+        "key": "03-2321eb5f1d15",
+        "name": "兰德卓萨·青怒",
+        "hp": 57,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__berserker",
+        "section": "固定遭遇",
+        "region": "9 · 巨龙圣坛",
+        "quantity": "2",
+        "count": 2,
+        "condition": "队伍超过四人时每多一人加一名；有人插手或离开时参战。",
+        "source": "p.23",
+        "position": [
+          0.57,
+          0.65
+        ],
+        "automatic": true,
+        "key": "03-74717c31c084",
+        "name": "狂战士",
+        "hp": 67,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__berserker",
+        "section": "条件遭遇",
+        "region": "9 · 巨龙圣坛（大队伍）",
+        "quantity": "每多 1 名角色 1",
+        "count": null,
+        "condition": "队伍超过四人时追加。",
+        "source": "p.23",
+        "position": [
+          0.57,
+          0.65
+        ],
+        "automatic": false,
+        "key": "03-3c0481e6fd6d",
+        "name": "狂战士",
+        "hp": 67,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard-drake",
+        "section": "固定遭遇",
+        "region": "10A · 黑龙蛋",
+        "quantity": "2",
+        "count": 2,
+        "condition": "蜷在远端阴影和石柱后，等角色进房才攻击。",
+        "source": "p.24",
+        "position": [
+          0.77,
+          0.83
+        ],
+        "automatic": true,
+        "key": "03-343cc192d82c",
+        "name": "护卫龙兽",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__roper",
+        "section": "固定遭遇",
+        "region": "10A · 东南角钟乳石间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "会说通用语、只关心食物；喂肉即可避免战斗（1,800 XP）。",
+        "source": "p.24",
+        "position": [
+          0.84,
+          0.84
+        ],
+        "automatic": true,
+        "key": "03-541c1568a4fe",
+        "name": "石绳怪",
+        "hp": 93,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "10B · 躲藏的狗头人",
+        "quantity": "4",
+        "count": 4,
+        "condition": "两只投胶水炸弹、两只投火焰炸弹（DC 11 敏捷豁免）。",
+        "source": "p.24",
+        "position": [
+          0.925,
+          0.725
+        ],
+        "automatic": true,
+        "key": "03-b0f78163f2c5",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__frulam-mondath",
+        "section": "固定遭遇",
+        "region": "11 · 蒙达斯的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "战况不利时从滑道撤到区域 9，甚至逃离洞穴。",
+        "source": "p.25",
+        "position": [
+          0.385,
+          0.855
+        ],
+        "automatic": true,
+        "key": "03-00cef1c0bfbf",
+        "name": "弗鲁兰·蒙达斯",
+        "hp": 44,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "固定遭遇",
+        "region": "12 · 警卫营房",
+        "quantity": "3",
+        "count": 3,
+        "condition": "休息中；从区域 2 闯入时 2 人迎战、1 人退去保护蒙达斯。",
+        "source": "p.25",
+        "position": [
+          0.195,
+          0.885
+        ],
+        "automatic": true,
+        "key": "03-c9d37d94e6ee",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "12 · 警卫营房",
+        "quantity": "8",
+        "count": 8,
+        "condition": "5 人迎战、3 人退往区域 11。",
+        "source": "p.25",
+        "position": [
+          0.215,
+          0.875
+        ],
+        "automatic": true,
+        "key": "03-00f83c0ca9d7",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "13 · 藏宝室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "喝醉睡在地上，除非被剧烈摇醒。",
+        "source": "p.25",
+        "position": [
+          0.12,
+          0.725
+        ],
+        "automatic": true,
+        "key": "03-ea13e270f52d",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "洞口",
+        "text": "入口高大宽敞，天花板很快降到 15 尺。2 名龙爪在洞内约 30 尺处靠墙与石柱警戒，从 1、2 层之间的平地远望可发现其中一名。角色大摇大摆穿过营地会被发现，龙爪退到区域 2 设伏；从侧面悄悄接近则可突袭他们。"
+      },
+      {
+        "key": "2",
+        "name": "隐藏通道",
+        "text": "入口警卫发现来人时躲到这里伏击。凹室藏在深影与精心开凿的岩石后，走到通道尽头才看得见，其他位置需 DC 20 感知（察觉）。前往区域 3 的楼梯设有陷阱。"
+      },
+      {
+        "key": "3",
+        "name": "真菌花园",
+        "text": "下行 10 尺的阶梯通向长满真菌的洞窟，菌丛中两条小路：右路藏着 4 株紫腐菌，左路安全。到台阶底后 DC 15 智力（自然）才能分辨。\n\n阶梯陷阱：最低一阶会塌成斜坡，把踩上去的角色推到紫腐菌脚下。每名踏上阶梯的角色掷任意骰，奇数触发；主动搜索 DC 15 感知（察觉）发现。"
+      },
+      {
+        "key": "4",
+        "name": "蚊蝠巢穴",
+        "text": "蝙蝠群落的巢穴，蝙蝠中藏着 10 只蚊蝠（蝙蝠只在日落到日出之间出现，蚊蝠一直在）。地上有死蝙蝠；抬头 DC 10 感知（察觉）看到洞顶挂满蝙蝠。通过需每人 DC 10 敏捷（隐匿），三人以上失败则蝙蝠惊飞 5 分钟：能见度降到 5 尺，蚊蝠趁乱攻击，在蝙蝠云中 AC +2。\n\n通往区域 6 的阶梯顶放着一把锈矛，狗头人用它拨开门帘陷阱。"
+      },
+      {
+        "key": "5",
+        "name": "穴蜥人入侵",
+        "text": "比壁架低 10 尺的垃圾场：破陶器、烂筐、旧衣靴、泡坏的书、损坏的灯，部分属于死去的俘虏。恶臭弥漫。粗略看过就走则无事；花时间搜索会引来从窄缝（不在地图上）钻进来的 4 名穴蜥人。\n\n宝藏：彻底搜索 10 分钟，找到一个宝石袋：6 枚普通宝石（各 10 gp）和 8 枚珍贵宝石（各 50 gp）。"
+      },
+      {
+        "key": "6",
+        "name": "储肉室",
+        "text": "常年低于冰点的冷藏洞，链条上挂着剥皮去脏的羚羊、鹿、山羊、大型猫科动物甚至幼熊，留待龙蛋孵化后喂养。没有值钱的东西。\n\n门帘陷阱：数百根皮革条组成的厚帘，毛皮团下藏着带毒倒钩。触碰者 DC 10 敏捷豁免，失败受 5（1d10）毒素伤害，生命值上限减 5 直到长休。DC 10 感知（察觉）仔细检查可发现。狗头人用区域 4 的锈矛把皮条扫到左侧，再把矛杆楔进地上的斜孔。"
+      },
+      {
+        "key": "7",
+        "name": "龙兽孵育场",
+        "text": "油灯微光。上层有 4 名狗头人和 1 名带翼狗头人。陡峭壁架下降 10 尺，木阶梯外围着 10 尺高铁笼，钥匙挂在阶梯顶的钉子上，可开梯底的锁门。西南墙架上放着训练龙兽的套杆、项圈、刺棒、木制模拟武器与画着笑脸的稻草假人。\n\n下层阴影中关着 3 只快驯完的护卫龙兽（各 33 HP）：从壁架上看需 DC 15 感知（察觉），用灯笼照有优势；带生肉到壁架边会把它们引到光下。进坑就会遭攻击；在壁架上攻击它们会嚎叫，引来区域 8 的狗头人，至少一只会去开笼门放龙兽参战。\n\n尖刺陷阱：区域 4 与 7 之间一块涂成石头样的羊皮纸盖着 2 尺深的毒刺坑，DC 15 感知（察觉）或用长杆敲地发现。每次经过 d10 掷 1–2 踩中：1d4 穿刺，DC 10 体质豁免失败陷入困惑术效应 1 分钟（成功则 1 轮），非魔法。"
+      },
+      {
+        "key": "8",
+        "name": "狗头人营房",
+        "text": "狗头人的住处（原书此处写 6 名狗头人与 6 名带翼狗头人，区域 7 的描述写增援为 6 名狗头人与 3 名带翼狗头人），不当值、不太警惕，用被动察觉判定是否听到噪音。油灯微光，草垫毛皮床铺，老鼠蜥蜴乱窜。\n\n坍塌陷阱：从区域 7 下来的石阶，每人进入时掷任意骰，奇数触发，落石砸中身后的角色 4d4 钝击（DC 15 敏捷豁免减半），周围 5 尺内其他人 2d4（豁免减半）。主动找 DC 10 感知（察觉），查看洞顶 DC 15。触发后区域 8、9 的狗头人会听到。\n\n宝藏：搜索 10 分钟找到 38 gp、152 sp、704 cp（八十八摞，每摞 8 枚铜币）；十几个龙主题护身符，其中 4 个风格独特，卖给收藏家值 50、60、70、100 gp（卖给普通商人各 10 gp）。"
+      },
+      {
+        "key": "9",
+        "name": "巨龙圣坛",
+        "text": "偏重黑龙的提亚马特圣坛：抛光的石柱、满墙卷曲的龙雕，西北角画着五头巨龙从喷发的火山（龙之井）升起。兰德卓萨·青怒与 2 名狂战士在此（队伍超过四人每多一人加一名狂战士；青怒已死则由同数据的另一名半龙替代）。曾与他单挑的角色会被认出：“你还活着！真不知该失望还是高兴，大概两者都有吧。”只要旁人不插手，护卫不打扰单挑；混迹过营地的角色会被认出并直接开战。区域 10 的生物躲着观望。\n\n研究雕刻 10 分钟：几乎一半的龙是黑龙（瑞兹米尔偏爱），DC 10 感知（察觉）发现许多黑龙嘴里有孔。西南角 30 尺斜坡通往区域 11，顶端系着绳梯、盖着地毯。\n\n上锁木箱（镶银与珍珠母）：区域 11 的钥匙可开，盗贼工具 DC 10，但骰值低于 15 会触发陷阱；移动箱子也会触发。\n\n强酸陷阱：龙嘴喷出酸雾，室内每人 DC 10 敏捷豁免，失败 2d6 强酸（成功减半），再 DC 10 体质豁免，失败再受 2d8 强酸；立即掩面离开的有优势。\n\n宝藏：珍珠串（300 gp）、鎏金镶蓝宝石戒指（900 gp）和 6 颗精工切磨的宝石（各 100 gp）。戒指和珍珠来自至绿镇，归还可得价值 25% 的谢礼（300 gp）。"
+      },
+      {
+        "key": "10",
+        "name": "育龙场",
+        "text": "狗头人听到区域 9 的战斗后熄灭了灯火，洞内漆黑。左侧宽阔壁架，右侧下沉 15 尺为坑底（10A），木阶梯外围铁笼，钥匙挂在梯顶钉子上。走到梯顶附近时 10B 的狗头人发动攻击。从壁架能看到下方几枚约 3 尺高的巨蛋轮廓和地上的大片黑斑。"
+      },
+      {
+        "key": "10A",
+        "name": "黑龙蛋",
+        "text": "温暖潮湿，地上的黑斑是血迹。2 只护卫龙兽蜷在远端阴影和石柱后，等角色进入房间才攻击，首要保护龙蛋，其次阻止入侵者逃脱。\n\n东南角钟乳石间有一只会说通用语的树绳妖（石绳怪数据），狗头人一直喂它腐肉，它不攻击狗头人和龙兽；受攻击立即反击（对 3 级角色极其危险），触须可触及区域 10 任何地方，每轮移动 10 尺。它好奇、愿意交谈，只关心食物：告诉它区域 6 有肉并拿一点作证，它就放任角色，自己爬去储肉室。\n\n三枚黑龙蛋（各约 3 尺高、150 磅），两枚易找，第三枚混在颜色相近的石堆里，需有人感知（察觉）掷出 15 以上。DC 10 智力（自然）判断龙种。留在原地不到一周就会孵化；离开温暖潮湿环境则停止发育；易被砸碎刺破。"
+      },
+      {
+        "key": "10B",
+        "name": "躲藏的狗头人",
+        "text": "4 名照料龙蛋的狗头人躲在距壁架 10 尺处。角色进入壁架 25 尺、与 10A 楼梯顶成一直线时，两只投胶水炸弹，两只投火焰炸弹，然后等树绳妖把角色拖过去或拖到龙兽面前；都失败就爬临时梯子上来用短剑攻击。\n\n胶水炸弹：目标周围 10 尺内 DC 11 敏捷豁免，失败被束缚；本人或可触及者用一个动作 DC 11 力量豁免解除。\n火焰炸弹：目标周围 10 尺内 DC 11 敏捷豁免，失败 4（1d8）火焰伤害，成功减半。"
+      },
+      {
+        "key": "11",
+        "name": "弗鲁兰·蒙达斯的房间",
+        "text": "营地撤离后蒙达斯搬到这里。写字台、凳子、几本书、立镜、两盏油灯，厚地毯盖住通往区域 9 的 3 尺宽滑道（DC 10 感知（察觉）注意到凹陷；不知情踩上 DC 10 敏捷豁免，失败滑到区域 9 受 3d6 钝击）。区域 12 的警卫听到动静会赶来。\n\n桌上的绿色原野地图标出被劫村庄，箭头向西指向贸易公路上的贝尔苟斯特再转北；另一张纸写着“所有东西装箱运往北方的涅瑞塔。瑞兹米尔允许我们保留一些珍珠、一个戒指和一把小石头。”\n\n内室：床、衣箱，以及装着她紫衫位阶装束和区域 9 木箱钥匙的箱子。装束可用来伪装紫衫，但高阶教徒认得出是蒙达斯的。\n\n发展：警卫退到这里护她时，她视战况决定死战或从滑道撤到区域 9 找青怒乃至逃离洞穴。她只知道龙巫教在北方积累了大量财富，瑞兹米尔经常与提亚马特对话。"
+      },
+      {
+        "key": "12",
+        "name": "警卫营房",
+        "text": "蒙达斯近卫的营房：2 名龙爪在区域 1 值班，其余 3 名警卫与 8 名邪教徒在此休息。区域 1 的战斗推进到通往这里的通道时 d20 掷 12+ 才会来查看。从区域 2 进入时 2 名警卫与 5 名邪教徒迎战，1 名警卫与 3 名邪教徒退到区域 11 保护蒙达斯。\n\n宝藏：龙纹剑鞘各值约 5 gp，伪装成教徒时魅力检定 +1；另有总值 120 gp 的钱币与宝石。"
+      },
+      {
+        "key": "13",
+        "name": "藏宝室",
+        "text": "仓促撤离后几乎空了：翻倒的箱子、碎物、散落的钱币和小宝石，共值 16 gp。地上睡着一名喝醉的邪教徒，除非被剧烈摇醒，否则还要睡好几个小时。"
+      }
+    ]
+  },
+  {
+    "key": "04",
+    "name": "04 · 卡纳特客栈",
+    "chapter": "第 5 章 · 前方施工",
+    "sourcePage": 39,
+    "map": {
+      "assetId": "map-hdq-04-4a17abb0025b",
+      "width": 1191,
+      "height": 882,
+      "mapScale": 3.67
+    },
+    "tokenSize": 100,
+    "notes": "深水城以北、亡者沼泽边缘的路边客栈，现为“大公路特许公司”的补给站兼马车修整场，也是龙巫教走私品的中转站（1 格 = 5 尺；左半为一层，右半为二层）。本章像一个谍战故事，角色隐藏身份行动；本章没有里程碑升级。\n\n深水城：车队解散，商人付清报酬。邪教马车在城北扎营，与其他早已等候的满载赃物的马车会合；乔斯仍与邪教徒同行，贾姆娜继续跟踪。城北城门附近有传闻：一旬前一名半龙带着全副武装的亲卫往北去了。北城门附近的大仓库是筑路物资的始发站，角色可顺利受雇为护送人员。\n\n护送队：老兵阿德瑞德·布里弗休指挥，6 辆补给车、12 名警卫（含角色与贾姆娜）、20 名工人；邪教徒混进 3 辆马车与车夫，还有人以工人身份受雇。工地在约 200 里外；第七天夜里首次望见亡者沼泽，再过一旬抵达。\n\n深水城以北遭遇：每天骰 d20（第 8、9、10 天各再加 2），列出的怪物是角色必须对付的部分；每次战斗后骰 1d4-2 决定死亡的 NPC 数。\n\n要点：邪教马车分批进院卸货，走私箱由博格·卢克搬进保险库（区域 4）并独自做标记。保险库地板有伪装活板门（DC 10 感知（察觉）），通往 500 码长的泥泞地道，出口在沼泽边缘的密林。夜里除屋顶警卫外众人入睡后，蜥蜴人钻进地道把标记过的箱子运进沼泽（第 6 章），一车货通常要搬一整晚。\n\n追踪货物的线索：卸货时看到箱子进仓库再进保险库；格雷索·皮特夜里听到“老鼠声”；夜里撬锁搜查保险库会撞上蜥蜴人（撬锁最安全；偷博格的钥匙被抓要挨一顿打，忍着就会被低调处理，反抗则所有角色都被排斥）；住在邪教车夫隔壁能听到“保险库”“地道”“蜥蜴人”“博格·卢克”；搜邪教徒的两个房间可找到约值 1,400 gp 的宝石与首饰——半精灵邪教徒拉瑞安·锐刃在偷货，抓住把柄单独找他，他可能愿意合作换取脱身。",
+    "encounters": [
+      {
+        "entryId": "HDQ__bog-luck",
+        "section": "在场人物",
+        "region": "1 · 内院（营地负责人）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "半兽人营地负责人，暗中为龙巫教服务；钥匙挂在身上。",
+        "source": "p.38",
+        "position": [
+          0.33,
+          0.42
+        ],
+        "automatic": true,
+        "key": "04-1f9a35289f8a",
+        "name": "博格·卢克",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ardred-briferhew",
+        "section": "在场人物",
+        "region": "1 · 内院（护送队指挥）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "老兵，指挥护送队；会阻止旁人插手决斗。",
+        "source": "p.38",
+        "position": [
+          0.2,
+          0.38
+        ],
+        "automatic": true,
+        "key": "04-1dc05a22e394",
+        "name": "阿德瑞德·布里弗休",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__jamna-gleamsilver",
+        "section": "在场人物",
+        "region": "5 · 客房",
+        "quantity": "1",
+        "count": 1,
+        "condition": "继续跟踪赃物去向；可协助角色追查货物。",
+        "source": "p.38",
+        "position": [
+          0.09,
+          0.47
+        ],
+        "automatic": true,
+        "key": "04-105d412dfd65",
+        "name": "贾姆娜·烁银",
+        "hp": 22,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "在场人物",
+        "region": "2 · 马厩（马童）",
+        "quantity": "4",
+        "count": 4,
+        "condition": "4 名马童，最年轻的万普怀疑有秘密。",
+        "source": "p.39",
+        "position": [
+          0.28,
+          0.71
+        ],
+        "automatic": true,
+        "key": "04-72fa0ebe61aa",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__gristle-pete",
+        "section": "在场人物",
+        "region": "8 · 厨房",
+        "quantity": "1",
+        "count": 1,
+        "condition": "夜里睡在厨房地铺，听到保险库下方的“老鼠声”。",
+        "source": "p.40",
+        "position": [
+          0.84,
+          0.6
+        ],
+        "automatic": true,
+        "key": "04-10f2f841eb78",
+        "name": "格雷索·皮特",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "条件遭遇",
+        "region": "4 · 保险库（夜间）",
+        "quantity": "每两名角色 3",
+        "count": null,
+        "condition": "夜里从活板门钻上来搬运标记过的走私箱。",
+        "source": "p.39",
+        "position": [
+          0.42,
+          0.5
+        ],
+        "automatic": false,
+        "key": "04-0acd32d43b8f",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "在场人物",
+        "region": "5 · 客房（拉瑞安·锐刃）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "偷藏约 1,400 gp 宝石首饰的半精灵邪教徒，抓住把柄可策反。",
+        "source": "p.40",
+        "position": [
+          0.1,
+          0.54
+        ],
+        "automatic": false,
+        "key": "04-7892161fc24a",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__veteran",
+        "section": "条件遭遇",
+        "region": "旗鼓相当 · 内院",
+        "quantity": "1",
+        "count": 1,
+        "condition": "为朋友报仇的女邪教徒，挑衅后拔剑；赢了会补刀。",
+        "source": "p.40",
+        "position": [
+          0.25,
+          0.47
+        ],
+        "automatic": false,
+        "key": "04-39e0a1a68e5e",
+        "name": "老兵",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "条件遭遇",
+        "region": "旗鼓相当 · 内院",
+        "quantity": "12",
+        "count": 12,
+        "condition": "其他角色加入决斗时，邪教徒也一同加入。",
+        "source": "p.40",
+        "position": [
+          0.28,
+          0.5
+        ],
+        "automatic": false,
+        "key": "04-088a03f86a37",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bandit",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 15",
+        "quantity": "12",
+        "count": null,
+        "condition": "12 名人类强盗。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-3300889f4e4c",
+        "name": "匪徒",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__troll",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 16",
+        "quantity": "1",
+        "count": null,
+        "condition": "1 只巨魔。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-7e5dceb5a185",
+        "name": "巨魔",
+        "hp": 84,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__orc",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 17",
+        "quantity": "4",
+        "count": null,
+        "condition": "4 名兽人和 1 只食人魔。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-44cca1445f56",
+        "name": "兽人",
+        "hp": 15,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 17",
+        "quantity": "1",
+        "count": null,
+        "condition": "与 4 名兽人同行。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-3e1d8e3b2f8b",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 18",
+        "quantity": "2",
+        "count": null,
+        "condition": "2 只食人魔。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-7f67785e84f4",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 19",
+        "quantity": "3",
+        "count": null,
+        "condition": "3 名蜥蜴人和 3 只巨蜥。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-94a61d1be2ae",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-lizard",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 19",
+        "quantity": "3",
+        "count": null,
+        "condition": "与 3 名蜥蜴人同行。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-61bc3ec87be8",
+        "name": "巨蜥",
+        "hp": 19,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 20",
+        "quantity": "6",
+        "count": null,
+        "condition": "6 名蜥蜴人。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-2d2db6761d44",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-frog",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 21",
+        "quantity": "8",
+        "count": null,
+        "condition": "8 只巨蛙（第 8–10 天加骰时可能出现）。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-97acbcd163df",
+        "name": "巨蛙",
+        "hp": 18,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "随机遭遇",
+        "region": "深水城以北遭遇 d20 · 22",
+        "quantity": "12",
+        "count": null,
+        "condition": "12 名狂蛙人（第 8–10 天加骰时可能出现）。每日骰 d20，1–14 无遭遇。",
+        "source": "p.38",
+        "position": null,
+        "automatic": false,
+        "key": "04-0ccc1c060fcc",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "内院",
+        "text": "露天院子堆满板条箱、木桶与物料，天气差时一片泥泞，结冰时满是硬车辙。从大门到马厩留有通道，繁忙时延伸到各房门前的阳台下。"
+      },
+      {
+        "key": "2",
+        "name": "马厩",
+        "text": "马匹骡子的体温让这里最暖和。4 名马童照料牲口并睡在这里；最年轻的机灵男孩万普怀疑有秘密，他不懂龙巫教，但知道修路物资不必锁进房间。"
+      },
+      {
+        "key": "3",
+        "name": "仓库",
+        "text": "门关着但没上锁，存放不宜露天的人粮与饲料。"
+      },
+      {
+        "key": "4",
+        "name": "保险库",
+        "text": "特别贵重的货物与工人寄存的现钱、贵重品锁在这里，博格·卢克用分类账一丝不苟地登记。钥匙总挂在博格身上；盗贼工具 DC 10 敏捷可开锁。\n\n活板门在东南角，上面钉着一个空板条箱，开门时整箱向北倾倒；平时被碰撞推挤像是实心的。搜索 20 分钟或 DC 10 感知（察觉）发现。夜里搜查会撞上正在搬货的蜥蜴人（每两名角色 3 名）。"
+      },
+      {
+        "key": "5",
+        "name": "客房",
+        "text": "车夫、保镖与工人合住，每间至少四个床位、大间六个，芦苇铺地。除博格的房间外都没有锁——他说锁会冻住，其实是他拆掉的，好让大家把贵重品交给保险库。"
+      },
+      {
+        "key": "6",
+        "name": "博格·卢克的房间",
+        "text": "博格独住、更宽敞舒适，总是锁着（盗贼工具 DC 10 敏捷）。他很少待在这里。书架上的哲学与自然史书籍说明这个粗鲁的半兽人受过教育。他几年前加入龙巫教，唯一的标志是短剑剑鞘上的龙纹，与育龙场区域 12 的剑鞘相同。"
+      },
+      {
+        "key": "7",
+        "name": "阿德瑞德·布里弗休的房间",
+        "text": "护卫队指挥官独住的小房间，没有值得注意的东西。"
+      },
+      {
+        "key": "8",
+        "name": "厨房",
+        "text": "上层大炉灶，晚上兼做公共休息室。夜深后暴躁的厨师格雷索·皮特把人都轰出去，在这里打地铺——正好在保险库上方。他抱怨夜里“全世界讨厌的小生物都在喧闹”，追问下会想起每次新物资运到后的几个晚上才有声响。"
+      },
+      {
+        "key": "决斗",
+        "name": "旗鼓相当",
+        "text": "第 4 章被贾姆娜杀死的邪教徒有个女性朋友，认定被诬陷的角色是凶手。任务完成后她当众挑衅、质疑其胆量，拒绝也不罢休，最终拔剑攻击（老兵数据），赢了会在对方倒地后补刀，没人阻止。众人视为私人恩怨：让步会被当成懦夫；其他角色加入则更多邪教徒加入（按 12 名警卫）。博格与布里弗休会阻止旁人加入，但乐于看点有限的流血。"
+      }
+    ]
+  },
+  {
+    "key": "05",
+    "name": "05 · 涅瑞塔堡外围与一层",
+    "chapter": "第 6 章 · 涅瑞塔堡",
+    "sourcePage": 48,
+    "map": {
+      "assetId": "map-hdq-05-6225af01ca41",
+      "width": 1191,
+      "height": 882,
+      "mapScale": 10.7
+    },
+    "tokenSize": 100,
+    "notes": "亡者沼泽中被遗弃的城堡（1 格 = 20 尺，即棋盘四格；城堡外墙平均 10 尺厚）。龙巫教在此与狂蛙人、蜥蜴人结成不稳固的联盟，把客栈运来的赃物分拣后经地底传送门送往狩猎旅舍。房间编号首位数字为楼层：1 层在本图，2、3 层与地底各有一张图。\n\n前往城堡：从客栈地道出口到城堡 15 里，两天路程，沿蜥蜴人火烧树干留下的路标走不会迷路，偏离后 DC 15 感知（求生）重新寻路（每次 1 小时，并检定一次随机遭遇）。第 1 夜抵达中途营地（四间柳条棚屋、石台、三艘独木舟）：黄昏 9 名蜥蜴人划船抵达，不接受谈判；被绑住的俘虏 DC 10 威吓或 DC 15 说服后开口（未绑有劣势）。审讯时每人一次魅力检定，最高者打动钳嘴——他想借角色赶走龙巫教、杀光狂蛙人；其余每名蜥蜴人俘虏掷骰，偶数被钳嘴说服加入起义。第 2 天必须乘独木舟前进。\n\n亡者沼泽遭遇：每小时 d20，18–20 遭遇，再骰 d12。狂蛙人在中途营地前每角色 2 名、之后 3 名；鳄鱼只在 2 尺以上深水，首次遭遇隐匿有优势；巨蛙优先攻击小体型；巨蜥与巨蜘蛛有“屏息”，巨蜥群 30% 是训练过的，训练者第 6 轮加入；蜥蜴人 50% 是独立团体，钳嘴可说服；流沙 DC 11 敏捷豁免，被束缚后 DC 15 力量脱出，救援者需绳杆且 DC 15 力量；蔓生怪出现时钳嘴先劝逃一轮再逃，之后要一小时才找得回；鬼火在中途营地前把人引进流沙，之后引往黑龙沃拉格哈曼萨的巢穴；蛇人狩猎队（2 恶咒蛇人 1 型、3 纯血蛇人）捕人献祭。\n\n派系：龙巫教由瑞兹米尔名义拥有、精灵紫衫德拉莫瑞·灰生实际管理（胜利之刃成员，想离开沼泽，偏爱蜥蜴人）；狂蛙人听命于萨满法布列斯·溅黏（想夺取城堡，局势倒向角色时会求和献媚）：城外每日 40–50 名扎营，堡内营房 34 名，附近另有 30–70 名可在 15 分钟内响应鼓声；蜥蜴人部族“鳞亡”无首领（萨满唤日者被法布列斯杀害），80 名战士约半数在城堡附近，暗中囤积钢制武器；红袍法师阿兹巴拉·乔斯想私下打听角色掌握了什么；双子黑龙沃拉格哈曼萨与瓦尔法兰多只是背景势力，本冒险中不该与角色正面交战。\n\n决战要点：一旦开战，瑞兹米尔与乔斯直接经传送门逃往狩猎旅舍（尽量让他们活下来）；灰生与法布列斯联手死守，边打边退进地底洞窟；狂蛙人懦弱，看不到法布列斯或他被杀就四散；蜥蜴人勇敢、鄙视狂蛙人，倒戈后会追杀狂蛙人，但对邪教徒心不在焉；邪教徒没有灰生带领就犹豫低效，会躲进西南塔楼上层或书房。\n\n接近城堡：钳嘴知道半里外所有哨位，并与 6 名蜥蜴人哨兵交谈：信任不足就说角色是增援邪教徒；信任强烈则 DC 10 魅力检定说服哨兵（5 以下哨兵攻击钳嘴）；被虐待过则唆使哨兵攻击。没有钳嘴时，被动察觉 15 闻到柴烟，哨兵以带优势的隐匿对抗被动察觉；未被发现的哨兵派 2 人游回报警，2 人尾随，2 人留守。\n\n里程碑：激活传送门后升到 6 级。",
+    "encounters": [
+      {
+        "entryId": "HDQ__snapjaw",
+        "section": "在场人物",
+        "region": "同行 · 钳嘴",
+        "quantity": "1",
+        "count": 1,
+        "condition": "若在中途营地被打动，随角色同行带路，并与城堡外的哨兵交谈。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-0df65a592cdb",
+        "name": "钳嘴",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "条件遭遇",
+        "region": "中途营地 · 独木舟",
+        "quantity": "9",
+        "count": 9,
+        "condition": "黄昏划三艘独木舟抵达；闻到烟味会提高戒备；不接受谈判。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-c58fcbbe8c0e",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "条件遭遇",
+        "region": "城堡外半里 · 哨位",
+        "quantity": "6",
+        "count": 6,
+        "condition": "未被发现时派 2 人报警、2 人尾随、2 人留守。",
+        "source": "p.47",
+        "position": null,
+        "automatic": false,
+        "key": "05-bbc08ea30471",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-lizard",
+        "section": "固定遭遇",
+        "region": "2 · 兽栏",
+        "quantity": "2d4",
+        "count": 5,
+        "condition": "攻击触及范围内的任何人。",
+        "source": "p.47",
+        "position": [
+          0.15,
+          0.75
+        ],
+        "automatic": true,
+        "key": "05-26b41d15de7a",
+        "name": "巨蜥",
+        "hp": 19,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__giant-frog",
+        "section": "固定遭遇",
+        "region": "4 · 狂蛙人棚屋",
+        "quantity": "8",
+        "count": 8,
+        "condition": "在棚屋间跳动；攻击 15 尺长舌范围内的非狂蛙人。",
+        "source": "p.47",
+        "position": [
+          0.3,
+          0.27
+        ],
+        "automatic": true,
+        "key": "05-00dae98f18f1",
+        "name": "巨蛙",
+        "hp": 18,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "条件遭遇",
+        "region": "4 · 城外营地",
+        "quantity": "每日 40–50",
+        "count": null,
+        "condition": "城外扎营的狂蛙人；附近另有 30–70 名可在 15 分钟内响应鼓声。",
+        "source": "p.44",
+        "position": [
+          0.27,
+          0.22
+        ],
+        "automatic": false,
+        "key": "05-d4310457dd3d",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__crocodile",
+        "section": "固定遭遇",
+        "region": "5 · 护城河",
+        "quantity": "6",
+        "count": 6,
+        "condition": "有人踏入护城河即被吸引。",
+        "source": "p.47",
+        "position": [
+          0.58,
+          0.45
+        ],
+        "automatic": true,
+        "key": "05-65858ca8d9fd",
+        "name": "鳄鱼",
+        "hp": 19,
+        "initiativeBonus": 0,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "1A · 外堡",
+        "quantity": "10",
+        "count": 10,
+        "condition": "日夜驻守、警觉性低。",
+        "source": "p.48",
+        "position": [
+          0.41,
+          0.72
+        ],
+        "automatic": true,
+        "key": "05-e12aef1962b4",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-frog",
+        "section": "固定遭遇",
+        "region": "1A · 外堡",
+        "quantity": "1d6",
+        "count": 3,
+        "condition": "与狂蛙人一同驻守。",
+        "source": "p.48",
+        "position": [
+          0.43,
+          0.78
+        ],
+        "automatic": true,
+        "key": "05-f82bd16d2744",
+        "name": "巨蛙",
+        "hp": 18,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "1C · 外庭",
+        "quantity": "1d6-1",
+        "count": 2,
+        "condition": "闲逛或对蜥蜴人发号施令。",
+        "source": "p.49",
+        "position": [
+          0.73,
+          0.56
+        ],
+        "automatic": true,
+        "key": "05-97e441ea733c",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "固定遭遇",
+        "region": "1C · 外庭",
+        "quantity": "1d6-1",
+        "count": 2,
+        "condition": "正在训练巨蜥。",
+        "source": "p.49",
+        "position": [
+          0.76,
+          0.6
+        ],
+        "automatic": true,
+        "key": "05-9e86ef15543e",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard-drake",
+        "section": "固定遭遇",
+        "region": "1D · 内庭",
+        "quantity": "3",
+        "count": 3,
+        "condition": "白天巡守内庭；夜里 2 只睡在大厅、1 只巡逻。",
+        "source": "p.49",
+        "position": [
+          0.81,
+          0.45
+        ],
+        "automatic": true,
+        "key": "05-6af5a4aa7265",
+        "name": "护卫龙兽",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__otyugh",
+        "section": "固定遭遇",
+        "region": "1E · 西北塔楼垃圾坑",
+        "quantity": "1",
+        "count": 1,
+        "condition": "静静浸没在淤泥中；把人拖进坑里有溺水风险。",
+        "source": "p.49",
+        "position": [
+          0.82,
+          0.3
+        ],
+        "automatic": true,
+        "key": "05-e0e6657485ee",
+        "name": "食腐兽",
+        "hp": 114,
+        "initiativeBonus": 0,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__giant-lizard",
+        "section": "固定遭遇",
+        "region": "1F · 马厩",
+        "quantity": "8",
+        "count": 8,
+        "condition": "陌生人停留一分钟以上就开始躁动。",
+        "source": "p.49",
+        "position": [
+          0.845,
+          0.54
+        ],
+        "automatic": true,
+        "key": "05-907c164b3b0c",
+        "name": "巨蜥",
+        "hp": 19,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "条件遭遇",
+        "region": "1F · 马厩饲养员",
+        "quantity": "4",
+        "count": 4,
+        "condition": "巨蜥骚动两分钟后赶来安抚。",
+        "source": "p.49",
+        "position": [
+          0.83,
+          0.51
+        ],
+        "automatic": false,
+        "key": "05-397a243ae9b5",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "1G · 营房下层",
+        "quantity": "12",
+        "count": 12,
+        "condition": "白天 12 名，夜里翻倍；不让陌生人上楼。",
+        "source": "p.49",
+        "position": [
+          0.845,
+          0.62
+        ],
+        "automatic": true,
+        "key": "05-4d66b4900210",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "条件遭遇",
+        "region": "1G · 营房下层（夜间增加）",
+        "quantity": "12",
+        "count": 12,
+        "condition": "夜里人数翻倍时加入。",
+        "source": "p.49",
+        "position": [
+          0.845,
+          0.62
+        ],
+        "automatic": false,
+        "key": "05-63d938e9105f",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "固定遭遇",
+        "region": "1H · 锻炉室",
+        "quantity": "6",
+        "count": 6,
+        "condition": "笨拙地打铁；除非被惹怒否则不攻击。",
+        "source": "p.50",
+        "position": [
+          0.77,
+          0.72
+        ],
+        "automatic": true,
+        "key": "05-4cbb42735dad",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "固定遭遇",
+        "region": "1I · 蜥蜴人待命室",
+        "quantity": "20",
+        "count": 20,
+        "condition": "灰生的备用保镖（白天）；夜里分睡 1J、1K 各 10 名。",
+        "source": "p.50",
+        "position": [
+          0.815,
+          0.77
+        ],
+        "automatic": true,
+        "key": "05-c72c105e8ec7",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonclaw",
+        "section": "固定遭遇",
+        "region": "1N · 教长室",
+        "quantity": "4",
+        "count": 4,
+        "condition": "负责打理书房的龙爪。",
+        "source": "p.50",
+        "position": [
+          0.59,
+          0.63
+        ],
+        "automatic": true,
+        "key": "05-b6b6ba0bbe49",
+        "name": "龙爪",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__commoner",
+        "section": "在场人物",
+        "region": "1P · 厨房",
+        "quantity": "3",
+        "count": 3,
+        "condition": "矮人厨师“肠脏”塔姆·塔姆齐与两名人类帮工。",
+        "source": "p.50",
+        "position": [
+          0.65,
+          0.55
+        ],
+        "automatic": true,
+        "key": "05-24257b91a1ec",
+        "name": "平民",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "1Q · 大厅（白天）",
+        "quantity": "12",
+        "count": 12,
+        "condition": "新兵，分拣、清洁、重新包装赃物。",
+        "source": "p.51",
+        "position": [
+          0.66,
+          0.45
+        ],
+        "automatic": true,
+        "key": "05-99fe63322a7e",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonclaw",
+        "section": "固定遭遇",
+        "region": "1Q · 大厅（白天）",
+        "quantity": "4",
+        "count": 4,
+        "condition": "监工；骚动时全员应对。",
+        "source": "p.51",
+        "position": [
+          0.68,
+          0.48
+        ],
+        "automatic": true,
+        "key": "05-dfe8b771bcb2",
+        "name": "龙爪",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-centipede",
+        "section": "固定遭遇",
+        "region": "1T · 闲置的房间",
+        "quantity": "10",
+        "count": 10,
+        "condition": "攻击开门进入的人。",
+        "source": "p.51",
+        "position": [
+          0.61,
+          0.36
+        ],
+        "automatic": true,
+        "key": "05-0bf25cbc61d5",
+        "name": "巨蜈蚣",
+        "hp": 4,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__azbara-jos",
+        "section": "在场人物",
+        "region": "1V · 西边客房",
+        "quantity": "1",
+        "count": 1,
+        "condition": "想私下打听角色掌握的情报；开战即经传送门逃往狩猎旅舍。",
+        "source": "p.51",
+        "position": [
+          0.75,
+          0.44
+        ],
+        "automatic": true,
+        "key": "05-678e60e7d545",
+        "name": "阿兹巴拉·乔斯",
+        "hp": 39,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "条件遭遇",
+        "region": "城堡（偶尔到访）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "偶尔来巡视；开战即经传送门逃往狩猎旅舍，尽量让她活下来。",
+        "source": "p.44",
+        "position": [
+          0.73,
+          0.4
+        ],
+        "automatic": false,
+        "key": "05-1e83d4914d35",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 1–2",
+        "quantity": "每角色 2–3",
+        "count": null,
+        "condition": "中途营地前每角色 2 名，之后 3 名；都为龙巫教效力。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-51d6e255f867",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__crocodile",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 3",
+        "quantity": "每角色 2",
+        "count": null,
+        "condition": "只在 2 尺以上深水；首次遭遇隐匿有优势。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-ccebd0e3d5a4",
+        "name": "鳄鱼",
+        "hp": 19,
+        "initiativeBonus": 0,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__giant-frog",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 4",
+        "quantity": "每角色 2",
+        "count": null,
+        "condition": "优先攻击半身人、侏儒等小体型目标。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-1036139dfa22",
+        "name": "巨蛙",
+        "hp": 18,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-lizard",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 5",
+        "quantity": "每角色 2",
+        "count": null,
+        "condition": "有屏息特质；30% 是训练过的，训练者第 6 轮加入。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-697fe2c15321",
+        "name": "巨蜥",
+        "hp": 19,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__giant-spider",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 6",
+        "quantity": "每角色 2",
+        "count": null,
+        "condition": "浓雾中几乎看不见蛛网；有屏息特质。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-218ffd2ee4bc",
+        "name": "巨蜘蛛",
+        "hp": 26,
+        "initiativeBonus": 3,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__lizardfolk",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 7–8",
+        "quantity": "每角色 2–3",
+        "count": null,
+        "condition": "50% 是独立团体，钳嘴可说服；看到钳嘴被捆会立即攻击。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-a1c2a36751f8",
+        "name": "蜥蜴人",
+        "hp": 22,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__shambling-mound",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 10",
+        "quantity": "1",
+        "count": null,
+        "condition": "蜥蜴人都怕“行走的杂草”，钳嘴劝逃一轮后自己逃跑。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-b9df60a36a14",
+        "name": "蔓生怪",
+        "hp": 136,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__will-o-wisp",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 11",
+        "quantity": "3",
+        "count": null,
+        "condition": "尾随到夜里伪装成灯笼，把人引进流沙或黑龙巢穴。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-8b82bd360806",
+        "name": "鬼火",
+        "hp": 22,
+        "initiativeBonus": 9,
+        "tokenScale": 0.5
+      },
+      {
+        "entryId": "HDQ__yuan-ti-malison",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 12",
+        "quantity": "2",
+        "count": null,
+        "condition": "蛇人狩猎队（1 型），捕杀智慧生物献祭麦尔绍克。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-9d8d1bca3203",
+        "name": "恶咒蛇人",
+        "hp": 66,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__yuan-ti-pureblood",
+        "section": "随机遭遇",
+        "region": "亡者沼泽遭遇 d12 · 12",
+        "quantity": "3",
+        "count": null,
+        "condition": "与恶咒蛇人同行。每小时 d20，18–20 遭遇；9 为流沙。",
+        "source": "p.42",
+        "position": null,
+        "automatic": false,
+        "key": "05-6bf8030060d7",
+        "name": "纯血蛇人",
+        "hp": 40,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "登陆点",
+        "text": "六艘独木舟拉上岸，每艘 3–5 根桨。其中一艘漏水，蜥蜴人从不用它；匆忙拉船有 1/6 几率拿到它，下水后 15 分钟沉没。"
+      },
+      {
+        "key": "2",
+        "name": "兽栏",
+        "text": "5 尺高原木栅栏，关着 2d4 只巨蜥，用来拖运木头、鳄鱼并用滑轮把石料吊上城垛。它们脾气暴躁，攻击触及范围内的任何人。"
+      },
+      {
+        "key": "3",
+        "name": "长屋",
+        "text": "蜥蜴人战士住的苇杆长屋，干爽通风，墙上挂钩悬着精心保养的钢制武器，小石炉烧煤取暖。每间可住 25 名，空间远超实际人数——战士们见狂蛙人涌入后让家人留在村里；钳嘴可解释这种违和感。"
+      },
+      {
+        "key": "4",
+        "name": "棚屋",
+        "text": "十几二十个泥巴粪肥糊成的低矮穹顶棚屋，地板是 2 尺深的泥坑，狂蛙人晚上随便挤进最近的一间。8 只巨蛙在棚屋间跳来跳去，不打扰狂蛙人，但攻击 15 尺长舌范围内的其他人。"
+      },
+      {
+        "key": "5",
+        "name": "护城河",
+        "text": "与周围泥水混在一起难以分辨：西南塔楼一段已填平，其余 30–40 尺宽、15 尺深。踏入护城河会引来 6 条鳄鱼。"
+      },
+      {
+        "key": "6",
+        "name": "大门",
+        "text": "城堡唯一入口，门廊宽 12 尺、高 10 尺。木门多年未关已压凹铰链；铁闸门拉杆在 2A，生锈只能落下 3 尺就卡死。"
+      },
+      {
+        "key": "1A",
+        "name": "外堡",
+        "text": "10 名狂蛙人与 1d6 只巨蛙日夜驻守，警觉性很低。泥浆地板为困难地形，只有一条 10 尺宽木板路通往堤道；木板架在桶上当桌子。没有窗户，白天门口 20 尺明亮，其余是油灯微光。楼梯通往 2A。"
+      },
+      {
+        "key": "1B",
+        "name": "堤道",
+        "text": "长 180 尺的露天堤道，2A 的守兵可向堤道射箭；东墙有个无人驻守的小凸出防御点。"
+      },
+      {
+        "key": "1C",
+        "name": "外庭",
+        "text": "营房（1G）前已被踩成泥潭。任何时候有 1d6-1 名狂蛙人（闲逛或对蜥蜴人发号施令）与 1d6-1 名蜥蜴人（训练巨蜥）。"
+      },
+      {
+        "key": "1D",
+        "name": "内庭",
+        "text": "外庭与内庭间的木门早已腐烂。3 只护卫龙兽白天巡守，攻击任何不认识或未与熟人同行的人（夜里 2 只睡在大厅、1 只在大厅与内庭间巡逻）。"
+      },
+      {
+        "key": "1E",
+        "name": "西北塔楼",
+        "text": "门已脱落。原本的木地板与囚坑早已烂光，地牢成了垃圾坑兼厕所，污水只比开口低几尺；去外墙石阶要跨过 10 尺粪土。坑里潜着一只食腐兽，用杆子搅动才会发现；有人踏上淤泥或跳上台阶它就伸出触须把人拖进坑里。被拖入者 DC 5+触须伤害的体质豁免：成功可憋气 1+体质调整值 分钟（至少 5 轮），失败则肺中空气排空，体质调整值 轮后昏迷（窒息规则见《玩家手册》）。"
+      },
+      {
+        "key": "1F",
+        "name": "马厩",
+        "text": "最凶猛的 8 只巨蜥（长途巡逻坐骑）。陌生人停留超过一分钟，两只开始用尾巴抽墙，两分钟内全部翻滚躁动，引来 4 名饲养员蜥蜴人；安抚被打扰则巨蜥冲出隔间攻击一切。东南角梯子通往阁楼 2F。"
+      },
+      {
+        "key": "1G",
+        "name": "营房下层",
+        "text": "法布列斯的亲卫狂蛙人占据。白天 12 名在泥浆里休息，夜里翻倍。把角色当成邪教徒就容忍他们，但不让上楼、不听陌生人命令；开打后 2G 的狂蛙人第 3 轮从楼梯跳下加入。\n\n宝藏：梯间后三个泥箱是狂蛙人的酬劳：30,000 cp、500 sp 和值 350 gp 的铜锡饰品（合计约 700 gp，重超 500 磅）。其中一箱埋着桃心木小盒：2 瓶治疗药水和 1 瓶以太化之油。"
+      },
+      {
+        "key": "1H",
+        "name": "锻炉室与兵工厂",
+        "text": "中央巨大锻炉烧着煤块，温暖宜人。6 名蜥蜴人正笨拙地用破甲片打造铁矛（更像铲子），除非被惹怒不会攻击；会认真听建议但学不会。灰生想借冶金让蜥蜴人重拾自豪，至少他们学会了保养新武器。"
+      },
+      {
+        "key": "1I",
+        "name": "蜥蜴人待命室",
+        "text": "灰生挑选的 20 名蜥蜴人备用保镖白天在这里赌博、锻炼，提防法布列斯背叛。把陌生人当新来的邪教徒（除非浑身是血之类），不主动攻击，但没有好理由不让人上楼或进 1J、1K。"
+      },
+      {
+        "key": "1J",
+        "name": "蜥蜴人卧室（领班）",
+        "text": "离锻炉更近、更暖，10 名领班的卧室。苇杆垫子下放着微薄财物，干净干爽。白天无人，夜里 10 名蜥蜴人睡在这里。"
+      },
+      {
+        "key": "1K",
+        "name": "蜥蜴人卧室",
+        "text": "另外 10 名非领班警卫的卧室，比 1J 冷一些。白天无人，夜里 10 名蜥蜴人睡在这里。"
+      },
+      {
+        "key": "1L",
+        "name": "礼拜室",
+        "text": "现为提亚马特圣坛：蜥蜴人雕的龙后木像意外精美，只是更像蜥蜴人。黑龙头下暗格藏着一把淬毒匕首（DC 15 智力（调查）），只有瑞兹米尔和几位雕刻者（包括钳嘴）知道。邪教徒很少在此礼拜，多是来静思龙后回归后的世界。"
+      },
+      {
+        "key": "1M",
+        "name": "储藏室",
+        "text": "礼拜室的旧垃圾：断腿凳、破祭坛布、蚀坏的圣像，没有值钱的东西。"
+      },
+      {
+        "key": "1N",
+        "name": "教长室",
+        "text": "原牧师起居室，储物柜早被洗劫一空。4 名龙爪住在这里，负责打理书房。"
+      },
+      {
+        "key": "1O",
+        "name": "弓箭手眺台",
+        "text": "可从箭垛俯瞰堤道的长廊，邪教徒没用上，除了蛛网空无一物。"
+      },
+      {
+        "key": "1P",
+        "name": "厨房",
+        "text": "矮人厨师“肠脏”塔姆·塔姆齐与两名人类帮工（平民）为邪教徒做饭；他一有机会就抱怨蜥蜴人猎来的食材根本不能吃。"
+      },
+      {
+        "key": "1Q",
+        "name": "大厅",
+        "text": "东端用餐社交，西半部检查、清洁、分类并重新包装客栈运来的赃物，再送往西南塔楼地底的传送门；西南角是钉箱子的木工点。白天 12 名邪教徒新兵工作、4 名龙爪监工；只要有一名邪教徒活着就别想碰财宝。发生骚动时西南塔楼的邪教徒与内庭的护卫龙兽第 3 轮赶到，外庭的狂蛙人与蜥蜴人第 4 轮赶到。夜里 2 只护卫龙兽睡在这里（仍保持警觉）。\n\n宝藏：450 gp、520 sp、80 pp、22 枚半宝石（5×35、6×45、6×55、4×65、1×80 gp）和一瓶高等治疗药水。"
+      },
+      {
+        "key": "1R",
+        "name": "西南塔楼前厅",
+        "text": "沼泽水从地基裂缝渗入，积水几寸深、霉臭，铺着木板路，只用作连接大厅与 1S 的过道。"
+      },
+      {
+        "key": "1S",
+        "name": "地底入口",
+        "text": "通往地底洞窟的楼梯就在通往塔楼二层的阶梯下方，上下都没有门。通往 1T 的门关着但没锁。"
+      },
+      {
+        "key": "1T",
+        "name": "闲置的房间",
+        "text": "潮湿发霉，10 只巨蜈蚣在此筑巢，攻击开门进入的人。若角色被当成增援邪教徒，这间就分给他们住，第一件事是清理蜈蚣。"
+      },
+      {
+        "key": "1U",
+        "name": "楼堡入口",
+        "text": "高出内庭三级台阶，结实木门通常不锁不闩。缩小版的大厅，几张很少用的桌椅，螺旋楼梯通往二层。"
+      },
+      {
+        "key": "1V",
+        "name": "西边客房",
+        "text": "阿兹巴拉·乔斯暂住，不在 1U、2N 或 3L 与瑞兹米尔商谈时就待在这里，贵重品全带在身上。红木盒（嵌银丝）里锁着他的旅行法术书：DC 15 敏捷开锁，但骰值低于 20 会触发等同马友夫强酸箭的结界，4d6 强酸并在下回合开始再 4d6（DC 15 敏捷豁免减半）。钥匙用绳子挂在乔斯脖子上。"
+      }
+    ]
+  },
+  {
+    "key": "06",
+    "name": "06 · 涅瑞塔堡二层",
+    "chapter": "第 6 章 · 涅瑞塔堡",
+    "sourcePage": 52,
+    "map": {
+      "assetId": "map-hdq-06-cc04c5f1a7b9",
+      "width": 1191,
+      "height": 1532,
+      "mapScale": 5.44
+    },
+    "tokenSize": 100,
+    "notes": "涅瑞塔堡二层（1 格 = 20 尺，即棋盘四格）。外堡上层的信号鼓几里外都能听到，一天约响六次（召回巡逻、唤醒营地、开饭、换班、警报），角色不问别人不会懂。被捕的角色关在 2J。派系与决战要点见“涅瑞塔堡外围与一层”。",
+    "encounters": [
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "2A · 外堡上层",
+        "quantity": "9",
+        "count": 9,
+        "condition": "日夜驻守，夜里多半在睡觉；负责敲信号鼓。",
+        "source": "p.51",
+        "position": [
+          0.77,
+          0.87
+        ],
+        "automatic": true,
+        "key": "06-f360e7bfdfff",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "2G · 营房上层（白天）",
+        "quantity": "2",
+        "count": 2,
+        "condition": "守着法布列斯的宝箱，一人带鳄鱼骨号角报警。",
+        "source": "p.52",
+        "position": [
+          0.6,
+          0.17
+        ],
+        "automatic": true,
+        "key": "06-9904f602b4f5",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__pharblex-spattergoo",
+        "section": "条件遭遇",
+        "region": "2G · 营房上层（夜间）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "夜里回到营房；白天多在地底蛙池（见地底层）。",
+        "source": "p.52",
+        "position": [
+          0.59,
+          0.15
+        ],
+        "automatic": false,
+        "key": "06-573b67d022b9",
+        "name": "法布列斯·溅黏",
+        "hp": 59,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "条件遭遇",
+        "region": "2G · 营房上层（夜间）",
+        "quantity": "10",
+        "count": 10,
+        "condition": "法布列斯的近身随从，随他行动。",
+        "source": "p.52",
+        "position": [
+          0.59,
+          0.19
+        ],
+        "automatic": false,
+        "key": "06-466a579da8ca",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonwing",
+        "section": "固定遭遇",
+        "region": "2N · 书房",
+        "quantity": "1",
+        "count": 1,
+        "condition": "整理书籍。",
+        "source": "p.53",
+        "position": [
+          0.66,
+          0.44
+        ],
+        "automatic": true,
+        "key": "06-cfa45e876f4a",
+        "name": "龙翼",
+        "hp": 32,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "2N · 书房",
+        "quantity": "4",
+        "count": 4,
+        "condition": "协助整理书籍的新兵。",
+        "source": "p.53",
+        "position": [
+          0.68,
+          0.47
+        ],
+        "automatic": true,
+        "key": "06-1967587a1c2a",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "条件遭遇",
+        "region": "2R · 邪教徒卧室（夜间）",
+        "quantity": "5",
+        "count": 5,
+        "condition": "最低阶的教徒；渡鸦大叫时赶来。",
+        "source": "p.53",
+        "position": [
+          0.15,
+          0.45
+        ],
+        "automatic": false,
+        "key": "06-931b711d225f",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonwing",
+        "section": "条件遭遇",
+        "region": "2T · 邪教徒卧室（夜间）",
+        "quantity": "7",
+        "count": 7,
+        "condition": "渡鸦大叫时赶来。",
+        "source": "p.53",
+        "position": [
+          0.21,
+          0.53
+        ],
+        "automatic": false,
+        "key": "06-d5c290321d9c",
+        "name": "龙翼",
+        "hp": 32,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dralmorrer-borngray",
+        "section": "固定遭遇",
+        "region": "2U · 灰生的休息室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "城堡实际管理者；开战后与法布列斯联手死守，边打边退进地底。",
+        "source": "p.53",
+        "position": [
+          0.28,
+          0.32
+        ],
+        "automatic": true,
+        "key": "06-8d9b2862ef01",
+        "name": "德拉莫瑞·灰生",
+        "hp": 52,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "2A",
+        "name": "外堡上层",
+        "text": "比下层干净但满是蹼足泥印，9 名狂蛙人日夜驻守，夜里多半睡觉。没有屋顶，城垛上堆着数百颗西瓜大的石头；堤道完全暴露在视野内，只是狂蛙人很少看那边。巨大空心原木信号鼓用于各种信号与警报。"
+      },
+      {
+        "key": "2E",
+        "name": "腐坏的地板",
+        "text": "西北塔楼二层地板大多烂穿，剩下的撑不住人；横梁湿滑长霉，DC 10 敏捷（杂技）才能走过，失败跌进 1E 的粪坑。南墙根有个上锁箱子（盗贼工具 DC 10）：1,825 cp、54 sp 和一对华丽金耳环（熔掉值 10 gp）。\n\n贴墙石阶上到三层，尽头活板门用木旋杆闩着。门上近一世纪前的粉笔矮人语警告几乎消失（DC 20 感知（察觉）发现）：前方房间住着强大的不死生物。"
+      },
+      {
+        "key": "2F",
+        "name": "马厩阁楼",
+        "text": "蜥蜴人存放给巨蜥做铺盖的苇杆，只有苇杆和蝙蝠。"
+      },
+      {
+        "key": "2G",
+        "name": "营房上层",
+        "text": "法布列斯与 10 名近身随从狂蛙人的住处，连灰生和瑞兹米尔都不接待。夜里他们都回来；白天只有 2 名守着宝箱（法布列斯多在地底蛙池），不信任何人的话，其中一人带鳄鱼骨号角报警。满地苇垫、脏篮子、动物骨头。\n\n东南角铁链挂锁大箱（盗贼工具 DC 12）：法布列斯的酬劳——发黑的银与银金首饰、手镜、壳梳、发夹、胸针，共值 1,376 gp；他完全不懂这些是女性梳妆品，灰生私下觉得好笑。"
+      },
+      {
+        "key": "2H",
+        "name": "军火库",
+        "text": "残存锈成粉末的护甲武器和扭曲的箭。因锻炉余热成了城堡最暖的地方，是蜥蜴人的非官方总部：夜里聚在这里争论认命、自杀式袭击还是忍辱待时。旧武器堆中几分钟就能翻出几捆油纸包好的锋利短剑、匕首和矛——蜥蜴人囤积的新武器。开会以外的时间空无一人。"
+      },
+      {
+        "key": "2I",
+        "name": "空房间",
+        "text": "东北塔楼二层，没有值钱或有用的东西。被动察觉 15 注意到 2H、2I、2K 的门开关顺滑无声——蜥蜴人保养过，好在深夜溜进 2H 而不惊醒狂蛙人。"
+      },
+      {
+        "key": "2J",
+        "name": "空房间（囚室）",
+        "text": "角色被抓时关在这里。"
+      },
+      {
+        "key": "2K",
+        "name": "空房间",
+        "text": "楼梯尽头的活板门通往 3I，没锁但被两根长铁钉钉住：DC 10 力量或花 10 分钟仔细检查发现铁钉。不拔钉硬撞会发出噪音传到楼下。"
+      },
+      {
+        "key": "2L",
+        "name": "书房外室",
+        "text": "灰生把礼拜室二楼改成书房；这里堆着刚从赃物中挑出、尚未编目的书箱。"
+      },
+      {
+        "key": "2M",
+        "name": "阅览室",
+        "text": "只有一张小桌和两把椅子。"
+      },
+      {
+        "key": "2N",
+        "name": "书房",
+        "text": "灰生从赃物里抽出的书籍、手稿、拓碑，声称完工时再上交宝库。一百多册，涵盖剑湾历史、自然哲学、数学、天文、魔法与位面旅行理论，深水城收藏家眼中无价——前提是赶在狂蛙人糟蹋之前搬走。1 名龙翼与 4 名邪教徒新兵大多时候在整理书籍。"
+      },
+      {
+        "key": "2P",
+        "name": "厨房收纳间",
+        "text": "偶尔用到的东西与耐存食物：烹调油、谷物、奶酪、葡萄酒、腌肉。"
+      },
+      {
+        "key": "2R",
+        "name": "邪教徒卧室",
+        "text": "最低阶的教徒在此睡觉，夜里 5 名邪教徒。芦苇床垫和木箱里的简单物品，2T 的小石炉提供微弱暖意。"
+      },
+      {
+        "key": "2T",
+        "name": "邪教徒卧室",
+        "text": "夜里 7 名龙翼在此睡觉。苇杆床铺、私人木箱和一个小石炉。"
+      },
+      {
+        "key": "2U",
+        "name": "灰生的公共休息室",
+        "text": "楼堡二层全归灰生。客厅兼办公室：西墙小壁炉、写字台、软垫大椅和长凳。"
+      },
+      {
+        "key": "2V",
+        "name": "灰生的卧室与更衣室",
+        "text": "床、盖毯桌上的洗脸盆与梳妆用品、凳子，地毯盖住大半地板。笼中渡鸦见到陌生人就大叫，声音传到外庭，把 2R、2T 的邪教徒和龙爪引到塔楼。灰生只来睡觉。\n\n地毯下松动地板藏着小保险箱：200 gp、200 sp、10 枚各值 100 gp 的奇石；钥匙在灰生腰带上，或盗贼工具 DC 15。"
+      }
+    ]
+  },
+  {
+    "key": "07",
+    "name": "07 · 涅瑞塔堡三层",
+    "chapter": "第 6 章 · 涅瑞塔堡",
+    "sourcePage": 55,
+    "map": {
+      "assetId": "map-hdq-07-c8071baa7868",
+      "width": 1191,
+      "height": 1531,
+      "mapScale": 5.44
+    },
+    "tokenSize": 100,
+    "notes": "涅瑞塔堡三层（1 格 = 20 尺，即棋盘四格）。许多地方邪教徒还没用上，有些仍被危险生物占据。瑞兹米尔的房间（3L–3O）家具奢华，都是从塔利斯的旅舍经传送门搬来的。",
+    "encounters": [
+      {
+        "entryId": "HDQ__specter",
+        "section": "固定遭遇",
+        "region": "3E · 幽灵的密室",
+        "quantity": "3",
+        "count": 3,
+        "condition": "有人打开活板门进入时苏醒；在城堡范围内追击。",
+        "source": "p.54",
+        "position": [
+          0.11,
+          0.16
+        ],
+        "automatic": true,
+        "key": "07-8c60421c1068",
+        "name": "恶灵",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-spider",
+        "section": "固定遭遇",
+        "region": "3H–3J · 蜘蛛巢穴",
+        "quantity": "5",
+        "count": 5,
+        "condition": "白天藏在横梁阴影中休息，隐匿有优势；夜里外出狩猎。",
+        "source": "p.54",
+        "position": [
+          0.76,
+          0.17
+        ],
+        "automatic": true,
+        "key": "07-56924fd4523f",
+        "name": "巨蜘蛛",
+        "hp": 26,
+        "initiativeBonus": 3,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__dragonwing",
+        "section": "条件遭遇",
+        "region": "3R · 邪教徒卧室（夜间）",
+        "quantity": "6",
+        "count": 6,
+        "condition": "中阶教徒，在 3T 研习法术。",
+        "source": "p.55",
+        "position": [
+          0.09,
+          0.5
+        ],
+        "automatic": false,
+        "key": "07-aafcc97fe90b",
+        "name": "龙翼",
+        "hp": 32,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__gargoyle",
+        "section": "固定遭遇",
+        "region": "3U · 观象台屋顶四角",
+        "quantity": "4",
+        "count": 4,
+        "condition": "没有瑞兹米尔或灰生陪同进入观象台时打开天窗攻击。",
+        "source": "p.55",
+        "position": [
+          0.31,
+          0.31
+        ],
+        "automatic": true,
+        "key": "07-95506147741c",
+        "name": "石像鬼",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "条件遭遇",
+        "region": "3L · 瑞兹米尔的办公室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "偶尔在城堡时待在这里或与乔斯商谈；开战即逃往传送门。",
+        "source": "p.54",
+        "position": [
+          0.64,
+          0.55
+        ],
+        "automatic": false,
+        "key": "07-625c9e938b47",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "3E",
+        "name": "幽灵的密室",
+        "text": "观星者学会（全女性占星家）几年后被自己的领导者消灭，三人在这里以可怕方式遇害，化为 3 只恶灵。它们安静休眠，直到有人打开活板门：大桌、绕墙的星图卷轴柜、三具化为飞灰的尸体。会在城堡范围内追击（不离开城堡），追不到入侵者就攻击其他活物。\n\n宝藏：大多星图一碰就碎，只有羊皮纸、陶碟、赤铜薄片上的三份可带走，每份可卖给大城市的占星师 700 gp。"
+      },
+      {
+        "key": "3G",
+        "name": "闲置的房间",
+        "text": "原储存室兼雨天训练室，几个击剑假人和标靶，用力太猛就散架。"
+      },
+      {
+        "key": "3H",
+        "name": "蜘蛛巢穴",
+        "text": "东北塔楼顶层是 5 只巨蜘蛛的巢穴（3H、3I、3J），夜里出去狩猎，白天从屋顶破洞回来休息，从未被人看见；蜥蜴人知道但不提。没挂蛛网，地上散落动物（包括狂蛙人）尸块。蜘蛛藏在天花板横梁阴影中，隐匿有优势。通往 2K 的活板门被钉死，那是它们与蜥蜴人的默契，但不适用于陌生人。"
+      },
+      {
+        "key": "3L",
+        "name": "瑞兹米尔的办公室",
+        "text": "瑞兹米尔的居所，即使她几个月不在也没人用。书桌、堆满货单报告的小桌、四把漂亮但难坐的椅子。楼梯两侧一对 3 尺高、各重 400 磅的缟玛瑙黑龙雕像，收藏家出价 3,000 gp。书桌文件里有地底传送门的操作笔记与口令“德雷齐尔”。"
+      },
+      {
+        "key": "3M",
+        "name": "瑞兹米尔的会客室",
+        "text": "舒适的垫装椅、软垫长凳和两张铺饰毯的小桌；她从不接待客人，只有自己用。"
+      },
+      {
+        "key": "3N",
+        "name": "瑞兹米尔的卧室",
+        "text": "大床、两个衣柜、立镜、架着备用鳞甲的护甲架。饰有五头巨龙的衣柜装着她的紫袍、披风与位阶物品（没有黑龙面具），半龙体型的衣甲别人穿不了。\n\n衣柜陷阱：DC 20 感知（察觉）发现，可用她的爪之徽记解除，或盗贼工具 DC 20 敏捷。未解除就打开或检定失败：强酸瓶爆炸，室内每人 25（7d6）强酸，DC 15 敏捷豁免减半（触发者劣势），衣柜里的行头与大部分家具、雕像一并毁坏。\n\n宝藏：2 尺高、20 磅的黑龙雕像（黑龙鳞爪制成、红宝石眼、钻石牙），放在一堆金子与宝石上，收藏家估价 4,800 gp，粗暴搬运会降到 1,200 gp。"
+      },
+      {
+        "key": "3O",
+        "name": "瑞兹米尔的圣所",
+        "text": "她私下敬拜提亚马特的空房间，唯一装饰是门背后一幅从火山升起的五头龙抽象画，关上门才看得见。"
+      },
+      {
+        "key": "3P",
+        "name": "厨房收纳间",
+        "text": "比 2P 大的干货储藏：面粉、糖、干果和蔬菜。"
+      },
+      {
+        "key": "3R",
+        "name": "邪教徒卧室",
+        "text": "中阶教徒使用西南塔楼顶层，夜里 6 名龙翼睡在这里。苇杆床铺、私人木箱和一个小石炉。通往 3S 的门关着没锁。"
+      },
+      {
+        "key": "3S",
+        "name": "闲置的房间",
+        "text": "屋顶与西北墙部分坍塌，无法使用。"
+      },
+      {
+        "key": "3T",
+        "name": "邪教徒学习室",
+        "text": "3R 的六名邪教徒在此研读法术书、练习魔法手艺：三张凳子、三张书桌和一个洗盆。"
+      },
+      {
+        "key": "3U",
+        "name": "观象台",
+        "text": "观星者在楼堡顶层装了一副伊路斯坎远望者：可观察天体，也能像秘法眼一样窥视五十里内的某处。瑞兹米尔已掌握用法，过去一年借此观察沃拉格哈曼萨的巢穴，发现了双子巨龙的秘密；角色发现它时它正对着瓦尔法兰多的巢穴。\n\n4 只石像鬼守在楼堡屋顶四角（地面和观象台窗口都看得到，只有瑞兹米尔和灰生知道它们是活的）；没有这两人陪同就进入观象台，它们打开天窗攻击，除此之外不干涉任何事。\n\nDC 15 智力（奥秘）认出远望者；窥视远处需 DC 15 智力（奥秘）与 DC 15 敏捷（巧手），智力失败找不到位置，敏捷失败图像失真，敏捷 5 以下损坏装置。它约 40 磅且极其脆弱，粗暴搬运就会毁掉。"
+      }
+    ]
+  },
+  {
+    "key": "08",
+    "name": "08 · 涅瑞塔堡地下层",
+    "chapter": "第 6 章 · 涅瑞塔堡",
+    "sourcePage": 57,
+    "map": {
+      "assetId": "map-hdq-08-ba0f3b94f8c9",
+      "width": 1191,
+      "height": 882,
+      "mapScale": 7.14
+    },
+    "tokenSize": 100,
+    "notes": "城堡地底洞窟（1 格 = 10 尺，即棋盘两格），从西南塔楼 1S 的楼梯下行约 20 尺进入区域 1。大部分是狂蛙人的领地，他们在冷湖中养殖巨蛙；法布列斯多数时候在这里，身边带着保镖。\n\n常见特征：墙壁湿漉、地板潮湿，温度恒定 50 度（华氏），洞窟都没有门；天花板高 10 尺（另有说明除外）；只有区域 1 有提灯照明，其余黑暗。声音传不远：战斗声只传到相邻洞室，持续超过三轮会引来关注。\n\n传送门（区域 13）：说出口令“德雷齐尔”（低语即可），法阵内的人与物传送到白之塔利斯的狩猎旅舍（第 7 章）；口令写在 3L 瑞兹米尔书桌的纸上，或在灰生走投无路时问出。两座传送门是同一位隐世法师建造的。激活传送门后升到 6 级。",
+    "encounters": [
+      {
+        "entryId": "HDQ__gray-ooze",
+        "section": "固定遭遇",
+        "region": "2 · 灰泥怪巢穴",
+        "quantity": "1",
+        "count": 1,
+        "condition": "伪装成石地；受攻击或有人拿走宝石时攻击。",
+        "source": "p.56",
+        "position": [
+          0.86,
+          0.37
+        ],
+        "automatic": true,
+        "key": "08-6237f9bf55ea",
+        "name": "灰泥怪",
+        "hp": 22,
+        "initiativeBonus": -2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "3 · 泥浆房",
+        "quantity": "2",
+        "count": 2,
+        "condition": "维护泥浆，满怀敌意但不立刻攻击。",
+        "source": "p.56",
+        "position": [
+          0.86,
+          0.74
+        ],
+        "automatic": true,
+        "key": "08-e7ed4657d3cc",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__swarm-of-insects",
+        "section": "条件遭遇",
+        "region": "4 · 蜈蚣巢穴",
+        "quantity": "每名角色 2 群",
+        "count": null,
+        "condition": "蜈蚣变体；点燃的火把能吓跑它们。",
+        "source": "p.56",
+        "position": [
+          0.7,
+          0.76
+        ],
+        "automatic": false,
+        "key": "08-406c6d55fd87",
+        "name": "昆虫集群",
+        "hp": 22,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-frog",
+        "section": "固定遭遇",
+        "region": "6 · 蛙湖孤岛",
+        "quantity": "1",
+        "count": 1,
+        "condition": "有人下水或走上岬角时呱叫报警。",
+        "source": "p.57",
+        "position": [
+          0.45,
+          0.47
+        ],
+        "automatic": true,
+        "key": "08-9d7993cab65c",
+        "name": "巨蛙",
+        "hp": 18,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__giant-frog",
+        "section": "固定遭遇",
+        "region": "7 · 蛙台",
+        "quantity": "12",
+        "count": 12,
+        "condition": "2 轮后攻击仍在区域 6 或 7 的人，专挑小体型角色。",
+        "source": "p.57",
+        "position": [
+          0.22,
+          0.72
+        ],
+        "automatic": true,
+        "key": "08-f046fe5df12c",
+        "name": "巨蛙",
+        "hp": 18,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "7 · 蛙台",
+        "quantity": "5",
+        "count": 5,
+        "condition": "巨蛙占上风才加入；巨蛙落败就从水下出口逃走。",
+        "source": "p.57",
+        "position": [
+          0.25,
+          0.68
+        ],
+        "automatic": true,
+        "key": "08-9dc9d10cfb56",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "8 · 蝌蚪孵化室",
+        "quantity": "2",
+        "count": 2,
+        "condition": "把守通道；被逼到角落或胜利在望才动手。",
+        "source": "p.58",
+        "position": [
+          0.54,
+          0.8
+        ],
+        "automatic": true,
+        "key": "08-aae4f3e6e2e3",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__pharblex-spattergoo",
+        "section": "固定遭遇",
+        "region": "11 · 蛙之圣坛",
+        "quantity": "1",
+        "count": 1,
+        "condition": "最可能在此，其次区域 12、区域 7；局势倒向角色时会求和献媚。",
+        "source": "p.58",
+        "position": [
+          0.16,
+          0.34
+        ],
+        "automatic": true,
+        "key": "08-1a6d3ecce59c",
+        "name": "法布列斯·溅黏",
+        "hp": 59,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__bullywug",
+        "section": "固定遭遇",
+        "region": "11 · 蛙之圣坛",
+        "quantity": "10",
+        "count": 10,
+        "condition": "法布列斯的护卫，形影不离；看不到他就会逃散。",
+        "source": "p.58",
+        "position": [
+          0.18,
+          0.37
+        ],
+        "automatic": true,
+        "key": "08-088d80a6cb4c",
+        "name": "啵灵蛙",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "洞窟入口",
+        "text": "提灯照亮，楼梯旁一盏，通往区域 9 的西北口一盏。中央积水成坑（中心深 1 尺，弱酸性但不伤人）。西北台阶下行 5 尺到区域 9；东南台阶上行 5 尺再下降 5 尺通往区域 3。DC 10 感知（察觉）看脚印：只有狂蛙人走东南通道。通往区域 2 的墙缝只比水面高 3 尺，要伏身通过。"
+      },
+      {
+        "key": "2",
+        "name": "灰泥怪巢穴",
+        "text": "一只灰泥怪的巢穴，狂蛙人和邪教徒都不知道；它偶尔溜出去吃一只巨蛙。伪装与石地融为一体，以其敏捷（隐匿）对抗被动察觉。只看看就走它不会打扰，受攻击即反击，也会攻击（甚至突袭）拿走宝石的人。\n\n宝藏：东端水下闪着宝石光：总值 1,800 gp 的半宝石（2×50、5×100、200、400、600 gp），来自一个不太虔诚的邪教徒藏的“退休金”，其余物品都被泥怪溶掉了。"
+      },
+      {
+        "key": "3",
+        "name": "泥浆房",
+        "text": "地板淹着 1 尺深的黏臭泥水（困难地形），狂蛙人在此打滚，也是法布列斯要求的仪式。2 名狂蛙人维护泥浆，不会立刻攻击但满怀敌意、很快发怒。向西楼梯下行 10 尺到区域 4，台阶湿滑：每人 DC 8 敏捷豁免，失败滚下去受 1d4 钝击并发出很大噪音。"
+      },
+      {
+        "key": "4",
+        "name": "蜈蚣巢穴",
+        "text": "西墙壁龛与凹陷里栖息着成群蜈蚣，按每名角色 2 群蜈蚣集群（昆虫集群的蜈蚣变体）。点燃的火把能吓跑它们，提灯、蜡烛或光亮术不行；会攻击没带火把的人。"
+      },
+      {
+        "key": "5",
+        "name": "空房间",
+        "text": "向西台阶下行 5 尺到区域 6。"
+      },
+      {
+        "key": "6",
+        "name": "蛙湖",
+        "text": "天花板高 30 尺的地下湖，岸边陡降，水深 10–15 尺。一只巨蛙蹲在湖中孤岛上，远得光照不到。停在东、北入口之间不会有反应；有人下水或走上岬角，它就呱叫跳水，随后十几只巨蛙入水；2 轮后仍在区域 6 或 7 就遭 12 只巨蛙攻击（集中攻击能吞下的小体型角色）。\n\n巨蛙经东南角水下通道进出：观察 10–15 分钟 DC 12 智力（自然）可看出。通道长 300 尺，通往城外狂蛙人棚屋南边的水里；80 尺处分岔，左通地表，右边 50 尺后是死路，DC 15 智力（调查）可判断。洞顶裂口栖着蝙蝠，开战时会乱飞。"
+      },
+      {
+        "key": "7",
+        "name": "蛙台",
+        "text": "多数巨蛙不游泳时蹲在这里用长舌抓蝙蝠：最多 12 只巨蛙和 5 名狂蛙人。巨蛙在区域 6 攻击角色时狂蛙人不加入，潜水在光照外观战，巨蛙占上风才加入；巨蛙落败则从东南水下出口逃走。地上散落喂蛙的大型动物骨骸，石台上三组铁镣下有人类、精灵、矮人和半身人的骨头。"
+      },
+      {
+        "key": "8",
+        "name": "蝌蚪孵化室",
+        "text": "小池塘里养着蝌蚪，对角色无害。2 名狂蛙人把守通往区域 6 的通道防止成年巨蛙逃走；他们尽量躲开敌人，被逼到角落或眼看区域 6 胜利在望才动手。"
+      },
+      {
+        "key": "9",
+        "name": "起重机",
+        "text": "分隔区域 9 与 10 的岩架离地 15 尺，装着木制曲柄起重机，把重箱放到区域 10，可把操作者的举重上限提高三倍；岩架上绑着木梯。"
+      },
+      {
+        "key": "10",
+        "name": "迷雾的房间",
+        "text": "从区域 2 和 9 飘来的迷雾在此积到 3 尺深，再扩散到区域 6 消散。除此之外空无一物。"
+      },
+      {
+        "key": "11",
+        "name": "蛙之圣坛",
+        "text": "法布列斯扭曲宗教的圣坛：壁龛里塞满拳头到南瓜大小的蛙形雕塑，墙上粉笔涂色的蛙形饰画。智力（宗教）可认出元素挪用自关纳德（软泥之神）和莎尔，DC 18 还能看出拉曼诺斯（沉睡的远古实体）崇拜的痕迹——法布列斯只是照搬赃物里的宗教符号。\n\n除非被骚动引走，法布列斯最可能在这里，其次是区域 12，再次是区域 7；他走到哪里都带着 10 名狂蛙人护卫。"
+      },
+      {
+        "key": "12",
+        "name": "法布列斯的密室",
+        "text": "他唯一独处的地方，保镖在区域 10 或 11 等候。满是泥巴的桌椅、一盒蜡烛和一个大木箱。\n\n木箱陷阱：箱子被移动或搭扣开法不对，天花板暗格落下 6 个陶罐，d6 决定摔碎几个，致幻蛙毒粉弥漫：非蛙类生物体质豁免 DC 11+碎罐数，失败 10 分钟内无法反应，每回合开始掷骰：奇数用尽移动跑去区域 6 潜入水中，偶数攻击最近的生物。DC 12 感知（察觉）检查箱子或天花板发现陷阱；完好的陶罐可当毒气手雷（投掷后 50% 破开），蛙类与狂蛙人免疫。\n\n他在这里研读从 2N 偷来的两本法术书（7 级法师的最高 4 环、9 级法师的最高 5 环，内容由主持人决定），但他学不会法师法术；灰生和瑞兹米尔知道了会生气。"
+      },
+      {
+        "key": "13",
+        "name": "通往灰峰山脉",
+        "text": "区域 10 的迷雾渗进来，地面积着两三尺雾气，看似空房间。地板刻着被雾遮住的永久传送法阵：被动察觉 10 以上可发现，驱散迷雾（如造风术）则完全显露。说出口令“德雷齐尔”即传送到白之塔利斯的狩猎旅舍。"
+      }
+    ]
+  },
+  {
+    "key": "09",
+    "name": "09 · 狩猎旅舍外围与一层",
+    "chapter": "第 7 章 · 狩猎旅舍",
+    "sourcePage": 63,
+    "map": {
+      "assetId": "map-hdq-09-2de388f59f9f",
+      "width": 1191,
+      "height": 882,
+      "mapScale": 3.23
+    },
+    "tokenSize": 100,
+    "notes": "灰峰山脉高处的狩猎旅舍（1 格 = 5 尺；地下室 9 画在上层图右上角）。传送门在旅舍前的两块立石之间（区域 1，不在图上），角色穿过后涅瑞塔堡一端立即关闭，没有口令无法重开。紫衫白之塔利斯在此主持，她不满白龙面具归了对手矮人瓦拉姆，可能与角色交易而非开战。\n\n常见特征：质朴舒适，挂毯与狩猎战利品；木地板上的深抓痕 DC 20 智力（自然）可认出属于伏击龙兽。天花板多高 8 尺；只有壁炉和蜡烛照明，百叶窗关上时一片黑暗。\n\n瑞兹米尔把塔利斯视为对手，没有警告她就直接逃往帕纳斯特与通天堡，想借角色除掉她；追踪瑞兹米尔需 DC 23 感知（求生）。\n\n教礼与口号：单手五指张开的“致敬提亚马特”，“提亚马特万岁！”“他们必将崛起！”；佩戴五色缎带或红蓝绿条纹。\n\n进入旅舍：前门、厨房门、百叶窗（DC 10 敏捷或破窗；不想惊动人需 DC 12 敏捷（隐匿）），或从犬舍、马厩旁爬上屋顶破洞（区域 17 上方，DC 15 力量（运动））。调查犬舍会让龙兽嘶叫，惊动整座旅舍。\n\n户外巡逻：被动察觉 12 以上避免被 2 只巨魔与 3 只伏击龙兽突袭；它们是看门的，吃掉不请自来的人，战斗会惊动塔利斯。若队伍被迫撤退，特雷普森会追击，想抓一两个人回来审问。\n\n里程碑：无论打败塔利斯还是与她结成脆弱同盟，清理旅舍后升到 7 级。前往帕纳斯特与通天堡约五里山路，至少半天。若塔利斯与仆从都死了，可让她留下一份文件，或安排一个来送补给的村民（多数村民是邪教徒）透露城堡的事。",
+    "encounters": [
+      {
+        "entryId": "HDQ__troll",
+        "section": "条件遭遇",
+        "region": "户外巡逻",
+        "quantity": "2",
+        "count": 2,
+        "condition": "旅舍的看门者，吃掉不请自来的人；被动察觉 12 以上可避免被突袭。",
+        "source": "p.60",
+        "position": [
+          0.6,
+          0.85
+        ],
+        "automatic": false,
+        "key": "09-eda29e17799a",
+        "name": "巨魔",
+        "hp": 84,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ambush-drake",
+        "section": "条件遭遇",
+        "region": "户外巡逻",
+        "quantity": "3",
+        "count": 3,
+        "condition": "与两只巨魔一同游荡。",
+        "source": "p.60",
+        "position": [
+          0.6,
+          0.85
+        ],
+        "automatic": false,
+        "key": "09-23453d134205",
+        "name": "伏击龙兽",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__trepsin",
+        "section": "固定遭遇",
+        "region": "2 · 猎犬犬舍",
+        "quantity": "1",
+        "count": 1,
+        "condition": "要求出示暗号，拿不出就攻击；队伍撤退时追击抓人。",
+        "source": "p.61",
+        "position": [
+          0.83,
+          0.2
+        ],
+        "automatic": true,
+        "key": "09-c908a9b24fb3",
+        "name": "特雷普森",
+        "hp": 84,
+        "initiativeBonus": 1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ambush-drake",
+        "section": "固定遭遇",
+        "region": "2 · 猎犬犬舍",
+        "quantity": "6",
+        "count": 6,
+        "condition": "听特雷普森指挥，用来追杀入侵者。",
+        "source": "p.61",
+        "position": [
+          0.83,
+          0.23
+        ],
+        "automatic": true,
+        "key": "09-688153de1dd4",
+        "name": "伏击龙兽",
+        "hp": 22,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__gargoyle",
+        "section": "固定遭遇",
+        "region": "5 · 小厅楼梯底",
+        "quantity": "2",
+        "count": 2,
+        "condition": "伪装成雕像；攻击在厅内拔出武器的生物。",
+        "source": "p.62",
+        "position": [
+          0.35,
+          0.4
+        ],
+        "automatic": true,
+        "key": "09-4fd20ed6f72f",
+        "name": "石像鬼",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__helmed-horror",
+        "section": "固定遭遇",
+        "region": "6 · 三只猎犬会客厅",
+        "quantity": "1",
+        "count": 1,
+        "condition": "伪装成护甲；面对三个以上敌人时施展一次艾伐黑触手。",
+        "source": "p.62",
+        "position": [
+          0.6,
+          0.62
+        ],
+        "automatic": true,
+        "key": "09-d4bddb1becac",
+        "name": "恐怖铠甲",
+        "hp": 60,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__cultist",
+        "section": "固定遭遇",
+        "region": "7 · 厨房",
+        "quantity": "4",
+        "count": 4,
+        "condition": "塔利斯的仆人；受攻击时一人去犬舍叫增援（3 轮后到）。",
+        "source": "p.62",
+        "position": [
+          0.34,
+          0.25
+        ],
+        "automatic": true,
+        "key": "09-3efe3ce141a5",
+        "name": "邪教徒",
+        "hp": 9,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "12 · 狗头人侍从",
+        "quantity": "24",
+        "count": 24,
+        "condition": "半睡半醒；避开战斗但会向塔利斯报告可疑情况。",
+        "source": "p.64",
+        "position": [
+          0.62,
+          0.27
+        ],
+        "automatic": true,
+        "key": "09-884edc009a08",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__gastyn",
+        "section": "在场人物",
+        "region": "13 · 人类侍从",
+        "quantity": "1",
+        "count": 1,
+        "condition": "首席管家，憎恨邪教徒。",
+        "source": "p.64",
+        "position": [
+          0.48,
+          0.26
+        ],
+        "automatic": true,
+        "key": "09-d66cc13eaa48",
+        "name": "加斯汀",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__arlaenga",
+        "section": "在场人物",
+        "region": "13 · 人类侍从",
+        "quantity": "1",
+        "count": 1,
+        "condition": "女仆长，想讨好塔利斯，会报告可疑情况。",
+        "source": "p.64",
+        "position": [
+          0.51,
+          0.28
+        ],
+        "automatic": true,
+        "key": "09-7b034317de4d",
+        "name": "阿兰加",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__angrath-woodwise",
+        "section": "在场人物",
+        "region": "13 · 人类侍从",
+        "quantity": "1",
+        "count": 1,
+        "condition": "前首席猎人，憎恨特雷普森。",
+        "source": "p.64",
+        "position": [
+          0.54,
+          0.26
+        ],
+        "automatic": true,
+        "key": "09-505b015678b2",
+        "name": "安格拉斯·伍德华斯",
+        "hp": 4,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "条件遭遇",
+        "region": "1 · 传送门石阵（路过）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "从涅瑞塔堡逃来后不警告塔利斯，直接前往帕纳斯特；追踪需 DC 23 感知（求生）。",
+        "source": "p.60",
+        "position": null,
+        "automatic": false,
+        "key": "09-8db50ad26d2b",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__azbara-jos",
+        "section": "条件遭遇",
+        "region": "1 · 传送门石阵（路过）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "若从涅瑞塔堡逃脱，同样经此前往通天堡。",
+        "source": "p.60",
+        "position": null,
+        "automatic": false,
+        "key": "09-e60cd331a868",
+        "name": "阿兹巴拉·乔斯",
+        "hp": 39,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "传送门石阵",
+        "text": "风化的立石，刻文凹槽残留白色记号，旅舍正面所有房间都能看到。附近另有三座类似的石阵，邪教徒重连了其传送点：一座通往遥远北方（塔利斯去拜访白龙盟友），一座通往塞尔境内守卫森严的房间，一座通往穆尔霍兰德沙漠中某蓝龙巢穴附近。它们不是本冒险的重点，除非在别处图书馆或通天堡拉斯·莫达的密室中找到研究，否则无法激活。刻文以龙语字母拼写耐色瑞尔的罗洛斯文，提到“雪域”“哀鸣之不安沼泽”“红日”等地。"
+      },
+      {
+        "key": "2",
+        "name": "猎犬犬舍",
+        "text": "无窗石屋，两扇 9 尺高橡木门：需敲击术或 DC 20 力量打开；敲门则有人开门，敲门者可能被突袭。开门的是披着泥泞披肩、牵着一条小龙的四臂巨魔特雷普森：“什么事？暗号。”拿不出教内暗号就开打。犬舍里 6 只伏击龙兽听他指挥。泥泞披肩用井水泡过，无视任何来源的前 10 点火焰伤害。\n\n后方三根粗矛捆成的三脚架吊着苍蝇环绕的幼野猪尸体，下方碗边画着巨人语血符文——特雷普森崇拜恶魔领主巴弗灭。\n\n宝藏：6 张貂皮（各 100 gp）、3 张狐皮（各 25 gp）、一件完整的冬狼披风（250 gp）连同爪形搭扣（750 gp）。"
+      },
+      {
+        "key": "3",
+        "name": "马厩与井",
+        "text": "马厩有时停着一到三只飞龙，现在是空的。井上有轱辘、水桶和冰冷井水，井的石身似乎刻有魔法。"
+      },
+      {
+        "key": "4",
+        "name": "衣帽间与哨点",
+        "text": "挂钩与长凳，角落一堆锈矛被一尊护卫龙兽雕像踩在爪下。右侧哨点无人驻守，只在大群敌对邪教徒来访时派人；两个小箭垛可在四分之三掩护下射击入口大厅。"
+      },
+      {
+        "key": "5",
+        "name": "小厅",
+        "text": "中央走廊有楼梯、几道大木门；主入口两侧各立一副带残缺绿漆的精灵板甲，楼梯底有两尊人身大小的邪恶雕像——其实是石像鬼，攻击在厅内拔出武器的任何生物。\n\n两套精灵板甲被冻结护符冻住（DC 20 感知（察觉）发现）：触碰或从两者之间走过的人 DC 15 体质豁免，失败受 1d12 冷冻并被冻在原地 1 分钟，可用动作 DC 15 力量挣脱。解除魔法（DC 15）可移除护符，但护甲也随之失去魔法。"
+      },
+      {
+        "key": "6",
+        "name": "三只猎犬会客厅",
+        "text": "烟熏黑的横梁、舒适桌椅、小衣柜和一套淡黑色护甲——其实是为龙巫教服役的恐怖铠甲，侦测带有魔法，被打扰或被塔利斯（或穿紫袍者）命令时攻击；面对三个以上敌人时施展一次储存的艾伐黑触手。\n\n挂毯画着三只猎犬拖着白野猪，闪着奇异光芒：挂在墙上时穿越它会被传送到五里外的森林，通常靠近一只鹿或野山羊。重约 50 磅，价值 2,500 gp；平摊在地或受损就失去魔法，降为 400 gp。"
+      },
+      {
+        "key": "7",
+        "name": "厨房",
+        "text": "有门通往犬舍和井。大火炉上炖锅冒着热气，挂着鹿腿排，天花板吊满洋葱与香草。4 名做饭的邪教徒（两男两女）是塔利斯的仆人，懂烹饪也懂战斗；受攻击时一人跑去犬舍叫特雷普森，增援 3 轮后到达。"
+      },
+      {
+        "key": "8",
+        "name": "食品室",
+        "text": "豆子、黄油、熏火腿、硬面包、苹果、鸡蛋、面粉和桶装酒，够过一整个冬天。DC 18 智力（调查）发现地板夹层的保险箱：24 套银餐具（黄油刀、汤勺、叉子、甜点勺，独缺餐刀），共值 300 gp、重 50 磅。"
+      },
+      {
+        "key": "10",
+        "name": "客房",
+        "text": "又暗又冷：铺着毯子毛皮的床、放着未点油灯的小书桌、盥洗台、夜壶和煤火盆，窗户紧闭。没人住，除床上用品外没有有用的东西。"
+      },
+      {
+        "key": "11",
+        "name": "白鹿会客厅",
+        "text": "温暖舒适，大壁炉、皮椅、摆着熏香肠和蜡烛的桌子。挂毯画着山谷中的壮丽白鹿与头顶盘旋的一对绿龙（约值 400 gp，重 40 磅）。墙上挂满狩猎战利品：两个野山羊头、十角麋鹿头、带禽爪的巨鹰头、金属色泽的公牛头（其实是石化牛）、带前爪的狮鹫头、白毛长牙野猪头。狮鹫头里藏着 2 瓶治疗药水。"
+      },
+      {
+        "key": "12",
+        "name": "狗头人侍从",
+        "text": "没有家具的恶臭房间，24 名狗头人侍从半睡半醒——旅舍的女仆、帮佣、清洁工、洗衣工和厨子，主要在夜里干活。避开战斗，但监视所有来客，看到可疑的事就报告塔利斯。"
+      },
+      {
+        "key": "13",
+        "name": "人类侍从",
+        "text": "三张床、一张写字台，干净清新。3 名人类仆从（平民）受雇于被邪教杀害的前主人马斯滕领主，除服侍塔利斯外都被关在这里：首席管家加斯汀、女仆长阿兰加、前首席猎人现首席男仆安格拉斯·伍德华斯。他们憎恨邪教徒，尤其讨厌特雷普森；避开战斗但监视来客，阿兰加想讨好塔利斯，会报告可疑情况。\n\n愿意告诉角色：犬舍里的巨魔、区域 20 的集会场所、可以用食物安抚鹿鹰兽（区域 22）、被褥间（区域 15）里有一面重要的标旗；最重要的是，他们见过“帕纳斯特附近天上有座城堡”。"
+      },
+      {
+        "key": "14",
+        "name": "澡堂",
+        "text": "一个大浴缸；下层浴缸也是仆从洗床单被褥的地方。"
+      },
+      {
+        "key": "15",
+        "name": "被褥间",
+        "text": "堆满毯子、床单、毛皮、桌布、旗帜和卷起的地毯。其中一面五条纹（黑、蓝、绿、红、白）的标旗可挂在长矛上，靠近通天堡时扬起即为友方识别信号；任何被俘的邪教徒都能解释它的作用。"
+      }
+    ]
+  },
+  {
+    "key": "10",
+    "name": "10 · 狩猎旅舍上层",
+    "chapter": "第 7 章 · 狩猎旅舍",
+    "sourcePage": 66,
+    "map": {
+      "assetId": "map-hdq-10-3ff97435c966",
+      "width": 1191,
+      "height": 882,
+      "mapScale": 2.5
+    },
+    "tokenSize": 100,
+    "notes": "狩猎旅舍二层与地下室（1 格 = 5 尺；右上角为地下室 9）。二楼有客房、军械库、邪教集会用的宴会厅和塔利斯的私人房间。旅舍概况、教礼口号与里程碑见“狩猎旅舍外围与一层”。\n\n与塔利斯谈判（区域 16）：她彬彬有礼但不热情，谨慎地试探角色能否成为工具。她想让对手（瑞兹米尔一系）彻底失败以求晋升；她敦促角色阻止大宝库的运输——瑞兹米尔的人正用云巨人的飞行城堡加速运送——可帮他们在通天堡离开前登上去，提供区域 15 的五色标旗和通行口号“敬吾等之母亲与力量之源，提亚马特”。接受交易：她留在旅舍并用魔法时不时监视角色；若被坚持要求同行，会视通天堡的局势跳反。拒绝交易：她呼叫增援，石像鬼（区域 5）、恐怖铠甲（区域 6）、狗头人（区域 12）陆续赶来，喊声连旅舍外的特雷普森也听得到；不利时从窗户逃进树林或钻进传送门。\n\n塔利斯投降：她不拼死，会把自己包装成“怨愤的教徒”。接受投降后，一系列 DC 15 魅力（游说）检定可依次问出（失败一次就闭口，需贿赂、威胁或交换情报）：五位龙语者——红之塞维林、蓝之加尔万、绿之内洛维、黑之瑞兹米尔、白之瓦拉姆；标旗与教礼口号；大量宝物运到了藏在帕纳斯特附近的云巨人飞行城堡（村子被邪教全面控制）；城堡里住着巨大的白龙“雪白的格拉兹哈尔，逐云者”；红袍法师派了联络员协助运宝；龙巫教与盟友正在南方日落山脉组建军队迎接提亚马特。",
+    "encounters": [
+      {
+        "entryId": "HDQ__craggnor",
+        "section": "在场人物",
+        "region": "9 · 地下室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "被铁链锁住；瓦拉姆的朋友，扛住了一切审讯。",
+        "source": "p.63",
+        "position": [
+          0.8,
+          0.3
+        ],
+        "automatic": true,
+        "key": "10-766e4023343f",
+        "name": "克拉格诺",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__miresella",
+        "section": "在场人物",
+        "region": "9 · 地下室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "开局只剩 1 HP；优先想得到治疗和装备。",
+        "source": "p.63",
+        "position": [
+          0.82,
+          0.36
+        ],
+        "automatic": true,
+        "currentHp": 1,
+        "key": "10-bab0188f389a",
+        "name": "米瑞塞拉",
+        "hp": 16,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__brother-caemon",
+        "section": "在场人物",
+        "region": "9 · 地下室",
+        "quantity": "1",
+        "count": 1,
+        "condition": "没受虐待，担心被拉入教或拿去献祭。",
+        "source": "p.63",
+        "position": [
+          0.8,
+          0.42
+        ],
+        "automatic": true,
+        "key": "10-b9e9d05f378f",
+        "name": "凯蒙修士",
+        "hp": 27,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__talis-the-white",
+        "section": "固定遭遇",
+        "region": "16 · 塔利斯的会客厅",
+        "quantity": "1",
+        "count": 1,
+        "condition": "持凛冬魔杖，先谈买卖；不拼死，不利时逃跑或投降。",
+        "source": "p.64",
+        "position": [
+          0.16,
+          0.86
+        ],
+        "automatic": true,
+        "key": "10-11dda11e82bd",
+        "name": "白之塔利斯",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__maelgot",
+        "section": "固定遭遇",
+        "region": "16 · 塔利斯的会客厅",
+        "quantity": "1",
+        "count": 1,
+        "condition": "人类老兵保镖；塔利斯被杀即投降。",
+        "source": "p.64",
+        "position": [
+          0.2,
+          0.84
+        ],
+        "automatic": true,
+        "key": "10-9059f51df658",
+        "name": "梅尔戈",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__sorvic",
+        "section": "固定遭遇",
+        "region": "16 · 塔利斯的会客厅",
+        "quantity": "1",
+        "count": 1,
+        "condition": "人类老兵保镖；塔利斯被杀即投降。",
+        "source": "p.64",
+        "position": [
+          0.2,
+          0.9
+        ],
+        "automatic": true,
+        "key": "10-84136204458e",
+        "name": "索维克",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kusphia",
+        "section": "固定遭遇",
+        "region": "16 · 塔利斯的会客厅",
+        "quantity": "1",
+        "count": 1,
+        "condition": "龙爪保镖；塔利斯被杀后为她复仇。",
+        "source": "p.64",
+        "position": [
+          0.13,
+          0.88
+        ],
+        "automatic": true,
+        "key": "10-42f4fa11d5fc",
+        "name": "库思菲亚",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__veteran",
+        "section": "固定遭遇",
+        "region": "19 · 保镖室（韦斯克）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "60 岁老兵，穿甲而睡；被唤醒后呼救，半血投降。",
+        "source": "p.66",
+        "position": [
+          0.13,
+          0.69
+        ],
+        "automatic": true,
+        "key": "10-9bfd1b89ad59",
+        "name": "老兵",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__peryton",
+        "section": "条件遭遇",
+        "region": "22 · 屋顶鸟巢",
+        "quantity": "2",
+        "count": 2,
+        "condition": "白天 50% 外出觅食，夜里都在巢中；可用食物安抚。",
+        "source": "p.67",
+        "position": [
+          0.56,
+          0.84
+        ],
+        "automatic": false,
+        "key": "10-ec4952cbd396",
+        "name": "鹿鹰",
+        "hp": 33,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "9",
+        "name": "地下室",
+        "text": "潮湿地窖弥漫苹果和醋味，一墙堆着苹果土豆。三名囚犯营养不良，铁链固定在铁环上够不到食物：\n\n克拉格诺：胡子被削短烧焦的矮人邪教徒，白之瓦拉姆的朋友。塔利斯想从他身上挖出对手的弱点，他扛住了贿赂、魔法与刑讯；她正准备材料，打算用更强的读心手段。\n\n米瑞塞拉：来自博德之门的年轻女子，随商队前往帕纳斯特时撞见邪教行动被抓，害怕时常下楼鞭打她和克拉格诺的塔利斯，脖子肩膀满是伤痕。视为只剩 1 HP 的人类斥候，感激获救但优先想得到治疗和装备。\n\n凯蒙修士：阿曼纳塔的人类祭司，从远山来海湾沿岸朝圣，没受任何虐待，这让他不安：他怀疑塔利斯想拉他入教，又怕被拿去献祭，打算靠“甜言蜜语”换取自由。毫无心机的老好人，可作为插曲。"
+      },
+      {
+        "key": "14",
+        "name": "澡堂",
+        "text": "上层的大浴缸。"
+      },
+      {
+        "key": "16",
+        "name": "塔利斯的会客厅",
+        "text": "精心布置的用餐兼议事厅。三个身着鳞甲手持长剑的男人，一个穿白袍、手持镶蓝宝石魔杖的女人：“欢迎。过门都是客。也许我们还可以谈谈买卖。”\n\n白之塔利斯站在保镖身后，持凛冬魔杖。保镖：人类老兵梅尔戈与索维克，龙爪库思菲亚。塔利斯被杀后老兵立即投降，库思菲亚则为女主人复仇。她本打算在此会见共谋者商议晋升。谈判、交易与投降见场景概况。"
+      },
+      {
+        "key": "17",
+        "name": "军械库",
+        "text": "屋顶大洞让军械库暴露在空气中。北边货架大多空了；南墙架子上三把锈矛和一张磨损的捕网，旁边一个紧闭的储柜（没锁）。可找到一把长剑、一盒 20 支弩矢、一盒 10 支箭、三把矛、一张捕网，储柜里两把重弩和两把长弓。\n\n宝藏：一柄锈矛镶着秘银装饰（50 gp）；另一把名为“龙耀”，有 10 发充能，可施展昼明术，命令语“提亚马特目光闪耀”以龙语符文写在十字护手上。"
+      },
+      {
+        "key": "18",
+        "name": "塔利斯的卧室",
+        "text": "深紫红色床罩的大床，壁炉噼啪作响。上锁的箱子，唯一的钥匙在塔利斯身上，或盗贼工具 DC 21 敏捷：一件发光的 +1 链甲、4,000 gp 和一张灼热射线法术卷轴。两名老兵各带 20 gp，库思菲亚带一枚值 40 gp 的银制邪教教徽。屋顶的鹿鹰兽巢穴有烟囱通到这里。"
+      },
+      {
+        "key": "19",
+        "name": "保镖室",
+        "text": "百叶窗敞开，四张没铺好的床、一张桌子四把椅子、一个酒架（大多已喝光）。60 岁的人类老兵韦斯克在此休息（梅尔戈与索维克在区域 16），穿着护甲睡觉、武器就在床底。被唤醒后激烈战斗并大声呼救，会引来塔利斯和其他警卫，但叫不来特雷普森或侍从；生命值减半就投降。\n\n宝藏：十二瓶未开的葡萄酒（各 15 gp），一个空瓶里藏着价值 250 gp 的金项链。"
+      },
+      {
+        "key": "20",
+        "name": "龙后的密室",
+        "text": "30 尺高的旧宴会厅，现为集会场所，暂未使用。沸腾的壁炉，十根龙形木柱，北墙双开门通往俯瞰马厩、犬舍和井的石阳台。\n\n五幅大挂毯：四幅描绘巨龙狩猎吞食——蓝龙袭击沙漠商队、绿龙对精灵喷吐、红龙焚烧像深水城城堡区的地方、黑龙与白龙盘旋在满是废墟的寒冷沼泽，每幅至少值 500 gp、重约 75 磅。第五幅是提亚马特碾碎城市、被信徒围拜，35 尺宽 20 尺高，以金银丝线和宝石织成，重约 200 磅、值 2,500 gp，抠下的宝石约值 800 gp。DC 20 智力（历史）认出各地：埃诺奥克沙漠、亡者沼泽、深水城、至高森林；提亚马特脚下踩着深水城、无冬城与博德之门。\n\n密门：DC 20 感知（察觉）找到，通往战利品室（区域 21）。"
+      },
+      {
+        "key": "21",
+        "name": "战利品室",
+        "text": "三扇敞开的窗户，墙上挂着十四角牡鹿、野山羊、熊、两只冬狼，以及只可能来自掘地虫的头颅；天花板挂着两面旧旗，两张皮椅、几个铜火盆——猎人们自吹自擂的地方。东边两幅挂毯之间 DC 20 智力（调查）发现通往区域 20 的密门，拉动木板边缘也可打开。"
+      },
+      {
+        "key": "22",
+        "name": "鹿鹰兽栖息地",
+        "text": "区域 18 正上方屋顶的大鸟巢，树枝、树叶、羽毛和晒白的大型动物骨头编成，有烟囱通到塔利斯的卧室。一对鹿鹰兽是龙巫教盟友，能清楚看到旅舍前的传送门，看不到马厩和犬舍；白天 50% 外出觅食，夜里都在巢中。仆人知道可以用食物安抚它们。\n\n屋顶战斗：鹿鹰兽在巢上站得稳；屋顶上的其他生物每回合开始和每次受伤时 DC 10 敏捷豁免，失败倒地，失败 5 以上则滑落屋顶受 2d6 钝击并倒地。\n\n宝藏：挖 1 分钟找到一面古老的吸矢盾和一袋值 100 gp 的旧银餐具。"
+      }
+    ]
+  },
+  {
+    "key": "11",
+    "name": "11 · 帕纳斯特村庄",
+    "chapter": "第 8 章 · 云中城堡",
+    "sourcePage": 69,
+    "map": {
+      "assetId": "map-hdq-11-40ba898be95c",
+      "width": 907,
+      "height": 1166,
+      "mapScale": 6.97
+    },
+    "tokenSize": 100,
+    "notes": "被龙巫教暗中控制一年多的伐木小村（1 格 = 10 尺，即棋盘两格）。浓雾笼罩的峡谷里停着巨大的冰城堡通天堡（区域 6，左下角）：城墙高 40 尺，一座蓝冰塔楼、一座摇摇欲坠的塔楼，大门前两尊雕像。冒充村民的邪教徒对来客冷淡，真村民怕惹祸而躲开；要求见管事的会被引见给奥瑟斯坦队长，并被警告他没耐心应付不法分子。\n\n谣言与情报：劳工、搬运工、手艺人和邪教徒肯在贿赂、魅惑或 DC 18 魅力（游说）后开口，每次成功按顺序给一条：①最高位阶的是半龙龙语者瑞兹米尔（若她活着会躲起来，大家都说去通天堡找）；②她的副手是“龙魂”奥瑟斯坦队长，指挥村中部队并监视所有过路人与货物；③龙巫教带着一群暴徒接管村子已一年多；④有些村民已入教，另一些知道教徒很有钱、有私人军队；⑤教徒在马厩训练飞龙，用来空运去城堡（没人知道城堡离开后去哪）；⑥友善的人（如甘达林）可告诉口令“敬吾等之母亲与力量之源，提亚马特”或“布拉戈提库斯万岁”。\n\n造车工匠甘达林想让邪教徒消失，可在金色大酒杯（他在那里什么都不说）或广场上的小店找到；他很怕龙巫教，只在不会被看到的安全地点开口，知道上述全部情报。\n\n飞龙乘骑：马厩的飞龙可载两个中型或六个小型生物。DC 10 感知（驯兽）装上挽具，失败 5 以上飞龙用反应以尾刺攻击。让飞龙起飞或转向需一个动作 DC 15 感知（驯兽），失败则到骑手下回合前无视指令；连续成功两次后一小时内听从，直到受伤或骑手下来。五里内昼夜都能看见城堡，飞龙比城堡快。偷走飞龙平分 4,000 XP。\n\n城堡何时起飞：激进的队伍若立即攻城，还要应付村里的援军：奥瑟斯坦、1 名老兵、6 名警卫、3 名龙爪，奥瑟斯坦与老兵骑着两只飞龙。在村里磨蹭一小时以上就可能错过：教徒察觉村里有渗透者一小时后城堡起飞，随后村民撕下伪装，派奥瑟斯坦、老兵与 6 名警卫来逮捕（献祭或驱逐）渗透者，再叫 3 名龙爪增援，其中一人去马厩放出飞龙。最后手段：甘达林等人建议赶紧去马厩骑飞龙起飞，奥瑟斯坦一伙包围马厩前有几轮时间。",
+    "encounters": [
+      {
+        "entryId": "HDQ__captain-othelstan",
+        "section": "在场人物",
+        "region": "村中（管事人）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "“龙魂”，指挥村中部队；接到拉格纳的消息后会来盘查。",
+        "source": "p.70",
+        "position": [
+          0.47,
+          0.3
+        ],
+        "automatic": true,
+        "key": "11-c49a2c0c6701",
+        "name": "奥瑟斯坦队长",
+        "hp": 93,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__raggnar-redtooth",
+        "section": "在场人物",
+        "region": "2 · 金色大酒杯",
+        "quantity": "1",
+        "count": 1,
+        "condition": "没武装时 AC 10，武器藏在吧台后；拖住角色，给奥瑟斯坦送信。",
+        "source": "p.70",
+        "position": [
+          0.62,
+          0.54
+        ],
+        "automatic": true,
+        "key": "11-fc1a9d26188c",
+        "name": "拉格纳·红牙",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__gundalin",
+        "section": "在场人物",
+        "region": "5 · 广场修车店",
+        "quantity": "1",
+        "count": 1,
+        "condition": "想赶走邪教徒；只在安全的地方开口。",
+        "source": "p.69",
+        "position": [
+          0.56,
+          0.38
+        ],
+        "automatic": true,
+        "key": "11-5b8bf6d55b9b",
+        "name": "甘达林",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "固定遭遇",
+        "region": "5 · 井边",
+        "quantity": "5",
+        "count": 5,
+        "condition": "监视村民；遇事一人去找奥瑟斯坦。",
+        "source": "p.71",
+        "position": [
+          0.51,
+          0.34
+        ],
+        "automatic": true,
+        "key": "11-ebd9d05068fb",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__wyvern",
+        "section": "固定遭遇",
+        "region": "3 · 马厩",
+        "quantity": "2",
+        "count": 2,
+        "condition": "可被偷来当坐骑（DC 10 / DC 15 感知（驯兽））。",
+        "source": "p.70",
+        "position": [
+          0.44,
+          0.12
+        ],
+        "automatic": true,
+        "key": "11-b3a091309f9f",
+        "name": "飞龙",
+        "hp": 110,
+        "initiativeBonus": 0,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__veteran",
+        "section": "条件遭遇",
+        "region": "援军 · 奥瑟斯坦的副官",
+        "quantity": "1",
+        "count": 1,
+        "condition": "与奥瑟斯坦一起骑飞龙追捕渗透者。",
+        "source": "p.70",
+        "position": [
+          0.5,
+          0.28
+        ],
+        "automatic": false,
+        "key": "11-e13b3a83e2dc",
+        "name": "老兵",
+        "hp": 58,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard",
+        "section": "条件遭遇",
+        "region": "援军 · 村中警卫",
+        "quantity": "6",
+        "count": 6,
+        "condition": "城堡起飞后来逮捕渗透者。",
+        "source": "p.70",
+        "position": [
+          0.5,
+          0.3
+        ],
+        "automatic": false,
+        "key": "11-e9792784a0ed",
+        "name": "警卫",
+        "hp": 11,
+        "initiativeBonus": 1,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__dragonclaw",
+        "section": "条件遭遇",
+        "region": "援军 · 龙爪",
+        "quantity": "3",
+        "count": 3,
+        "condition": "应奥瑟斯坦召唤增援，一人去马厩放出飞龙。",
+        "source": "p.70",
+        "position": [
+          0.45,
+          0.2
+        ],
+        "automatic": false,
+        "key": "11-85d564e7242c",
+        "name": "龙爪",
+        "hp": 16,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "条件遭遇",
+        "region": "藏身处（通天堡）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "若活着会躲起来；村民都说去通天堡找她。",
+        "source": "p.69",
+        "position": [
+          0.18,
+          0.9
+        ],
+        "automatic": false,
+        "key": "11-6a58fb50a3dd",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      }
+    ],
+    "areas": [
+      {
+        "key": "1",
+        "name": "帕纳斯特村庄",
+        "text": "几十栋房子和一个小广场，有酒馆、马厩和圣坛。教徒在这里装卸货物，部分送往塔利斯的狩猎旅舍。"
+      },
+      {
+        "key": "2",
+        "name": "金色大酒杯",
+        "text": "门口挂着黄色大酒杯，酒馆里谈话戛然而止、所有目光转过来。高大魁梧的老板拉格纳·红牙看似友好，其实收受龙巫教贿赂，陌生人一坐下就派人给奥瑟斯坦送信。他是没武装的老兵（AC 10），武器藏在吧台后。啤酒 3 cp，蜂蜜酒 1 sp，香肠、炖卷心菜和黑面包一盘 4 cp。\n\n村民不停追问角色的旅途、家人与来意，让他们无暇他顾。问住宿时拉格纳说“马斯滕领主和随从要来狩猎”，没有床位；等一会儿又愿以 10 gp 让出自己的房间——都是拖延之计，好让通天堡趁机飞走。\n\n宝藏：酒馆得名于一只装饰着跳舞矮人与谷物的金色丰足酒杯：握住杯柄说出“伊尔法兰”，杯中填满三品脱矮人烈酒，每日三次。"
+      },
+      {
+        "key": "3",
+        "name": "马厩",
+        "text": "两道门都封死了，村民说马厩早就歇业，但不用检定就能听到吼声：龙巫教在这里驯养着 2 只飞龙。地上铺满碎羊骨和牛颅骨，除飞龙挽具外没有财宝。乘骑规则见场景概况。"
+      },
+      {
+        "key": "4",
+        "name": "斧之圣坛",
+        "text": "伐木者的木制圣坛，同一屋檐下供奉四季神祇：代表春天的安格芮丝塑像脸和双手被砍毁；欧吕尔（冬）脚边留着一只死松鼠；裳提亚（夏）；梅丽凯（秋）的塑像最近重新粉刷过，脚下放着祭杯、面包和小祭品。"
+      },
+      {
+        "key": "5",
+        "name": "村里的井与广场",
+        "text": "广场中央的井 40 尺深、冰冷洁净，四周是空圣坛、修车店、酒馆和马厩。木材商与伐木工在此讨价还价，马车载满货物。5 名效忠龙巫教的警卫一直在这里监视村民；遭遇警卫时村民四散，一名警卫跑去找奥瑟斯坦。只有甘达林留在附近观望，最后也从一辆厚重木板车后溜走。"
+      },
+      {
+        "key": "6",
+        "name": "通天堡停泊处",
+        "text": "冰城堡停在浓雾笼罩的峡谷里，接近时不会被城内的人看见。起飞前教徒把满载补给和宝箱的马车送到大门前，白天每隔一两小时卸货一次；在门边仔细听可以听到每辆车说出的通行口令。城堡内部见“通天堡”。"
+      }
+    ]
+  },
+  {
+    "key": "12",
+    "name": "12 · 通天堡",
+    "chapter": "第 8 章 · 云中城堡",
+    "sourcePage": 72,
+    "map": {
+      "assetId": "map-hdq-12-cacea50f3b02",
+      "width": 1191,
+      "height": 1706,
+      "mapScale": 11.3
+    },
+    "tokenSize": 100,
+    "notes": "云巨人布拉戈提库斯的飞行冰城堡（1 格 = 5 尺；上半为上层庭院，下半为下层庭院，左侧为冰地道与主密室）。远古云巨人建造它把与龙族的战争带上天空；城堡由他已故妻子艾丝克拉萝塔的精魄驱动，邪教徒不敢怠慢他，因为精魄不服从他们。冰块如花岗岩般坚硬，不透光，可藏进云雾随风移动。\n\n常见特征：所有天花板高 30 尺；门是 1 尺厚的冰，20 尺高、8 尺宽，巨人尺寸铁铰链，门把离地 10 尺。停在地面时位于帕纳斯特郊外雾谷。\n\n居民：布拉戈提库斯、石巨人夫妇威格鲁夫与赫尔德、瑞兹米尔、红袍法师拉斯·莫达与阿兹巴拉·乔斯、吸血鬼桑德塞尔·莫吉亚、成年白龙格拉兹哈尔·逐云者，以及数十名仆从、邪教徒和警卫。他们互不信任，不会结成统一战线：巨人保卫家园，邪教徒与白龙守护财富；死了一两个以上的人，邪教徒就会搜遍城堡找凶手。\n\n城防：白天每座门楼顶 3 名食人魔（可从区域 9、10、15 叫增援，瑞兹米尔与护卫龙兽在增援到达三轮后赶来），下层庭院的雾气消散。夜里吸血鬼桑德塞尔在两层庭院巡逻，下层庭院浓雾 40 尺高（重度遮蔽）、上层轻度遮蔽，邪教徒和狗头人都避开庭院。供应马车（补给送厨房 15，宝箱送主密室 25）是混进城堡的办法。\n\n弩炮（6B、17、22 楼顶）：装填并发射需一个动作，每回合只能射一次。标枪：远程武器攻击 +7，射程 120/480 尺，14（3d8）穿刺。弩炮 AC 10、50 HP，免疫毒素与心灵伤害。\n\n与云巨人谈判：布拉戈提库斯并非虔诚信徒，他认为巨人已变得软弱，提亚马特崛起与龙族帝国的威胁能让巨人重新团结。他乐于告诉角色城堡正把大量财宝运往龙之井，邪教徒在那里集结、等待提亚马特归来；若角色帮他对付邪教徒，他愿带他们去北方他集结小股部队的地方（见《提亚马特崛起》）。\n\n冒险结尾：通天堡坠毁或被接管即本冒险完结，里程碑升到 8 级。",
+    "encounters": [
+      {
+        "entryId": "HDQ__stone-golem",
+        "section": "固定遭遇",
+        "region": "6A · 门廊塑像",
+        "quantity": "2",
+        "count": 2,
+        "condition": "不说口令通过就激活；只有云巨人能让它们回岗。",
+        "source": "p.72",
+        "position": [
+          0.47,
+          0.8
+        ],
+        "automatic": true,
+        "key": "12-3827807ab1de",
+        "name": "石魔像",
+        "hp": 178,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "6B · 北门楼顶",
+        "quantity": "3",
+        "count": 3,
+        "condition": "配标枪与弩炮。",
+        "source": "p.72",
+        "position": [
+          0.43,
+          0.745
+        ],
+        "automatic": true,
+        "key": "12-d03e015b519d",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "6B · 南门楼顶",
+        "quantity": "3",
+        "count": 3,
+        "condition": "配标枪与弩炮。",
+        "source": "p.72",
+        "position": [
+          0.45,
+          0.845
+        ],
+        "automatic": true,
+        "key": "12-82a464f43540",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "6B · 门楼绞盘",
+        "quantity": "2",
+        "count": 2,
+        "condition": "各守一台绞盘（吊桥、闸门），警报响起也不离岗。",
+        "source": "p.72",
+        "position": [
+          0.44,
+          0.8
+        ],
+        "automatic": true,
+        "key": "12-8cb6e924d7d9",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__sandesyl-morgia",
+        "section": "条件遭遇",
+        "region": "7 · 下层庭院（夜间巡逻）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "夜里在两层庭院巡逻，盯着落单的食人魔。",
+        "source": "p.73",
+        "position": [
+          0.6,
+          0.78
+        ],
+        "automatic": false,
+        "key": "12-c47b468bf0cd",
+        "name": "桑德塞尔·莫吉亚",
+        "hp": 144,
+        "initiativeBonus": 4,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__wyvern",
+        "section": "固定遭遇",
+        "region": "8 · 马厩",
+        "quantity": "2",
+        "count": 2,
+        "condition": "饿着肚子，攻击不认识的人。",
+        "source": "p.73",
+        "position": [
+          0.49,
+          0.69
+        ],
+        "automatic": true,
+        "key": "12-ad27a40dbbd6",
+        "name": "飞龙",
+        "hp": 110,
+        "initiativeBonus": 0,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__dragonwing",
+        "section": "固定遭遇",
+        "region": "9 · 邪教徒营房",
+        "quantity": "10",
+        "count": 10,
+        "condition": "一半熟睡、一半醒着；警报或庭院战斗时出动。",
+        "source": "p.73",
+        "position": [
+          0.63,
+          0.85
+        ],
+        "automatic": true,
+        "key": "12-f2a7e35e4c90",
+        "name": "龙翼",
+        "hp": 32,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__wigluf",
+        "section": "固定遭遇",
+        "region": "10 · 石巨人的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "正在用魔法大锅占卜；攻击会打断仪式令其暴怒。",
+        "source": "p.74",
+        "position": [
+          0.72,
+          0.73
+        ],
+        "automatic": true,
+        "key": "12-c9d1e4609c33",
+        "name": "威格鲁夫",
+        "hp": 126,
+        "initiativeBonus": 2,
+        "tokenScale": 3
+      },
+      {
+        "entryId": "HDQ__hulde",
+        "section": "固定遭遇",
+        "region": "10 · 石巨人的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "威格鲁夫的伴侣兼保镖。",
+        "source": "p.74",
+        "position": [
+          0.745,
+          0.75
+        ],
+        "automatic": true,
+        "key": "12-1904fbea6a46",
+        "name": "赫尔德",
+        "hp": 126,
+        "initiativeBonus": 2,
+        "tokenScale": 3
+      },
+      {
+        "entryId": "HDQ__rezmir",
+        "section": "固定遭遇",
+        "region": "11 · 瑞兹米尔的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "宁死不降；她一死宝箱内容物传送到龙之井。",
+        "source": "p.74",
+        "position": [
+          0.79,
+          0.735
+        ],
+        "automatic": true,
+        "key": "12-ec3d468ef8bd",
+        "name": "瑞兹米尔",
+        "hp": 90,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__guard-drake",
+        "section": "固定遭遇",
+        "region": "11 · 瑞兹米尔的房间",
+        "quantity": "2",
+        "count": 2,
+        "condition": "忠诚的护卫龙兽，等闷人毯先动手。",
+        "source": "p.74",
+        "position": [
+          0.8,
+          0.75
+        ],
+        "automatic": true,
+        "key": "12-6ee0f3e54b9a",
+        "name": "护卫龙兽",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__rug-of-smothering",
+        "section": "固定遭遇",
+        "region": "11 · 门内大地毯",
+        "quantity": "1",
+        "count": 1,
+        "condition": "等第一个踏上来的人。",
+        "source": "p.74",
+        "position": [
+          0.775,
+          0.745
+        ],
+        "automatic": true,
+        "key": "12-6d74bd098325",
+        "name": "闷人毯",
+        "hp": 33,
+        "initiativeBonus": 2,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__rath-modar",
+        "section": "固定遭遇",
+        "region": "12 · 红袍法师的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "落败时隐形加飞行术，触摸冰墙跳下平台逃走。",
+        "source": "p.75",
+        "position": [
+          0.9,
+          0.665
+        ],
+        "automatic": true,
+        "key": "12-f5f249e2fd53",
+        "name": "拉斯·莫达",
+        "hp": 71,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__azbara-jos",
+        "section": "固定遭遇",
+        "region": "12 · 红袍法师的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "若此前未被杀或被捕；拉斯会丢下他逃跑。",
+        "source": "p.75",
+        "position": [
+          0.915,
+          0.68
+        ],
+        "automatic": true,
+        "key": "12-921b6889762b",
+        "name": "阿兹巴拉·乔斯",
+        "hp": 39,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__gargoyle",
+        "section": "固定遭遇",
+        "region": "12 · 红袍法师的房间",
+        "quantity": "1",
+        "count": 1,
+        "condition": "四尊石像鬼中唯一活的，掩护拉斯逃跑。",
+        "source": "p.75",
+        "position": [
+          0.88,
+          0.68
+        ],
+        "automatic": true,
+        "key": "12-93284a47bd09",
+        "name": "石像鬼",
+        "hp": 52,
+        "initiativeBonus": 0,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "15 · 厨房",
+        "quantity": "20",
+        "count": 20,
+        "condition": "在混乱中做饭。",
+        "source": "p.75",
+        "position": [
+          0.8,
+          0.825
+        ],
+        "automatic": true,
+        "key": "12-dff2e6fa26b1",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__griffon",
+        "section": "固定遭遇",
+        "region": "15 · 厨房壁架",
+        "quantity": "1",
+        "count": 1,
+        "condition": "布拉戈提库斯的宠物，监督狗头人；狗头人受攻击时出手。",
+        "source": "p.75",
+        "position": [
+          0.82,
+          0.8
+        ],
+        "automatic": true,
+        "key": "12-1dfd86e0600b",
+        "name": "狮鹫",
+        "hp": 59,
+        "initiativeBonus": 2,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "16 · 上层庭院（白天）",
+        "quantity": "2d6",
+        "count": 7,
+        "condition": "练习投标枪；没展示标旗或信物的降落者会被攻击。",
+        "source": "p.75",
+        "position": [
+          0.52,
+          0.19
+        ],
+        "automatic": true,
+        "key": "12-3861c899eab7",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "17 · 蓝色高塔楼顶",
+        "quantity": "2",
+        "count": 2,
+        "condition": "带标枪、岩石和一台弩炮望风。",
+        "source": "p.75",
+        "position": [
+          0.64,
+          0.22
+        ],
+        "automatic": true,
+        "key": "12-f8cb780bf95c",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__sandesyl-morgia",
+        "section": "固定遭遇",
+        "region": "18 · 墓室（白天）",
+        "quantity": "1",
+        "count": 1,
+        "condition": "白天在棺中；夜里外出巡逻。",
+        "source": "p.76",
+        "position": [
+          0.71,
+          0.255
+        ],
+        "automatic": true,
+        "key": "12-1ce9d9bb27b0",
+        "name": "桑德塞尔·莫吉亚",
+        "hp": 144,
+        "initiativeBonus": 4,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__vampire-spawn",
+        "section": "固定遭遇",
+        "region": "18 · 墓室",
+        "quantity": "2",
+        "count": 2,
+        "condition": "她的月精灵伴侣，日夜守护棺材；敌人太多时被召来增援。",
+        "source": "p.76",
+        "position": [
+          0.72,
+          0.27
+        ],
+        "automatic": true,
+        "key": "12-efb89fa6b274",
+        "name": "初生吸血鬼",
+        "hp": 82,
+        "initiativeBonus": 3,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__esclarotta",
+        "section": "在场人物",
+        "region": "19 · 控制塔",
+        "quantity": "1",
+        "count": 1,
+        "condition": "城堡的精魄驾驶者，可锁定滥用符文的人；DC 14 魅力（游说）。",
+        "source": "p.78",
+        "position": [
+          0.4,
+          0.21
+        ],
+        "automatic": true,
+        "key": "12-33adebcac09c",
+        "name": "艾丝克拉萝塔",
+        "hp": null,
+        "initiativeBonus": null,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "20 · 食人魔营房",
+        "quantity": "12",
+        "count": 12,
+        "condition": "睡在毛皮堆上，被警报或骚动引走。",
+        "source": "p.79",
+        "position": [
+          0.66,
+          0.155
+        ],
+        "automatic": true,
+        "key": "12-66efb737e304",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "22 · 云巨人塔楼顶",
+        "quantity": "3",
+        "count": 3,
+        "condition": "配一台弩炮，除非角色悄无声息快步接近，否则会发现他们。",
+        "source": "p.80",
+        "position": [
+          0.9,
+          0.15
+        ],
+        "automatic": true,
+        "key": "12-35d4e9f396f5",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "22 · 云巨人塔楼一层（侍卫）",
+        "quantity": "4",
+        "count": 4,
+        "condition": "戴花哨头盔，誓死保护主人。",
+        "source": "p.80",
+        "position": [
+          0.89,
+          0.17
+        ],
+        "automatic": true,
+        "key": "12-5028d9f353d3",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__blagothkus",
+        "section": "固定遭遇",
+        "region": "22 · 云巨人塔楼上层",
+        "quantity": "1",
+        "count": 1,
+        "condition": "可谈判、可被挑拨；有人夺城堡就让城堡坠向世界之脊。",
+        "source": "p.80",
+        "position": [
+          0.905,
+          0.165
+        ],
+        "automatic": true,
+        "key": "12-8126f731aba2",
+        "name": "布拉戈提库斯",
+        "hp": 138,
+        "initiativeBonus": 1,
+        "tokenScale": 3
+      },
+      {
+        "entryId": "HDQ__ogre",
+        "section": "固定遭遇",
+        "region": "22 · 云巨人塔楼上层（管家）",
+        "quantity": "2",
+        "count": 2,
+        "condition": "给巨人梳头的管家，誓死保护主人。",
+        "source": "p.80",
+        "position": [
+          0.915,
+          0.18
+        ],
+        "automatic": true,
+        "key": "12-20a55836cc41",
+        "name": "食人魔",
+        "hp": 59,
+        "initiativeBonus": -1,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__air-elemental",
+        "section": "条件遭遇",
+        "region": "22 · 云巨人塔楼上层",
+        "quantity": "1",
+        "count": 1,
+        "condition": "布拉戈提库斯用附赠动作召唤，不能离开房间。",
+        "source": "p.80",
+        "position": [
+          0.9,
+          0.17
+        ],
+        "automatic": false,
+        "key": "12-acffe2cef151",
+        "name": "气元素",
+        "hp": 90,
+        "initiativeBonus": 5,
+        "tokenScale": 2
+      },
+      {
+        "entryId": "HDQ__kobold",
+        "section": "固定遭遇",
+        "region": "24 · 仆从营房",
+        "quantity": "20",
+        "count": 20,
+        "condition": "精疲力竭，除非身处危险否则无视角色。",
+        "source": "p.80",
+        "position": [
+          0.43,
+          0.3
+        ],
+        "automatic": true,
+        "key": "12-1892a84e1dad",
+        "name": "狗头人",
+        "hp": 5,
+        "initiativeBonus": 2,
+        "tokenScale": 1
+      },
+      {
+        "entryId": "HDQ__glazhael-the-cloudchaser",
+        "section": "固定遭遇",
+        "region": "25 · 主密室天花板",
+        "quantity": "1",
+        "count": 1,
+        "condition": "先吐息和骇人威仪；生命值降到 40 时逃跑并报警。",
+        "source": "p.80",
+        "position": [
+          0.22,
+          0.48
+        ],
+        "automatic": true,
+        "key": "12-cbe665755ecf",
+        "name": "格拉兹哈尔·逐云者",
+        "hp": 200,
+        "initiativeBonus": 0,
+        "tokenScale": 3
+      }
+    ],
+    "areas": [
+      {
+        "key": "6",
+        "name": "正门",
+        "text": "放下的吊桥跨过雾气弥漫的城壕，吊闸门敞开，门廊内隐约可见巨大符号。起飞前教徒仍在把宝箱与物资马车运进院子，在门边仔细听能听到通行口令。"
+      },
+      {
+        "key": "6A",
+        "name": "门廊与魔像",
+        "text": "橡木铁皮闸门后，两尊 18 尺高的云巨人塑像（一男一女）面对面站着——都是石魔像。通过大门时没说出口令（“敬吾等之母亲与力量之源，提亚马特”或“布拉戈提库斯万岁”），一尊就会激活；再有人没说口令通过，第二尊也激活。只有云巨人能命令它们回到岗位。"
+      },
+      {
+        "key": "6B",
+        "name": "门楼",
+        "text": "左塔 120 尺高，右塔 80 尺高。每座塔顶 3 名食人魔，配标枪和一台弩炮。塔顶大活板门下是螺旋冰梯，一层没锁的巨人门通往下层庭院（7）或邪教徒营房（9）。吊桥绞盘在北塔一层，闸门绞盘在另一座塔一层，各有 1 名食人魔严守，警报响起也不离岗；转动曲柄需一个动作 DC 15 力量，每次升降一半距离（两回合完成）。"
+      },
+      {
+        "key": "7",
+        "name": "下层庭院",
+        "text": "坚固冰墙环绕，上层庭院的一部分由巨大冰拱托在 100 尺高处。夜里 40 尺高的浓雾笼罩。DC 22 感知（察觉）发现半悬庭院阴影下的墙洞，通往冰雕螺旋阶梯：连接两层庭院，地道还通往主密室（25）；台阶结着脆霜，无法悄无声息但不打滑。\n\n这里的战斗会惊动区域 6 的食人魔、9 的邪教徒、10 的石巨人和 15 的狗头人；一名邪教徒跑去区域 11 报告瑞兹米尔，她带护卫龙兽三轮后赶到。"
+      },
+      {
+        "key": "8",
+        "name": "马厩",
+        "text": "20 尺高宽的双开门，兽粪腐肉味，满地碎骨。2 只驯作坐骑的飞龙正饿着，攻击不认识的人。宝藏：四套镶翡翠、配秘银嚼子的高档飞龙缰绳（各 500 gp）。"
+      },
+      {
+        "key": "9",
+        "name": "邪教徒营房",
+        "text": "十四张毛皮床铺、几个衣箱、一套桌椅。任何时候有 10 名龙翼在休息，一半熟睡、一半醒着无所事事；除非警报、庭院战斗声或被食人魔叫去增援，否则不在城堡里走动。"
+      },
+      {
+        "key": "10",
+        "name": "石巨人的房间",
+        "text": "两道 20 尺高拱门连着下层庭院，庭院的喧闹会惊动这里。覆冰釉的房间中央九尺高石桌、三张巨人石椅，桌上一口刻符文的大铁锅，角落一只大铁箱。没有警报时：男石巨人凝视大锅，女石巨人坐在一旁——角色可获得突袭轮。威格鲁夫与赫尔德是布拉戈提库斯的客人，担心他煽动巨人对付龙族会招致灾难，但仍帮他修城与守城。威格鲁夫正用魔法大锅占卜结盟的结果，攻击他会打断仪式令其暴怒；赫尔德是他的伴侣兼保镖，对任一人的敌意都会引发暴力。他们知道控制塔（19）只有巨人进得去。被击败后施以威胁或贿赂可能配合。\n\n宝藏：铁箱（6×4×4 尺、500 磅，掀盖需一个动作 DC 12 力量）里的魔法力场球中有 32 枚完美小宝石（紫水晶为主，另有钻石、蛋白石、红宝石、黄玉），各 500 gp，共 16,000 gp；破坏力场需反魔法力场或解除魔法（DC 16）。大铁锅重 50 磅，倒入液体可作为卜筮术的材料，值 25 gp。"
+      },
+      {
+        "key": "11",
+        "name": "瑞兹米尔的房间",
+        "text": "门总是锁着，钥匙在瑞兹米尔手上：敲击术，或盗贼工具 DC 25，或敲门编个故事（信徒和仆从常来往）。10 尺高，火盆照明，大床、书桌，桌上一只铁箍宝箱挂着结实挂锁。除非被警报引走，瑞兹米尔与 2 只护卫龙兽在此。门内的大地毯是闷人毯，等第一个踏上来的人；瑞兹米尔与龙兽等地毯先动手再行动。\n\n她宁死不降：“你们所做的一切都是徒劳。我的朋友会将你们吞噬，像你们这样的卑微小子别想能阻止提亚马特行使其威严。”\n\n宝箱与她魔法同调，她一死内容物就传送到龙之井。挂锁盗贼工具 DC 20，失败 5 以上触发毒针（DC 20 智力（调查）发现，DC 15 敏捷解除）：飞龙毒液，DC 13 体质豁免，失败 24（7d6）毒素，成功减半。箱中：黑龙面具；镶橄榄石金链（400 gp）、龙头银项圈（200 gp）、6 枚月长石（各 50 gp）、20 颗松散珍珠的链子（3,000 gp）；600 sp、200 gp、50 pp。她身上带着房门、挂锁和储藏室（13）的钥匙。"
+      },
+      {
+        "key": "12",
+        "name": "红袍法师的房间",
+        "text": "门没锁。天花板钉满数百个马头骨，厚地毯、书桌、椅子、诵经台上堆满书卷、药瓶和血肉毛皮碎块，四尊彪形石像鬼雕像（只有一只是活的，服侍拉斯·莫达）。拉斯·莫达住在这里；阿兹巴拉·乔斯若还活着也在，两人正争论学术问题，见人立即住口。乔斯不在时，拉斯可能把角色错认成邪教徒，但他能看穿幻象与欺骗，对伤痕或衣着不符的人保持怀疑。他协助监督运宝并筹划召唤提亚马特（需要数百名熟练施法者），自己的目标是借龙后之力推翻萨扎斯·坦。\n\n会消失的冰墙：两窗之间 35 尺长、20 尺高的冰墙被触摸后消失 1 分钟，墙后是户外平台。拉斯落败时隐形、施展飞行术，触墙从平台跳下逃走，丢下乔斯，活着的石像鬼掩护他。\n\n宝藏：任意门、羽落术、火球术卷轴各一，火焰法杖。塞维林写给拉斯的几封信揭示邪教与红袍法师（拉斯一派）的深交，另有塞尔来信显示一些红袍法师对邪教计划不感兴趣——交给莱奥森、弗鲁姆等人奖励队伍 1,000 XP。诵经台上的炼狱语书《铁门之外》描述召唤魔鬼，最后一章讲用大量召唤与数百灵魂把提亚马特从九层地狱带到现世，但没有具体咒文或时间表。"
+      },
+      {
+        "key": "13",
+        "name": "储藏室",
+        "text": "门锁着，盗贼工具 DC 17，瑞兹米尔和布拉戈提库斯有钥匙。巨大的牛肉块、整只火腿、超大木桶和几百个板条箱，中等品质的食物，靠天然冷气保存。"
+      },
+      {
+        "key": "14",
+        "name": "客房",
+        "text": "按人类尺寸布置的客房。门对面的大冰墙被触摸后消失 1 分钟，整个房间暴露在外，墙后是户外平台。"
+      },
+      {
+        "key": "15",
+        "name": "厨房",
+        "text": "一片混乱：20 名狗头人切菜、拌料、搬运食材、搅大锅，像个炼金实验室。到处是牛肉、全羊、鱼干、熏肉、洋葱和豆子。上方壁架栖着布拉戈提库斯的宠物狮鹫，监督狗头人干活；开战时一声尖叫让狗头人恢复秩序，狗头人受攻击时它会出手保护。宝藏：几小箱黑胡椒、肉桂和肉豆蔻（各 2 磅，共值 130 gp）。"
+      },
+      {
+        "key": "16",
+        "name": "上层庭院",
+        "text": "高大细长的塔楼与冰墙环绕的风中庭院，城堡飞行时是龙、飞龙与飞行施法者的主要着陆地。白天 2d6 名食人魔在此练习投标枪；夜里 30 尺高雾气轻度遮蔽，吸血鬼桑德塞尔巡逻。在此降落必须立即展示邪教标旗或信物，否则巡逻者拉响警报并攻击；区域 20 的食人魔会来查看任何大声响动。伪装或巧言成功的话，被食人魔带去见布拉戈提库斯，被吸血鬼则带去见瑞兹米尔。"
+      },
+      {
+        "key": "17",
+        "name": "蓝色高塔",
+        "text": "淡蓝色冰雕塔楼，窗户如镜面般闪光。门上铁锁只有布拉戈提库斯有钥匙，或盗贼工具 DC 15。2 名食人魔带着标枪、岩石和一台弩炮在塔顶望风，用长绳从外部上下。塔内是 90 尺高的空心圆柱，没有楼梯；在塔内说出“艾丝克拉萝塔”即传送到区域 21。塔顶食人魔一发射弩炮或投石，整座城堡都会注意到，任何喊声都会拉响警报。"
+      },
+      {
+        "key": "18",
+        "name": "摇摇欲坠的塔楼",
+        "text": "约 100 尺高、年久失修，窗户冰封，墙顶满是裂缝；裂开的冰提供抓手，DC 10 力量（运动）可攀爬。塔基的门被 20 尺深的碎冰堵死；75 尺高处有个冰阳台，承重超过 150 磅就会碎裂，阳台门没锁。原本四层，现在只剩最高层完好。\n\n这是月精灵吸血鬼桑德塞尔·莫吉亚的塔。她在成为不死者前就入了教，是萨马斯特时代屠龙并制造龙巫妖的老派，认为那才是“正确的道路”，讨厌新教主塞维林。只在夜间活动，在两层庭院徘徊，盯着落单的食人魔觅食；敌人太多时召唤 2 名吸血鬼衍体（她的月精灵伴侣）增援。上层墓室无窗，棺材装着墓土没有财宝，由两名伴侣日夜守护；贴墙冰梯下行几尺就断在碎冰堆上方 50 尺处。"
+      },
+      {
+        "key": "19",
+        "name": "控制塔",
+        "text": "门被秘法锁锁住，巨人可正常打开，敲击术也行，否则需 DC 70 力量。冰旋梯通往满是珠宝的控制室：月光石、拇指大的绿宝石、秘银魔杖、镶绿松石与黄金的球体、墙上数十根赤铜杆与黄金球；片刻后墙壁像消失一般呈现全景天空，十几二十个白色符文像雪花飘荡。懂矮人语或巨人语可读懂。\n\n十八道命令符文：警报、警报解除、抛锚、起锚、漂流、归家（飞回世界之脊的起源地）、东、南、西、北（可同时按两个）、上升（每轮 10 尺）、下沉（每轮 10 尺，触地着陆）、旋转、逆旋转（1 分钟一周）、掩蔽（1 分钟后城堡 100 尺内户外重度遮蔽、室内轻度遮蔽）、现形、风暴（1 分钟后形成雷云，之后在控制室用动作向 1,000 尺内一个可见目标射闪电：DC 14 敏捷豁免，失败 22（4d10）闪电；无人照看的物件直接受伤）、平息。\n\n艾丝克拉萝塔的精魄才是真正的驾驶者，可“锁定”滥用符文的人。DC 15 智力（奥秘）感知到背后的智能；在塔内呼唤她可直接交流。这个友善的灵魂被邪教徒、巨龙、飞龙和狗头人叨扰，迫切想知道丈夫在做什么；向她提要求 DC 14 魅力（游说），会说巨人语有优势。有人破坏控制室她就触发警报，布拉戈提库斯带 2 名食人魔管家 3 轮后赶到。\n\n宝藏：硬撬控制单元可得绿宝石、绿松石、月长石、巨大翡翠、琥珀碎块和大量秘银，共 10,000 gp——城堡将失去移动与控制天气的能力，随强风北漂，最终坠毁在世界之脊的米克罗斯冰川（祈愿术可修复）。\n\n发展：布拉戈提库斯死在城堡上，他的精魄就取代妻子，愤而把城堡驶向北方坠毁在米克罗斯冰川附近。巨龙被杀、邪教徒败退后，拉斯·莫达会召集残部追杀布拉戈提库斯（他知道巨人一死城堡就坠毁），自己飞走。角色与布拉戈提库斯交好并赶走邪教徒和白龙，就能驾城堡去任何地方（会招来其他龙族敌意）；布拉戈提库斯仍掌控时会驶向北方拜访其他巨人。"
+      },
+      {
+        "key": "20",
+        "name": "食人魔营房",
+        "text": "没家具的房间，12 名食人魔东倒西歪睡在毛皮堆上，除非被警报或骚动引走。宝藏：搜索 30 分钟找到 800 sp 和 300 gp；DC 20 智力（调查）在缝隙里发现一枚 500 gp 的淡蓝色蓝宝石。\n\n被俘、被魅惑或被哄骗的食人魔知道：他们为布拉戈提库斯服务（妻子几年前被杀），他有几位客人——“穿红袍的法师”“龙女士”“住在洞里的大白龙”。更多情报每次 DC 19 魅力（游说）得一条：吸血鬼夜里看守城堡，有时拿食人魔当食物；教徒用城堡去“绿林”“那片大荒原”“老山”之类的地方；城堡的雾和导航由云巨人魔法控制，没有他城堡就不会飞（不实，是巨人骗他们的）。"
+      },
+      {
+        "key": "21",
+        "name": "艾丝克拉萝塔的坟墓",
+        "text": "没有出入口的椭圆冰室，只能从区域 17 传送进来。30 尺高的冰柱，碎冰散落在一具 20×10×10 尺的白色大理石巨棺周围，棺盖雕着长发飘逸的女巨人，基座矮人语符文刻着“艾丝克拉萝塔”。开棺需 DC 30 力量，里面只有她的骸骨，没有陪葬品。在墓中叫出“布拉戈提库斯”即传送回区域 17 一层。"
+      },
+      {
+        "key": "22",
+        "name": "云巨人塔楼",
+        "text": "70 尺高，楼顶有护栏，一层两扇没锁的门、没有窗户；内分两层，每层高 30 尺，冰旋梯相连。除非悄无声息快步接近，否则楼顶的 3 名食人魔（配一台弩炮）会发现角色。\n\n一层：开门时内侧银铃响起报警。巨人尺寸木桌与四把椅子，冰雕壁画描绘山丘、霜、火、石与云巨人组成的军队。4 名戴花哨头盔的食人魔“侍卫”守在这里，誓死忠诚（怕头盔被转送他人）。\n\n上层：壁画上云巨人骑着巨鸟，云状冰雕床头板的巨床，熊皮，床脚两只大木箱。布拉戈提库斯盘腿坐在地上，让两名食人魔管家梳理他雪白的头发，钉头锤靠在床边。他可用附赠动作召唤一个与房间魔法联结的气元素（不能离开房间，直到他解散）。他对食人魔宣泄担忧：邪教可能夺取城堡控制权——聪明的角色可借此挑拨离间。伪装成教徒闯入会让他愤怒，但不进一步激怒就不动手。\n\n宝藏：两只木箱装满金银币（共 12,000 gp），其中一只还有一个次元袋、价值 4,000 gp 的金锭和 4,000 gp 的银锭。\n\n发展：角色投降时他询问来历；说自己是龙巫教的敌人，他会说：“我可以对付他们。不过我给你们提个醒，他们是认真想让龙族再度成为海湾地区的一大势力。你会这么想吗？还真够胆。”争取到他后，他把自己锁进控制塔，驾城堡北上，让角色去对付邪教徒与白龙。有人想夺城堡，他就去控制塔让城堡坠向世界之脊。"
+      },
+      {
+        "key": "23",
+        "name": "巨人客房",
+        "text": "为巨人客人准备、配巨人尺寸家具的房间。每间都有一面外墙被触摸后消失 1 分钟，露出冰制平台——很久以前巨人用来让鹏鸟坐骑降落。"
+      },
+      {
+        "key": "24",
+        "name": "仆从营房",
+        "text": "20 名精疲力竭的狗头人睡在几十堆床品毛皮里，除非身处危险否则无视角色，身上没有财宝。DC 12 魅力（游说）每次得一条（伪装成有说服力的邪教徒可免检定；一次失败他们就因恐惧彻底沉默，再问就尖叫求饶）：精灵吸血鬼住在摇摇欲坠的塔楼（18）；布拉戈提库斯还在和亡妻说话，她的精魄是城堡的领航员与保护者，巨人死了城堡的魔法就会失效；拜龙的人类不如狗头人了解龙，龙性情暴躁，财宝要献给龙后以免她发脾气；穿红袍的法师和教徒一起工作，他的房间（12）不许狗头人进；白龙逐云者喜欢冻肉，把肉扔进洞窟（25）然后快跑！"
+      },
+      {
+        "key": "25",
+        "name": "主密室",
+        "text": "城堡冰冷的核心被许多地道挖空，通往冰面多处；白龙经一条漏斗形宽地道进出，越近密室越窄。半透明的蓝冰墙里冻着钱币、头盔、牲畜、几个狗头人和一两个食人魔，地面结霜嘎吱作响。蛋形上层有巨大壁架，俯瞰 30 尺下凹状下层上的大堆财宝；成年白龙格拉兹哈尔·逐云者攀在宝堆上方的天花板上。\n\n他崇敬提亚马特，希望她以无尽力量回报；把来客分为仆人（带食物）和敌人（不带食物），为守护女王的财富自豪，很少与塔利斯以外的教徒交谈，怀疑瑞兹米尔等人。交谈时他会演讲龙族的优越；奉承只换来更多奉承，献上财富或食物者会被宽恕，挑战者成为吐息目标。战斗时尽量待在天花板上，先用吐息与骇人威仪，吐息充能时近战；生命值降到 40 就逃跑（收起翅膀可通过窄地道），到户外用龙语大喊“他们想要财宝！”报警。把他诱进窄地道，他的近战攻击有劣势。\n\n宝藏：冻在冰壳里，需火焰法术或长时间篝火融化，冰中还有几十具人类遗骸。500,000 cp、100,000 sp、5,000 gp；冰冻宝箱内 800 pp 和 21 枚小蓝宝石（各 300 gp）；一瓶冻住的气化形体药水、+1 长剑、+1 长弓、+1 皮甲和防御护腕。"
+      }
+    ]
+  }
+]
