@@ -180,7 +180,13 @@
      "source": "L2 战斗 2",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第02章_巴洛维亚各地区",
+    "codes": [
+     "A-Z"
+    ]
+   }
   },
   {
    "key": "02",
@@ -328,7 +334,13 @@
      "source": "S1 夜葬",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第03章_巴洛维亚村",
+    "codes": [
+     "E1-E7."
+    ]
+   }
   },
   {
    "key": "03",
@@ -363,7 +375,13 @@
     {
      "keep": "04-d9a663cc88237256"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第03章_巴洛维亚村",
+    "codes": [
+     "E5-E5"
+    ]
+   }
   },
   {
    "key": "04",
@@ -402,7 +420,13 @@
     {
      "keep": "36-028809227240a97f"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "附录B_死亡之屋",
+    "codes": [
+     "1-38"
+    ]
+   }
   },
   {
    "key": "05",
@@ -565,7 +589,13 @@
      "source": "S2",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第02章_巴洛维亚各地区",
+    "codes": [
+     "G"
+    ]
+   }
   },
   {
    "key": "06",
@@ -750,7 +780,13 @@
      "automatic": false,
      "at": "15-8cc9ea0965f163ef"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第05章_瓦拉吉镇",
+    "codes": [
+     "N1-N9."
+    ]
+   }
   },
   {
    "key": "07",
@@ -816,7 +852,13 @@
      "automatic": false,
      "at": "16-0198d03282f2d65a"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第05章_瓦拉吉镇",
+    "codes": [
+     "N2-N2"
+    ]
+   }
   },
   {
    "key": "08",
@@ -876,7 +918,13 @@
      "automatic": false,
      "at": "18-f921bd3d99c4b8b2"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第05章_瓦拉吉镇",
+    "codes": [
+     "N4-N4"
+    ]
+   }
   },
   {
    "key": "09",
@@ -911,7 +959,13 @@
      "automatic": true,
      "at": "19-e69dd8a88e7ac435"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第05章_瓦拉吉镇",
+    "codes": [
+     "N6-N6"
+    ]
+   }
   },
   {
    "key": "10",
@@ -1011,7 +1065,13 @@
      "source": "S5",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第08章_克雷茨克村",
+    "codes": [
+     "S1-S5"
+    ]
+   }
   },
   {
    "key": "11",
@@ -1035,7 +1095,13 @@
     {
      "keep": "25-4dc66b36ae280c50"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第08章_克雷茨克村",
+    "codes": [
+     "S6-S24"
+    ]
+   }
   },
   {
    "key": "12",
@@ -1175,7 +1241,13 @@
      "source": "S6",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第07章_银龙宅邸",
+    "codes": [
+     "Q1-Q31"
+    ]
+   }
   },
   {
    "key": "13",
@@ -1206,7 +1278,13 @@
      "source": "S6",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第07章_银龙宅邸",
+    "codes": [
+     "Q32-Q53"
+    ]
+   }
   },
   {
    "key": "14",
@@ -1249,7 +1327,13 @@
      "source": "S7 · S8",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第04章_鸦阁城堡",
+    "codes": [
+     "K1-K6"
+    ]
+   }
   },
   {
    "key": "15",
@@ -1462,7 +1546,13 @@
      "source": "S8 追猎者",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第04章_鸦阁城堡",
+    "codes": [
+     "K7-K24"
+    ]
+   }
   },
   {
    "key": "16",
@@ -1486,7 +1576,13 @@
      "heading": "### 狩猎中可以去的地方"
     }
    ],
-   "encounters": []
+   "encounters": [],
+   "rooms": {
+    "file": "第04章_鸦阁城堡",
+    "codes": [
+     "K25-K34"
+    ]
+   }
   },
   {
    "key": "17",
@@ -1527,7 +1623,16 @@
      "source": "S8 K20",
      "automatic": false
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第04章_鸦阁城堡",
+    "codes": [
+     "K18-K18",
+     "K20-K20",
+     "K48-K48",
+     "K54-K60"
+    ]
+   }
   },
   {
    "key": "18",
@@ -1559,7 +1664,13 @@
      "automatic": false,
      "at": "12-f901ce9273ef4989"
     }
-   ]
+   ],
+   "rooms": {
+    "file": "第04章_鸦阁城堡",
+    "codes": [
+     "K61-K88"
+    ]
+   }
   }
  ]
 }
