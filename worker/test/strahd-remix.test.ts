@@ -35,6 +35,15 @@ it('reuses original Strahd maps under its own asset ids with known cards',()=>{
     expect(s.notes.length+s.areas!.length,s.name).toBeGreaterThan(0);
     for(const e of s.encounters){expect(card(e.entryId),e.entryId).toBeDefined();if(e.automatic)expect(e.position).not.toBeNull();}
   }
+  // Every map lists its rooms by book code: v2 use (or default-empty) first, then the original text.
+  for(const s of strahdRemixScenes){
+    const rooms=s.areas!.filter(a=>!/^a\d+$/.test(a.key));
+    expect(rooms.length,s.name).toBeGreaterThan(0);
+    for(const a of rooms){expect(a.text,a.key).toMatch(/^【重置版】/);expect(a.text,a.key).toContain('【原版】');}
+  }
+  const k8=strahdRemixScenes.find(s=>s.key==='15')!.areas!.find(a=>a.key==='K8')!;
+  expect(k8.text).toContain('预置 拉哈丁');expect(k8.text).toContain('石像鬼');
+  expect(strahdRemixScenes.find(s=>s.key==='16')!.areas!.find(a=>a.key==='K25')!.text).toContain('默认不刷敌人或陷阱');
   expect(new Set(strahdRemixScenes.flatMap(s=>s.encounters.map(e=>e.key))).size).toBe(strahdRemixScenes.flatMap(s=>s.encounters).length);
 });
 
@@ -57,6 +66,7 @@ it('serves the v2 notes to the DM only and adds optional groups idempotently',as
   const route=`/api/campaigns/${c.slug}/strahd-remix-scene/${scene.id}`;
   const preset=await (await api(route,host)).json() as any;
   expect(preset.areas.some((a:any)=>a.name.startsWith('L0'))).toBe(true);
+  expect(preset.areas.find((a:any)=>a.key==='B').text).toContain('【原版】');
   const e=preset.encounters.find((e:any)=>e.name==='施特拉德恐狼');expect(e.automatic).toBe(false);
   expect((await api(route,host,{id:'remix-cmd',encounterKey:e.key,count:2})).status).toBe(200);
   expect((await api(route,host,{id:'remix-cmd',encounterKey:e.key,count:2})).status).toBe(200);

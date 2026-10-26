@@ -3,7 +3,9 @@ python3 scripts/build-strahd-remix.py /path/to/施特拉德的诅咒
 shared/strahd-remix/plan.json (hand-written) picks the maps, the v2 sections shown as scene notes and
 area notes, and the default encounter groups; cards.json holds the reconstruction's own cards. Maps are
 the original PNGs copied byte-for-byte under map-cosr-* ids. Re-running after editing the v2 notes
-refreshes scenes.json, index.json and output/strahd-remix/manifest.json.
+refreshes scenes.json, index.json and output/strahd-remix/manifest.json. Each scene's `rooms` names the
+book chapter and the room codes on its map; those rooms follow the v2 areas, each headed by what v2 says
+about it (or that v2 leaves it empty) and then the original 章节文本 text.
 """
 from pathlib import Path
 import json, re, sys, hashlib, math, shutil, struct
@@ -89,6 +91,79 @@ def notes(specs):
         parts.append((f'【{label(spec)} · {heading}】\n' if heading else '') + plain(body))
     return '\n\n'.join(p for p in parts if p.strip())
 
+# ---- room-by-room areas: the original book text per map room, headed by how v2 uses the room ----
+ROOM = re.compile(r'^###\s*(?:([A-Z]{1,2}\d+[a-z]?|\d+[a-z]?)\s*[.．:：、]?|([A-Z])\s*[.．])\s*(\S.*)$')
+# Headings that open a new part of the chapter rather than continuing the room above them.
+STOP = re.compile(r'特殊事件|各区域|Areas [Oo]f|结局|Endings|Main Floor|Court of the Count|Rooms of Weeping|Spires of|Larders of|Dungeon and Catacombs|地理特征|Walls of')
+PAGE = re.compile(r'^(<a id=|\[对照原页\]|本页为地图或插画页|!\[)')
+
+def book_rooms(chapter):
+    lines = (ROOT / '章节文本' / chapter / '正文.md').read_text().splitlines()
+    start = next(i for i, l in enumerate(lines) if l.startswith('## 原版参考正文'))
+    rooms, cur = [], None
+    for line in lines[start + 1:]:
+        if line.startswith('## PDF第') or PAGE.match(line): continue
+        if line.startswith('#'):
+            m = ROOM.match(line)
+            if m:
+                code = m[1] or m[2]; title = re.sub(r'\s+[A-Za-z’\'“].*$', '', m[3]).strip()
+                cur = {'code': code, 'title': title, 'body': []}; rooms.append(cur); continue
+            if line.startswith('## ') or STOP.search(line): cur = None; continue
+        if cur: cur['body'].append(line)
+    return rooms
+
+def code_parts(code):
+    m = re.match(r'^([A-Z]*)(\d*)([a-z]?)$', code); return m[1], int(m[2]) if m[2] else None, m[3]
+
+def wanted(code, specs):
+    prefix, num, sub = code_parts(code)
+    for spec in specs:
+        top = spec.endswith('.'); lo, _, hi = spec.rstrip('.').partition('-'); hi = hi or lo
+        if num is None:
+            if lo.isalpha() and len(code) == 1 and lo <= code <= hi: return True
+            continue
+        lp, ln, _ = code_parts(lo); hp, hn, _ = code_parts(hi)
+        if prefix == lp and ln is not None and ln <= num <= hn and not (top and sub): return True
+    return False
+
+v2_lines = [(label({'file': str(f.relative_to(V2))}), line) for f in sorted(V2.rglob('*.md')) for line in f.read_text().splitlines()]
+CODE_RANGE = re.compile(r'(?<![A-Za-z0-9])([A-Z]{1,2})(\d+)\s*[—–-]+\s*\1?(\d+)(?![0-9a-z])')  # K7—K10
+AREA_RANGE = re.compile(r'区域\s*([A-Z]|\d+)\s*[—–-]+\s*([A-Z]|\d+)')  # 区域 A—C
+
+def mentions(line, code, title):
+    """Whether a v2 line points at this room. Bare letters and numbers only count after 区域, and S codes
+    (which collide with the v2 session labels S1—S8) only when followed by the room's own name."""
+    prefix, num, _ = code_parts(code)
+    if not prefix or (num is None):
+        if re.search(rf'区域\s*{code}(?![0-9a-z])', line): return True
+        for lo, hi in AREA_RANGE.findall(line):
+            if lo.isdigit() == code.isdigit() and lo.isdigit() == hi.isdigit():
+                if (int(lo) <= int(code) <= int(hi)) if code.isdigit() else (lo <= code <= hi): return True
+        return False
+    if prefix == 'S': return bool(re.search(rf'(?<![A-Za-z0-9]){code}\s*{re.escape(title[:2])}', line))
+    if re.search(rf'(?<![A-Za-z0-9]){code}(?![0-9a-z])', line): return True
+    return any(p == prefix and int(lo) <= num <= int(hi) for p, lo, hi in CODE_RANGE.findall(line))
+
+def clip(text, n=240): return text if len(text) <= n else text[:n] + '…'
+
+def room_areas(spec, encounters):
+    for room in book_rooms(spec['file']):
+        code, title = room['code'], room['title']
+        if not wanted(code, spec['codes']): continue
+        notes, seen = [], set()
+        for e in encounters:
+            if re.search(rf'(?<![A-Za-z0-9]){code}(?![0-9a-z])', e['region']):
+                notes.append(f"· 预置 {e['name']} ×{e['count']}" if e['automatic'] else f"· 按触发加入：{e['name']}（{e['quantity']}）")
+        for source, line in v2_lines:
+            if not mentions(line, code, title): continue
+            text = plain([line]).strip('·【】 ')
+            if text and text not in seen:
+                seen.add(text); notes.append(f'· {source}：{clip(text)}')
+        notes = notes[:8]
+        head = '【重置版】\n' + '\n'.join(notes) if notes else '【重置版】v2 没有安排这里：默认不刷敌人或陷阱，按下面的原版描述空间即可。'
+        yield {'key': code, 'name': title if code.isdigit() else f'{code} {title}',
+               'text': f"{head}\n\n【原版】\n{plain(room['body'])}"}
+
 # ---- scenes ----
 ASSETS.mkdir(parents=True, exist_ok=True)
 for old in ASSETS.iterdir(): old.unlink()
@@ -120,7 +195,9 @@ for p in plan['scenes']:
     scenes.append({'key': p['key'], 'name': f"{p['key']} · {p['name']}", 'chapter': p['chapter'],
                    'map': {'assetId': asset, 'width': width, 'height': height, 'mapScale': 3},
                    'encounters': encounters, 'notes': notes(p['notes']),
-                   'areas': [{'key': f'a{i + 1:02d}', **a} for i, a in enumerate(areas(p['areas']))]})
+                   'areas': [{'key': f'a{i + 1:02d}', **a} for i, a in enumerate(areas(p['areas']))]
+                            + list(room_areas(p['rooms'], encounters))})
+    assert len({a['key'] for a in scenes[-1]['areas']}) == len(scenes[-1]['areas']), p['key']
 
 (DATA / 'scenes.json').write_text(json.dumps(scenes, ensure_ascii=False, indent=2) + '\n')
 (DATA / 'index.json').write_text(json.dumps(list(index.values()), ensure_ascii=False, indent=2) + '\n')
