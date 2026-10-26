@@ -10,6 +10,7 @@ describe('query panel tabs', () => {
       expect(visibleTabs(role, 'lost-mine-of-phandelver')).not.toContain('phandelver');
       expect(visibleTabs(role, 'hoard-of-the-dragon-queen')).not.toContain('hoard');
       expect(visibleTabs(role, 'hoard-of-the-dragon-queen-remix')).not.toContain('hoardRemix');
+      expect(visibleTabs(role, 'curse-of-strahd-remix')).not.toContain('strahdRemix');
     }
   });
 
@@ -24,6 +25,9 @@ describe('query panel tabs', () => {
     expect(visibleTabs('dm', 'hoard-of-the-dragon-queen-remix')).toContain('hoardRemix');
     expect(visibleTabs('dm', 'hoard-of-the-dragon-queen-remix')).not.toContain('hoard');
     expect(visibleTabs('dm', 'hoard-of-the-dragon-queen')).not.toContain('hoardRemix');
-    expect(visibleTabs('dm', undefined)).toEqual(expect.arrayContaining(['waterdeep', 'strahd', 'phandelver', 'hoard', 'hoardRemix']));
+    expect(visibleTabs('dm', 'curse-of-strahd-remix')).toContain('strahdRemix');
+    expect(visibleTabs('dm', 'curse-of-strahd-remix')).not.toContain('strahd');
+    expect(visibleTabs('dm', 'curse-of-strahd')).not.toContain('strahdRemix');
+    expect(visibleTabs('dm', undefined)).toEqual(expect.arrayContaining(['waterdeep', 'strahd', 'phandelver', 'hoard', 'hoardRemix', 'strahdRemix']));
   });
 });
