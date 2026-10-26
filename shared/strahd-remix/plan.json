@@ -1,0 +1,1565 @@
+{
+ "source": "重置版v2",
+ "scenes": [
+  {
+   "key": "01",
+   "map": "01",
+   "name": "总览与旅途：巴洛维亚总地图",
+   "chapter": "总览与旅途",
+   "notes": [
+    {
+     "file": "README.md",
+     "heading": null,
+     "until": "## 开团用"
+    },
+    {
+     "file": "02_玩家游玩线.md",
+     "heading": "## 8 次团总表"
+    }
+   ],
+   "areas": [
+    {
+     "file": "01_剧情因果与真相.md",
+     "heading": null,
+     "name": "剧情因果与真相"
+    },
+    {
+     "file": "02_玩家游玩线.md",
+     "heading": null,
+     "name": "玩家游玩线"
+    },
+    {
+     "file": "03_线索总表.md",
+     "heading": null,
+     "name": "线索总表"
+    },
+    {
+     "file": "04_时间与局势.md",
+     "heading": null,
+     "name": "时间与局势"
+    },
+    {
+     "file": "10_圣物与世界规则.md",
+     "heading": null,
+     "name": "圣物与世界规则"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 用法"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 一、进雾"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 二、战斗：废车上的人"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 三、战后"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 主持人要演出来的三件事"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 1. 斯瓦里奇森林"
+    },
+    {
+     "expand": true,
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "## 一、斯瓦里奇森林"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 战斗 1：迷雾边缘的狼群"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 1. 斯瓦里奇老路"
+    },
+    {
+     "expand": true,
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "## 一、斯瓦里奇老路"
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 战斗 1："
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 战斗 2："
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 老路上（d8）"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "可选战斗",
+     "region": "序章 · 废车旁",
+     "quantity": "2",
+     "count": 2,
+     "condition": "两头恐狼追杀送信的达尔万；第 5 轮（或一头过半血）城堡方向一声嚎叫，全部撤走。",
+     "source": "L0 序章",
+     "automatic": false
+    },
+    {
+     "card": "COS__24c56ae29e4a1a3d",
+     "section": "可选战斗",
+     "region": "序章 · 雾里的增援",
+     "quantity": "2",
+     "count": 2,
+     "condition": "困难编组：第 3 轮从雾里出来；默认编组只有绿眼睛，不加入。",
+     "source": "L0 序章",
+     "automatic": false
+    },
+    {
+     "card": "COS__e5b2a00a635f65cc",
+     "section": "在场人物",
+     "region": "序章 · 废车顶上（达尔万）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "考利安家的帮工，揣着给维斯塔尼的信（1D1），只剩 2 点生命值。",
+     "source": "L0 序章",
+     "automatic": false,
+     "currentHp": 2
+    },
+    {
+     "card": "COS__24c56ae29e4a1a3d",
+     "section": "可选战斗",
+     "region": "斯瓦里奇森林 · 迷雾边缘",
+     "quantity": "4（5 人 +1）",
+     "count": 4,
+     "condition": "简单偏中等；两只倒下或火把逼近就撤，不追进村。用了序章就不打这一场。",
+     "source": "S1 · L1 战斗 1",
+     "automatic": false
+    },
+    {
+     "card": "COS__677ed56a0fa1c345",
+     "section": "可选战斗",
+     "region": "伊夫里斯河路口 · 无名墓地",
+     "quantity": "3（5 人 +1）",
+     "count": 3,
+     "condition": "与 6 枯枝怪同场，简单偏中等；不撤，起火后往西退。盲视 60 尺，雾挡不住。",
+     "source": "L2 战斗 1",
+     "automatic": false
+    },
+    {
+     "card": "COS__63b309d5e65944a5",
+     "section": "可选战斗",
+     "region": "伊夫里斯河路口 · 无名墓地",
+     "quantity": "6",
+     "count": 6,
+     "condition": "坟间的枯灌木（拟形），被动察觉低于 13 被突袭；火焰易伤。",
+     "source": "L2 战斗 1",
+     "automatic": false
+    },
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "可选战斗",
+     "region": "伊夫里斯河石桥",
+     "quantity": "2（5 人 +1）",
+     "count": 2,
+     "condition": "简单偏中等；一只过半血或被推进河就撤。从不靠近伊丽娜。",
+     "source": "L2 战斗 2",
+     "automatic": false
+    },
+    {
+     "card": "COS__cd909e303ef88601",
+     "section": "可选战斗",
+     "region": "伊夫里斯河石桥 · 助战的渡鸦",
+     "quantity": "1",
+     "count": 1,
+     "condition": "第 2 轮（救过折翅渡鸦则第 1 轮）到场，由主持人操作帮玩家：每轮啄一只恐狼或让它攻击劣势；半血飞走。",
+     "source": "L2 战斗 2",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "02",
+   "map": "03",
+   "name": "巴洛维亚村：迷雾与葬礼",
+   "chapter": "第 1 次 · 迷雾与葬礼",
+   "notes": [
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 2. 巴洛维亚村"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 3. 村长宅邸与伊丽娜"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 5. 夜葬"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 玩家的反应"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 6. 葬礼之后"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "## 扩充：地点与战斗"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "## 收尾"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "## 怎样把探索插进这一次"
+    },
+    {
+     "expand": true,
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "## 二、巴洛维亚村"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 小事件 A："
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 小事件 B："
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 战斗 2："
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 战斗 3："
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 村子入夜（d8）"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 传闻（d10）"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "## 六、本次可选线索与物品"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "03-1e80e43a2e4df08d"
+    },
+    {
+     "keep": "03-bd493692ace8a638"
+    },
+    {
+     "keep": "03-d4d5f1a7fdc665cf"
+    },
+    {
+     "keep": "03-96ab935dfbbe16fd"
+    },
+    {
+     "keep": "03-17a241f992978084"
+    },
+    {
+     "keep": "03-345bbc4c70c6c0a4"
+    },
+    {
+     "keep": "03-c4941ad6e2617e81"
+    },
+    {
+     "keep": "03-fc8ca7b2807a25a6"
+    },
+    {
+     "keep": "03-a9eb03211dd2afbf"
+    },
+    {
+     "card": "COS__0c9cce31d1188aa5",
+     "section": "可选战斗",
+     "region": "封死的屋子（门上写着“别开”）",
+     "quantity": "2（5 人 +1）",
+     "count": 2,
+     "condition": "中等；扰人断肢——每次受到至少 5 点钝击或挥砍伤害掷 d20，断肢在本体先攻自己行动。不撤；玩家可退到街上。",
+     "source": "L1 战斗 2",
+     "automatic": false
+    },
+    {
+     "card": "COS__a03ba68a0d67726d",
+     "section": "可选战斗",
+     "region": "抬棺路上（宅邸到墓地）",
+     "quantity": "3（5 人 +1）",
+     "count": 3,
+     "condition": "简单，但要护棺：抬棺人受伤 DC 10 体质豁免否则脱手。棺材进墓地铁门，老鼠全部退走。",
+     "source": "L1 战斗 3",
+     "automatic": false
+    },
+    {
+     "card": "COS__dd736f0312422367",
+     "section": "在场人物",
+     "region": "E6 公墓 · 夜葬",
+     "quantity": "1",
+     "count": 1,
+     "condition": "葬礼上亲临，借考利安的嘴说话；不应交战，拿走东西后离开。",
+     "source": "S1 夜葬",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "03",
+   "map": "04",
+   "name": "村教堂：唐纳维奇与多鲁",
+   "chapter": "第 1 次 · 迷雾与葬礼",
+   "notes": [
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S1_迷雾与葬礼.md",
+     "heading": "### 4. 教堂与多鲁"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### E5 教堂"
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 战斗 4："
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "04-808a4348b04566e7"
+    },
+    {
+     "keep": "04-d9a663cc88237256"
+    }
+   ]
+  },
+  {
+   "key": "04",
+   "map": "36",
+   "name": "鬼屋（可选）：两个孩子",
+   "chapter": "第 1 次 · 迷雾与葬礼",
+   "notes": [
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### E7 鬼屋（可选）"
+    }
+   ],
+   "areas": [
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 小事件 C："
+    },
+    {
+     "file": "地点手册/L1_斯瓦里奇森林与巴洛维亚村.md",
+     "heading": "### 战斗 5："
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "36-58218e55ad8f10ed"
+    },
+    {
+     "keep": "36-fc3be744b0510f31"
+    },
+    {
+     "keep": "36-43c50e5e7f093311"
+    },
+    {
+     "keep": "36-8de5785ff991ab93"
+    },
+    {
+     "keep": "36-028809227240a97f"
+    }
+   ]
+  },
+  {
+   "key": "05",
+   "map": "02",
+   "name": "橡木湖营地：篝火与塔罗卡",
+   "chapter": "第 2 次 · 篝火与塔罗卡",
+   "notes": [
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 2. 篝火"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 3. 托马"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 4. 塔罗卡占卜"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 5. 伊娃的坦白"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 6. 窗外"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 7. 黎明前"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "### 阿瑞加尔的一眼"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "## 扩充：地点与战斗"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S2_篝火与塔罗卡.md",
+     "heading": "## 收尾"
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "## 怎样把探索插进这一次"
+    },
+    {
+     "expand": true,
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "## 二、橡木湖营地"
+    },
+    {
+     "expand": true,
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "## 三、小事件"
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 战斗 3："
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 战斗 4："
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 营地之夜（d6）"
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 传闻（d10）"
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "## 六、本次可选线索与物品"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "02-97a0474f07c08378"
+    },
+    {
+     "keep": "02-f11f4818cc3f6c70"
+    },
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "可选战斗",
+     "region": "西边雾线 · 黎明营救",
+     "quantity": "2",
+     "count": 2,
+     "condition": "先扑受伤的埃米尔；咬倒林德家的人后可拖向雾墙。两只恐狼倒下或第 5 轮日出撤退。",
+     "source": "S2 · L2 战斗 4",
+     "automatic": false
+    },
+    {
+     "card": "COS__24c56ae29e4a1a3d",
+     "section": "可选战斗",
+     "region": "西边雾线 · 黎明营救",
+     "quantity": "4（5 人 +2）",
+     "count": 4,
+     "condition": "包抄，把孩子和大人分开；与 2 恐狼合计调整后 1200 XP。",
+     "source": "S2 · L2 战斗 4",
+     "automatic": false
+    },
+    {
+     "card": "COS__e5b2a00a635f65cc",
+     "section": "在场人物",
+     "region": "西边雾线 · 埃米尔（林德家父亲）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "腿伤，每轮一瘸一拐走 10 尺；扶着他每轮 20 尺。",
+     "source": "S2 · L2 战斗 4",
+     "automatic": false,
+     "currentHp": 2
+    },
+    {
+     "card": "COS__e5b2a00a635f65cc",
+     "section": "在场人物",
+     "region": "西边雾线 · 玛尔塔与莉莎",
+     "quantity": "2",
+     "count": 2,
+     "condition": "母亲抱着女儿站着尖叫；魅力（说服或威吓）DC 10 让她往营地跑。莉莎可钻进倒下的橡树洞。",
+     "source": "S2 · L2 战斗 4",
+     "automatic": false
+    },
+    {
+     "card": "COS__be7cc25fed10278e",
+     "section": "可选战斗",
+     "region": "篝火边 · 营地里的拳头",
+     "quantity": "1—3",
+     "count": 2,
+     "condition": "非致命，只用拳头和临时武器；谁先拔刀谁就输。",
+     "source": "L2 战斗 3",
+     "automatic": false
+    },
+    {
+     "card": "COS__23d61ba25390191b",
+     "section": "在场人物",
+     "region": "营地边缘的树下",
+     "quantity": "1",
+     "count": 1,
+     "condition": "黎明战斗后看完整场，点点头离开；第 6 次回来。",
+     "source": "S2",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "06",
+   "map": "15",
+   "name": "瓦拉吉镇：笑脸与圣安德拉之夜",
+   "chapter": "第 3—4 次 · 瓦拉吉",
+   "notes": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": null,
+     "until": "## 开场准备"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 1. 城门与第一印象"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 6. 艾泽克与男爵"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 7. 瑞克塔维欧"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 8. 新月之夜"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "## 收尾"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "## 开场准备"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "### 1. 烈阳庆典"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "### 2. 守夜"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "### 3. 袭击"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "#### A. 教堂正殿"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "#### B. 地窖"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "#### C. 广场"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "### 4. 天亮之后"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "### 5. 圣徽的抉择"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S4_圣安德拉之夜.md",
+     "heading": "## 收尾"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "15-af5bca8ab972e6ae"
+    },
+    {
+     "keep": "15-8cc9ea0965f163ef"
+    },
+    {
+     "keep": "15-808c53ea21e572b6"
+    },
+    {
+     "card": "COS__1ad3e02227f7c335",
+     "section": "可选战斗",
+     "region": "N8 广场 · 艾泽克的卫兵（若动手）",
+     "quantity": "4",
+     "count": 2,
+     "condition": "与艾泽克同场为困难；艾泽克生命值过半或男爵下令就停。广场上已有 2 名，这里再加 2 名。",
+     "source": "S3",
+     "automatic": false
+    },
+    {
+     "card": "COS__933b31bb99a4df8e",
+     "section": "可选战斗",
+     "region": "N1 教堂正殿 · 袭击",
+     "quantity": "2",
+     "count": 2,
+     "condition": "困难；抓到人就走，天亮前撤回。圣徽禁制圈内进不来。",
+     "source": "S4 A",
+     "automatic": false,
+     "at": "15-af5bca8ab972e6ae"
+    },
+    {
+     "card": "COS__bb46ade02286158e",
+     "section": "可选战斗",
+     "region": "N1 教堂门外 · 截逃出来的人",
+     "quantity": "4（5 人 +2）",
+     "count": 4,
+     "condition": "轻松；见到鸦人就跑。袍子里衬绣着龙徽下一滴血（1D7）。",
+     "source": "S4 A",
+     "automatic": false,
+     "at": "15-af5bca8ab972e6ae"
+    },
+    {
+     "card": "COS__f7ee2404ff3f7a7a",
+     "section": "可选战斗",
+     "region": "N1 地窖 · 埃尔维（鸦人）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "有钥匙时在骚乱前下地窖取圣徽；可被说服。",
+     "source": "S4 B",
+     "automatic": false,
+     "at": "15-af5bca8ab972e6ae"
+    },
+    {
+     "card": "COS__bb46ade02286158e",
+     "section": "可选战斗",
+     "region": "N1 地窖 · 随埃尔维的邪教徒",
+     "quantity": "4",
+     "count": 4,
+     "condition": "与埃尔维、狂信者同场为简单。",
+     "source": "S4 B",
+     "automatic": false,
+     "at": "15-af5bca8ab972e6ae"
+    },
+    {
+     "card": "COS__1e475f4c36d3d95e",
+     "section": "可选战斗",
+     "region": "N1 地窖 · 狂信者",
+     "quantity": "1",
+     "count": 1,
+     "condition": "狂信者倒下，其余人撤。",
+     "source": "S4 B",
+     "automatic": false,
+     "at": "15-af5bca8ab972e6ae"
+    },
+    {
+     "card": "COS__dd736f0312422367",
+     "section": "在场人物",
+     "region": "N8 广场 · 伯爵",
+     "quantity": "1",
+     "count": 1,
+     "condition": "不应交战；拿走一个人后离开。",
+     "source": "S4 C",
+     "automatic": false,
+     "at": "15-8cc9ea0965f163ef"
+    }
+   ]
+  },
+  {
+   "key": "07",
+   "map": "16",
+   "name": "蓝水旅店：马可夫的考验",
+   "chapter": "第 3—4 次 · 瓦拉吉",
+   "notes": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 2. 蓝水旅店"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 3. 马可夫的考验"
+    },
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 4. 叛徒的蛛丝马迹"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "16-0198d03282f2d65a"
+    },
+    {
+     "keep": "16-20169c153309d6c6"
+    },
+    {
+     "keep": "16-7f95b1e2bc0c3721"
+    },
+    {
+     "keep": "16-2d799043a74de49c"
+    },
+    {
+     "keep": "16-091b87ae75421452"
+    },
+    {
+     "card": "COS__a38dc36cda6a5576",
+     "section": "在场人物",
+     "region": "N2 酒吧 · 戴维恩（流落旅店的老人）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "喝醉时说出“我们家的光，一直藏在圣人旁边”（3H3）；掉钱袋是“不贪”的考验。",
+     "source": "S3",
+     "automatic": true,
+     "at": "16-c80a22106a987bb9"
+    },
+    {
+     "card": "COS__f7ee2404ff3f7a7a",
+     "section": "在场人物",
+     "region": "N2 旅店 · 埃尔维",
+     "quantity": "1",
+     "count": 1,
+     "condition": "马可夫家的弟弟，已经被收买；叛徒线索见“叛徒的蛛丝马迹”。",
+     "source": "S3",
+     "automatic": false,
+     "at": "16-0198d03282f2d65a"
+    }
+   ]
+  },
+  {
+   "key": "08",
+   "map": "18",
+   "name": "瓦赫特宅邸：晚宴与邪教",
+   "chapter": "第 3—4 次 · 瓦拉吉",
+   "notes": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 9. 瓦赫特家的晚宴"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "18-521e5e8f48386d4d"
+    },
+    {
+     "keep": "18-400c7edcba0cace2"
+    },
+    {
+     "keep": "18-c1b8c208e4996b30"
+    },
+    {
+     "keep": "18-be9e422b46cf54cd"
+    },
+    {
+     "keep": "18-7937f67a70b4ec41"
+    },
+    {
+     "keep": "18-ee1a1a78e7b55ca8"
+    },
+    {
+     "card": "COS__b1263d070c784ebe",
+     "section": "可选战斗",
+     "region": "N4 书房 · 菲奥娜的猫",
+     "quantity": "8",
+     "count": 8,
+     "condition": "轻松；惊动女仆。",
+     "source": "S3",
+     "automatic": false
+    },
+    {
+     "card": "COS__2e42d2c94ce747d0",
+     "section": "可选战斗",
+     "region": "N4t 仪式间",
+     "quantity": "4",
+     "count": 4,
+     "condition": "重置版默认不安排；第 4 次的邪教徒从这里出发。",
+     "source": "S4",
+     "automatic": false,
+     "at": "18-f921bd3d99c4b8b2"
+    }
+   ]
+  },
+  {
+   "key": "09",
+   "map": "19",
+   "name": "棺材铺：圣骨失窃",
+   "chapter": "第 3—4 次 · 瓦拉吉",
+   "notes": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S3_瓦拉吉的笑脸.md",
+     "heading": "### 5. 圣骨失窃"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "19-227894a8b601bf32"
+    },
+    {
+     "card": "COS__933b31bb99a4df8e",
+     "section": "固定遭遇",
+     "region": "N6f 木材储藏室",
+     "quantity": "2",
+     "count": 2,
+     "condition": "重置版由 6 只减为 2 只；5 级 4 人为致命，白天可利用阳光。不进阳光，不追出门。",
+     "source": "S3",
+     "automatic": true,
+     "at": "19-e69dd8a88e7ac435"
+    }
+   ]
+  },
+  {
+   "key": "10",
+   "map": "24",
+   "name": "克雷茨克：世界尽头的池水",
+   "chapter": "第 5 次 · 世界尽头的池水",
+   "notes": [
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "## 开场准备"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 1. 葬礼与北上"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 2. 叩门"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 3. 村子的生活"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 5. 圣坛水池"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 6. 读书"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 7. 后知后觉"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "## 收尾"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "24-8b0d2316152f4e9c"
+    },
+    {
+     "keep": "24-f52d655f0c426161"
+    },
+    {
+     "keep": "24-852a079a19839439"
+    },
+    {
+     "keep": "24-4c5c1b090cdb9ea1"
+    },
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "可选战斗",
+     "region": "北上路上 · 撤离",
+     "quantity": "2",
+     "count": 2,
+     "condition": "与 6 狼同场为简单；不恋战，冲过去就跑。",
+     "source": "S5",
+     "automatic": false
+    },
+    {
+     "card": "COS__24c56ae29e4a1a3d",
+     "section": "可选战斗",
+     "region": "北上路上 · 撤离",
+     "quantity": "6",
+     "count": 6,
+     "condition": "包抄队伍。",
+     "source": "S5",
+     "automatic": false
+    },
+    {
+     "card": "COS__dd736f0312422367",
+     "section": "在场人物",
+     "region": "圣坛水池外",
+     "quantity": "1",
+     "count": 1,
+     "condition": "隔着禁制说一句话就离开；不应交战。",
+     "source": "S5",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "11",
+   "map": "25",
+   "name": "圣玛柯维娅修道院：院长的礼物",
+   "chapter": "第 5 次 · 世界尽头的池水",
+   "notes": [
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S5_世界尽头的池水.md",
+     "heading": "### 4. 院长的礼物"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "25-4dc66b36ae280c50"
+    }
+   ]
+  },
+  {
+   "key": "12",
+   "map": "22",
+   "name": "银龙宅邸：残灯会据点",
+   "chapter": "第 6 次 · 残灯与太阳剑",
+   "notes": [
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "## 开场准备"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 1. 告别克雷茨克"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 3. 列昂尼德"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 4. 越往里，越少"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 5. 陵墓伏击"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 6. 伯爵的出场"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 7. 谢尔盖"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 8. B3"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 9. 回到克雷茨克"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "## 伊丽娜随队分支"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "## 收尾"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COSR__leonid",
+     "section": "在场人物",
+     "region": "据点 · 列昂尼德",
+     "quantity": "1",
+     "count": 1,
+     "condition": "残灯会首领，没有影子（6X1）。识破米哈伊时带两名守卫加入玩家一方。",
+     "source": "S6",
+     "automatic": false
+    },
+    {
+     "card": "COSR__mihai",
+     "section": "在场人物",
+     "region": "据点 · 米哈伊",
+     "quantity": "1",
+     "count": 1,
+     "condition": "叛徒；说服 DC 15 可在第二轮加入任意一方。",
+     "source": "S6",
+     "automatic": false
+    },
+    {
+     "card": "COSR__yulia",
+     "section": "在场人物",
+     "region": "据点 · 尤丽娅",
+     "quantity": "1",
+     "count": 1,
+     "condition": "什么都告诉人（6J2）。",
+     "source": "S6",
+     "automatic": false
+    },
+    {
+     "card": "COSR__lamp-guard",
+     "section": "在场人物",
+     "region": "据点 · 残灯会守卫",
+     "quantity": "2",
+     "count": 2,
+     "condition": "戒备时随列昂尼德加入玩家一方。",
+     "source": "S6",
+     "automatic": false
+    },
+    {
+     "card": "COS__23d61ba25390191b",
+     "section": "可选战斗",
+     "region": "Q16 陵墓 · 伏击",
+     "quantity": "1",
+     "count": 1,
+     "condition": "先用毒刃攻击最强的近战；剑柄到手或生命值过半就从排水道撤。",
+     "source": "S6 陵墓伏击",
+     "automatic": false
+    },
+    {
+     "card": "COSR__vistani-blade",
+     "section": "可选战斗",
+     "region": "Q16 陵墓 · 伏击",
+     "quantity": "3（5 人 +1）",
+     "count": 3,
+     "condition": "一人去拿剑柄，两人缠住玩家；与阿瑞加尔合计致命，残灯会戒备时降为困难。",
+     "source": "S6 陵墓伏击",
+     "automatic": false
+    },
+    {
+     "card": "COS__dd736f0312422367",
+     "section": "在场人物",
+     "region": "陵墓外 · 伯爵的出场",
+     "quantity": "1",
+     "count": 1,
+     "condition": "战斗结束时现身，隔着禁制说完话离开；不应交战。",
+     "source": "S6",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "13",
+   "map": "23",
+   "name": "银龙宅邸：三层、屋顶与灯塔",
+   "chapter": "第 6 次 · 残灯与太阳剑",
+   "notes": [
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S6_残灯与太阳剑.md",
+     "heading": "### 2. 灯与门"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COSR__lamp-sentry",
+     "section": "在场人物",
+     "region": "灯塔 · 残灯会哨兵",
+     "quantity": "2",
+     "count": 2,
+     "condition": "守灯、打灯号：两短，一长。",
+     "source": "S6",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "14",
+   "map": "06",
+   "name": "鸦阁城堡：城墙与吊桥",
+   "chapter": "第 7—8 次 · 鸦阁城堡",
+   "notes": [
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 1. 邀请"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 2. 上山"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 四、黎明：深渊边的缝隙"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 谁留下"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COSR__lamp-sentry",
+     "section": "在场人物",
+     "region": "吊桥外的树林 · 残灯会",
+     "quantity": "2",
+     "count": 2,
+     "condition": "若玩家安排过退路：打灯号接应；黎明时在吊桥外等。",
+     "source": "S7 · S8",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "15",
+   "map": "07",
+   "name": "鸦阁城堡：主楼层（晚宴与圣堂）",
+   "chapter": "第 7—8 次 · 鸦阁城堡",
+   "notes": [
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": null,
+     "until": "## 开场准备"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "## 开场准备"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 3. 迎宾"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 4. 晚宴"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 交易"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 6. 露台"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 7. 城门落下"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "## 玩家在晚宴上动手"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "## 施特拉德拿走了什么",
+     "optional": true
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "## 出口与失败"
+    },
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "## 收尾"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 开场准备"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 狩猎时钟"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 追猎者"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 二、午夜的圣堂"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 抉择"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 之后发生什么"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 三、决战"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 五、结局矩阵"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 伊丽娜不在场"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 提前的留下"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 全队倒下"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 缺失圣物的后果"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 六、尾声"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "## 收尾"
+    }
+   ],
+   "encounters": [
+    {
+     "keep": "07-4c057517641b5991"
+    },
+    {
+     "card": "COS__b28f552fb4aaf3d2",
+     "section": "在场人物",
+     "region": "K8 大厅梁上",
+     "quantity": "8",
+     "count": 8,
+     "condition": "只在有人攻击它们时动。",
+     "source": "S7",
+     "automatic": true,
+     "at": "07-b4bab5dbb4d631c7"
+    },
+    {
+     "card": "COS__dd736f0312422367",
+     "section": "在场人物",
+     "region": "K10 餐厅 · 主位 / K15 圣堂",
+     "quantity": "1",
+     "count": 1,
+     "condition": "晚宴不应交战；第 8 次决战按原卡真实结算，生命值 0 化雾回 K86。",
+     "source": "S7 · S8",
+     "automatic": false
+    },
+    {
+     "card": "COS__cd37daab21c25af4",
+     "section": "在场人物",
+     "region": "K10 餐厅 · 主人右手边 / K15 圣堂",
+     "quantity": "1",
+     "count": 1,
+     "condition": "她的衣着与倾向看天平；圣堂里由她做选择。",
+     "source": "S7 · S8",
+     "automatic": false
+    },
+    {
+     "card": "COS__2e0520f814946778",
+     "section": "可选战斗",
+     "region": "狩猎 · 安娜斯塔西娅",
+     "quantity": "1",
+     "count": 1,
+     "condition": "与 2 恐狼同场为中等；生命值过半撤。晚宴上坐在长桌另一端。",
+     "source": "S8 追猎者",
+     "automatic": false
+    },
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "可选战斗",
+     "region": "狩猎 · 安娜斯塔西娅的恐狼",
+     "quantity": "2",
+     "count": 2,
+     "condition": "随安娜斯塔西娅追猎。",
+     "source": "S8 追猎者",
+     "automatic": false
+    },
+    {
+     "card": "COS__b01a09090b04d684",
+     "section": "可选战斗",
+     "region": "狩猎 · 柳德米拉",
+     "quantity": "1",
+     "count": 1,
+     "condition": "与 2 蝙蝠群同场为简单；可被说服暂时不追。",
+     "source": "S8 追猎者",
+     "automatic": false
+    },
+    {
+     "card": "COS__1d3c838d93e52d0b",
+     "section": "可选战斗",
+     "region": "狩猎 · 柳德米拉的蝙蝠群",
+     "quantity": "2",
+     "count": 2,
+     "condition": "随柳德米拉追猎。",
+     "source": "S8 追猎者",
+     "automatic": false
+    },
+    {
+     "card": "COS__16a48bc70ffa7bb6",
+     "section": "可选战斗",
+     "region": "狩猎 · 瓦伦塔",
+     "quantity": "1",
+     "count": 1,
+     "condition": "与 4 狼同场为简单；先扑灭火把，玩弄猎物；生命值过半撤。",
+     "source": "S8 追猎者",
+     "automatic": false
+    },
+    {
+     "card": "COS__24c56ae29e4a1a3d",
+     "section": "可选战斗",
+     "region": "狩猎 · 瓦伦塔的狼",
+     "quantity": "4",
+     "count": 4,
+     "condition": "随瓦伦塔追猎。",
+     "source": "S8 追猎者",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "16",
+   "map": "08",
+   "name": "鸦阁城堡：伯爵宫廷（参观与狩猎）",
+   "chapter": "第 7—8 次 · 鸦阁城堡",
+   "notes": [
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": null,
+     "until": "## 现场局势与行动"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S7_主人的晚宴.md",
+     "heading": "### 5. 拉哈丁的参观"
+    },
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 狩猎中可以去的地方"
+    }
+   ],
+   "encounters": []
+  },
+  {
+   "key": "17",
+   "map": "11",
+   "name": "鸦阁诸塔：悲痛之心",
+   "chapter": "第 7—8 次 · 鸦阁城堡",
+   "notes": [
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": null,
+     "until": "## 开场准备"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### K20 悲痛之心"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COSR__heart-of-sorrow",
+     "section": "固定遭遇",
+     "region": "K20 塔顶",
+     "quantity": "1",
+     "count": 1,
+     "condition": "AC 15，HP 50；替伯爵承受伤害。每次心跳楼梯上 DC 10 敏捷豁免。",
+     "source": "S8 K20",
+     "automatic": false
+    },
+    {
+     "card": "COS__0ea4b9c3f8bed507",
+     "section": "固定遭遇",
+     "region": "K20 心脏附近的楼梯",
+     "quantity": "4",
+     "count": 4,
+     "condition": "重置版由 10 把减为 4 把；攻击任何威胁心脏的人。",
+     "source": "S8 K20",
+     "automatic": false
+    }
+   ]
+  },
+  {
+   "key": "18",
+   "map": "12",
+   "name": "鸦阁城堡：地下墓穴（K86）",
+   "chapter": "第 7—8 次 · 鸦阁城堡",
+   "notes": [
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": null,
+     "until": "## 开场准备"
+    }
+   ],
+   "areas": [
+    {
+     "file": "场景/S8_午夜的圣堂.md",
+     "heading": "### 雾化与棺材"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COS__dd736f0312422367",
+     "section": "条件事件",
+     "region": "K86 施特拉德的棺材",
+     "quantity": "1",
+     "count": 1,
+     "condition": "生命值 0 化雾飞回棺材，瘫痪；木桩刺心，再用阳光、斩首或焚烧才能真正摧毁。",
+     "source": "S8",
+     "automatic": false,
+     "at": "12-f901ce9273ef4989"
+    }
+   ]
+  }
+ ]
+}
