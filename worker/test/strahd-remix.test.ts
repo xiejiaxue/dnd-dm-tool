@@ -49,11 +49,12 @@ it('reuses original Strahd maps under its own asset ids with known cards',()=>{
   for(let n=0;n<=8;n++)expect(named.some(a=>a.startsWith(`L${n} · `)),`L${n}`).toBe(true);
   for(const [key,fight] of [['09','L3 · 战斗 1'],['06','L4 · 四、战斗环节'],['10','L5 · 战斗 2'],['12','L6 · 四、战斗环节'],['15','L8 · 战斗 7'],['18','L8 · 战斗 6']])
     expect(strahdRemixScenes.find(s=>s.key===key)!.areas!.find(a=>a.name.startsWith(fight))?.text,fight).toMatch(/第 \d 轮/);
-  // Truly destroying Strahd frees everyone: the ending matrix and the coffin fight say nobody has to stay.
+  // Destroying Strahd only for months opens a mist behind him that frees everyone: nobody has to stay.
   const area=(key:string,name:string)=>strahdRemixScenes.find(s=>s.key===key)!.areas!.find(a=>a.name.startsWith(name))!.text;
   expect(area('15','S8 · 五、结局矩阵')).toContain('没有人需要留下');
-  expect(area('14','S8 · 谁留下')).toContain('施特拉德被真正摧毁时，跳过这一节');
+  expect(area('14','S8 · 谁留下')).toContain('施特拉德被暂时摧毁时，跳过这一节');
   expect(area('18','L8 · 战斗 8')).toContain('没有人需要留下');
+  expect(area('18','S8 · 雾化与棺材')).toContain('几个月后');expect(area('18','S8 · 雾化与棺材')).toContain('他身后升起来的雾');
   expect(new Set(strahdRemixScenes.flatMap(s=>s.encounters.map(e=>e.key))).size).toBe(strahdRemixScenes.flatMap(s=>s.encounters).length);
 });
 
