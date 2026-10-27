@@ -44,6 +44,11 @@ it('reuses original Strahd maps under its own asset ids with known cards',()=>{
   const k8=strahdRemixScenes.find(s=>s.key==='15')!.areas!.find(a=>a.key==='K8')!;
   expect(k8.text).toContain('预置 拉哈丁');expect(k8.text).toContain('石像鬼');
   expect(strahdRemixScenes.find(s=>s.key==='16')!.areas!.find(a=>a.key==='K25')!.text).toContain('默认不刷敌人或陷阱');
+  // Every session's location handbook (L0—L8) is on some map, with its round-by-round fights from L3 on.
+  const named=strahdRemixScenes.flatMap(s=>s.areas!.map(a=>a.name));
+  for(let n=0;n<=8;n++)expect(named.some(a=>a.startsWith(`L${n} · `)),`L${n}`).toBe(true);
+  for(const [key,fight] of [['09','L3 · 战斗 1'],['06','L4 · 四、战斗环节'],['10','L5 · 战斗 2'],['12','L6 · 四、战斗环节'],['15','L8 · 战斗 7'],['18','L8 · 战斗 6']])
+    expect(strahdRemixScenes.find(s=>s.key===key)!.areas!.find(a=>a.name.startsWith(fight))?.text,fight).toMatch(/第 \d 轮/);
   expect(new Set(strahdRemixScenes.flatMap(s=>s.encounters.map(e=>e.key))).size).toBe(strahdRemixScenes.flatMap(s=>s.encounters).length);
 });
 
