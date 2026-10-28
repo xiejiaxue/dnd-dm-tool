@@ -56,6 +56,14 @@ it('reuses original Strahd maps under its own asset ids with known cards',()=>{
   expect(area('18','L8 · 战斗 8')).toContain('没有人需要留下');
   expect(area('18','S8 · 雾化与棺材')).toContain('几个月后');expect(area('18','S8 · 雾化与棺材')).toContain('他身后升起来的雾');
   expect(new Set(strahdRemixScenes.flatMap(s=>s.encounters.map(e=>e.key))).size).toBe(strahdRemixScenes.flatMap(s=>s.encounters).length);
+  // The 238 房间描述 entries appear once each: in their map room, or as an R-area when the map has no such room.
+  const described=strahdRemixScenes.flatMap(s=>s.areas!.filter(a=>a.text.includes('入内所见')));
+  expect(described).toHaveLength(238);
+  const room=(key:string,code:string)=>strahdRemixScenes.find(s=>s.key===key)!.areas!.find(a=>a.key===code)!.text;
+  expect(room('07','N2a')).toContain('入内所见');expect(room('07','N2a')).toContain('【原版】');
+  expect(room('04','12')).toContain('入内所见');
+  expect(area('02','R1 · 雾墙')).toContain('入内所见');expect(area('17','R8 · 悲痛之心')).toContain('入内所见');
+  expect(area('06','L3 · 三、镇上各处')).not.toContain('入内所见');
 });
 
 it('creates a 重置版 campaign with only the reconstruction default groups',async()=>{

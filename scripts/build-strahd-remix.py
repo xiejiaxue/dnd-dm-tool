@@ -1,16 +1,16 @@
-"""Build 施特拉德的诅咒（重置版 v2） from the user's local 重置版v2 notes and the original Strahd data.
+"""Build 施特拉德的诅咒（重置版 v2） from the user's local 重置v2 notes and the original Strahd data (原版/).
 python3 scripts/build-strahd-remix.py /path/to/施特拉德的诅咒
 shared/strahd-remix/plan.json (hand-written) picks the maps, the v2 sections shown as scene notes and
 area notes, and the default encounter groups; cards.json holds the reconstruction's own cards. Maps are
 the original PNGs copied byte-for-byte under map-cosr-* ids. Re-running after editing the v2 notes
 refreshes scenes.json, index.json and output/strahd-remix/manifest.json. Each scene's `rooms` names the
-book chapter and the room codes on its map; those rooms follow the v2 areas, each headed by what v2 says
-about it (or that v2 leaves it empty) and then the original 章节文本 text.
+book chapter and the room codes on its map; those rooms follow the v2 areas, each headed by its 房间描述
+entry, else what v2 says about it (or that v2 leaves it empty), and then the original chapter text.
 """
 from pathlib import Path
 import json, re, sys, hashlib, math, shutil, struct
 
-ROOT = Path(sys.argv[1]); V2 = ROOT / '重置版v2'; REPO = Path(__file__).resolve().parents[1]
+ROOT = Path(sys.argv[1]); V2 = ROOT / '重置v2'; BOOK = ROOT / '原版'; REPO = Path(__file__).resolve().parents[1]
 DATA = REPO / 'shared/strahd-remix'; OUT = REPO / 'output/strahd-remix'; ASSETS = OUT / 'assets'
 SOURCE = '施特拉德的诅咒（重置版 v2）'
 ident = lambda s: hashlib.sha256(s.encode()).hexdigest()[:12]
@@ -18,7 +18,7 @@ plan = json.loads((DATA / 'plan.json').read_text())
 own = json.loads((DATA / 'cards.json').read_text())
 base_index = json.loads((REPO / 'shared/strahd/index.json').read_text())
 originals = {e['key']: e for s in json.loads((REPO / 'shared/strahd/scenes.json').read_text()) for e in s['encounters']}
-maps = {p.name[:2]: p for p in (ROOT / '地图').glob('*/*.png')}
+maps = {p.name[:2]: p for p in (BOOK / '05-地图').glob('*/*.png')}
 
 def initiative(card):
     dex = next((v for k, v in card['campaignCard']['rows'] if k == '敏捷'), None)
@@ -48,9 +48,17 @@ def plain(lines):
 def level(line):
     m = re.match(r'^(#+)\s', line); return len(m[1]) if m else 0
 
+def v2_lines_of(path):
+    """A v2 file without the 房间描述 copies embedded in the handbooks; those go to the map rooms once."""
+    lines, out, embedded = path.read_text().splitlines(), [], False
+    for line in lines:
+        if line.startswith('<!-- 内嵌描述'): embedded = '开始' in line; continue
+        if not embedded: out.append(line)
+    return out
+
 def section(spec):
     """(heading text, body lines) for one plan entry: a whole file, or one heading with its subsections."""
-    lines = (V2 / spec['file']).read_text().splitlines()
+    lines = v2_lines_of(V2 / spec['file'])
     if spec['heading'] is None:
         start = next(i for i, l in enumerate(lines) if l.startswith('# ')) + 1
         end = next((i for i, l in enumerate(lines) if spec.get('until') and l.startswith(spec['until'])), len(lines))
@@ -98,8 +106,8 @@ STOP = re.compile(r'特殊事件|各区域|Areas [Oo]f|结局|Endings|Main Floor
 PAGE = re.compile(r'^(<a id=|\[对照原页\]|本页为地图或插画页|!\[)')
 
 def book_rooms(chapter):
-    lines = (ROOT / '章节文本' / chapter / '正文.md').read_text().splitlines()
-    start = next(i for i, l in enumerate(lines) if l.startswith('## 原版参考正文'))
+    lines = (BOOK / '01-章节与场景' / chapter / '正文.md').read_text().splitlines()
+    start = next((i for i, l in enumerate(lines) if l.startswith('## 原版参考正文')), -1)
     rooms, cur = [], None
     for line in lines[start + 1:]:
         if line.startswith('## PDF第') or PAGE.match(line): continue
@@ -126,7 +134,26 @@ def wanted(code, specs):
         if prefix == lp and ln is not None and ln <= num <= hn and not (top and sub): return True
     return False
 
-v2_lines = [(label({'file': str(f.relative_to(V2))}), line) for f in sorted(V2.rglob('*.md')) for line in f.read_text().splitlines()]
+# NPC cards and maintenance notes are not session text; the room descriptions are placed whole below.
+v2_lines = [(label({'file': str(f.relative_to(V2))}), line) for f in sorted(V2.rglob('*.md'))
+            if f.relative_to(V2).parts[0] not in ('03-NPC与阵营', '99-维护工具', '房间描述') for line in v2_lines_of(f)]
+
+# ---- 房间描述 R0—R8: one entry per `## CODE 名称`, sent to a scene by plan.json (`by` overrides the file's scene) ----
+def descriptions():
+    placed = {}
+    for spec in plan['descriptions']:
+        lines, tag = (V2 / spec['file']).read_text().splitlines(), Path(spec['file']).name[:2]
+        heads = [i for i, l in enumerate(lines) if re.match(r'^## \S+ \S', l) and not l.startswith('## 房间索引')]
+        for i in heads:
+            code, title = lines[i][3:].split(' ', 1)
+            end = next((j for j in range(i + 1, len(lines)) if lines[j].startswith('## ') or lines[j] == '---'), len(lines))
+            m = re.match(r'^([A-Z]*)(\d*)', code)
+            scene = next((spec['by'][k] for k in (code, code.split('-')[0], m[0], m[1]) if k in spec.get('by', {})), spec['scene'])
+            room = re.sub(r'^DH(?=\d)', '', code)  # 死亡之屋 rooms are bare numbers in the book
+            name = f'{tag} · {title}' if '-' in code or room != code else f'{tag} · {code} {title}'
+            placed.setdefault(scene, []).append({'room': room, 'name': name, 'text': plain(lines[i + 1:end])})
+    return placed
+
 CODE_RANGE = re.compile(r'(?<![A-Za-z0-9])([A-Z]{1,2})(\d+)\s*[—–-]+\s*\1?(\d+)(?![0-9a-z])')  # K7—K10
 AREA_RANGE = re.compile(r'区域\s*([A-Z]|\d+)\s*[—–-]+\s*([A-Z]|\d+)')  # 区域 A—C
 
@@ -146,7 +173,7 @@ def mentions(line, code, title):
 
 def clip(text, n=240): return text if len(text) <= n else text[:n] + '…'
 
-def room_areas(spec, encounters):
+def room_areas(spec, encounters, described):
     for room in book_rooms(spec['file']):
         code, title = room['code'], room['title']
         if not wanted(code, spec['codes']): continue
@@ -154,12 +181,15 @@ def room_areas(spec, encounters):
         for e in encounters:
             if re.search(rf'(?<![A-Za-z0-9]){code}(?![0-9a-z])', e['region']):
                 notes.append(f"· 预置 {e['name']} ×{e['count']}" if e['automatic'] else f"· 按触发加入：{e['name']}（{e['quantity']}）")
-        for source, line in v2_lines:
-            if not mentions(line, code, title): continue
-            text = plain([line]).strip('·【】 ')
-            if text and text not in seen:
-                seen.add(text); notes.append(f'· {source}：{clip(text)}')
-        notes = notes[:8]
+        if code in described:
+            notes.append(described[code])
+        else:
+            for source, line in v2_lines:
+                if not mentions(line, code, title): continue
+                text = plain([line]).strip('·【】 ')
+                if text and text not in seen:
+                    seen.add(text); notes.append(f'· {source}：{clip(text)}')
+            notes = notes[:8]
         head = '【重置版】\n' + '\n'.join(notes) if notes else '【重置版】v2 没有安排这里：默认不刷敌人或陷阱，按下面的原版描述空间即可。'
         yield {'key': code, 'name': title if code.isdigit() else f'{code} {title}',
                'text': f"{head}\n\n【原版】\n{plain(room['body'])}"}
@@ -167,7 +197,7 @@ def room_areas(spec, encounters):
 # ---- scenes ----
 ASSETS.mkdir(parents=True, exist_ok=True)
 for old in ASSETS.iterdir(): old.unlink()
-scenes = []
+scenes, placed = [], descriptions()
 for p in plan['scenes']:
     img = maps[p['map']]; data = img.read_bytes()
     width, height = struct.unpack('>II', data[16:24])
@@ -192,12 +222,17 @@ for p in plan['scenes']:
         row = index[e['entryId']]
         if p['chapter'] not in row['chapters']: row['chapters'].append(p['chapter'])
         if p['key'] not in row['sceneKeys']: row['sceneKeys'].append(p['key'])
+    rooms = {r['code'] for r in book_rooms(p['rooms']['file']) if wanted(r['code'], p['rooms']['codes'])}
+    entries = placed.pop(p['key'], [])
+    described = {d['room']: d['text'] for d in entries if d['room'] in rooms}
+    extra = [{'name': d['name'], 'text': d['text']} for d in entries if d['room'] not in rooms]
     scenes.append({'key': p['key'], 'name': f"{p['key']} · {p['name']}", 'chapter': p['chapter'],
                    'map': {'assetId': asset, 'width': width, 'height': height, 'mapScale': 3},
                    'encounters': encounters, 'notes': notes(p['notes']),
-                   'areas': [{'key': f'a{i + 1:02d}', **a} for i, a in enumerate(areas(p['areas']))]
-                            + list(room_areas(p['rooms'], encounters))})
+                   'areas': [{'key': f'a{i + 1:02d}', **a} for i, a in enumerate([*areas(p['areas']), *extra])]
+                            + list(room_areas(p['rooms'], encounters, described))})
     assert len({a['key'] for a in scenes[-1]['areas']}) == len(scenes[-1]['areas']), p['key']
+assert not placed, f'房间描述 sent to unknown scenes: {list(placed)}'
 
 (DATA / 'scenes.json').write_text(json.dumps(scenes, ensure_ascii=False, indent=2) + '\n')
 (DATA / 'index.json').write_text(json.dumps(list(index.values()), ensure_ascii=False, indent=2) + '\n')
