@@ -40,7 +40,7 @@ function TokenShape({ token, active, selected, draggable = true, showHp = false,
     <Group
       id={token.id} name="board-token"
       x={token.x} y={token.y}
-      opacity={token.hidden ? 0.4 : 1}
+      opacity={token.hidden ? 0.7 : 1}
       draggable={draggable}
       onDragEnd={(e) => {
         const { x, y } = e.target.position();
