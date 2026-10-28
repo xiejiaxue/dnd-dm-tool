@@ -16,7 +16,7 @@ import type { PendingToken } from '../pending';
 
 // Fog overlay color by role: the DM sees a translucent red veil (they can see
 // through it), players see near-opaque dark so unrevealed areas hide the map.
-const FOG_COLOR = { dm: 'rgba(186,53,38,0.32)', player: '#141412', spectator: '#141412' } as const;
+const FOG_COLOR = { dm: 'rgba(186,53,38,0.16)', player: '#141412', spectator: '#141412' } as const;
 
 // Shared ink/accent tokens for the canvas layer (mirror of tailwind.config).
 const INK = '#20221e';
