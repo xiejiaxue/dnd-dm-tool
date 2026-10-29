@@ -9,6 +9,7 @@ import { useImage } from '../useImage';
 import { fogGridSize, fogGeometry, resolveFogBasisScale } from '../types';
 import { fogCellAtPoint, fogSelectionRectangle, fogRectangles } from './fog-geometry';
 import TokenShape from './TokenShape';
+import { gridTokenDiameter } from '../../../shared/map-grid';
 import ZoomControl from './ZoomControl';
 import { zoomAroundPoint, wheelZoomFactor } from './board-zoom';
 import { useMapScale } from '../hooks/useMapScale';
@@ -543,6 +544,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           <TokenShape
             key={t.id}
             token={t}
+            gridDiameter={gridTokenDiameter(scene.mapImage, displayedMapScale, t)}
             showHp={role === 'dm'}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id || (role === 'dm' && selectedEnemies.includes(t.id))}
@@ -567,6 +569,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           <TokenShape
             key={p.id}
             token={p}
+            gridDiameter={gridTokenDiameter(scene.mapImage, displayedMapScale, p)}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
             draggable={tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add' && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}

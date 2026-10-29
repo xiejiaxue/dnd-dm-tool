@@ -12,6 +12,8 @@ interface Props {
   selected: boolean;
   draggable?: boolean;
   showHp?: boolean;
+  /** Board diameter from the map's printed grid; null keeps the stored size rule. */
+  gridDiameter?: number | null;
   /** Includes grid settings so ignored callback identities cannot go stale. */
   interactionKey: string;
   onSelect: () => void;
@@ -19,8 +21,8 @@ interface Props {
   onContextMenu: () => void;
 }
 
-function TokenShape({ token, active, selected, draggable = true, showHp = false, onSelect, onDragEnd, onContextMenu }: Props) {
-  const tokenDiameter = token.entryId?.startsWith('COS__') ? Math.max(12, Math.min(500, token.size)) : TOKEN_SIZE;
+function TokenShape({ token, active, selected, draggable = true, showHp = false, gridDiameter = null, onSelect, onDragEnd, onContextMenu }: Props) {
+  const tokenDiameter = gridDiameter ?? (token.entryId?.startsWith('COS__') ? Math.max(12, Math.min(500, token.size)) : TOKEN_SIZE);
   const img = useImage(token.avatar || null);
   const [pulse, setPulse] = useState(0);
 
@@ -53,7 +55,7 @@ function TokenShape({ token, active, selected, draggable = true, showHp = false,
       onTap={onSelect}
       onContextMenu={(e) => { e.evt.preventDefault(); onContextMenu(); }}
     >
-      {token.hidden && <Text text="已隐藏 · 仅DM可见" x={-65} y={-72} width={130} align="center" fill="#FFFFFF" fontSize={12} listening={false} shadowColor="#000" shadowBlur={3} />}
+      {token.hidden && <Text text="已隐藏 · 仅DM可见" x={-65} y={-tokenDiameter / 2 - 22} width={130} align="center" fill="#FFFFFF" fontSize={12} listening={false} shadowColor="#000" shadowBlur={3} />}
       {/* 底圆（颜色环 + 选中高亮） */}
       <Circle
         width={tokenDiameter} height={tokenDiameter}
@@ -128,5 +130,6 @@ export default memo(TokenShape, (previous, next) => (
   && previous.selected === next.selected
   && previous.showHp === next.showHp
   && previous.draggable === next.draggable
+  && previous.gridDiameter === next.gridDiameter
   && previous.interactionKey === next.interactionKey
 ));
