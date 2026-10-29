@@ -1,5 +1,6 @@
 import { lazy, type ComponentType } from 'react';
 import type { IconName } from '../components/Icon';
+import { MODULE_EXTENSIONS } from './extensions';
 import type { ShellPage, ToolPage } from './navigation';
 
 // Each tool is its own chunk: the rail renders immediately and only the page
@@ -9,7 +10,7 @@ const loaders = {
   characters: () => import('../components/CharacterWorkshop'),
   dice: () => import('../components/DiceRoller'),
   music: () => import('../components/MusicBar'),
-  tavern: () => import('../components/TavernGame'),
+  tavern: () => import('../tavern/TavernGame'),
 } satisfies Record<ToolPage, () => Promise<{ default: ComponentType }>>;
 
 export const toolComponents = {
@@ -39,5 +40,9 @@ export const DESTINATIONS: Destination[] = [
   { page: 'characters', href: '/characters', label: '角色卡', eyebrow: '03 / CHARACTER', icon: 'users' },
   { page: 'dice', href: '/dice', label: '掷骰', eyebrow: '04 / DICE', icon: 'dice' },
   { page: 'music', href: '/music', label: '配乐', eyebrow: '05 / MUSIC', icon: 'music' },
-  { page: 'tavern', href: '/tavern', label: '酒馆经营', shortLabel: '酒馆', eyebrow: '06 / TROLLSKULL TAVERN', icon: 'tavern' },
 ];
+
+/** General tools first, then module extensions; every shell page has one entry. */
+export function destinationFor(page: ShellPage): Destination {
+  return [...DESTINATIONS, ...MODULE_EXTENSIONS].find(candidate => candidate.page === page)!;
+}

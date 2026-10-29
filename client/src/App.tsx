@@ -152,6 +152,8 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
           pendingLabel={pending ? `点击棋盘放置：${pending.name}` : null}
           brushSize={brushSize}
           onBrushSize={setBrushSize}
+          templateId={room.campaign.templateId}
+          campaignSlug={room.campaign.slug}
         />
         <div className="campaign-encounter-slot" data-open={encounterOpen}><EnemyList /></div>
         <div className="campaign-board flex-1 min-w-0 relative bg-well">

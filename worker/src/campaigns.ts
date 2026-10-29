@@ -125,17 +125,24 @@ export async function listUserCampaigns(
   archived = false,
 ) {
   const rows = await env.DB.prepare(
-    `SELECT c.id,c.slug,c.name,c.status,c.updated_at AS updatedAt,c.module_id AS moduleId,cm.role,COALESCE(m.name,'空白冒险') AS moduleName
+    `SELECT c.id,c.slug,c.name,c.status,c.updated_at AS updatedAt,c.module_id AS moduleId,cm.role,COALESCE(m.name,'空白冒险') AS moduleName,m.template_json AS templateJson
     FROM campaigns c JOIN campaign_members cm ON cm.campaign_id=c.id LEFT JOIN campaign_modules m ON m.id=c.module_id
     WHERE cm.user_id=?1 AND cm.status='active' AND c.deleted_at IS NULL AND c.status=?2 ORDER BY c.updated_at DESC,c.id`,
   )
     .bind(userId, archived ? "archived" : "active")
     .all<Record<string, any>>();
-  return rows.results.map((row) => ({
-    ...row,
-    role: row.role === "owner" ? "host" : row.role,
-    campaignName: row.name,
-  }));
+  return rows.results.map(({ templateJson, ...row }) => {
+    let templateId: string | undefined;
+    try {
+      templateId = JSON.parse(templateJson || "{}").templateId;
+    } catch {}
+    return {
+      ...row,
+      role: row.role === "owner" ? "host" : row.role,
+      campaignName: row.name,
+      templateId,
+    };
+  });
 }
 export async function createUserCampaign(
   env: Env,

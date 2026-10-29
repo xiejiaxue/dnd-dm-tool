@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { DAYS, type CalendarEvent } from '../../../shared/calendar/model';
-import { CAMPAIGN_START_DAY, DEFAULT_OPENING_DAY, tavernDate, todayPublicEvents } from '../tavern/date';
+import { CAMPAIGN_START_DAY, DEFAULT_OPENING_DAY, tavernDate, todayPublicEvents } from './date';
 type Payload = { canManage: boolean; events: CalendarEvent[] };
 function DateStory({ event, dm = false }: { event: CalendarEvent; dm?: boolean }) {
   const flavor = event.flavor;
   return <>{flavor ? <><blockquote className="tavern-date-quote"><p>“{flavor.text}”</p><cite>—— {flavor.speaker}</cite></blockquote><details className="tavern-date-lore"><summary>城中掌故</summary><p>{flavor.background}</p></details></> : <p>{event.detail}</p>}{dm && flavor && <p className="tavern-inline-note">主持人备忘：{event.detail}</p>}</>;
 }
-type Campaign = { slug: string; name: string; role: string };
+type Campaign = { slug: string; name: string; role: string; templateId?: string };
+/** The tavern belongs to Waterdeep: Dragon Heist; other campaigns have no Trollskull Manor. */
+const TAVERN_MODULE = 'waterdeep-dragon-heist';
 export default function TavernDate({ day, businessDay, phase, onNextDay, onSetDate, startDay = DEFAULT_OPENING_DAY, onStartDay }: { day: number; businessDay: number; phase: string; onNextDay: () => void; onSetDate: (day: number) => void; startDay?: number; onStartDay: (day: number) => void }) {
   const [campaign, setCampaign] = useState(new URLSearchParams(location.search).get('campaign') ?? '');
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -58,7 +60,7 @@ export default function TavernDate({ day, businessDay, phase, onNextDay, onSetDa
         {error ? <p role="alert">{error}</p> : !data ? <p role="status">正在读取城市活动…</p> : events.length ? events.map(e => <article key={e.id}><h3>{e.title}</h3><DateStory event={e} /></article>) : <p>{current.date.day === 0 ? `今天是${current.date.label}。` : '街巷照常迎来送往。'}</p>}
       </div>
     </details>
-    <details className="tavern-date-settings"><summary>桌团与日期提示</summary><p>人物引语与便笺为依据模组设定创作的跑团文案，并非出版物原文；主持人场记不代表玩家已获知线索。</p><label>关联桌团 <select aria-label="日历所属桌团" value={campaign} onChange={e => { setData(null); setCampaign(e.target.value); history.replaceState(null, '', e.target.value ? `/tavern?campaign=${encodeURIComponent(e.target.value)}` : '/tavern'); }}><option value="">仅公共活动</option>{campaigns.map(c => <option key={c.slug} value={c.slug}>{c.name} · {['host', 'dm', 'assistant_dm'].includes(c.role) ? '主持人' : '玩家'}</option>)}</select></label>
+    <details className="tavern-date-settings"><summary>桌团与日期提示</summary><p>人物引语与便笺为依据模组设定创作的跑团文案，并非出版物原文；主持人场记不代表玩家已获知线索。</p><label>关联桌团 <select aria-label="日历所属桌团" value={campaign} onChange={e => { setData(null); setCampaign(e.target.value); history.replaceState(null, '', e.target.value ? `/tavern?campaign=${encodeURIComponent(e.target.value)}` : '/tavern'); }}><option value="">仅公共活动</option>{campaigns.filter(c => c.templateId === TAVERN_MODULE || c.slug === campaign).map(c => <option key={c.slug} value={c.slug}>{c.name} · {['host', 'dm', 'assistant_dm'].includes(c.role) ? '主持人' : '玩家'}</option>)}</select></label>
     <p>默认从彻斯20日起计。日期随本机酒馆存档保存；关联桌团用于验证主持人权限。</p>
     {data?.canManage && <div className="tavern-dm-dates"><h3>主持人专属日期</h3><label>起始日期 <select aria-label="酒馆开业日期" value={startDay} onChange={e => onStartDay(Number(e.target.value))}>{DAYS.map((d, i) => <option key={d.key} value={i}>{d.label}</option>)}</select></label><p>筹备与休业日同样计入日期；营业结算仍按营业天数计算。只调整日期对应关系，不改变营业进度、账本或剧情结果。以下为重置版预定日期，是否发生由主持人裁定。</p>
     <ul>{secrets.map(e => <li key={e.id}><strong>{DAYS[e.day].label} · {e.title}</strong><small>{e.day === current.absoluteDay ? '今天' : e.day > current.absoluteDay ? `还有 ${e.day - current.absoluteDay} 天` : `已过 ${current.absoluteDay - e.day} 天`}</small><DateStory event={e} dm />{e.condition && <p>{e.condition}</p>}</li>)}</ul></div>}
