@@ -63,13 +63,7 @@ export class RoomDurableObject extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.ready = ctx.blockConcurrencyWhile(async () => {
-      this.store = new CampaignStore(this.ctx.storage);
-      this.ctx.storage.sql.exec(
-        "CREATE TABLE IF NOT EXISTS actor_access(member_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,epoch INTEGER NOT NULL,role TEXT NOT NULL,active INTEGER NOT NULL)",
-      );
-      this.ctx.storage.sql.exec(
-        "CREATE TABLE IF NOT EXISTS campaign_flags(singleton INTEGER PRIMARY KEY,enabled INTEGER NOT NULL)",
-      );
+      this.createTables();
       this.enabled =
         this.ctx.storage.sql
           .exec<{
@@ -95,6 +89,16 @@ export class RoomDurableObject extends DurableObject<Env> {
     });
   }
 
+  private createTables(): void {
+    this.store = new CampaignStore(this.ctx.storage);
+    this.ctx.storage.sql.exec(
+      "CREATE TABLE IF NOT EXISTS actor_access(member_id TEXT PRIMARY KEY,user_id TEXT NOT NULL,epoch INTEGER NOT NULL,role TEXT NOT NULL,active INTEGER NOT NULL)",
+    );
+    this.ctx.storage.sql.exec(
+      "CREATE TABLE IF NOT EXISTS campaign_flags(singleton INTEGER PRIMARY KEY,enabled INTEGER NOT NULL)",
+    );
+  }
+
   async fetch(request: Request): Promise<Response> {
     try {
       return await this.handleRequest(request);
@@ -112,6 +116,8 @@ export class RoomDurableObject extends DurableObject<Env> {
 
     if (url.pathname === "/refresh-access" && request.method === "POST")
       return this.refreshAccess(actor.campaignId!);
+    if (url.pathname === "/purge" && request.method === "POST")
+      return this.purge(actor.campaignId!);
     if (url.pathname !== "/initialize") {
       this.registerActor(actor);
       this.requireActor(actor);
@@ -478,6 +484,21 @@ export class RoomDurableObject extends DurableObject<Env> {
         socket.close(4003, "Membership revoked");
       }
     }
+    return this.respondJson({ ok: true });
+  }
+
+  /** Drops the whole live room of a deleted campaign and disconnects everyone in it. */
+  private async purge(campaignId: string): Promise<Response> {
+    if (!this.ctx.id.equals(this.env.ROOMS.idFromName(`campaign:${campaignId}`)))
+      throw new DomainError("FORBIDDEN", "战役身份不匹配");
+    for (const socket of this.ctx.getWebSockets())
+      socket.close(4003, "Campaign deleted");
+    await this.ctx.storage.deleteAll();
+    // deleteAll also drops the tables; recreate them empty so later requests are refused, not crashed.
+    this.createTables();
+    this.state = null;
+    this.enabled = false;
+    this.access.clear();
     return this.respondJson({ ok: true });
   }
 

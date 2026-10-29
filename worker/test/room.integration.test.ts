@@ -259,7 +259,7 @@ describe("Campaign control plane", () => {
         .first("permission_epoch"),
     ).toBe(2);
   });
-  it("archives, restores and soft deletes without losing scene data", async () => {
+  it("archives and restores without losing scene data, then deletes from the archive", async () => {
     const host = await visitor(),
       c = await create(host);
     const initial = await boot(host, c.slug);
@@ -293,10 +293,111 @@ describe("Campaign control plane", () => {
     ).toBe(200);
     expect((await get(`/api/campaigns/${c.slug}`, host)).status).toBe(404);
     expect(
-      await env.DB.prepare("SELECT deleted_at FROM campaigns WHERE id=?1")
+      await env.DB.prepare("SELECT COUNT(*) AS n FROM campaigns WHERE id=?1")
         .bind(c.id)
-        .first("deleted_at"),
-    ).toBeGreaterThan(0);
+        .first("n"),
+    ).toBe(0);
+  });
+  it("lets only the host permanently delete a campaign and clears its data", async () => {
+    const prefix = "room-templates/waterdeep-dragon-heist/";
+    const scenes = Array.from({ length: 21 }, (_, i) => ({
+      name: `章节 ${i + 1}`,
+      map: { assetId: `map-${i}`, width: 100, height: 100 },
+    }));
+    await env.REFERENCE_DATA.put(`${prefix}manifest.json`, JSON.stringify({ scenes }));
+    for (const scene of scenes)
+      await env.REFERENCE_DATA.put(`${prefix}assets/${scene.map.assetId}`, "image", {
+        httpMetadata: { contentType: "image/jpeg" },
+      });
+    const host = await visitor(),
+      player = await visitor(),
+      spectator = await visitor();
+    const modules = (await (await get("/api/modules", host)).json()) as any[];
+    const moduleId = modules.find((m) => m.name === "深水城：龙金劫").id;
+    const c = await create(host, { moduleId }),
+      other = await create(host, { moduleId });
+    expect((await join(player, await invite(host, c.slug))).status).toBe(200);
+    expect(
+      (await join(spectator, await invite(host, c.slug, "spectator"))).status,
+    ).toBe(200);
+    await character(player, c);
+    expect(
+      (await post(`/api/campaigns/${c.slug}/journals`, host, { title: "第一天" }))
+        .status,
+    ).toBe(201);
+    const form = new FormData();
+    form.set(
+      "file",
+      new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], "map.png", {
+        type: "image/png",
+      }),
+    );
+    const upload = await api(`/api/campaigns/${c.slug}/assets`, {
+      method: "POST",
+      headers: { cookie: host, origin: "https://table.test" },
+      body: form,
+    });
+    expect(upload.status).toBe(201);
+    expect(
+      (await env.ROOM_ASSETS.list({ prefix: `v2/campaigns/${c.id}/` })).objects,
+    ).toHaveLength(1);
+
+    const response = await api(`/api/campaigns/${c.slug}/ws`, {
+      headers: { ...headers(player), upgrade: "websocket" },
+    });
+    expect(response.status).toBe(101);
+    const ws = response.webSocket!;
+    ws.accept();
+    const closed = new Promise<number>((resolve) =>
+      ws.addEventListener("close", (e) => {
+        ws.close();
+        resolve(e.code);
+      }),
+    );
+    const remove = (cookie: string) =>
+      api(`/api/campaigns/${c.slug}`, { method: "DELETE", headers: headers(cookie) });
+    expect((await remove(player)).status).toBe(403);
+    expect((await remove(spectator)).status).toBe(403);
+    expect((await remove(await visitor())).status).toBe(404);
+    expect((await boot(player, c.slug)).state.campaign.sceneIds).toHaveLength(21);
+
+    expect((await remove(host)).status).toBe(200);
+    expect(await closed).toBe(4003);
+    for (const cookie of [host, player, spectator])
+      expect((await get(`/api/campaigns/${c.slug}`, cookie)).status).toBe(404);
+    expect(
+      ((await (await get("/api/campaigns", host)).json()) as any).campaigns.map(
+        (x: any) => x.id,
+      ),
+    ).toEqual([other.id]);
+    for (const table of [
+      "campaigns WHERE id=?1",
+      "campaign_members WHERE campaign_id=?1",
+      "invites WHERE campaign_id=?1",
+      "campaign_characters WHERE campaign_id=?1",
+      "campaign_character_selections WHERE campaign_id=?1",
+      "campaign_journals WHERE campaign_id=?1",
+      "assets WHERE campaign_id=?1",
+      "audit_events WHERE campaign_id=?1",
+    ])
+      expect(
+        await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table}`).bind(c.id).first("n"),
+        table,
+      ).toBe(0);
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM invite_redemptions").first("n")).toBe(0);
+    expect(
+      (await env.ROOM_ASSETS.list({ prefix: `v2/campaigns/${c.id}/` })).objects,
+    ).toHaveLength(0);
+    const runtime = await runInDurableObject(
+      env.ROOMS.getByName(`campaign:${c.id}`),
+      (_instance, state) => new CampaignStore(state.storage).load(),
+    );
+    expect(runtime).toBeNull();
+    // Module originals are shared by every campaign and stay in place.
+    expect(await env.REFERENCE_DATA.head(`${prefix}assets/map-0`)).not.toBeNull();
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM assets WHERE campaign_id=?1").bind(other.id).first("n")).toBe(21);
+    expect((await boot(host, other.slug)).state.campaign.sceneIds).toHaveLength(21);
+    expect((await get((await boot(host, other.slug)).state.scene.mapImage, host)).status).toBe(200);
   });
   it("provisions online players atomically when changing scenes without duplicating tabs", async () => {
     const host = await visitor(), player = await visitor(), spectator = await visitor();
