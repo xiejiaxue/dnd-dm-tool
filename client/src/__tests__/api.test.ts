@@ -28,4 +28,16 @@ describe('API errors', () => {
     }));
     await expect(api.bootstrap()).rejects.toBeInstanceOf(ApiError);
   });
+
+  it('permanently deletes a campaign with DELETE on its own path', async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify({ ok: true }), {
+      headers: { 'content-type': 'application/json' },
+    }));
+    vi.stubGlobal('fetch', fetch);
+
+    const { api } = await import('../api');
+
+    await expect(api.deleteCampaign('lost mine')).resolves.toEqual({ ok: true });
+    expect(fetch).toHaveBeenCalledWith('/api/campaigns/lost%20mine', expect.objectContaining({ method: 'DELETE' }));
+  });
 });
