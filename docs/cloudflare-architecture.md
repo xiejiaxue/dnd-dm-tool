@@ -26,7 +26,7 @@ Cloudflare 的 Static Assets 提供 SPA；`/api/*` 被 `run_worker_first` 保留
 | --- | --- |
 | `worker/src/` | 唯一后端：`index.ts` 入口（会话、错误处理、日志），`routes/` 按功能分组的路由表（`routes/index.ts` 汇总 `/api` 与 `/api/campaigns/:slug` 两张表），`room.ts` 战役 DO，`domain.ts` 纯状态机与操作校验，`campaign-store.ts` DO SQLite 持久化，`campaigns.ts` / `repository.ts` D1 业务，`auth.ts` / `http.ts` 会话与 HTTP 工具，`modules/` 冒险模组注册表，其余为资料库、日历等功能模块 |
 | `worker/campaign-migrations/` | D1 schema（`wrangler.jsonc` 的 `migrations_dir`） |
-| `shared/` | 前后端共用的类型与纯逻辑：`types.ts`、`fog.ts`、`calendar/model.ts`、模组数据（`strahd/`、`waterdeep/`） |
+| `shared/` | 前后端共用的类型与纯逻辑：`types.ts`、`fog.ts`、`calendar/model.ts`、模组数据（`strahd/`、`waterdeep/`、`phandelver/`、`hoard/`、`hoard-remix/`、`strahd-remix/`）与通用遭遇预设类型 `encounter-presets.ts` |
 | `client/` | React 前端 |
 | `scripts/` | 构建、数据与发布脚本；`compendium-index.ts` 为 `npm run data:update` 生成规则书索引 |
 
@@ -44,7 +44,7 @@ Cloudflare 的 Static Assets 提供 SPA；`/api/*` 被 `run_worker_first` 保留
 | `compendium` | 加入资料搜索、怪物数据卡和 Token 图；按 `MODULES` 顺序查找 | `index.ts` |
 | `routes` | 模组专属接口 `/api/campaigns/:slug/<path>[/<param>]`，由 Worker 转发、在战役 DO 内执行，可读写实时状态 | `index.ts`、`room.ts` |
 
-新增模组：建目录导出 `AdventureModule`，加入 `MODULES`，把地图清单与图片上传到 R2 `room-templates/<id>/`。路由名不能与 `RESERVED_ROUTE_PATHS` 中的核心接口重复，`worker/test/modules.test.ts` 会检查。不要直接从 `MODULES` 移除已发布的模组：移除后无法再用它新建战役（库中旧记录仍会显示，选择时报“模组暂不可用”），已用它创建的战役的共享地图也会读不到（`repository.ts` 的 `getAsset` 只为登记中的模组从 R2 `REFERENCE_DATA` 读取地图）。下线模组需要先决定已有战役如何处理。
+新增模组：建目录导出 `AdventureModule`，加入 `MODULES`，把地图清单与图片上传到 R2 `room-templates/<id>/`。带房间遭遇预设的模组（施特拉德、凡戴尔、龙后的宝山及其重置版）共用 `modules/preset-encounters.ts`：开局隐藏 Token、主持人专用的 `<模组>-scene/<sceneId>` 接口和前端 `EncounterModuleTab`。路由名不能与 `RESERVED_ROUTE_PATHS` 中的核心接口重复，`worker/test/modules.test.ts` 会检查。不要直接从 `MODULES` 移除已发布的模组：移除后无法再用它新建战役（库中旧记录仍会显示，选择时报“模组暂不可用”），已用它创建的战役的共享地图也会读不到（`repository.ts` 的 `getAsset` 只为登记中的模组从 R2 `REFERENCE_DATA` 读取地图）。下线模组需要先决定已有战役如何处理。
 
 ## 数据模型
 

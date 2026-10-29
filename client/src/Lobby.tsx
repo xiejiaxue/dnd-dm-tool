@@ -6,6 +6,7 @@ import {
 } from "./api";
 import Icon from "./components/Icon";
 import { currentUser } from "./shell/currentUser";
+import { extensionHref, extensionsFor } from "./shell/extensions";
 interface Props {
   inviteError?: string | null;
   onOpenCampaign: (slug: string) => void;
@@ -84,13 +85,16 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
   const remove = async (c: CampaignSummary) => {
     if (
       busy ||
-      !window.confirm(`删除战役「${c.name}」？删除后将不再显示在大厅。`)
+      !window.confirm(
+        `永久删除战役「${c.name}」？场景、角色、日志、邀请和上传的图片都会一并删除，不可恢复。`,
+      )
     )
       return;
     setBusy(true);
+    setError("");
     try {
       await api.deleteCampaign(c.slug);
-      await load();
+      setCampaigns((list) => list.filter((item) => item.id !== c.id));
     } catch (e) {
       setError(e instanceof Error ? e.message : "删除失败");
     } finally {
@@ -218,23 +222,34 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
                       <p>{c.moduleName || "空白冒险"}</p>
                       <footer>
                         {c.role === "host" && (
-                          <button
-                            className="text-link"
-                            disabled={busy}
-                            onClick={() => void archive(c)}
-                          >
-                            {archived ? "恢复" : "归档"}
-                          </button>
+                          <>
+                            <button
+                              className="text-link"
+                              disabled={busy}
+                              onClick={() => void archive(c)}
+                            >
+                              {archived ? "恢复" : "归档"}
+                            </button>
+                            <button
+                              className="text-link"
+                              disabled={busy}
+                              onClick={() => void remove(c)}
+                            >
+                              删除
+                            </button>
+                          </>
                         )}
-                        {archived && c.role === "host" && (
-                          <button
-                            className="text-link"
-                            disabled={busy}
-                            onClick={() => void remove(c)}
-                          >
-                            删除
-                          </button>
-                        )}
+                        {!archived &&
+                          extensionsFor(c.templateId).map((extension) => (
+                            <a
+                              key={extension.page}
+                              className="text-link room-extension"
+                              href={extensionHref(extension, c.slug)}
+                              title={`${extension.moduleName}专属工具`}
+                            >
+                              {extension.label}
+                            </a>
+                          ))}
                         {!archived && (
                           <a
                             className="room-enter"

@@ -1,0 +1,4348 @@
+[
+  {
+    "id": "COS__79005cf597ffa9dc",
+    "type": "monster",
+    "nameZh": "布鲁托·科洛加洛夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7a485b4c042d15a2",
+    "type": "monster",
+    "nameZh": "阿拉贝拉",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1d324b2b0d7ffb65",
+    "type": "monster",
+    "nameZh": "魔邓肯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "12",
+    "hp": 99,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e5b2a00a635f65cc",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [
+      "总览与旅途",
+      "第 2 次 · 篝火与塔罗卡"
+    ],
+    "sceneKeys": [
+      "01",
+      "05"
+    ]
+  },
+  {
+    "id": "COS__54a8685fc38d894d",
+    "type": "monster",
+    "nameZh": "斥候",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2d85c754bbcae6aa",
+    "type": "monster",
+    "nameZh": "强盗",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a12f7f2600808dac",
+    "type": "monster",
+    "nameZh": "骷髅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 13,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__840c6e8abaed6f98",
+    "type": "monster",
+    "nameZh": "战马骷髅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__cd909e303ef88601",
+    "type": "monster",
+    "nameZh": "渡鸦群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 2,
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "COS__61c3ced735c506f0",
+    "type": "monster",
+    "nameZh": "鸦人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__92530ee046b3bf7c",
+    "type": "monster",
+    "nameZh": "施特拉德恐狼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 37,
+    "initiativeBonus": 2,
+    "chapters": [
+      "总览与旅途",
+      "第 2 次 · 篝火与塔罗卡",
+      "第 5 次 · 世界尽头的池水",
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "01",
+      "05",
+      "10",
+      "15"
+    ]
+  },
+  {
+    "id": "COS__24c56ae29e4a1a3d",
+    "type": "monster",
+    "nameZh": "狼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 2,
+    "chapters": [
+      "总览与旅途",
+      "第 2 次 · 篝火与塔罗卡",
+      "第 5 次 · 世界尽头的池水",
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "01",
+      "05",
+      "10",
+      "15"
+    ]
+  },
+  {
+    "id": "COS__f1fea372bcfa5e47",
+    "type": "monster",
+    "nameZh": "狂战士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 67,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7959483e1594813f",
+    "type": "monster",
+    "nameZh": "狼人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__be16de3f44aae0fb",
+    "type": "monster",
+    "nameZh": "德鲁伊",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 27,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__63b309d5e65944a5",
+    "type": "monster",
+    "nameZh": "枯枝怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 1,
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "COS__677ed56a0fa1c345",
+    "type": "monster",
+    "nameZh": "枯针怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
+  },
+  {
+    "id": "COS__c6861ca3958ae257",
+    "type": "monster",
+    "nameZh": "稻草人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 36,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__aa26a49376ae5baf",
+    "type": "monster",
+    "nameZh": "还魂尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 136,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__82684607829e0c1d",
+    "type": "monster",
+    "nameZh": "幽魂",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2983f8407947ab09",
+    "type": "monster",
+    "nameZh": "蝙蝠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b0220c04e0da7d47",
+    "type": "monster",
+    "nameZh": "僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__0a34fb09d570573e",
+    "type": "monster",
+    "nameZh": "施特拉德僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 30,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__8ecd66c5d35ecf1f",
+    "type": "monster",
+    "nameZh": "磷火",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 9,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__be7cc25fed10278e",
+    "type": "monster",
+    "nameZh": "强盗",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 2 次 · 篝火与塔罗卡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "COS__63b22aa2f0b646f3",
+    "type": "monster",
+    "nameZh": "强盗首领",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 65,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1b9a7419f80aab45",
+    "type": "monster",
+    "nameZh": "伊娃夫人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "10",
+    "hp": 88,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 2 次 · 篝火与塔罗卡"
+    ],
+    "sceneKeys": [
+      "05"
+    ]
+  },
+  {
+    "id": "COS__5409818161597e64",
+    "type": "monster",
+    "nameZh": "驮用马",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 19,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__020d31285e747011",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a8ad02d756b15fef",
+    "type": "monster",
+    "nameZh": "比尔德拉斯·坎特米尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__349d1617575c1940",
+    "type": "monster",
+    "nameZh": "帕波尔·坎特米尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 112,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__7ecd4db12b8c43ea",
+    "type": "monster",
+    "nameZh": "伊斯马克·考利安诺维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__f3d601be5f896387",
+    "type": "monster",
+    "nameZh": "阿里克·罗伦斯克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__d2ac44a1f4576c1c",
+    "type": "monster",
+    "nameZh": "阿伦卡",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__e759d86586048865",
+    "type": "monster",
+    "nameZh": "米拉贝尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__3c429cbe9ef0e127",
+    "type": "monster",
+    "nameZh": "索维娅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__626e8d518c497846",
+    "type": "monster",
+    "nameZh": "疯玛丽",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__cd37daab21c25af4",
+    "type": "monster",
+    "nameZh": "伊丽娜·考利安娜",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 14,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼",
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "02",
+      "15"
+    ]
+  },
+  {
+    "id": "COS__a03ba68a0d67726d",
+    "type": "monster",
+    "nameZh": "鼠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__0c9cce31d1188aa5",
+    "type": "monster",
+    "nameZh": "施特拉德僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 30,
+    "initiativeBonus": -2,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "02"
+    ]
+  },
+  {
+    "id": "COS__42965c5fd2eecac2",
+    "type": "monster",
+    "nameZh": "摩甘萨",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 112,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a591eac95cca9087",
+    "type": "monster",
+    "nameZh": "卢锡安·耶尔夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a0b978b36879d79f",
+    "type": "monster",
+    "nameZh": "多鲁",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "COS__c5a917d04d0a9df1",
+    "type": "monster",
+    "nameZh": "唐纳维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 9,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "03"
+    ]
+  },
+  {
+    "id": "COS__c324f1aeefe649ce",
+    "type": "monster",
+    "nameZh": "艾丝美拉达·德·阿维尼尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "8",
+    "hp": 82,
+    "initiativeBonus": 4,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__cb9d3c0860d95031",
+    "type": "monster",
+    "nameZh": "拉哈丁",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "10",
+    "hp": 135,
+    "initiativeBonus": 6,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "15"
+    ]
+  },
+  {
+    "id": "COS__3143607787a08c41",
+    "type": "monster",
+    "nameZh": "猫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b36bf376a5aeec59",
+    "type": "monster",
+    "nameZh": "活化战斗扫帚",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 17,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5ef800c617a11871",
+    "type": "monster",
+    "nameZh": "凌空剑",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 17,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5dcfa947f1f1af7c",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__36f0ab7290d8eaab",
+    "type": "monster",
+    "nameZh": "蠕行之爪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__3dd1e380db183e7f",
+    "type": "monster",
+    "nameZh": "幽影",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1d3c838d93e52d0b",
+    "type": "monster",
+    "nameZh": "蝙蝠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "15"
+    ]
+  },
+  {
+    "id": "COS__30701adbb53eba12",
+    "type": "monster",
+    "nameZh": "爬行施特拉德僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 15,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__bf115d9c20b4b741",
+    "type": "monster",
+    "nameZh": "暴徒",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 32,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__bad10a71df5bab6b",
+    "type": "monster",
+    "nameZh": "尸妖",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__acc5d3020303289a",
+    "type": "monster",
+    "nameZh": "巴洛维亚巫师",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4f0324502197d9d9",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__dd736f0312422367",
+    "type": "monster",
+    "nameZh": "施特拉德·冯·扎洛维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "15",
+    "hp": 144,
+    "initiativeBonus": 4,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼",
+      "第 3—4 次 · 瓦拉吉",
+      "第 5 次 · 世界尽头的池水",
+      "第 6 次 · 残灯与太阳剑",
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "02",
+      "06",
+      "10",
+      "12",
+      "15",
+      "18"
+    ]
+  },
+  {
+    "id": "COS__2a1b0402e3f4c10f",
+    "type": "monster",
+    "nameZh": "施特拉德僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 30,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a2bf341c068e21c7",
+    "type": "monster",
+    "nameZh": "蜘蛛群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__726c6fa73ce94e05",
+    "type": "monster",
+    "nameZh": "强盗",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__46ae3fce7fcccfcb",
+    "type": "monster",
+    "nameZh": "石制红龙雏龙",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 75,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b28f552fb4aaf3d2",
+    "type": "monster",
+    "nameZh": "石像鬼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 52,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "15"
+    ]
+  },
+  {
+    "id": "COS__2ee69141d7f75ec2",
+    "type": "monster",
+    "nameZh": "活化长戟",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 17,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__303d77a983010d17",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e6948c2b41e1f0d5",
+    "type": "monster",
+    "nameZh": "施特拉德僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 30,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e0fe2df2085033c7",
+    "type": "monster",
+    "nameZh": "利夫·利普西耶吉",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ec24c221ac3c1a6a",
+    "type": "monster",
+    "nameZh": "海尔嘉·露瓦克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__40689a08d28d2ba0",
+    "type": "monster",
+    "nameZh": "幽影",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9ee7b1a66d8eb498",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d38483fd9453a486",
+    "type": "monster",
+    "nameZh": "尸妖",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__251221349ab3acf0",
+    "type": "monster",
+    "nameZh": "缚灵",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 67,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f5b0c489421c3972",
+    "type": "monster",
+    "nameZh": "幽灵",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__242fd8cd95245b0a",
+    "type": "monster",
+    "nameZh": "鼠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ca9bd225bc11ac92",
+    "type": "monster",
+    "nameZh": "巨蜘蛛",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 26,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__3a5bd03bda671dfd",
+    "type": "monster",
+    "nameZh": "歌尔图达",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__beee8aae0387dcfa",
+    "type": "monster",
+    "nameZh": "隐形潜行者",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 104,
+    "initiativeBonus": 4,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__6baa4458082500ca",
+    "type": "monster",
+    "nameZh": "捣蛋皮德尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "4",
+    "hp": 45,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d03c052f61ef82dc",
+    "type": "monster",
+    "nameZh": "施特拉德活化盔甲",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 112,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__11704c00a9ebbd39",
+    "type": "monster",
+    "nameZh": "窒息地毯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 33,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__8c2dbd6942d48756",
+    "type": "monster",
+    "nameZh": "伊斯切尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__554518513c41a011",
+    "type": "monster",
+    "nameZh": "守卫者肖像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": -5,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f73462a6eb245f2e",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1d98eedccaa0bd62",
+    "type": "monster",
+    "nameZh": "巴洛维亚巫师",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2588ed05902f59f0",
+    "type": "monster",
+    "nameZh": "巴洛维亚巫师",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1b1c2c1dcee71bfd",
+    "type": "monster",
+    "nameZh": "捣蛋皮德尔二世",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 10,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9f78ed74cb55854f",
+    "type": "monster",
+    "nameZh": "猫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e0bc5c908d0c1582",
+    "type": "monster",
+    "nameZh": "蝙蝠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__0ea4b9c3f8bed507",
+    "type": "monster",
+    "nameZh": "活化长戟",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 17,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "17"
+    ]
+  },
+  {
+    "id": "COS__6bc9d83548e208cf",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5b1abfb6eebd0428",
+    "type": "monster",
+    "nameZh": "黑布丁",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 85,
+    "initiativeBonus": -3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b0b4604208aa035a",
+    "type": "monster",
+    "nameZh": "炖锅僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 13,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__dfe5fd8d78278eeb",
+    "type": "monster",
+    "nameZh": "幽影恶魔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 66,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4ef80e2cc7b5b787",
+    "type": "monster",
+    "nameZh": "灰泥怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f9bf7d797390f523",
+    "type": "monster",
+    "nameZh": "施特拉德僵尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 30,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__58f16c07fb6c5fce",
+    "type": "monster",
+    "nameZh": "幽魂",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a95814281a43f0ff",
+    "type": "monster",
+    "nameZh": "萨莎·伊夫里斯科娃",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__90c12ded2df101d7",
+    "type": "monster",
+    "nameZh": "帕特里娜·维里科芙纳",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "4",
+    "hp": 58,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__821a5e77f30d06c0",
+    "type": "monster",
+    "nameZh": "食尸鬼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__bf3b48b30901c4ef",
+    "type": "monster",
+    "nameZh": "缚灵",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 67,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e8368092f35b3dde",
+    "type": "monster",
+    "nameZh": "地狱犬",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__090ab496416170cc",
+    "type": "monster",
+    "nameZh": "布西法拉斯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 104,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b01a09090b04d684",
+    "type": "monster",
+    "nameZh": "柳德米拉·维里瑟威克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "15"
+    ]
+  },
+  {
+    "id": "COS__2e0520f814946778",
+    "type": "monster",
+    "nameZh": "安娜斯塔西娅·卡列洛娃",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "15"
+    ]
+  },
+  {
+    "id": "COS__16a48bc70ffa7bb6",
+    "type": "monster",
+    "nameZh": "瓦伦塔·波波夫斯基",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "15"
+    ]
+  },
+  {
+    "id": "COS__97fdb5501cd89406",
+    "type": "monster",
+    "nameZh": "赛勒斯·贝尔维",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__cca8fb5a38695021",
+    "type": "monster",
+    "nameZh": "埃米尔·托兰涅斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 72,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d4cd0c447eed2292",
+    "type": "monster",
+    "nameZh": "小魔鬼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 10,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__49962adb6d871a0f",
+    "type": "monster",
+    "nameZh": "钢铁魔像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 210,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c2b69619095208d5",
+    "type": "monster",
+    "nameZh": "蝙蝠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__20e6749ac080b179",
+    "type": "monster",
+    "nameZh": "英多洛维奇石像鬼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 77,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__83ced1a8f2f5a328",
+    "type": "monster",
+    "nameZh": "尸妖",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9d591f97f6339b20",
+    "type": "monster",
+    "nameZh": "磕拉茨爵士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c6800cfaa4a688b4",
+    "type": "monster",
+    "nameZh": "骷髅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 13,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__daf79301bde8ea08",
+    "type": "monster",
+    "nameZh": "窒息地毯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 33,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4286815b2e19f33d",
+    "type": "monster",
+    "nameZh": "守卫者肖像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": -5,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__def983be30399a8c",
+    "type": "monster",
+    "nameZh": "灰泥怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1ad3e02227f7c335",
+    "type": "monster",
+    "nameZh": "瓦拉吉长矛警卫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "COS__de7b06df85d8cb81",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a94e2a3491e23b87",
+    "type": "monster",
+    "nameZh": "路西安·彼得洛维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 27,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "COS__3846bb1b272e9d04",
+    "type": "monster",
+    "nameZh": "米利沃伊",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b33db41474e1f83c",
+    "type": "monster",
+    "nameZh": "叶斯卡",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__8198cff05a6257f6",
+    "type": "monster",
+    "nameZh": "薇勒敏·里卡洛娃",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ad406f022b2b8ac3",
+    "type": "monster",
+    "nameZh": "冈瑟·阿拉瑟克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c5cc7ddbbe0d3742",
+    "type": "monster",
+    "nameZh": "叶莲娜·阿拉瑟克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__66d27b641ce48c29",
+    "type": "monster",
+    "nameZh": "加多夫·布林斯基",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d0a5da4449fc4742",
+    "type": "monster",
+    "nameZh": "小笛子",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 3,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__efc51d5e564edbd3",
+    "type": "monster",
+    "nameZh": "艾泽克·施特拉兹尼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 112,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "COS__00d565b6f9cd1ebb",
+    "type": "monster",
+    "nameZh": "鼠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__bb46ade02286158e",
+    "type": "monster",
+    "nameZh": "邪教徒",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "COS__1e475f4c36d3d95e",
+    "type": "monster",
+    "nameZh": "狂热邪教徒",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 33,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06"
+    ]
+  },
+  {
+    "id": "COS__bc8b7e62b27b2a7f",
+    "type": "monster",
+    "nameZh": "瓦拉吉装甲剑齿虎",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 84,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2d51b33e7260cf80",
+    "type": "monster",
+    "nameZh": "蝙蝠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__933b31bb99a4df8e",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06",
+      "09"
+    ]
+  },
+  {
+    "id": "COS__e5694d41c04333d3",
+    "type": "monster",
+    "nameZh": "厄尔文·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "COS__3e2b3c30d352e63e",
+    "type": "monster",
+    "nameZh": "达妮卡·朵拉科娃",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "COS__910b810ac96e8715",
+    "type": "monster",
+    "nameZh": "布洛姆·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 7,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "COS__bb2b611a88973c81",
+    "type": "monster",
+    "nameZh": "布雷·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 7,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "COS__5466051d8459eb3f",
+    "type": "monster",
+    "nameZh": "佐尔达·佐尔达洛维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/2",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5f6bf4c0ac75b531",
+    "type": "monster",
+    "nameZh": "叶甫根尼·克鲁什金",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/2",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__924b0fbdb79d66d6",
+    "type": "monster",
+    "nameZh": "尼古拉·瓦赫特小辈",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__d7d406f071778ba6",
+    "type": "monster",
+    "nameZh": "卡尔·瓦赫特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__40b70fe81c8c244f",
+    "type": "monster",
+    "nameZh": "鲁道夫·范·里希腾",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 77,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "COS__f4f3e21bccd5ac8b",
+    "type": "monster",
+    "nameZh": "骑乘马",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 13,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__77acd7566fb3a62d",
+    "type": "monster",
+    "nameZh": "渡鸦群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c9db8a8547154861",
+    "type": "monster",
+    "nameZh": "鸦人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__dc8350a7506cd737",
+    "type": "monster",
+    "nameZh": "瓦格斯·瓦拉科维奇男爵",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d118f60b55090485",
+    "type": "monster",
+    "nameZh": "獒犬",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 5,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__636486cbd258361f",
+    "type": "monster",
+    "nameZh": "莉迪娅·彼得洛夫娜",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__21bbc0d749bab3c5",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7d6629f9019badd6",
+    "type": "monster",
+    "nameZh": "乌多·卢科维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__37fe7fb370a27185",
+    "type": "monster",
+    "nameZh": "维克托·瓦拉科维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "6",
+    "hp": 40,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c007266e5b14a936",
+    "type": "monster",
+    "nameZh": "骷髅猫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__595183828eb84be5",
+    "type": "monster",
+    "nameZh": "镜中刺客",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "8",
+    "hp": 78,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__85bda286e3afde70",
+    "type": "monster",
+    "nameZh": "瓦拉吉长矛警卫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2e42d2c94ce747d0",
+    "type": "monster",
+    "nameZh": "狂热邪教徒",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 33,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__8135cb9da0614066",
+    "type": "monster",
+    "nameZh": "菲奥娜·瓦赫特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 27,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__18dca74e9e1195a2",
+    "type": "monster",
+    "nameZh": "玛杰斯托",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 10,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__c2d817e84e41791b",
+    "type": "monster",
+    "nameZh": "厄内斯特·拉纳克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__e7c4fb533a1912ee",
+    "type": "monster",
+    "nameZh": "丝黛拉·瓦赫特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__6f72452550fe893b",
+    "type": "monster",
+    "nameZh": "阿玛西娅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__70ff94dc6fb684ab",
+    "type": "monster",
+    "nameZh": "哈里克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__28966b519387d1f4",
+    "type": "monster",
+    "nameZh": "哈维特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__183df90914d8e76b",
+    "type": "monster",
+    "nameZh": "玛达莱娜",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b1263d070c784ebe",
+    "type": "monster",
+    "nameZh": "猫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "08"
+    ]
+  },
+  {
+    "id": "COS__b7e66146cbaaf49d",
+    "type": "monster",
+    "nameZh": "骷髅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 13,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c27f1383178068ef",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7ffa735c5beb1a76",
+    "type": "monster",
+    "nameZh": "亨里克·范·德·沃特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "09"
+    ]
+  },
+  {
+    "id": "COS__dc2914559532f0bb",
+    "type": "monster",
+    "nameZh": "瓦拉吉长矛警卫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ce179179234cd5e9",
+    "type": "monster",
+    "nameZh": "卡西米尔·维里科夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "6",
+    "hp": 40,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__6d742d2b2e2e4c02",
+    "type": "monster",
+    "nameZh": "警卫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__cd7b096840859b09",
+    "type": "monster",
+    "nameZh": "鲁瓦斯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 65,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__23d61ba25390191b",
+    "type": "monster",
+    "nameZh": "阿瑞加尔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "8",
+    "hp": 78,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 2 次 · 篝火与塔罗卡",
+      "第 6 次 · 残灯与太阳剑"
+    ],
+    "sceneKeys": [
+      "05",
+      "12"
+    ]
+  },
+  {
+    "id": "COS__4215d8b93fd95629",
+    "type": "monster",
+    "nameZh": "阿列克谢",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__79700d3ef25a682a",
+    "type": "monster",
+    "nameZh": "强盗",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__6757db413e983361",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ede7146b23e02359",
+    "type": "monster",
+    "nameZh": "驮用马",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 19,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__051f82b415e22dfc",
+    "type": "monster",
+    "nameZh": "骑乘马",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 13,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d7e129c781a9a367",
+    "type": "monster",
+    "nameZh": "贝拉·祸日",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 112,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__264385a3749119fd",
+    "type": "monster",
+    "nameZh": "奥法莉亚·扭虫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 112,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f0b08743036dc257",
+    "type": "monster",
+    "nameZh": "弗里克",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b003c57037ec226c",
+    "type": "monster",
+    "nameZh": "米尔特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": null,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9fcf14e035909615",
+    "type": "monster",
+    "nameZh": "怯魔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 18,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1ec1b288597eb449",
+    "type": "monster",
+    "nameZh": "巨蜘蛛",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 26,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7a1c71f6bb53940b",
+    "type": "monster",
+    "nameZh": "还魂尸骑士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 136,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ecfc54d11492f5ef",
+    "type": "monster",
+    "nameZh": "萨维德",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/2",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__226029d0b9a16b3c",
+    "type": "monster",
+    "nameZh": "魅影武者",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a2eb8068169ef415",
+    "type": "monster",
+    "nameZh": "魅影弓兵",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ff83d302fc7aa3ca",
+    "type": "monster",
+    "nameZh": "弗拉基米尔·霍恩嘉德",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "7",
+    "hp": 192,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4e300f145773e9a8",
+    "type": "monster",
+    "nameZh": "还魂尸骑士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 136,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__0c9076fa683b6a91",
+    "type": "monster",
+    "nameZh": "高德弗里·格威利姆爵士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "6",
+    "hp": 136,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2a7681b69c11c95e",
+    "type": "monster",
+    "nameZh": "科亚",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__083127fd6cce1c8a",
+    "type": "monster",
+    "nameZh": "驮用马",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 19,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ce2ef3fed2985e8d",
+    "type": "monster",
+    "nameZh": "蝙蝠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f4f337294765f4e1",
+    "type": "monster",
+    "nameZh": "强盗",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4afc61e07cd8813a",
+    "type": "monster",
+    "nameZh": "魅影武者",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1151e604798118cc",
+    "type": "monster",
+    "nameZh": "斥候",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 5 次 · 世界尽头的池水"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "COS__e9a4918a89624a22",
+    "type": "monster",
+    "nameZh": "警卫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 5 次 · 世界尽头的池水"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "COS__f673d108936e347e",
+    "type": "monster",
+    "nameZh": "迪米特里·克雷茨科夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 5 次 · 世界尽头的池水"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "COS__7f569a4214a16090",
+    "type": "monster",
+    "nameZh": "安娜·克雷茨科娃",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/8",
+    "hp": 9,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 5 次 · 世界尽头的池水"
+    ],
+    "sceneKeys": [
+      "10"
+    ]
+  },
+  {
+    "id": "COS__5173b56043031f97",
+    "type": "monster",
+    "nameZh": "平民",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4fbd7b1704656163",
+    "type": "monster",
+    "nameZh": "骡子",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b12ceff4162fe670",
+    "type": "monster",
+    "nameZh": "米什卡·贝尔维",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f03959c36edee364",
+    "type": "monster",
+    "nameZh": "肉身魔像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 93,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__795455c723e54762",
+    "type": "monster",
+    "nameZh": "奥图·贝尔维",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__618d13506c0e6987",
+    "type": "monster",
+    "nameZh": "吉格芙里克·贝尔维",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4ba89bb1bb404bc8",
+    "type": "monster",
+    "nameZh": "混种人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__6a1a68b4fa82f3e7",
+    "type": "monster",
+    "nameZh": "玛泽娜·贝尔维",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__27242756c48fc186",
+    "type": "monster",
+    "nameZh": "修道院长",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "10",
+    "hp": 136,
+    "initiativeBonus": 4,
+    "chapters": [
+      "第 5 次 · 世界尽头的池水"
+    ],
+    "sceneKeys": [
+      "11"
+    ]
+  },
+  {
+    "id": "COS__db02344ebc99ff68",
+    "type": "monster",
+    "nameZh": "瓦熙尔卡",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 93,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__28fe75f54c845b1b",
+    "type": "monster",
+    "nameZh": "幽影",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__3d25e905cfe285e7",
+    "type": "monster",
+    "nameZh": "克洛文·贝尔维",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1/4",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__19ecb2914607a1aa",
+    "type": "monster",
+    "nameZh": "弗洛魔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 104,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2fb0d542081ba604",
+    "type": "monster",
+    "nameZh": "雪女",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d95e6e787b6de202",
+    "type": "monster",
+    "nameZh": "鹏鸟",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 248,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__95f95154be87935c",
+    "type": "monster",
+    "nameZh": "桑格佐",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 33,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__48c983cbdb5c8a67",
+    "type": "monster",
+    "nameZh": "芭芭·莱萨迦",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "11",
+    "hp": 120,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__daf4d021b03d327c",
+    "type": "monster",
+    "nameZh": "渡鸦群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a0230b945fc58501",
+    "type": "monster",
+    "nameZh": "步行小屋",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 263,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__499e3e6fb759227f",
+    "type": "monster",
+    "nameZh": "巨毒蛇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 4,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5cc6e60902de69e0",
+    "type": "monster",
+    "nameZh": "步行小屋",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 263,
+    "initiativeBonus": -2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__bf86e34e977c0dde",
+    "type": "monster",
+    "nameZh": "拉齐奥·乌尔里希",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "4",
+    "hp": 45,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__cced09e76b3545ea",
+    "type": "monster",
+    "nameZh": "山羊",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__13900a1dee2b25fe",
+    "type": "monster",
+    "nameZh": "穆瑞尔·雯肖",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__66600158b811b4fe",
+    "type": "monster",
+    "nameZh": "柏瑞兹浮尸",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__8a5bba386d791c63",
+    "type": "monster",
+    "nameZh": "黄蜂群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__62c3cd1d36de6471",
+    "type": "monster",
+    "nameZh": "稻草人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 36,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c77b3fc9808237f5",
+    "type": "monster",
+    "nameZh": "毒蛇群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 36,
+    "initiativeBonus": 4,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7d799ff49939ed80",
+    "type": "monster",
+    "nameZh": "粘土魔像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 133,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__77dbaaaf6f85705e",
+    "type": "monster",
+    "nameZh": "蓝龙少年龙",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 152,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a4ca82b1d87d95f0",
+    "type": "monster",
+    "nameZh": "活化护甲",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 33,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1be5a98c2610522f",
+    "type": "monster",
+    "nameZh": "基里尔·斯托亚诺维奇",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 90,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__18eee8bb6858b299",
+    "type": "monster",
+    "nameZh": "狼人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e2f502afcf4fbd3a",
+    "type": "monster",
+    "nameZh": "狼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5169e2739f48f0b3",
+    "type": "monster",
+    "nameZh": "枯针怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a556af415cf5ad22",
+    "type": "monster",
+    "nameZh": "德鲁伊",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 27,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__3285f816355f3634",
+    "type": "monster",
+    "nameZh": "枯枝怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__b66d4ce158a80480",
+    "type": "monster",
+    "nameZh": "枯藤怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a38dc36cda6a5576",
+    "type": "monster",
+    "nameZh": "戴维恩·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "07"
+    ]
+  },
+  {
+    "id": "COS__71b5cc8876aefa1f",
+    "type": "monster",
+    "nameZh": "艾德里安·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f7ee2404ff3f7a7a",
+    "type": "monster",
+    "nameZh": "埃尔维·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 3—4 次 · 瓦拉吉"
+    ],
+    "sceneKeys": [
+      "06",
+      "07"
+    ]
+  },
+  {
+    "id": "COS__ede8a8ab99bed5b0",
+    "type": "monster",
+    "nameZh": "斯特凡尼娅·马可夫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__06de1dc1eb9dad10",
+    "type": "monster",
+    "nameZh": "道格·托马斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__2af4a97402dabae2",
+    "type": "monster",
+    "nameZh": "克劳迪乌·托马斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__43259a3d3de9573d",
+    "type": "monster",
+    "nameZh": "马丁·托马斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 7,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e44c4f2f0c0b6e1b",
+    "type": "monster",
+    "nameZh": "维果·托马斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 7,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e0b9336e0b75fd1d",
+    "type": "monster",
+    "nameZh": "尤兰达·托马斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 1,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9541d03ba2141851",
+    "type": "monster",
+    "nameZh": "驮用马",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 19,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__672e35554b6230dd",
+    "type": "monster",
+    "nameZh": "渡鸦群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7745b1547685b4b3",
+    "type": "monster",
+    "nameZh": "枯树怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 149,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__704d7f238c00607a",
+    "type": "monster",
+    "nameZh": "稻草人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 36,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c22d8ee64abcc5cc",
+    "type": "monster",
+    "nameZh": "受损琥珀魔像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 145,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__1c9d16920c0792e3",
+    "type": "monster",
+    "nameZh": "赫尔娃",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 112,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__81c2dd86a2c66f6e",
+    "type": "monster",
+    "nameZh": "狂战士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 67,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__982c261cbd0cc901",
+    "type": "monster",
+    "nameZh": "施特拉德恐狼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 37,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__6f87096ccff80afa",
+    "type": "monster",
+    "nameZh": "燃焰之颅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 40,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__ea365d4d7c4cc4a2",
+    "type": "monster",
+    "nameZh": "维尔纽斯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "6",
+    "hp": 40,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__58adf3819692ded2",
+    "type": "monster",
+    "nameZh": "维尔纽斯的夸塞魔",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 7,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e1dbe25377e6070c",
+    "type": "monster",
+    "nameZh": "艾克斯桑特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "10",
+    "hp": 99,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9a6e66c399eb94d6",
+    "type": "monster",
+    "nameZh": "涅弗隆",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 104,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f04d092bf61c07e5",
+    "type": "monster",
+    "nameZh": "巴洛维亚巫师",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__61595ef053c02b65",
+    "type": "monster",
+    "nameZh": "燃焰之颅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 40,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__db27d9d48690c9f4",
+    "type": "monster",
+    "nameZh": "蛛行妖鬼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 36,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__0fa70f68593572dd",
+    "type": "monster",
+    "nameZh": "史拉亡蟾",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 170,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__6bd119af28d1c374",
+    "type": "monster",
+    "nameZh": "作祟幽灵",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__4e22d12fd2604409",
+    "type": "monster",
+    "nameZh": "吸血鬼衍体",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 82,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__92ea28c449a79236",
+    "type": "monster",
+    "nameZh": "构装盾卫",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 142,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__d672866a47981ada",
+    "type": "monster",
+    "nameZh": "诺斯异怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 45,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__fdc9e660adf98662",
+    "type": "monster",
+    "nameZh": "琥珀宝库魔像",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 178,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__8240cf85588dfd65",
+    "type": "monster",
+    "nameZh": "德鲁伊",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 27,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__01b357a743743f18",
+    "type": "monster",
+    "nameZh": "狂战士",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 67,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9b174082e40565e7",
+    "type": "monster",
+    "nameZh": "枯藤怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 26,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__63903217dad2d5c2",
+    "type": "monster",
+    "nameZh": "枯针怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a651818c8e19ae70",
+    "type": "monster",
+    "nameZh": "枯枝怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 4,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__64ba87e7b88bac90",
+    "type": "monster",
+    "nameZh": "枯树怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 149,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7358523bfe36ca07",
+    "type": "monster",
+    "nameZh": "阿翠娜",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9d45bce709898508",
+    "type": "monster",
+    "nameZh": "妲万卡",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e77f552dd2899a60",
+    "type": "monster",
+    "nameZh": "司肯尼斯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 36,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__bc69c12929cb81ad",
+    "type": "monster",
+    "nameZh": "狼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 11,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__9656282c7302477f",
+    "type": "monster",
+    "nameZh": "比安卡",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f039012326b8505b",
+    "type": "monster",
+    "nameZh": "文森西娅",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e65ac4879fac8ba8",
+    "type": "monster",
+    "nameZh": "凯伦",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 2,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__89db79a727977b68",
+    "type": "monster",
+    "nameZh": "朱莱卡·托兰涅斯库",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__5214a737bca51b6f",
+    "type": "monster",
+    "nameZh": "非战斗儿童",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 1,
+    "initiativeBonus": null,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__f1276af5c5766ba7",
+    "type": "monster",
+    "nameZh": "鸦人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 31,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e4e4106d67e05c08",
+    "type": "monster",
+    "nameZh": "狼人",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__dfefd38b7fc60557",
+    "type": "monster",
+    "nameZh": "活化护甲",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 33,
+    "initiativeBonus": 0,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "COS__f1191d9596d9ac8c",
+    "type": "monster",
+    "nameZh": "活化战斗扫帚",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 17,
+    "initiativeBonus": 3,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "COS__1c89a8c199421cc8",
+    "type": "monster",
+    "nameZh": "死亡之屋保姆",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "1",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "COS__03694d9ad54bbff4",
+    "type": "monster",
+    "nameZh": "穴居攫怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__e33f8191a4cf1898",
+    "type": "monster",
+    "nameZh": "食尸鬼",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__7eff6f0c6143457f",
+    "type": "monster",
+    "nameZh": "罗莎瓦尔妲·杜尔斯特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 35,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "COS__f80e7a7bb2c7e5e1",
+    "type": "monster",
+    "nameZh": "索恩博尔特·杜尔斯特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "3",
+    "hp": 35,
+    "initiativeBonus": 1,
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "04"
+    ]
+  },
+  {
+    "id": "COS__af626a35e150ebd1",
+    "type": "monster",
+    "nameZh": "蜈蚣群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 22,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__a20690e338296546",
+    "type": "monster",
+    "nameZh": "幽影",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 16,
+    "initiativeBonus": 2,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__8cf116414ee0dee0",
+    "type": "monster",
+    "nameZh": "拟身怪",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__c9bc75def3e5cecb",
+    "type": "monster",
+    "nameZh": "古斯塔夫·杜尔斯特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 36,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__3b8f9e52f2e0821a",
+    "type": "monster",
+    "nameZh": "伊丽莎白·杜尔斯特",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "2",
+    "hp": 36,
+    "initiativeBonus": 3,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__334229a97a9c13d4",
+    "type": "monster",
+    "nameZh": "衰败者洛苟斯",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "5",
+    "hp": 136,
+    "initiativeBonus": -1,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COS__795fd7ef690f6320",
+    "type": "monster",
+    "nameZh": "鼠群",
+    "nameEn": "",
+    "source": "施特拉德的诅咒",
+    "bookFile": "builtin/strahd",
+    "cr": "",
+    "hp": 24,
+    "initiativeBonus": 0,
+    "chapters": [],
+    "sceneKeys": []
+  },
+  {
+    "id": "COSR__vistani-blade",
+    "type": "monster",
+    "nameZh": "维斯塔尼刀手",
+    "nameEn": "Vistani Blade",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "1",
+    "hp": 27,
+    "initiativeBonus": 2,
+    "role": "阿瑞加尔的人 · 重置版",
+    "aliases": [
+      "刀手",
+      "维斯塔尼伏击者"
+    ],
+    "chapters": [
+      "第 6 次 · 残灯与太阳剑"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "COSR__leonid",
+    "type": "monster",
+    "nameZh": "列昂尼德",
+    "nameEn": "Leonid",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "残灯会首领 · 重置版",
+    "aliases": [
+      "残灯会首领",
+      "铁匠"
+    ],
+    "chapters": [
+      "第 6 次 · 残灯与太阳剑"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "COSR__mihai",
+    "type": "monster",
+    "nameZh": "米哈伊",
+    "nameEn": "Mihai",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "残灯会内圈守卫队长 · 重置版",
+    "aliases": [
+      "守卫队长",
+      "叛徒"
+    ],
+    "chapters": [
+      "第 6 次 · 残灯与太阳剑"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "COSR__lamp-guard",
+    "type": "monster",
+    "nameZh": "残灯会守卫",
+    "nameEn": "Lamplighter Guard",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "3",
+    "hp": 58,
+    "initiativeBonus": 1,
+    "role": "残灯会 · 重置版",
+    "aliases": [
+      "守卫",
+      "老兵"
+    ],
+    "chapters": [
+      "第 6 次 · 残灯与太阳剑"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "COSR__lamp-sentry",
+    "type": "monster",
+    "nameZh": "残灯会哨兵",
+    "nameEn": "Lamplighter Sentry",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "1/8",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "残灯会 · 重置版",
+    "aliases": [
+      "哨兵",
+      "警卫"
+    ],
+    "chapters": [
+      "第 6 次 · 残灯与太阳剑",
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "13",
+      "14"
+    ]
+  },
+  {
+    "id": "COSR__yulia",
+    "type": "monster",
+    "nameZh": "尤丽娅",
+    "nameEn": "Yulia",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "1/8",
+    "hp": 11,
+    "initiativeBonus": 1,
+    "role": "残灯会年轻哨兵 · 重置版",
+    "aliases": [
+      "年轻哨兵"
+    ],
+    "chapters": [
+      "第 6 次 · 残灯与太阳剑"
+    ],
+    "sceneKeys": [
+      "12"
+    ]
+  },
+  {
+    "id": "COSR__heart-of-sorrow",
+    "type": "monster",
+    "nameZh": "悲痛之心",
+    "nameEn": "Heart of Sorrow",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "",
+    "hp": 50,
+    "initiativeBonus": null,
+    "role": "K20 塔顶 · 重置版",
+    "aliases": [
+      "悲痛之心",
+      "水晶心脏",
+      "心脏"
+    ],
+    "chapters": [
+      "第 7—8 次 · 鸦阁城堡"
+    ],
+    "sceneKeys": [
+      "17"
+    ]
+  }
+]

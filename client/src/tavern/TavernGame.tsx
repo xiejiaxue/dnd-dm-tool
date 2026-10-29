@@ -1,12 +1,12 @@
-import { recordedDateLabel } from '../tavern/date';
+import { recordedDateLabel } from './date';
 import TavernDate from './TavernDate';
-import { isSpecial, encounterLabel } from '../tavern/game';
-import { DRINKS, DRINK_SOURCE, orderLines, type Orders } from '../tavern/drinks';
+import { isSpecial, encounterLabel } from './game';
+import { DRINKS, DRINK_SOURCE, orderLines, type Orders } from './drinks';
 import { useEffect, useRef, useState } from 'react';
-import { PATRONS, PREPARATIONS, STAFF, STAFF_JOBS, STAFF_SOURCE, STYLES, UPGRADES, type Choice } from '../tavern/catalog';
-import { SAVE_KEY, OPENING_COST, setAvailableCash, returnToSetup, advanceCalendarDay, currentCalendarDay, calendarElapsedDay, setCalendarDate, addOtherIncome, dismissStaff, styleUnlocked, changeStyle, beginDay, journalEntries, observeEncounter, continuePlaying, dailyTrade, getStory, money, newGame, nextDay, openTavern, parseGame, purchase, repayDebt, resolveEncounter, settleDay, skillBonus, type GameState, type Plan, type Settlement, type JournalEntry } from '../tavern/game';
+import { PATRONS, PREPARATIONS, STAFF, STAFF_JOBS, STAFF_SOURCE, STYLES, UPGRADES, type Choice } from './catalog';
+import { SAVE_KEY, OPENING_COST, setAvailableCash, returnToSetup, advanceCalendarDay, currentCalendarDay, calendarElapsedDay, setCalendarDate, addOtherIncome, dismissStaff, styleUnlocked, changeStyle, beginDay, journalEntries, observeEncounter, continuePlaying, dailyTrade, getStory, money, newGame, nextDay, openTavern, parseGame, purchase, repayDebt, resolveEncounter, settleDay, skillBonus, type GameState, type Plan, type Settlement, type JournalEntry } from './game';
 import { waterdeep } from '../music/catalog';
-import Icon from './Icon';
+import Icon from '../components/Icon';
 import './tavern-game.css';
 
 const soundtrack = waterdeep.find(t => t.id === 'tavern')!;
@@ -124,7 +124,7 @@ export default function TavernGame() {
     else try { await audio.current.play(); } catch { setError('配乐未能播放，请再试一次或使用配乐页。'); }
   };
   return <div className="tool-content tavern-game">
-    <header className="tool-heading tavern-heading"><div><span className="eyebrow">06 / TROLLSKULL TAVERN</span><h1>酒馆经营</h1><p>巨魔颅骨巷 · 营业记录与每日收支</p></div><div className="tavern-header-actions"><button className="button-secondary" onClick={() => setRules(!rules)} aria-expanded={rules}>经营规则</button><button className="button-secondary tavern-music" onClick={() => void toggleMusic()} aria-pressed={playing}><Icon name="music" />{playing ? '暂停配乐' : 'Swing Jazz'}</button></div></header>
+    <header className="tool-heading tavern-heading"><div><span className="eyebrow">深水城龙金劫 / TROLLSKULL TAVERN</span><h1>酒馆经营</h1><p>巨魔颅骨巷 · 营业记录与每日收支</p></div><div className="tavern-header-actions"><button className="button-secondary" onClick={() => setRules(!rules)} aria-expanded={rules}>经营规则</button><button className="button-secondary tavern-music" onClick={() => void toggleMusic()} aria-pressed={playing}><Icon name="music" />{playing ? '暂停配乐' : 'Swing Jazz'}</button></div></header>
     <nav className="tavern-section-nav" aria-label="酒馆页面导航"><a href="#tavern-calendar">01 / 日期与见闻</a><a href="#tavern-business">02 / 今日营业</a><a href="#tavern-management">03 / 酒馆管理</a><a href="#tavern-records">04 / 往日记录</a></nav>
     <TavernDate day={calendarElapsedDay(game)} onSetDate={absoluteDay => act(s => setCalendarDate(s, absoluteDay))} businessDay={game.day} phase={game.phase} onNextDay={() => act(advanceCalendarDay)} startDay={game.calendarStartDay} onStartDay={calendarStartDay => act(s => ({ ...s, calendarStartDay, calendarAdjustment: 0 }))} />
     <audio ref={audio} src={soundtrack.audio} loop preload="none" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => { setPlaying(false); setError('配乐暂时无法加载。'); }} />

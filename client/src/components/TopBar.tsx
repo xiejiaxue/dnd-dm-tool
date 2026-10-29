@@ -3,7 +3,7 @@ import { connection, useScene } from '../ws';
 import { useInvite } from '../hooks/useInvite';
 import { useMapUpload } from '../hooks/useMapUpload';
 import BackupTransfer from './BackupTransfer';
-import SceneSwitcher from './SceneSwitcher';
+import SceneSwitcher, { prefetchScenes } from './SceneSwitcher';
 import CampaignMembers from './CampaignMembers';
 import CharacterSheetPanel from './CharacterSheetPanel';
 import CampaignIcon from './CampaignIcon';
@@ -32,6 +32,8 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
   const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDetailsElement>(null);
   const isDm = role === 'dm';
+  // Warm the scene list so the switcher opens without waiting on the request.
+  useEffect(() => { if (isDm && campaign?.id) void prefetchScenes(); }, [isDm, campaign?.id]);
 
   useEffect(() => {
     const close = (event: PointerEvent | KeyboardEvent) => {

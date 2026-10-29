@@ -9,6 +9,7 @@ import { useImage } from '../useImage';
 import { fogGridSize, fogGeometry, resolveFogBasisScale } from '../types';
 import { fogCellAtPoint, fogSelectionRectangle, fogRectangles } from './fog-geometry';
 import TokenShape from './TokenShape';
+import { gridTokenDiameter } from '../../../shared/map-grid';
 import ZoomControl from './ZoomControl';
 import { zoomAroundPoint, wheelZoomFactor } from './board-zoom';
 import { useMapScale } from '../hooks/useMapScale';
@@ -16,7 +17,7 @@ import type { PendingToken } from '../pending';
 
 // Fog overlay color by role: the DM sees a translucent red veil (they can see
 // through it), players see near-opaque dark so unrevealed areas hide the map.
-const FOG_COLOR = { dm: 'rgba(186,53,38,0.32)', player: '#141412', spectator: '#141412' } as const;
+const FOG_COLOR = { dm: 'rgba(186,53,38,0.16)', player: '#141412', spectator: '#141412' } as const;
 
 // Shared ink/accent tokens for the canvas layer (mirror of tailwind.config).
 const INK = '#20221e';
@@ -90,11 +91,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     };
   }, [sceneReady]);
 
-  // The imported Strahd maps include very large overviews and multi-floor sheets.
+  // The imported Strahd, Phandelver and Hoard maps include very large overviews and multi-floor sheets.
   // Fit once on entry; later pan/zoom and panel resizing remain under user control.
   const fittedStrahdScene = useRef<string | null>(null);
   useLayoutEffect(() => {
-    const key = scene?.mapImage?.includes('-map-cos-') ? `${scene.id}:${scene.mapImage}` : null;
+    const key = /-map-(cosr?|lmop|hdqr?)-/.test(scene?.mapImage ?? '') ? `${scene!.id}:${scene!.mapImage}` : null;
     if (!key) { fittedStrahdScene.current = null; return; }
     if (!scene || fittedStrahdScene.current === key || stageSize.width <= 0 || stageSize.height <= 0) return;
     const width = scene.mapSize[0] * (scene.mapScale ?? 1);
@@ -542,6 +543,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           <TokenShape
             key={t.id}
             token={t}
+            gridDiameter={gridTokenDiameter(scene.mapImage, displayedMapScale, t)}
             showHp={role === 'dm'}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id || (role === 'dm' && selectedEnemies.includes(t.id))}
@@ -566,6 +568,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           <TokenShape
             key={p.id}
             token={p}
+            gridDiameter={gridTokenDiameter(scene.mapImage, displayedMapScale, p)}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
             draggable={tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add' && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}

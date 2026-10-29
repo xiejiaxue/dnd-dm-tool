@@ -1,10 +1,10 @@
 import { campaignMembers, removeCampaignMember, setCampaignStatus } from "../campaigns";
 import { HttpError, json } from "../http";
-import { callRoom, initializeRoom, type RoomAccess } from "../repository";
+import { callRoom, deleteCampaign, initializeRoom, type RoomAccess } from "../repository";
 import type { CampaignContext, CampaignRoute } from "./router";
 
-async function changeStatus({ request, env, access }: CampaignContext, method: "POST" | "DELETE", status: "archived" | "active" | "deleted") {
-  if (request.method !== method)
+async function changeStatus({ request, env, access }: CampaignContext, status: "archived" | "active") {
+  if (request.method !== "POST")
     throw new HttpError(405, "METHOD_NOT_ALLOWED", "请求方式无效");
   // Initialize before changing status so no half-created runtime can block a restore.
   await initializeRoom(env, access);
@@ -24,10 +24,18 @@ async function syncAccess(env: Env, access: RoomAccess): Promise<void> {
 }
 
 export const campaignManagementRoutes: CampaignRoute[] = [
-  { manage: true, methods: ["DELETE"], path: "/", handle: (context) => changeStatus(context, "DELETE", "deleted") },
+  {
+    manage: true,
+    methods: ["DELETE"],
+    path: "/",
+    async handle({ env, access }) {
+      await deleteCampaign(env, access);
+      return json({ ok: true });
+    },
+  },
   // Any method reaches these two so a wrong one, DELETE included, answers 405 only after the owner check.
-  { manage: true, methods: "*", path: "/archive", handle: (context) => changeStatus(context, "POST", "archived") },
-  { manage: true, methods: "*", path: "/restore", handle: (context) => changeStatus(context, "POST", "active") },
+  { manage: true, methods: "*", path: "/archive", handle: (context) => changeStatus(context, "archived") },
+  { manage: true, methods: "*", path: "/restore", handle: (context) => changeStatus(context, "active") },
   {
     methods: ["GET"],
     path: "/members",

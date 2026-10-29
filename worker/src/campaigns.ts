@@ -125,17 +125,24 @@ export async function listUserCampaigns(
   archived = false,
 ) {
   const rows = await env.DB.prepare(
-    `SELECT c.id,c.slug,c.name,c.status,c.updated_at AS updatedAt,c.module_id AS moduleId,cm.role,COALESCE(m.name,'空白冒险') AS moduleName
+    `SELECT c.id,c.slug,c.name,c.status,c.updated_at AS updatedAt,c.module_id AS moduleId,cm.role,COALESCE(m.name,'空白冒险') AS moduleName,m.template_json AS templateJson
     FROM campaigns c JOIN campaign_members cm ON cm.campaign_id=c.id LEFT JOIN campaign_modules m ON m.id=c.module_id
     WHERE cm.user_id=?1 AND cm.status='active' AND c.deleted_at IS NULL AND c.status=?2 ORDER BY c.updated_at DESC,c.id`,
   )
     .bind(userId, archived ? "archived" : "active")
     .all<Record<string, any>>();
-  return rows.results.map((row) => ({
-    ...row,
-    role: row.role === "owner" ? "host" : row.role,
-    campaignName: row.name,
-  }));
+  return rows.results.map(({ templateJson, ...row }) => {
+    let templateId: string | undefined;
+    try {
+      templateId = JSON.parse(templateJson || "{}").templateId;
+    } catch {}
+    return {
+      ...row,
+      role: row.role === "owner" ? "host" : row.role,
+      campaignName: row.name,
+      templateId,
+    };
+  });
 }
 export async function createUserCampaign(
   env: Env,
@@ -341,15 +348,15 @@ export async function removeCampaignMember(
 export async function setCampaignStatus(
   env: Env,
   access: RoomAccess,
-  status: "active" | "archived" | "deleted",
+  status: "active" | "archived",
 ) {
   if (access.role !== "host")
     throw new HttpError(403, "FORBIDDEN", "只有战役创建者可管理归档");
   const now = Date.now();
   await env.DB.batch([
     env.DB.prepare(
-      "UPDATE campaigns SET status=?2,updated_at=?3,deleted_at=?4 WHERE id=?1",
-    ).bind(access.campaignId, status, now, status === "deleted" ? now : null),
+      "UPDATE campaigns SET status=?2,updated_at=?3,deleted_at=NULL WHERE id=?1",
+    ).bind(access.campaignId, status, now),
     env.DB.prepare(
       "UPDATE campaign_members SET permission_epoch=permission_epoch+1 WHERE campaign_id=?1",
     ).bind(access.campaignId),

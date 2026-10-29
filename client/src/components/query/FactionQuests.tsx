@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../../api';
 import { connection } from '../../ws';
-import type { Campaign } from '../../types';
-import { FACTION_NOTE_LIMIT, QUEST_STATUSES, QUEST_STATUS_LABELS, type FactionChain, type FactionQuest, type FactionQuestBook, type QuestStatus } from '../../../../shared/faction-quests';
+import type { Campaign, Scene } from '../../types';
+import { FACTION_NOTE_LIMIT, QUEST_STATUSES, QUEST_STATUS_LABELS, type FactionChain, type FactionQuest, type FactionQuestBook, type QuestCheck, type QuestEncounter, type QuestStatus } from '../../../../shared/faction-quests';
+import { encounterDifficulty, type Difficulty } from '../../encounter-difficulty';
+import { placeEncounter, tokenName } from './actions';
 import MiniMarkdown, { inline } from './MiniMarkdown';
 
 // One request per page load; the book only changes with a new release.
@@ -43,11 +45,12 @@ export function searchQuests(book: FactionQuestBook, query: string): { chain: Fa
 
 interface Props {
   campaign: Campaign | null;
+  scene: Scene | null;
   npcCount: (npcFaction: string) => number;
   onShowNpcs: (npcFaction: string) => void;
 }
 
-export default function FactionQuests({ campaign, npcCount, onShowNpcs }: Props) {
+export default function FactionQuests({ campaign, scene, npcCount, onShowNpcs }: Props) {
   const [book, setBook] = useState<FactionQuestBook | null>(null);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
@@ -66,7 +69,7 @@ export default function FactionQuests({ campaign, npcCount, onShowNpcs }: Props)
   const open = (id: string, questId: string | null = null) => { setSelected(id); setFocusQuest(questId); };
   if (selected === 'overview') return <Overview book={book} onBack={() => setSelected(null)} />;
   const chain = book.chains.find(item => item.id === selected);
-  if (chain) return <Chain chain={chain} campaign={campaign} focusQuest={focusQuest} npcCount={npcCount} onShowNpcs={onShowNpcs} onBack={() => setSelected(null)} />;
+  if (chain) return <Chain chain={chain} campaign={campaign} scene={scene} focusQuest={focusQuest} npcCount={npcCount} onShowNpcs={onShowNpcs} onBack={() => setSelected(null)} />;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -146,16 +149,45 @@ function Overview({ book, onBack }: { book: FactionQuestBook; onBack: () => void
   );
 }
 
+/**
+ * Party used for encounter difficulty. Size defaults to the player tokens on
+ * the board; level defaults to each quest's suggested level. Kept per browser.
+ */
+interface Party { size: number | null; level: number | null }
+function usePartySettings(campaignId: string | undefined): [Party, (party: Party) => void] {
+  const key = `faction-quests:party:${campaignId ?? 'none'}`;
+  const [party, setParty] = useState<Party>(() => {
+    try { return { size: null, level: null, ...JSON.parse(localStorage.getItem(key) ?? '{}') }; } catch { return { size: null, level: null }; }
+  });
+  const update = (next: Party) => {
+    setParty(next);
+    try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* private mode: keep it for this page only */ }
+  };
+  return [party, update];
+}
+
+const DIFFICULTY_STYLE: Record<Difficulty, string> = {
+  轻松: 'border-line text-muted',
+  简单: 'border-line text-ink',
+  中等: 'border-ink text-ink',
+  困难: 'border-accent text-accent',
+  致命: 'border-accent bg-accent text-white',
+};
+
 interface ChainProps {
   chain: FactionChain;
   campaign: Campaign | null;
+  scene: Scene | null;
   focusQuest: string | null;
   npcCount: (npcFaction: string) => number;
   onShowNpcs: (npcFaction: string) => void;
   onBack: () => void;
 }
 
-function Chain({ chain, campaign, focusQuest, npcCount, onShowNpcs, onBack }: ChainProps) {
+function Chain({ chain, campaign, scene, focusQuest, npcCount, onShowNpcs, onBack }: ChainProps) {
+  const [party, setParty] = usePartySettings(campaign?.id);
+  const boardPlayers = scene?.players.length ?? 0;
+  const partySize = party.size ?? (boardPlayers || 4);
   const saved = campaign?.factionNotes?.[chain.id] ?? '';
   const [note, setNote] = useState(saved);
   // Follow edits from a co-DM unless this DM is typing.
@@ -191,7 +223,21 @@ function Chain({ chain, campaign, focusQuest, npcCount, onShowNpcs, onBack }: Ch
         </div>
         {chain.quests.length > 0 && <div className="border-b border-line">
           <div className="bg-well px-3 py-1.5 panel-label">任务（{chainProgress(campaign, chain).done}/{chain.quests.length} 完成）</div>
-          {chain.quests.map(quest => <Quest key={quest.id} quest={quest} status={questStatus(campaign, quest.id)} open={quest.id === focusQuest} />)}
+          {chain.quests.some(quest => quest.encounters?.length) && <div className="flex flex-wrap items-center gap-1.5 border-b border-line px-3 py-1.5 text-[11px] text-muted">
+            <span>遭遇难度按</span>
+            <select aria-label="队伍人数" value={party.size ?? ''} onChange={event => setParty({ ...party, size: event.target.value ? Number(event.target.value) : null })} className="field-sm w-auto py-0 text-[11px]">
+              <option value="">棋盘玩家（{boardPlayers || 4}）</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(size => <option key={size} value={size}>{size} 名</option>)}
+            </select>
+            <select aria-label="角色等级" value={party.level ?? ''} onChange={event => setParty({ ...party, level: event.target.value ? Number(event.target.value) : null })} className="field-sm w-auto py-0 text-[11px]">
+              <option value="">任务建议等级</option>
+              {Array.from({ length: 12 }, (_, index) => index + 1).map(level => <option key={level} value={level}>{level} 级</option>)}
+            </select>
+            <span>计算</span>
+          </div>}
+          {chain.questNote && <div className="border-b border-line px-3 py-1.5 text-[11px] text-muted"><MiniMarkdown text={chain.questNote} /></div>}
+          {chain.quests.map(quest => <Quest key={quest.id} quest={quest} status={questStatus(campaign, quest.id)} open={quest.id === focusQuest}
+            scene={scene} partySize={partySize} partyLevel={party.level ?? quest.level ?? 3} />)}
         </div>}
         {chain.sections.map((section, index) => <Section key={`${section.heading}-${index}`} heading={section.heading} markdown={section.markdown} open={index === firstOpen} />)}
       </div>
@@ -199,20 +245,39 @@ function Chain({ chain, campaign, focusQuest, npcCount, onShowNpcs, onBack }: Ch
   );
 }
 
-function Quest({ quest, status, open }: { quest: FactionQuest; status: QuestStatus; open: boolean }) {
+interface QuestProps {
+  quest: FactionQuest;
+  status: QuestStatus;
+  open: boolean;
+  scene: Scene | null;
+  partySize: number;
+  partyLevel: number;
+}
+
+function Quest({ quest, status, open, scene, partySize, partyLevel }: QuestProps) {
   const ref = useRef<HTMLDivElement>(null);
   // A quest opened from search results is brought into view once.
   useEffect(() => { if (open) ref.current?.scrollIntoView({ block: 'start' }); }, [open]);
+  const reward = quest.fields.find(field => /奖励|报酬/.test(field.label));
+  // Cards repeat what the quest table says, so the table row becomes a one-line summary.
+  const hasCard = Boolean(quest.body || quest.checks || quest.encounters);
   return (
     <div ref={ref} className="border-t border-line px-3 py-2 first:border-t-0">
       <details open={open}>
         <summary className="cursor-pointer text-sm">
           <strong className="mr-1.5 text-xs tabular-nums text-accent">{quest.code}</strong>{quest.title}
-          {quest.fields.find(field => /奖励|报酬/.test(field.label)) && <span className="ml-1.5 text-[10px] text-muted">{quest.fields.find(field => /奖励|报酬/.test(field.label))!.text.split(/[；;]/)[0]}</span>}
+          {quest.level !== undefined && <span className="ml-1.5 border border-line px-1 text-[10px] tabular-nums text-muted">{quest.level}级</span>}
+          {reward && <span className="ml-1.5 text-[10px] text-muted">{reward.text.split(/[；;]/)[0]}</span>}
         </summary>
-        <div className="mt-2 space-y-2">
-          {quest.fields.map(field => <div key={field.label} className="text-xs"><span className="block text-[10px] font-semibold text-muted">{field.label}</span><MiniMarkdown text={field.text} /></div>)}
+        <div className="mt-2 space-y-3">
+          {hasCard
+            ? quest.fields.length > 0 && <details className="text-xs"><summary className="cursor-pointer text-[10px] font-semibold text-muted">任务表速查</summary>
+              <div className="mt-1 space-y-1">{quest.fields.map(field => <div key={field.label}><span className="text-[10px] font-semibold text-muted">{field.label}：</span>{inline(field.text)}</div>)}</div></details>
+            : quest.fields.map(field => <div key={field.label} className="text-xs"><span className="block text-[10px] font-semibold text-muted">{field.label}</span><MiniMarkdown text={field.text} /></div>)}
           {quest.body && <MiniMarkdown text={quest.body} />}
+          {quest.checks && <Checks checks={quest.checks} />}
+          {quest.encounters?.map((encounter, index) => <Encounter key={`${encounter.title}-${index}`} encounter={encounter} scene={scene} partySize={partySize} partyLevel={partyLevel} />)}
+          {quest.outcome && <MiniMarkdown text={quest.outcome} />}
         </div>
       </details>
       <div className="mt-1.5 flex gap-1" role="group" aria-label={`${quest.code} 状态`}>
@@ -224,6 +289,62 @@ function Quest({ quest, status, open }: { quest: FactionQuest; status: QuestStat
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function Checks({ checks }: { checks: QuestCheck[] }) {
+  return (
+    <div>
+      <div className="mb-1 text-[10px] font-semibold text-muted">检定</div>
+      <ul className="space-y-1.5">
+        {checks.map((check, index) => (
+          <li key={index} className="border-l-2 border-line pl-2 text-xs">
+            <div className="flex items-baseline gap-1.5">
+              <span className="min-w-0 flex-1 font-medium">{check.situation}</span>
+              <span className="shrink-0 border border-ink px-1 text-[10px] font-bold tabular-nums">DC {check.dc}</span>
+            </div>
+            <div className="text-[11px] text-muted">{inline(check.check)}</div>
+            <div className="text-[11px]"><span className="text-[#38604b]">成功：</span>{inline(check.success)}</div>
+            <div className="text-[11px]"><span className="text-accent">失败：</span>{inline(check.failure)}</div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Encounter({ encounter, scene, partySize, partyLevel }: { encounter: QuestEncounter; scene: Scene | null; partySize: number; partyLevel: number }) {
+  const [placed, setPlaced] = useState('');
+  const result = encounterDifficulty(encounter.enemies, partySize, partyLevel);
+  const placeable = encounter.enemies.filter(enemy => enemy.entryId);
+  const place = (enemies: QuestEncounter['enemies']) => {
+    const count = placeEncounter(scene, enemies);
+    setPlaced(count ? `已放置 ${count} 个隐藏 Token` : '');
+  };
+  return (
+    <div className="border border-line">
+      <div className="flex flex-wrap items-center gap-1.5 bg-well px-2 py-1.5">
+        <strong className="min-w-0 flex-1 text-xs">战斗：{encounter.title}</strong>
+        {result && <span className={`border px-1 text-[10px] ${DIFFICULTY_STYLE[result.difficulty]}`}
+          title={`调整后 ${result.adjusted} XP（原始 ${result.xp}）；${partySize} 名 ${partyLevel} 级的门槛：简单 ${result.thresholds[0]}／中等 ${result.thresholds[1]}／困难 ${result.thresholds[2]}／致命 ${result.thresholds[3]}`}>
+          {result.difficulty} · {result.adjusted} XP</span>}
+        {placeable.length > 0 && <button className="btn-xs" disabled={!scene} onClick={() => place(placeable)} title="把本场全部敌人作为隐藏 Token 放到地图中央">放置全部</button>}
+      </div>
+      <ul>
+        {encounter.enemies.map((enemy, index) => (
+          <li key={index} className="border-t border-line px-2 py-1.5 text-xs">
+            <div className="flex items-baseline gap-1.5">
+              <span className="min-w-0 flex-1 font-medium">{enemy.name} <span className="tabular-nums text-accent">×{enemy.count}</span></span>
+              <span className="shrink-0 text-[10px] tabular-nums text-muted">CR {enemy.cr}</span>
+              {enemy.entryId && <button className="shrink-0 text-[10px] text-accent hover:underline disabled:text-muted" disabled={!scene}
+                onClick={() => place([enemy])} title={`放置 ${enemy.count} 个隐藏的「${tokenName(enemy.name)}」`}>放置</button>}
+            </div>
+            <div className="text-[11px] text-muted">{inline(enemy.notes)}</div>
+          </li>
+        ))}
+      </ul>
+      {placed && <p role="status" className="border-t border-line px-2 py-1 text-[11px] text-muted">{placed}，在遭遇面板中可逐个显示。</p>}
     </div>
   );
 }

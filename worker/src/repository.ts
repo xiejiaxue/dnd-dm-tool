@@ -422,7 +422,7 @@ export async function createAsset(
     throw new HttpError(415, "UNSUPPORTED_MEDIA", "文件内容不是声明的图片格式");
 
   const id = crypto.randomUUID();
-  const objectKey = `v2/campaigns/${access.campaignId}/assets/${id}/source`;
+  const objectKey = `${campaignAssetPrefix(access.campaignId)}assets/${id}/source`;
   const now = Date.now();
   await env.ROOM_ASSETS.put(objectKey, bytes, {
     httpMetadata: { contentType: file.type },
@@ -479,6 +479,48 @@ export async function getAsset(
     : await env.ROOM_ASSETS.get(metadata.object_key);
   if (!object) throw new HttpError(404, "ASSET_NOT_FOUND", "找不到素材");
   return { metadata, object };
+}
+
+/** Campaign uploads and per-campaign copies live under this prefix; shared module originals never do. */
+const campaignAssetPrefix = (campaignId: string) =>
+  `v2/campaigns/${campaignId}/`;
+/**
+ * Permanently removes a campaign: the live room first, so connected members are
+ * cut off, then its R2 uploads, and finally its D1 rows. Each earlier step is
+ * safe to repeat, so a failed delete can be retried while the campaign still exists.
+ */
+export async function deleteCampaign(env: Env, access: RoomAccess) {
+  if (access.role !== "host")
+    throw new HttpError(403, "FORBIDDEN", "只有战役创建者可删除战役");
+  const headers = internalRoomHeaders(access);
+  const purged = await env.ROOMS.getByName(`campaign:${access.campaignId}`).fetch(
+    new Request("https://room.internal/purge", { method: "POST", headers }),
+  );
+  if (!purged.ok)
+    throw new HttpError(503, "CAMPAIGN_DELETE_PENDING", "战役删除未完成，请重试");
+  const prefix = campaignAssetPrefix(access.campaignId);
+  let cursor: string | undefined;
+  do {
+    const page = await env.ROOM_ASSETS.list({ prefix, cursor });
+    if (page.objects.length)
+      await env.ROOM_ASSETS.delete(page.objects.map((object) => object.key));
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+  const id = access.campaignId;
+  await env.DB.batch(
+    [
+      "DELETE FROM invite_redemptions WHERE invite_id IN (SELECT id FROM invites WHERE campaign_id=?1) OR campaign_member_id IN (SELECT id FROM campaign_members WHERE campaign_id=?1)",
+      "DELETE FROM invites WHERE campaign_id=?1",
+      "DELETE FROM campaign_character_selections WHERE campaign_id=?1",
+      "DELETE FROM campaign_character_entries WHERE character_id IN (SELECT id FROM campaign_characters WHERE campaign_id=?1)",
+      "DELETE FROM campaign_characters WHERE campaign_id=?1",
+      "DELETE FROM campaign_journals WHERE campaign_id=?1",
+      "DELETE FROM assets WHERE campaign_id=?1",
+      "DELETE FROM audit_events WHERE campaign_id=?1",
+      "DELETE FROM campaign_members WHERE campaign_id=?1",
+      "DELETE FROM campaigns WHERE id=?1",
+    ].map((sql) => env.DB.prepare(sql).bind(id)),
+  );
 }
 
 export function internalRoomHeaders(access: RoomAccess): Headers {

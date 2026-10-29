@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, type WaterdeepDeploymentResult } from '../api';
+import { api, getCurrentRoomSlug, type WaterdeepDeploymentResult } from '../api';
 import { connection, useScene } from '../ws';
+
+type SceneSummary = { id: string; name: string; unlocked: boolean };
+
+// Last list per room, so reopening the switcher paints at once while the
+// list is re-read in the background.
+const sceneCache = new Map<string, SceneSummary[]>();
+
+export function prefetchScenes(): Promise<void> {
+  const slug = getCurrentRoomSlug();
+  if (!slug) return Promise.resolve();
+  return api.scenes().then(list => { sceneCache.set(slug, list); }, () => {});
+}
 
 export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
   const { campaign, scene, role, revision, connected } = useScene();
@@ -13,7 +25,9 @@ export default function SceneSwitcher({ onClose }: { onClose: () => void }) {
     catch (error) { setDeployError(error instanceof Error ? error.message : '部署失败'); }
     finally { setDeployBusy(false); }
   };
-  const [scenes, setScenes] = useState<{ id: string; name: string; unlocked: boolean }[]>([]);
+  const [slug] = useState(getCurrentRoomSlug);
+  const [scenes, setScenes] = useState<SceneSummary[]>(() => (slug && sceneCache.get(slug)) || []);
+  useEffect(() => { if (slug) sceneCache.set(slug, scenes); }, [slug, scenes]);
   const [name, setName] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
