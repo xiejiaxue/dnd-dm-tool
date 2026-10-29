@@ -1,6 +1,15 @@
 # 酒馆经营小游戏
 
-入口为 `/tavern`，大厅与工具导航均有「酒馆经营」。这是独立的浏览器小游戏，使用 localStorage 保存进度，不需要进入战役房间。
+入口为 `/tavern`。酒馆经营只适用于《深水城龙金劫》，因此不在通用工具列表中，而是作为「模组扩展」登记在 `client/src/shell/extensions.ts`：
+
+- 主导航在通用工具下方单列「模组扩展 / MODULES」分区，任何时候都能从这里进入。
+- 大厅中以《深水城龙金劫》创建的战役卡片显示「酒馆经营」，打开时自动关联该桌团（`/tavern?campaign=…`）。
+- 战役桌面的主持人工具栏只在本模组战役中显示酒馆入口，其他模组不显示。
+- 日期面板的「关联桌团」只列出本模组战役。
+
+新增其他模组专属工具时，在 `MODULE_EXTENSIONS` 中登记模组 ID（战役的 `templateId`）即可获得同样的入口规则。
+
+这是独立的浏览器小游戏，使用 localStorage 保存进度，不需要进入战役房间。
 
 ## 游戏流程
 
@@ -38,7 +47,7 @@
 
 ## 状态与存档
 
-引擎在 `client/src/tavern/game.ts`，剧情与配置在 `client/src/tavern/catalog.ts`，界面在 `client/src/components/TavernGame.tsx`。所有状态转换限制阶段，已解决的互动与已结算的营业日无法重复执行。随机数只在用户动作中生成，营业日的随机结果立即保存，刷新不会重新掷骰。
+引擎在 `client/src/tavern/game.ts`，剧情与配置在 `client/src/tavern/catalog.ts`，界面在 `client/src/tavern/TavernGame.tsx`（全部酒馆代码集中在 `client/src/tavern/`）。所有状态转换限制阶段，已解决的互动与已结算的营业日无法重复执行。随机数只在用户动作中生成，营业日的随机结果立即保存，刷新不会重新掷骰。
 
 存档键为 `dm-tools:tavern:v1`。导出和导入为JSON，导入限制500 KB并验证版本、金额、人物、剧情阶段和营业状态。不合法备份不会替换当前进度。账本保留最近60天，累计经营净收益独立保留。
 

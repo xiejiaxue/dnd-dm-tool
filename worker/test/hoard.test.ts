@@ -107,3 +107,13 @@ it('refuses to create the campaign when a map is missing',async()=>{
   expect((await api('/api/campaigns',cookie,{moduleId:mods.find(m=>m.name==='龙后的宝山').id})).status).toBe(503);
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM assets').first('n')).toBe(0);
 });
+
+it('lists the module template id so module extensions can be offered per campaign',async()=>{
+  const cookie=await visitor();
+  const created=await campaign(cookie);
+  await api('/api/campaigns',cookie,{name:'空白冒险测试'});
+  const {campaigns}=await (await api('/api/campaigns',cookie)).json() as {campaigns:any[]};
+  expect(campaigns.find(c=>c.slug===created.slug)).toMatchObject({templateId:'hoard-of-the-dragon-queen'});
+  expect(campaigns.find(c=>c.name==='空白冒险测试').templateId).toBeUndefined();
+  expect(campaigns.every(c=>!('templateJson' in c))).toBe(true);
+});

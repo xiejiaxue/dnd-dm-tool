@@ -5,7 +5,8 @@ import FilingFooter from '../components/FilingFooter';
 import ErrorBoundary from './ErrorBoundary';
 import { currentUser } from './currentUser';
 import { navigate, shellPageFor, type ShellPage, type ToolPage } from './navigation';
-import { DESTINATIONS, prefetchTool, toolComponents } from './tools';
+import { MODULE_EXTENSIONS } from './extensions';
+import { DESTINATIONS, destinationFor, prefetchTool, toolComponents } from './tools';
 
 /** Same-origin rail/lobby links switch pages in place instead of reloading. */
 function interceptShellLink(event: MouseEvent<HTMLElement>) {
@@ -51,6 +52,26 @@ function NavigationRail({ page }: { page: ShellPage }) {
           </a>
         ))}
       </nav>
+      <div className="nav-caption nav-caption-module">模组扩展 / MODULES</div>
+      <nav className="rail-extensions" aria-label="模组扩展">
+        {MODULE_EXTENSIONS.map(extension => (
+          <a
+            key={extension.page}
+            href={extension.href}
+            className={`rail-destination ${page === extension.page ? 'active' : ''}`}
+            aria-current={page === extension.page ? 'page' : undefined}
+            title={`${extension.label} · 仅适用于《${extension.moduleName}》`}
+            onPointerEnter={() => prefetchTool(extension.page)}
+            onFocus={() => prefetchTool(extension.page)}
+          >
+            <Icon name={extension.icon} />
+            {extension.shortLabel
+              ? <><span className="nav-name-wide">{extension.label}</span><span className="nav-name-short">{extension.shortLabel}</span></>
+              : <span>{extension.label}</span>}
+            <span className="nav-index">{extension.moduleTag}</span>
+          </a>
+        ))}
+      </nav>
       <div className="rail-account">
         <span className="avatar"><Icon name="users" /></span>
         <div>
@@ -64,7 +85,7 @@ function NavigationRail({ page }: { page: ShellPage }) {
 
 /** Shown while a tool chunk downloads, so the page header never goes blank. */
 function ToolPlaceholder({ page }: { page: ToolPage }) {
-  const destination = DESTINATIONS.find(candidate => candidate.page === page)!;
+  const destination = destinationFor(page);
   return (
     <div className="tool-placeholder" role="status" aria-live="polite">
       <header className="tool-heading">
@@ -92,8 +113,7 @@ export default function AppFrame({ page, lobby }: { page: ShellPage; lobby: Reac
   useEffect(() => {
     if (page === 'music') setMusicVisited(true);
     mainRef.current?.scrollTo({ top: 0 });
-    const destination = DESTINATIONS.find(candidate => candidate.page === page);
-    document.title = destination && page !== 'home' ? `${destination.label} · DM 追踪` : 'DM 追踪';
+    document.title = page !== 'home' ? `${destinationFor(page).label} · DM 追踪` : 'DM 追踪';
   }, [page]);
 
   return (

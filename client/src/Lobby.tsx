@@ -6,6 +6,7 @@ import {
 } from "./api";
 import Icon from "./components/Icon";
 import { currentUser } from "./shell/currentUser";
+import { extensionHref, extensionsFor } from "./shell/extensions";
 interface Props {
   inviteError?: string | null;
   onOpenCampaign: (slug: string) => void;
@@ -238,6 +239,17 @@ export default function Lobby({ inviteError, onOpenCampaign }: Props) {
                             </button>
                           </>
                         )}
+                        {!archived &&
+                          extensionsFor(c.templateId).map((extension) => (
+                            <a
+                              key={extension.page}
+                              className="text-link room-extension"
+                              href={extensionHref(extension, c.slug)}
+                              title={`${extension.moduleName}专属工具`}
+                            >
+                              {extension.label}
+                            </a>
+                          ))}
                         {!archived && (
                           <a
                             className="room-enter"
