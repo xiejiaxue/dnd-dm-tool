@@ -104,3 +104,19 @@ it('refuses to create the campaign when a map is missing',async()=>{
   expect((await api('/api/campaigns',cookie,{moduleId:mods.find(m=>m.name==='凡戴尔的失落矿坑').id})).status).toBe(503);
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM assets').first('n')).toBe(0);
 });
+
+it('searches area notes of the campaign scenes for moderators only, title matches first',async()=>{
+  const host=await visitor(), c=await campaign(host), player=await visitor();
+  const state=await load(c.id);
+  const hideout=Object.values(state!.scenes).find(s=>s.name.startsWith('01'))!;
+  const notes=await (await api(`/api/campaigns/${c.slug}/notes?q=${encodeURIComponent('犬舍')}`,host)).json() as any[];
+  expect(notes[0]).toMatchObject({kind:'area',title:'3. 犬舍',sceneId:hideout.id,sceneName:hideout.name});
+  expect(notes[0].text.length).toBeGreaterThan(0);
+  expect(new Set(notes.map(n=>n.id)).size).toBe(notes.length);
+  // Every word must appear; an empty query finds nothing.
+  expect(await (await api(`/api/campaigns/${c.slug}/notes?q=${encodeURIComponent('犬舍 不存在的词')}`,host)).json()).toEqual([]);
+  expect(await (await api(`/api/campaigns/${c.slug}/notes?q=`,host)).json()).toEqual([]);
+  const inv=await (await api(`/api/campaigns/${c.slug}/invites`,host,{role:'player'})).json() as any;
+  await api('/api/invites/redeem',player,{token:new URL(inv.inviteUrl,base).hash.slice(8)});
+  expect((await api(`/api/campaigns/${c.slug}/notes?q=${encodeURIComponent('犬舍')}`,player)).status).toBe(403);
+});

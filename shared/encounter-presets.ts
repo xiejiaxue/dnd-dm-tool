@@ -18,3 +18,26 @@ export interface PresetScene {
   /** Keyed room notes for the DM, in map order. */
   areas?: PresetArea[];
 }
+
+/** A DM note found in a campaign scene's preset: its overview or one keyed area. */
+export interface ModuleNote {
+  id: string;
+  kind: 'scene' | 'area';
+  /** The campaign scene holding the note, so the DM can switch to it. */
+  sceneId: string;
+  sceneName: string;
+  title: string;
+  text: string;
+}
+
+/** The overview and areas of one preset that contain every word, in map order. */
+export function presetNotes(preset: PresetScene, words: readonly string[]): Omit<ModuleNote, 'sceneId' | 'sceneName'>[] {
+  const notes = [
+    ...(preset.notes ? [{ id: `${preset.key}:notes`, kind: 'scene' as const, title: `${preset.name} · 场景概况`, text: preset.notes }] : []),
+    ...(preset.areas ?? []).map(area => ({ id: `${preset.key}:${area.key}`, kind: 'area' as const, title: /^\d+$/.test(area.key) ? `${area.key}. ${area.name}` : area.name, text: area.text })),
+  ];
+  return notes.filter(note => {
+    const haystack = `${preset.name} ${note.title} ${note.text}`.toLocaleLowerCase();
+    return words.every(word => haystack.includes(word));
+  });
+}

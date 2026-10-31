@@ -7,10 +7,10 @@ const CONTENT_LIMIT = 50_000;
 // Players see journals the DM publishes without reopening the tab.
 const REFRESH_MS = 30_000;
 
-export default function JournalPanel() {
+export default function JournalPanel({ focusId }: { focusId?: string }) {
   const { role, campaign } = useScene();
   const [journals, setJournals] = useState<CampaignJournal[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(focusId ?? null);
   const [editing, setEditing] = useState<{ id: string | null } | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');

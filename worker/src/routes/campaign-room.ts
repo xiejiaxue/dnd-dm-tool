@@ -1,5 +1,5 @@
 import { HttpError, json, readJsonObject, requireSameOrigin } from "../http";
-import { MODULES } from "../modules/registry";
+import { LEGACY_TEMPLATE_ID, MODULES } from "../modules/registry";
 import {
   callRoom,
   createAsset,
@@ -117,6 +117,18 @@ export const campaignRoomRoutes: CampaignRoute[] = [
     },
   },
   ...moduleRoutes,
+  {
+    methods: ["GET"],
+    path: "/notes",
+    async handle({ request, env, access }) {
+      // The room only sees this access-derived module id, never one from the client.
+      const params = new URLSearchParams({
+        q: (new URL(request.url).searchParams.get("q") ?? "").slice(0, 100),
+        module: access.templateId ?? LEGACY_TEMPLATE_ID,
+      });
+      return callRoom(env, access, "GET", `/notes?${params}`);
+    },
+  },
   {
     methods: ["GET", "POST"],
     path: "/scenes",

@@ -21,5 +21,6 @@ export const hoardOfTheDragonQueen: AdventureModule = {
     },
   },
   compendium: { search: searchHoard, monsterCard: getHoardCard, token: hoardToken },
+  presets: hoardScenes,
   routes: [presetSceneRoute('hoard-scene', 'scene.hoard-encounter', 'hdq', hoardScenes)],
 };

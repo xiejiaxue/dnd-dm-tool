@@ -9,7 +9,11 @@ import FilingFooter from './components/FilingFooter';
 import TopBar from './components/TopBar';
 import Toolbar from './components/Toolbar';
 import InitiativePanel from './components/InitiativePanel';
-import QueryPanel, { type QueryTab } from './components/QueryPanel';
+import QueryPanel, { visibleTabs, type QueryTab } from './components/QueryPanel';
+import GlobalSearch from './components/search/GlobalSearch';
+import { queryWords, type SearchHit } from './components/search/global-search';
+import { useCompendiumSearch } from './components/query/useCompendiumSearch';
+import type { JournalFocus, PanelDetail, QuestFocus } from './components/query/types';
 import { useUnreadChat } from './hooks/useUnreadChat';
 import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
@@ -116,6 +120,11 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
   const toggleQuery = () => { setQueryCollapsed(collapsed => !collapsed); if (window.matchMedia('(max-width: 1100px)').matches) setEncounterOpen(false); };
   const [brushSize, setBrushSize] = useState(1);
   const [queryTab, setQueryTab] = useState<QueryTab>('query');
+  const [detail, setDetail] = useState<PanelDetail | null>(null);
+  const [journalFocus, setJournalFocus] = useState<JournalFocus>();
+  const [questFocus, setQuestFocus] = useState<QuestFocus>();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const compendiumSearch = useCompendiumSearch();
   const unreadChat = useUnreadChat(sceneState.messages, sceneState.viewer?.userId, !queryCollapsed && queryTab === 'chat', Boolean(scene));
 
   useLayoutEffect(() => {
@@ -131,8 +140,63 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
   }), [role]);
 
 
+  // ⌘K / Ctrl+K anywhere, or / outside a text field, opens the global search.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing = target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName ?? '');
+      if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSearchOpen(open => !open);
+      } else if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    addEventListener('keydown', onKeyDown);
+    return () => removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  const showInPanel = (tab: QueryTab) => {
+    setQueryTab(tab);
+    if (queryCollapsed) toggleQuery();
+  };
+  // Cards and notes open in the panel's detail slot, which every tab but chat and journal shows.
+  const panelTabForDetail = queryTab === 'chat' || queryTab === 'journal' ? 'query' : queryTab;
+  const openHit = (hit: SearchHit, query: string) => {
+    setSearchOpen(false);
+    switch (hit.kind) {
+      case 'scene':
+        connection.sendControl({ type: 'switchScene', sceneId: hit.sceneId });
+        return;
+      case 'entry':
+        setDetail({ type: hit.entry.type, id: hit.entry.id, nameZh: hit.entry.nameZh });
+        showInPanel(panelTabForDetail);
+        return;
+      case 'note':
+        setDetail({ type: 'note', id: hit.note.id, title: hit.note.title, meta: hit.note.sceneName, text: hit.note.text, sceneId: hit.note.sceneId, highlight: queryWords(query) });
+        showInPanel(panelTabForDetail);
+        return;
+      case 'journal':
+        setJournalFocus({ id: hit.journalId, nonce: Date.now() });
+        showInPanel('journal');
+        return;
+      case 'quest':
+        setDetail(null);
+        setQuestFocus({ chainId: hit.chainId, questId: hit.questId, nonce: Date.now() });
+        showInPanel('waterdeep');
+    }
+  };
+  const searchCompendium = (query: string) => {
+    setSearchOpen(false);
+    setDetail(null);
+    compendiumSearch.setQ(query);
+    showInPanel('query');
+  };
+
   return (
     <div className="campaign-shell h-full flex flex-col relative">
+      {searchOpen && <GlobalSearch role={role} withQuests={visibleTabs(role, room.campaign.templateId).includes('waterdeep')} onClose={() => setSearchOpen(false)} onOpen={openHit} onSearchCompendium={searchCompendium} />}
       {sceneState.revoked && (
         <div className="campaign-revoked" role="alertdialog" aria-labelledby="campaign-revoked-title">
           <div>
@@ -142,7 +206,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
           </div>
         </div>
       )}
-      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} unreadChat={unreadChat} onOpenChat={() => { setQueryTab('chat'); if (queryCollapsed) toggleQuery(); }} />
+      <TopBar roomName={room.campaign.name} roomSlug={room.campaign.slug} onLeaveRoom={onLeaveRoom} encounterOpen={encounterOpen} onToggleEncounter={toggleEncounter} queryOpen={!queryCollapsed} onToggleQuery={toggleQuery} unreadChat={unreadChat} onOpenChat={() => { setQueryTab('chat'); if (queryCollapsed) toggleQuery(); }} onOpenSearch={() => setSearchOpen(true)} />
       <InitiativePanel selectedTokenId={selectedId} onClearSelected={() => setSelectedId(null)} />
       <div className="campaign-workspace flex-1 flex min-h-0" data-role={role}>
         <Toolbar
@@ -167,7 +231,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             brushSize={brushSize}
           />
         </div>
-        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} tab={queryTab} onTab={setQueryTab} unreadChat={unreadChat} />
+        <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} tab={queryTab} onTab={tab => { setQueryTab(tab); setDetail(null); }} unreadChat={unreadChat} detail={detail} onDetail={setDetail} search={compendiumSearch} journalFocus={journalFocus} questFocus={questFocus} />
       </div>
     </div>
   );

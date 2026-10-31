@@ -21,5 +21,6 @@ export const lostMineOfPhandelver: AdventureModule = {
     },
   },
   compendium: { search: searchPhandelver, monsterCard: getPhandelverCard, token: phandelverToken },
+  presets: phandelverScenes,
   routes: [presetSceneRoute('phandelver-scene', 'scene.phandelver-encounter', 'lmop', phandelverScenes)],
 };

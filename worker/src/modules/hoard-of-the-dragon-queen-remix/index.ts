@@ -25,5 +25,6 @@ export const hoardOfTheDragonQueenRemix: AdventureModule = {
     },
   },
   compendium: { search: searchHoardRemix, monsterCard: getHoardRemixCard, token: hoardRemixToken },
+  presets: hoardRemixScenes,
   routes: [presetSceneRoute('hoard-remix-scene', 'scene.hoard-remix-encounter', 'hdqr', hoardRemixScenes)],
 };

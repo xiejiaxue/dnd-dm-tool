@@ -3,20 +3,20 @@ import { waterdeepIndex } from '../../waterdeep';
 import { connection } from '../../ws';
 import { spawnEnemy } from './actions';
 import FactionQuests from './FactionQuests';
-import type { DetailEntry, QuerySceneState } from './types';
+import type { DetailEntry, QuerySceneState, QuestFocus } from './types';
 
-export default function WaterdeepTab({ scene, role, campaign, setDetail }: QuerySceneState & { setDetail: (entry: DetailEntry) => void }) {
+export default function WaterdeepTab({ scene, role, campaign, setDetail, questFocus }: QuerySceneState & { setDetail: (entry: DetailEntry) => void; questFocus?: QuestFocus }) {
   const [query, setQuery] = useState('');
   const [faction, setFaction] = useState('');
   const [combatOnly, setCombatOnly] = useState(true);
-  const [mode, setMode] = useState<'npc' | 'quests'>('npc');
+  const [mode, setMode] = useState<'npc' | 'quests'>(questFocus ? 'quests' : 'npc');
   const factions = [...new Set(waterdeepIndex.map(n => n.faction))];
   const showNpcs = (name: string) => { setFaction(name); setQuery(''); setCombatOnly(false); setMode('npc'); };
   const modeSwitch = role === 'dm' && <div className="flex gap-2 border-b border-line px-3 py-2">
     <button className="btn-xs" aria-pressed={mode === 'npc'} onClick={() => setMode('npc')}>NPC 档案</button>
     <button className="btn-xs" aria-pressed={mode === 'quests'} onClick={() => setMode('quests')}>派系任务链</button>
   </div>;
-  if (mode === 'quests' && role === 'dm') return <div className="flex-1 flex flex-col min-h-0">{modeSwitch}<FactionQuests campaign={campaign} scene={scene} npcCount={name => waterdeepIndex.filter(n => n.faction === name).length} onShowNpcs={showNpcs} /></div>;
+  if (mode === 'quests' && role === 'dm') return <div className="flex-1 flex flex-col min-h-0">{modeSwitch}<FactionQuests focus={questFocus} campaign={campaign} scene={scene} npcCount={name => waterdeepIndex.filter(n => n.faction === name).length} onShowNpcs={showNpcs} /></div>;
   const rows = waterdeepIndex.filter(n => (!combatOnly || n.combat) && (!faction || n.faction === faction) && `${n.nameZh} ${n.nameEn} ${n.location} ${n.template}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
   return <div className="flex-1 flex flex-col min-h-0">
     {modeSwitch}

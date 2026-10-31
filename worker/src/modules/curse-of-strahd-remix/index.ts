@@ -25,5 +25,6 @@ export const curseOfStrahdRemix: AdventureModule = {
     },
   },
   compendium: { search: searchStrahdRemix, monsterCard: getStrahdRemixCard, token: strahdRemixToken },
+  presets: strahdRemixScenes,
   routes: [presetSceneRoute('strahd-remix-scene', 'scene.strahd-remix-encounter', 'cosr', strahdRemixScenes)],
 };

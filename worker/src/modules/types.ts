@@ -1,3 +1,4 @@
+import type { PresetScene } from '../../../shared/encounter-presets';
 import type { IndexEntry, Scene } from '../../../shared/types';
 import type { PersistedRoomState, RoomActor } from '../domain';
 
@@ -51,5 +52,7 @@ export interface AdventureModule {
     prepare?(map: ModuleMap): ((scene: Scene) => void) | undefined;
   };
   compendium?: ModuleCompendium;
+  /** Keyed map presets whose overviews and area notes the DM can search from a campaign of this module. */
+  presets?: readonly PresetScene[];
   routes?: readonly ModuleRoute[];
 }
