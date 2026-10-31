@@ -1,0 +1,2416 @@
+[
+  {
+    "match": "地图1.1",
+    "note": "初次营救：活体敌人为4肯库；雷纳藏于Z2，城市守卫为条件援军。",
+    "tokens": [
+      {
+        "name": "肯库 · Z1",
+        "entryId": "MM__Kenku",
+        "x": 0.2146,
+        "y": 0.5429,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "肯库 · Z1",
+        "entryId": "MM__Kenku",
+        "x": 0.2304,
+        "y": 0.5429,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "肯库 · Z1",
+        "entryId": "MM__Kenku",
+        "x": 0.2463,
+        "y": 0.5429,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "肯库 · Z1",
+        "entryId": "MM__Kenku",
+        "x": 0.2146,
+        "y": 0.5623,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "雷纳·无烬 · Z2",
+        "entryId": "WDNPC__87bc1c1ea18b56d9",
+        "x": 0.1892,
+        "y": 0.256,
+        "hp": 66,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "休斯图斯·斯塔吉特 · 门外 · 条件援军",
+        "entryId": "WDNPC__a116f34c5e688fa5",
+        "x": 0.71,
+        "y": 0.1089,
+        "hp": 58,
+        "initiativeBonus": 1
+      }
+    ]
+  },
+  {
+    "match": "地图1.2",
+    "note": "第一章营救佛伦；保留已有地精，尼悉罗可撤退。",
+    "tokens": [
+      {
+        "name": "地精 · Q2A",
+        "entryId": "MM__Goblin",
+        "x": 0.2311,
+        "y": 0.2737,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "地精 · Q2A",
+        "entryId": "MM__Goblin",
+        "x": 0.2657,
+        "y": 0.2721,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "地精 · Q2B",
+        "entryId": "MM__Goblin",
+        "x": 0.4231,
+        "y": 0.4859,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "地精 · Q2B",
+        "entryId": "MM__Goblin",
+        "x": 0.4577,
+        "y": 0.4844,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "灰泥怪 · Q3",
+        "entryId": "MM__Gray Ooze",
+        "x": 0.096,
+        "y": 0.4892,
+        "hp": 22,
+        "initiativeBonus": -2
+      },
+      {
+        "name": "肯特兹 · Q5",
+        "entryId": "WDNPC__756c78be5c37e89c",
+        "x": 0.6628,
+        "y": 0.1445,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "杜尔玛 · Q5",
+        "entryId": "MM__Duergar",
+        "x": 0.7201,
+        "y": 0.1751,
+        "hp": 26,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "格鲁姆·沙尔 · Q7",
+        "entryId": "WDNPC__4e67a88cc11a4747",
+        "x": 0.7543,
+        "y": 0.6701,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "尼悉罗 · Q7",
+        "entryId": "WDNPC__2dc2c45dfdae98fb",
+        "x": 0.7584,
+        "y": 0.8023,
+        "hp": 71,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "噬脑怪 · Q7",
+        "entryId": "MM__Intellect Devourer",
+        "x": 0.7179,
+        "y": 0.7489,
+        "hp": 21,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "佛伦·布莱格玛 · Q7",
+        "entryId": "WDNPC__dbd6108498ddaa1c",
+        "x": 0.6961,
+        "y": 0.6506,
+        "hp": 4,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "地图2.1",
+    "note": "日常街区联系人；不自动触发战斗。",
+    "tokens": [
+      {
+        "name": "塔利·费尔布兰奇 · T2",
+        "entryId": "WDNPC__8f94050cd96d901d",
+        "x": 0.776,
+        "y": 0.5228,
+        "hp": 4,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "恩布里克 · T3",
+        "entryId": "WDNPC__35b5a390cc3c38ff",
+        "x": 0.7316,
+        "y": 0.7179,
+        "hp": 65,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "阿维 · T3",
+        "entryId": "WDNPC__3f4e0e82237234e0",
+        "x": 0.7778,
+        "y": 0.7506,
+        "hp": 27,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "文森特·特兰奇 · T4",
+        "entryId": "WDNPC__56053b427bf7f7b4",
+        "x": 0.5353,
+        "y": 0.6179,
+        "hp": 110,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "法拉·莱法丽尔 · T5",
+        "entryId": "WDNPC__e7d4c26c77f31ae0",
+        "x": 0.315,
+        "y": 0.3927,
+        "hp": 27,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "翻页者里沙尔 · T6",
+        "entryId": "WDNPC__33915f9c73862b31",
+        "x": 0.0964,
+        "y": 0.3644,
+        "hp": 40,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "埃梅克·弗雷恩 · T7",
+        "entryId": "WDNPC__95306d2165ca7626",
+        "x": 0.8685,
+        "y": 0.5881,
+        "hp": 4,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "巨魔颅骨庄园与酒馆平面图",
+    "note": "利夫常驻；瓦罗、雷纳作为待触发拜访者，不代表当前必在场。",
+    "tokens": [
+      {
+        "name": "利夫 · 一层吧台",
+        "entryId": "WDNPC__f143396e92325e7e",
+        "x": 0.2901,
+        "y": 0.3911,
+        "hp": 22,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "瓦罗赞普·格达姆 · 一层客席 · 拜访候场",
+        "entryId": "WDNPC__0ccd9780595e6e87",
+        "x": 0.2618,
+        "y": 0.5401,
+        "hp": 31,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "雷纳·无烬 · 一层客席 · 拜访候场",
+        "entryId": "WDNPC__87bc1c1ea18b56d9",
+        "x": 0.3022,
+        "y": 0.6678,
+        "hp": 66,
+        "initiativeBonus": 4
+      }
+    ]
+  },
+  {
+    "match": "地图3.1",
+    "note": "重置版夜袭中段：仅剩4名家族老兵、6名暴徒及乌斯图尔；卓尔11人为获悉消息后的条件援军。无尸体Token。",
+    "tokens": [
+      {
+        "name": "家族警卫 · G13",
+        "entryId": "MM__Veteran",
+        "x": 0.59,
+        "y": 0.6403,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "家族警卫 · G13",
+        "entryId": "MM__Veteran",
+        "x": 0.6013,
+        "y": 0.6403,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "家族警卫 · G13",
+        "entryId": "MM__Veteran",
+        "x": 0.6126,
+        "y": 0.6403,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "家族警卫 · G13",
+        "entryId": "MM__Veteran",
+        "x": 0.59,
+        "y": 0.6748,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "散塔林暴徒 · G13",
+        "entryId": "MM__Thug",
+        "x": 0.6342,
+        "y": 0.6553,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "散塔林暴徒 · G13",
+        "entryId": "MM__Thug",
+        "x": 0.6455,
+        "y": 0.6553,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "散塔林暴徒 · G13",
+        "entryId": "MM__Thug",
+        "x": 0.6568,
+        "y": 0.6553,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "散塔林暴徒 · G13",
+        "entryId": "MM__Thug",
+        "x": 0.6342,
+        "y": 0.6897,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "散塔林暴徒 · G8",
+        "entryId": "MM__Thug",
+        "x": 0.1684,
+        "y": 0.6822,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "散塔林暴徒 · G8",
+        "entryId": "MM__Thug",
+        "x": 0.1797,
+        "y": 0.6822,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "乌斯图尔·夫罗钦 · G15a",
+        "entryId": "WDNPC__1f3d69440d9257bd",
+        "x": 0.6013,
+        "y": 0.7002,
+        "hp": 78,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "欧朗德·格拉汉德 · G15b",
+        "entryId": "WDNPC__3cc7aecd6ba9d16b",
+        "x": 0.0955,
+        "y": 0.099,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "雅拉·格拉汉德 · G16",
+        "entryId": "WDNPC__d4b24f9e70885749",
+        "x": 0.6701,
+        "y": 0.6852,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "赫巴兹 · G16",
+        "entryId": "WDNPC__21559e3a30f46168",
+        "x": 0.6799,
+        "y": 0.7302,
+        "hp": 112,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "格拉汉德灵巧莱特 · G16",
+        "entryId": "WDNPC__ab3df2e965ec0b9a",
+        "x": 0.6996,
+        "y": 0.7002,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "幽影园丁赫尔夫 · G2",
+        "entryId": "MM__Shadow",
+        "x": 0.3311,
+        "y": 0.398,
+        "hp": 16,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "幽影獒犬 · G2",
+        "entryId": "MM__Shadow",
+        "x": 0.3303,
+        "y": 0.4728,
+        "hp": 16,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "幽影獒犬 · G2",
+        "entryId": "MM__Shadow",
+        "x": 0.3416,
+        "y": 0.4728,
+        "hp": 16,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "艾克 · G3",
+        "entryId": "WDNPC__0ce9fc44d6c87654",
+        "x": 0.4194,
+        "y": 0.6373,
+        "hp": 4,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "费尔雷克·拉芬 · G17 · 条件援军",
+        "entryId": "WDNPC__c17a9579343de3c9",
+        "x": 0.6947,
+        "y": 0.6104,
+        "hp": 84,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "卓尔 · G17 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.703,
+        "y": 0.5655,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔 · G17 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.7143,
+        "y": 0.5655,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔 · G17 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.7256,
+        "y": 0.5655,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔 · G17 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.703,
+        "y": 0.5999,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔 · G17 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.7143,
+        "y": 0.5999,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔 · G17 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.7256,
+        "y": 0.5999,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔火枪手 · 屋顶 · 条件援军",
+        "entryId": "WDH__Drow Gunslinger",
+        "x": 0.5466,
+        "y": 0.5356,
+        "hp": 84,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "卓尔火枪手 · 屋顶 · 条件援军",
+        "entryId": "WDH__Drow Gunslinger",
+        "x": 0.5579,
+        "y": 0.5356,
+        "hp": 84,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "卓尔 · 屋顶 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.5466,
+        "y": 0.6403,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卓尔 · 屋顶 · 条件援军",
+        "entryId": "MM__Drow",
+        "x": 0.5579,
+        "y": 0.6403,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "凝视者眼魔 · 外围 · 监视候场",
+        "entryId": "VGM__Gazer",
+        "x": 0.4473,
+        "y": 0.413,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "凝视者眼魔 · 外围 · 监视候场",
+        "entryId": "VGM__Gazer",
+        "x": 0.4586,
+        "y": 0.413,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "凝视者眼魔 · 外围 · 监视候场",
+        "entryId": "VGM__Gazer",
+        "x": 0.4699,
+        "y": 0.413,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "凝视者眼魔 · 外围 · 监视候场",
+        "entryId": "VGM__Gazer",
+        "x": 0.4473,
+        "y": 0.4474,
+        "hp": 13,
+        "initiativeBonus": 3
+      }
+    ]
+  },
+  {
+    "match": "地图4.1",
+    "note": "采用重置版布林杜尔巷审讯室L1，不叠加四季追逐战人员。",
+    "tokens": [
+      {
+        "name": "阿瓦琳·御风者 · L1前屋",
+        "entryId": "WDNPC__8603d9791611eb0f",
+        "x": 0.496,
+        "y": 0.5109,
+        "hp": 27,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "扎伯格·加考斯 · L1前屋",
+        "entryId": "WDNPC__93276e9abd891e67",
+        "x": 0.4633,
+        "y": 0.4738,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "奥特·钢趾 · L1后屋 · 被囚",
+        "entryId": "WDNPC__6917e909763eb5f8",
+        "x": 0.4198,
+        "y": 0.4553,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "飞蛇 · L1",
+        "entryId": "MM__Flying Snake",
+        "x": 0.471,
+        "y": 0.4368,
+        "hp": 5,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "飞蛇 · L1",
+        "entryId": "MM__Flying Snake",
+        "x": 0.496,
+        "y": 0.4368,
+        "hp": 5,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "飞蛇 · L1",
+        "entryId": "MM__Flying Snake",
+        "x": 0.521,
+        "y": 0.4368,
+        "hp": 5,
+        "initiativeBonus": 4
+      }
+    ]
+  },
+  {
+    "match": "地图4.2",
+    "note": "格琳达装备哨站；巨鲨仅用于选择水下搜索时。",
+    "tokens": [
+      {
+        "name": "格琳达·加洛斯 · D3",
+        "entryId": "WDNPC__c103a07f7439c8fb",
+        "x": 0.7394,
+        "y": 0.5631,
+        "hp": 40,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "奥布里特洛斯 · 海中 · 水下搜索候场",
+        "entryId": "WDNPC__123d1178e0bda812",
+        "x": 0.4991,
+        "y": 0.9868,
+        "hp": 126,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "地图4.3",
+    "note": "卡萨兰特家族墓穴版本；幽魂与邪教联系人按调查进展显示。",
+    "tokens": [
+      {
+        "name": "卡拉多恩·卡萨兰特 · 墓穴",
+        "entryId": "WDNPC__b06be745975ef2f2",
+        "x": 0.8651,
+        "y": 0.1399,
+        "hp": 45,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "瓦莱·卢尔瓦尔 · 墓穴入口 · 条件遭遇",
+        "entryId": "WDNPC__5384c4b0acdda5a6",
+        "x": 0.5887,
+        "y": 0.7936,
+        "hp": 9,
+        "initiativeBonus": 1
+      }
+    ]
+  },
+  {
+    "match": "地图4.4",
+    "note": "重置版七面具剧院：老板身份为贾拉索伪装；幽魂移植自冬季版本。",
+    "tokens": [
+      {
+        "name": "贾拉索·班瑞 · P6 · 神秘熔拳",
+        "entryId": "WDNPC__af43aec9561763c3",
+        "x": 0.6622,
+        "y": 0.8115,
+        "hp": 123,
+        "initiativeBonus": 6
+      },
+      {
+        "name": "薇丝特拉·莫尔蒂姆穆尔 · P8",
+        "entryId": "WDNPC__29d53721cc56e2f2",
+        "x": 0.7762,
+        "y": 0.5793,
+        "hp": 4,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "马尔科姆·布里赞之光 · 舞台 · 幽魂",
+        "entryId": "WDNPC__bb964d8b3b5670d6",
+        "x": 0.6518,
+        "y": 0.4721,
+        "hp": 45,
+        "initiativeBonus": 1
+      }
+    ]
+  },
+  {
+    "match": "地图4.5",
+    "note": "黄色尖顶：阿玛丝及4侍僧。此地图不同时部署卡兰旧塔版本。",
+    "tokens": [
+      {
+        "name": "阿玛丝·塞尔森特 · O2",
+        "entryId": "WDNPC__c6662b41e8fecf75",
+        "x": 0.4977,
+        "y": 0.6843,
+        "hp": 27,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侍僧 · O2",
+        "entryId": "MM__Acolyte",
+        "x": 0.4637,
+        "y": 0.599,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侍僧 · O2",
+        "entryId": "MM__Acolyte",
+        "x": 0.4884,
+        "y": 0.599,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侍僧 · O2",
+        "entryId": "MM__Acolyte",
+        "x": 0.513,
+        "y": 0.599,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侍僧 · O2",
+        "entryId": "MM__Acolyte",
+        "x": 0.4631,
+        "y": 0.6382,
+        "hp": 9,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "地图4.6",
+    "note": "法院日常联系人；不预设玩家成为被告或发生劫狱。",
+    "tokens": [
+      {
+        "name": "翁贝若·扎斯特罗 · H5",
+        "entryId": "WDNPC__8f2090b2c2bac639",
+        "x": 0.1545,
+        "y": 0.1859,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "海丝特·巴奇 · H7",
+        "entryId": "WDNPC__2ddc50b52e1b6af4",
+        "x": 0.739,
+        "y": 0.4906,
+        "hp": 9,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "地图4.7",
+    "note": "重置版下水道藏身处（二），采用秋季复合地窖；首领HP40按原房间调整。",
+    "tokens": [
+      {
+        "name": "地精 · B5",
+        "entryId": "MM__Goblin",
+        "x": 0.7518,
+        "y": 0.6556,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "地精 · B5",
+        "entryId": "MM__Goblin",
+        "x": 0.7795,
+        "y": 0.6556,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "半食人魔 · B6",
+        "entryId": "MM__Half-Ogre (Ogrillon)",
+        "x": 0.8861,
+        "y": 0.6978,
+        "hp": 30,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "索文·双髯 · B7",
+        "entryId": "WDNPC__11459845a8d91514",
+        "x": 0.5367,
+        "y": 0.6556,
+        "hp": 4,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "灰矮人 · B7",
+        "entryId": "MM__Duergar",
+        "x": 0.5693,
+        "y": 0.6767,
+        "hp": 26,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "灰矮人 · B7",
+        "entryId": "MM__Duergar",
+        "x": 0.597,
+        "y": 0.6767,
+        "hp": 26,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "灰矮人 · B7",
+        "entryId": "MM__Duergar",
+        "x": 0.6247,
+        "y": 0.6767,
+        "hp": 26,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "凝视者眼魔 · B7",
+        "entryId": "VGM__Gazer",
+        "x": 0.5608,
+        "y": 0.6028,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "克格斯特罗德·乌克斯古姆 · B8",
+        "entryId": "WDNPC__8c3273851c0cfdbd",
+        "x": 0.6211,
+        "y": 0.8349,
+        "hp": 40,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "狗头人 · B8",
+        "entryId": "MM__Kobold",
+        "x": 0.5572,
+        "y": 0.8138,
+        "hp": 5,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "狗头人 · B8",
+        "entryId": "MM__Kobold",
+        "x": 0.5849,
+        "y": 0.8138,
+        "hp": 5,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "狗头人 · B8",
+        "entryId": "MM__Kobold",
+        "x": 0.6126,
+        "y": 0.8138,
+        "hp": 5,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.509,
+        "y": 0.2864,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.5367,
+        "y": 0.2864,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.5644,
+        "y": 0.2864,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.509,
+        "y": 0.3106,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.5367,
+        "y": 0.3106,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.5644,
+        "y": 0.3106,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "战蜥人 · B10",
+        "entryId": "MM__Troglodyte",
+        "x": 0.509,
+        "y": 0.3349,
+        "hp": 13,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "惧噬体 · B11a",
+        "entryId": "MM__Gibbering Mouther",
+        "x": 0.8259,
+        "y": 0.1703,
+        "hp": 67,
+        "initiativeBonus": -1
+      },
+      {
+        "name": "拟身怪 · B9b",
+        "entryId": "MM__Mimic",
+        "x": 0.3439,
+        "y": 0.8665,
+        "hp": 58,
+        "initiativeBonus": 1
+      }
+    ]
+  },
+  {
+    "match": "地图4.8",
+    "note": "重置版邪教风车安全屋：阿恩与塞菲亚。不叠加原版斯拉库斯版本。",
+    "tokens": [
+      {
+        "name": "阿恩·萨隆达 · W6",
+        "entryId": "WDNPC__5d484d21ba173064",
+        "x": 0.881,
+        "y": 0.3768,
+        "hp": 33,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "塞菲亚·奈利克 · W7",
+        "entryId": "WDNPC__64e3601f34d8631d",
+        "x": 0.8731,
+        "y": 0.4677,
+        "hp": 33,
+        "initiativeBonus": 2
+      }
+    ]
+  },
+  {
+    "match": "地图4.9",
+    "note": "金库守卫奥瑞纳克斯；各派系追兵由实际剧情决定，不预设到场。",
+    "tokens": [
+      {
+        "name": "奥瑞纳克斯 · V9",
+        "entryId": "WDNPC__9368e8797d54b916",
+        "x": 0.8663,
+        "y": 0.4625,
+        "hp": 256,
+        "initiativeBonus": 2
+      }
+    ]
+  },
+  {
+    "match": "地图5.1",
+    "note": "重置版巢穴日常配置；珊娜萨固定预放X19，诺斯卡X10、尼悉罗X26，随机移动由DM调整。奥特仅获救返回后显示。",
+    "tokens": [
+      {
+        "name": "眼魔僵尸 · X2",
+        "entryId": "MM__Beholder Zombie",
+        "x": 0.4858,
+        "y": 0.5992,
+        "hp": 93,
+        "initiativeBonus": -1
+      },
+      {
+        "name": "毒气孢子 · X2",
+        "entryId": "MM__Gas Spore",
+        "x": 0.468,
+        "y": 0.5842,
+        "hp": 1,
+        "initiativeBonus": -5
+      },
+      {
+        "name": "毒气孢子 · X2",
+        "entryId": "MM__Gas Spore",
+        "x": 0.4867,
+        "y": 0.5897,
+        "hp": 1,
+        "initiativeBonus": -5
+      },
+      {
+        "name": "毒气孢子 · X2",
+        "entryId": "MM__Gas Spore",
+        "x": 0.4977,
+        "y": 0.5951,
+        "hp": 1,
+        "initiativeBonus": -5
+      },
+      {
+        "name": "毒气孢子 · X2",
+        "entryId": "MM__Gas Spore",
+        "x": 0.4736,
+        "y": 0.5908,
+        "hp": 1,
+        "initiativeBonus": -5
+      },
+      {
+        "name": "活化盔甲 · X5",
+        "entryId": "MM__Animated Armor",
+        "x": 0.8477,
+        "y": 0.5114,
+        "hp": 33,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.093,
+        "y": 0.6136,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.1055,
+        "y": 0.6125,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.1164,
+        "y": 0.6071,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.082,
+        "y": 0.6386,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.1289,
+        "y": 0.6375,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.1258,
+        "y": 0.6462,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.0926,
+        "y": 0.6393,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.1048,
+        "y": 0.6393,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.117,
+        "y": 0.6393,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X9",
+        "entryId": "MM__Bandit",
+        "x": 0.0926,
+        "y": 0.6506,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "诺斯卡·厄格雷 · X10",
+        "entryId": "WDNPC__1be7c2d1a77f2816",
+        "x": 0.1113,
+        "y": 0.6697,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "锈蚀怪 · X10",
+        "entryId": "MM__Rust Monster",
+        "x": 0.1007,
+        "y": 0.6845,
+        "hp": 27,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "阿迈戈 · X12",
+        "entryId": "WDNPC__0626e7fb2330612c",
+        "x": 0.107,
+        "y": 0.7962,
+        "hp": 143,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "索文·双髯 · X13",
+        "entryId": "WDNPC__11459845a8d91514",
+        "x": 0.2175,
+        "y": 0.8181,
+        "hp": 4,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "白化凝视者眼魔 · X13",
+        "entryId": "VGM__Gazer",
+        "x": 0.2227,
+        "y": 0.8353,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "监视矮人 · X16",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.3143,
+        "y": 0.6173,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "监视矮人 · X16",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.3265,
+        "y": 0.6173,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "监视矮人 · X16",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.3387,
+        "y": 0.6173,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "监视矮人 · X16",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.3143,
+        "y": 0.6287,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "监视矮人 · X16",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.3265,
+        "y": 0.6287,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "珊娜萨 · X19",
+        "entryId": "WDNPC__1a0b00b03dc3af8a",
+        "x": 0.4006,
+        "y": 0.88,
+        "hp": 180,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "奥特·钢趾 · X19 · 获救返回后",
+        "entryId": "WDNPC__6917e909763eb5f8",
+        "x": 0.4351,
+        "y": 0.8701,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "希尔加 · X19",
+        "entryId": "WDNPC__78c07d6e38e61a8d",
+        "x": 0.4166,
+        "y": 0.8998,
+        "hp": 1,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "寇涛鞭策者 · X23",
+        "entryId": "MM__Kuo-toa Whip",
+        "x": 0.7711,
+        "y": 0.7364,
+        "hp": 65,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鱼人 · X23",
+        "entryId": "MM__Kuo-toa",
+        "x": 0.7339,
+        "y": 0.7371,
+        "hp": 18,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鱼人 · X23",
+        "entryId": "MM__Kuo-toa",
+        "x": 0.7461,
+        "y": 0.7371,
+        "hp": 18,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鱼人 · X23",
+        "entryId": "MM__Kuo-toa",
+        "x": 0.7583,
+        "y": 0.7371,
+        "hp": 18,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鱼人 · X23",
+        "entryId": "MM__Kuo-toa",
+        "x": 0.7339,
+        "y": 0.7485,
+        "hp": 18,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鱼人 · X23",
+        "entryId": "MM__Kuo-toa",
+        "x": 0.7461,
+        "y": 0.7485,
+        "hp": 18,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鱼人 · X23",
+        "entryId": "MM__Kuo-toa",
+        "x": 0.782,
+        "y": 0.7516,
+        "hp": 18,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "尼悉罗 · X26",
+        "entryId": "WDNPC__2dc2c45dfdae98fb",
+        "x": 0.8727,
+        "y": 0.7962,
+        "hp": 71,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "噬脑怪 · X26",
+        "entryId": "MM__Intellect Devourer",
+        "x": 0.8675,
+        "y": 0.81,
+        "hp": 21,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "噬脑怪 · X26",
+        "entryId": "MM__Intellect Devourer",
+        "x": 0.8789,
+        "y": 0.8147,
+        "hp": 21,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "噬脑怪 · X26",
+        "entryId": "MM__Intellect Devourer",
+        "x": 0.9086,
+        "y": 0.8038,
+        "hp": 21,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "噬脑怪 · X26",
+        "entryId": "MM__Intellect Devourer",
+        "x": 0.8675,
+        "y": 0.8214,
+        "hp": 21,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "寇涛鞭策者 · X27",
+        "entryId": "MM__Kuo-toa Whip",
+        "x": 0.8492,
+        "y": 0.656,
+        "hp": 65,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鞭策者 · X27",
+        "entryId": "MM__Kuo-toa Whip",
+        "x": 0.8598,
+        "y": 0.6523,
+        "hp": 65,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "寇涛鞭策者 · X27",
+        "entryId": "MM__Kuo-toa Whip",
+        "x": 0.8721,
+        "y": 0.6523,
+        "hp": 65,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.1715,
+        "y": 0.1423,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.1858,
+        "y": 0.1423,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.2,
+        "y": 0.1423,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.1715,
+        "y": 0.1555,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.1858,
+        "y": 0.1555,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.2,
+        "y": 0.1555,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.1617,
+        "y": 0.1603,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.2117,
+        "y": 0.1592,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.2258,
+        "y": 0.1712,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "强盗 · X28",
+        "entryId": "MM__Bandit",
+        "x": 0.1508,
+        "y": 0.1603,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "地精 · X28",
+        "entryId": "MM__Goblin",
+        "x": 0.2034,
+        "y": 0.148,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "地精 · X28",
+        "entryId": "MM__Goblin",
+        "x": 0.2177,
+        "y": 0.148,
+        "hp": 7,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "凝视者眼魔 · X30",
+        "entryId": "VGM__Gazer",
+        "x": 0.4112,
+        "y": 0.0818,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "凝视者眼魔 · X30",
+        "entryId": "VGM__Gazer",
+        "x": 0.4255,
+        "y": 0.0818,
+        "hp": 13,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "纳尔·希布林达斯 · X35",
+        "entryId": "WDNPC__4c93073261b7adc4",
+        "x": 0.7289,
+        "y": 0.231,
+        "hp": 45,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "触须怪保镖 · X35",
+        "entryId": "MM__Grell",
+        "x": 0.757,
+        "y": 0.2299,
+        "hp": 55,
+        "initiativeBonus": 2
+      }
+    ]
+  },
+  {
+    "match": "地图6.1",
+    "note": "常态庄园：领主C6、夫人C22；不同时放到多个随机房间。",
+    "tokens": [
+      {
+        "name": "威利福特·克维洛 · C1",
+        "entryId": "WDNPC__a49bdf2900633bfb",
+        "x": 0.5529,
+        "y": 0.2666,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "警卫 · C2",
+        "entryId": "MM__Guard",
+        "x": 0.5715,
+        "y": 0.2975,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "警卫 · C4",
+        "entryId": "MM__Guard",
+        "x": 0.5093,
+        "y": 0.251,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "警卫 · C4",
+        "entryId": "MM__Guard",
+        "x": 0.5203,
+        "y": 0.2511,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "警卫 · C12",
+        "entryId": "MM__Guard",
+        "x": 0.6069,
+        "y": 0.1818,
+        "hp": 11,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "维克托罗·卡萨兰特 · C6",
+        "entryId": "WDNPC__23a38442678adcf5",
+        "x": 0.6059,
+        "y": 0.2435,
+        "hp": 97,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "贾德尔·齐尔格巴 · C10",
+        "entryId": "WDNPC__48bba02dc51dad45",
+        "x": 0.5831,
+        "y": 0.1741,
+        "hp": 33,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "拟身怪 · C15",
+        "entryId": "MM__Mimic",
+        "x": 0.8998,
+        "y": 0.2046,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "莱芭·娜娜·罗茜 · C17",
+        "entryId": "WDNPC__31c3045259ca2f4a",
+        "x": 0.8694,
+        "y": 0.183,
+        "hp": 33,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "缇希娜·克瑞特 · C19",
+        "entryId": "WDNPC__057356c0cb900643",
+        "x": 0.265,
+        "y": 0.7416,
+        "hp": 33,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "阿玛莉亚·卡萨兰特 · C22",
+        "entryId": "WDNPC__401a219a79f47c72",
+        "x": 0.2316,
+        "y": 0.7416,
+        "hp": 45,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "奥斯瓦尔多·卡萨兰特 · C24",
+        "entryId": "WDNPC__ad76fe92440b038a",
+        "x": 0.5644,
+        "y": 0.7701,
+        "hp": 85,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "小魔鬼 · C24",
+        "entryId": "MM__Imp",
+        "x": 0.5408,
+        "y": 0.7777,
+        "hp": 10,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "小魔鬼 · C24",
+        "entryId": "MM__Imp",
+        "x": 0.5513,
+        "y": 0.7777,
+        "hp": 10,
+        "initiativeBonus": 3
+      }
+    ]
+  },
+  {
+    "match": "地图6.2",
+    "note": "神庙：A3须魔；A6五邪教徒是祭祀前候场。A7按3d10中值预放16名仪式邪教徒，DM按当天仪式调整，不另复制庄园具名人物。",
+    "tokens": [
+      {
+        "name": "须魔 · A3",
+        "entryId": "MM__Bearded Devil",
+        "x": 0.6935,
+        "y": 0.7323,
+        "hp": 52,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "邪教徒 · A6 · 祭祀前",
+        "entryId": "MM__Cultist",
+        "x": 0.3901,
+        "y": 0.9344,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A6 · 祭祀前",
+        "entryId": "MM__Cultist",
+        "x": 0.4166,
+        "y": 0.9344,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A6 · 祭祀前",
+        "entryId": "MM__Cultist",
+        "x": 0.4432,
+        "y": 0.9344,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A6 · 祭祀前",
+        "entryId": "MM__Cultist",
+        "x": 0.3901,
+        "y": 0.9546,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A6 · 祭祀前",
+        "entryId": "MM__Cultist",
+        "x": 0.4166,
+        "y": 0.9546,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2632,
+        "y": 0.785,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2897,
+        "y": 0.785,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.3162,
+        "y": 0.785,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2632,
+        "y": 0.8052,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2897,
+        "y": 0.8052,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.3162,
+        "y": 0.8052,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2632,
+        "y": 0.8254,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2897,
+        "y": 0.8254,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.3162,
+        "y": 0.8254,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2632,
+        "y": 0.8456,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2897,
+        "y": 0.8456,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.3162,
+        "y": 0.8456,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2632,
+        "y": 0.8659,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2897,
+        "y": 0.8659,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.3162,
+        "y": 0.8659,
+        "hp": 9,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "邪教徒 · A7 · 仪式候场",
+        "entryId": "MM__Cultist",
+        "x": 0.2632,
+        "y": 0.8861,
+        "hp": 9,
+        "initiativeBonus": 1
+      }
+    ]
+  },
+  {
+    "match": "地图7.1",
+    "note": "三船共用地图，采用夺目者号日常配置；不在一张船图叠放三艘船全部船员。贾拉索预放J30，其他房间的位置由DM调整。",
+    "tokens": [
+      {
+        "name": "船副 · J1",
+        "entryId": "MM__Drow Elite Warrior",
+        "x": 0.5825,
+        "y": 0.555,
+        "hp": 71,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "水手 · J1",
+        "entryId": "MM__Drow",
+        "x": 0.5641,
+        "y": 0.482,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J1",
+        "entryId": "MM__Drow",
+        "x": 0.5769,
+        "y": 0.482,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J1",
+        "entryId": "MM__Drow",
+        "x": 0.5897,
+        "y": 0.482,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "船副 · J3",
+        "entryId": "MM__Drow Elite Warrior",
+        "x": 0.5761,
+        "y": 0.3177,
+        "hp": 71,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "船副 · J3",
+        "entryId": "MM__Drow Elite Warrior",
+        "x": 0.5889,
+        "y": 0.3177,
+        "hp": 71,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "水手 · J4",
+        "entryId": "MM__Drow",
+        "x": 0.5586,
+        "y": 0.7559,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J4",
+        "entryId": "MM__Drow",
+        "x": 0.5714,
+        "y": 0.7559,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J4",
+        "entryId": "MM__Drow",
+        "x": 0.5842,
+        "y": 0.7559,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J4",
+        "entryId": "MM__Drow",
+        "x": 0.5586,
+        "y": 0.7979,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J7",
+        "entryId": "MM__Drow",
+        "x": 0.5753,
+        "y": 0.8472,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J7",
+        "entryId": "MM__Drow",
+        "x": 0.5881,
+        "y": 0.8472,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J7",
+        "entryId": "MM__Drow",
+        "x": 0.6009,
+        "y": 0.8472,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J7",
+        "entryId": "MM__Drow",
+        "x": 0.5753,
+        "y": 0.8892,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J7",
+        "entryId": "MM__Drow",
+        "x": 0.5881,
+        "y": 0.8892,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J7",
+        "entryId": "MM__Drow",
+        "x": 0.6009,
+        "y": 0.8892,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J9",
+        "entryId": "MM__Drow",
+        "x": 0.7403,
+        "y": 0.8112,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J9",
+        "entryId": "MM__Drow",
+        "x": 0.7534,
+        "y": 0.8112,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J11",
+        "entryId": "MM__Drow",
+        "x": 0.9136,
+        "y": 0.9081,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "水手 · J11",
+        "entryId": "MM__Drow",
+        "x": 0.9274,
+        "y": 0.9081,
+        "hp": 13,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "洛拉斯·帕姆 · J10",
+        "entryId": "WDNPC__9590cbad6f86303c",
+        "x": 0.7525,
+        "y": 0.9413,
+        "hp": 45,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "贾拉索·班瑞 · J30",
+        "entryId": "WDNPC__af43aec9561763c3",
+        "x": 0.0696,
+        "y": 0.6951,
+        "hp": 123,
+        "initiativeBonus": 6
+      },
+      {
+        "name": "玛歌·维莉达 · J29",
+        "entryId": "WDNPC__a5177d8c1ba0d81a",
+        "x": 0.0968,
+        "y": 0.731,
+        "hp": 44,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "卡菲塔·穆尔赞 · J29",
+        "entryId": "WDNPC__db6e1a3890d4cb9b",
+        "x": 0.0923,
+        "y": 0.7849,
+        "hp": 66,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J30",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.056,
+        "y": 0.6772,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "巨蜘蛛 · J17",
+        "entryId": "MM__Giant Spider",
+        "x": 0.2399,
+        "y": 0.5964,
+        "hp": 26,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "巨蜘蛛 · J17",
+        "entryId": "MM__Giant Spider",
+        "x": 0.2533,
+        "y": 0.5964,
+        "hp": 26,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "巨蜘蛛 · J17",
+        "entryId": "MM__Giant Spider",
+        "x": 0.2667,
+        "y": 0.5964,
+        "hp": 26,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "巨蜘蛛 · J17",
+        "entryId": "MM__Giant Spider",
+        "x": 0.2399,
+        "y": 0.6402,
+        "hp": 26,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.1934,
+        "y": 0.8632,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.2068,
+        "y": 0.8632,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.2202,
+        "y": 0.8632,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.1934,
+        "y": 0.9071,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.2068,
+        "y": 0.9071,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.2202,
+        "y": 0.9071,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.1934,
+        "y": 0.9509,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "灵巧莱特 · J18 · 未启动",
+        "entryId": "WDH__Nimblewright",
+        "x": 0.2068,
+        "y": 0.9509,
+        "hp": 45,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "攻击人偶 · J31",
+        "entryId": "MM__Animated Armor",
+        "x": 0.0547,
+        "y": 0.8567,
+        "hp": 33,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "攻击人偶 · J31",
+        "entryId": "MM__Animated Armor",
+        "x": 0.0651,
+        "y": 0.8567,
+        "hp": 33,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "攻击人偶 · J31",
+        "entryId": "MM__Animated Armor",
+        "x": 0.0728,
+        "y": 0.8275,
+        "hp": 33,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "攻击人偶 · J31",
+        "entryId": "MM__Animated Armor",
+        "x": 0.0547,
+        "y": 0.898,
+        "hp": 33,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "攻击人偶 · J31",
+        "entryId": "MM__Animated Armor",
+        "x": 0.0651,
+        "y": 0.898,
+        "hp": 33,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "地图7.2",
+    "note": "潜艇常态：三火枪手按在船时预放，若已在外执行任务则保持隐藏；侏儒工程师使用学徒法师模板并在部署说明注明种族调整。",
+    "tokens": [
+      {
+        "name": "索伦·希布林达斯 · U3 · 在船时",
+        "entryId": "WDNPC__083253f42da8e593",
+        "x": 0.3097,
+        "y": 0.4875,
+        "hp": 84,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "费尔雷克·拉芬 · U5 · 在船时",
+        "entryId": "WDNPC__c17a9579343de3c9",
+        "x": 0.3181,
+        "y": 0.3763,
+        "hp": 84,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "克雷贝格·马斯基尔 · U6 · 在船时",
+        "entryId": "WDNPC__d475f0127d7ed335",
+        "x": 0.3855,
+        "y": 0.3763,
+        "hp": 84,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "侏儒工程师 · U7b",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.8625,
+        "y": 0.2212,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侏儒工程师 · U7b",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.8836,
+        "y": 0.2212,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侏儒工程师 · U7b",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.9046,
+        "y": 0.2212,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "船副 · U7b",
+        "entryId": "MM__Drow Elite Warrior",
+        "x": 0.873,
+        "y": 0.1693,
+        "hp": 71,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "船副 · U7b",
+        "entryId": "MM__Drow Elite Warrior",
+        "x": 0.8941,
+        "y": 0.1693,
+        "hp": 71,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "侏儒工程师 · U8",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.8717,
+        "y": 0.3422,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侏儒工程师 · U8",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.8927,
+        "y": 0.3422,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侏儒工程师 · U8",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.9138,
+        "y": 0.3422,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "侏儒工程师 · U8",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.8717,
+        "y": 0.362,
+        "hp": 9,
+        "initiativeBonus": 0
+      }
+    ]
+  },
+  {
+    "match": "地图8.1",
+    "note": "重置版克拉特塔：保持K15仪式，不把巴古拉魔视为默认敌对；囚犯石像鬼在K13。",
+    "tokens": [
+      {
+        "name": "茜德拉·罗米尔 · K2",
+        "entryId": "WDNPC__f0d2adf15c2da005",
+        "x": 0.1174,
+        "y": 0.135,
+        "hp": 58,
+        "initiativeBonus": 1
+      },
+      {
+        "name": "暴徒 · K2",
+        "entryId": "MM__Thug",
+        "x": 0.0991,
+        "y": 0.1638,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "暴徒 · K2",
+        "entryId": "MM__Thug",
+        "x": 0.1138,
+        "y": 0.1665,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "马纳夫雷特·樱港 · K3",
+        "entryId": "WDNPC__c9464e5e5cbec0c9",
+        "x": 0.1603,
+        "y": 0.1108,
+        "hp": 40,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "石像鬼 · K4",
+        "entryId": "MM__Gargoyle",
+        "x": 0.1857,
+        "y": 0.2009,
+        "hp": 52,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "石像鬼 · K4",
+        "entryId": "MM__Gargoyle",
+        "x": 0.2004,
+        "y": 0.2036,
+        "hp": 52,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "可怖者约恩 · K7",
+        "entryId": "WDNPC__07e56dd815c77fa7",
+        "x": 0.4648,
+        "y": 0.1187,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "纲达芙蕾夫人 · K13",
+        "entryId": "WDNPC__2e23a805bfed4391",
+        "x": 0.7893,
+        "y": 0.176,
+        "hp": 52,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "暴徒 · K14",
+        "entryId": "MM__Thug",
+        "x": 0.7875,
+        "y": 0.1358,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "暴徒 · K14",
+        "entryId": "MM__Thug",
+        "x": 0.8014,
+        "y": 0.1358,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "暴徒 · K14",
+        "entryId": "MM__Thug",
+        "x": 0.8154,
+        "y": 0.1358,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "暴徒 · K14",
+        "entryId": "MM__Thug",
+        "x": 0.7875,
+        "y": 0.1589,
+        "hp": 32,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "学徒法师 · K15",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.1639,
+        "y": 0.7205,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "学徒法师 · K15",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.178,
+        "y": 0.7205,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "学徒法师 · K15",
+        "entryId": "VGM__Apprentice Wizard",
+        "x": 0.1921,
+        "y": 0.7205,
+        "hp": 9,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "巴古拉魔 · K15 · 仪式",
+        "entryId": "MM__Barlgura",
+        "x": 0.178,
+        "y": 0.7611,
+        "hp": 68,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "活化盔甲 · K16",
+        "entryId": "MM__Animated Armor",
+        "x": 0.5068,
+        "y": 0.7462,
+        "hp": 33,
+        "initiativeBonus": 0
+      },
+      {
+        "name": "杜拉克·克拉特 · K18",
+        "entryId": "WDNPC__ad211552a6ebf7d4",
+        "x": 0.883,
+        "y": 0.7215,
+        "hp": 40,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "观察者眼魔 · K22",
+        "entryId": "MM__Spectator",
+        "x": 0.2072,
+        "y": 0.896,
+        "hp": 39,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "飞蛇 · K22",
+        "entryId": "MM__Flying Snake",
+        "x": 0.1714,
+        "y": 0.8736,
+        "hp": 5,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "飞蛇 · K22",
+        "entryId": "MM__Flying Snake",
+        "x": 0.1869,
+        "y": 0.8736,
+        "hp": 5,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "飞蛇 · K22",
+        "entryId": "MM__Flying Snake",
+        "x": 0.2025,
+        "y": 0.8736,
+        "hp": 5,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "飞蛇 · K22",
+        "entryId": "MM__Flying Snake",
+        "x": 0.1714,
+        "y": 0.8993,
+        "hp": 5,
+        "initiativeBonus": 4
+      }
+    ]
+  },
+  {
+    "match": "地图8.2",
+    "note": "异位面密室常态：曼松固定研究室E13，拟像E7；乌斯图尔仅宅邸事件后存活才显示。",
+    "tokens": [
+      {
+        "name": "凯维娅·西纳文 · E3",
+        "entryId": "WDNPC__d47d82d5c3975651",
+        "x": 0.5715,
+        "y": 0.2173,
+        "hp": 40,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "乌斯图尔·夫罗钦 · E5 · 存活返回后",
+        "entryId": "WDNPC__1f3d69440d9257bd",
+        "x": 0.4131,
+        "y": 0.7137,
+        "hp": 78,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "曼松拟像 · E7",
+        "entryId": "WDNPC__5a5c3093579ec77e",
+        "x": 0.2433,
+        "y": 0.2173,
+        "hp": 63,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "薇薇特·黑水 · E8",
+        "entryId": "WDNPC__e8ea65768b260b5b",
+        "x": 0.1189,
+        "y": 0.3978,
+        "hp": 66,
+        "initiativeBonus": 4
+      },
+      {
+        "name": "阿贡·焰火 · E8",
+        "entryId": "WDNPC__78519eca97a8d9d0",
+        "x": 0.1528,
+        "y": 0.3639,
+        "hp": 44,
+        "initiativeBonus": 2
+      },
+      {
+        "name": "哈薇娅·快刀 · E10",
+        "entryId": "WDNPC__6bb8a62390ecb4a2",
+        "x": 0.662,
+        "y": 0.3188,
+        "hp": 60,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "默姬·毛绒 · E10",
+        "entryId": "WDNPC__81b3aefda8fa1809",
+        "x": 0.7073,
+        "y": 0.3301,
+        "hp": 60,
+        "initiativeBonus": 3
+      },
+      {
+        "name": "曼松 · E13",
+        "entryId": "WDNPC__74a3f05876bec881",
+        "x": 0.7978,
+        "y": 0.6686,
+        "hp": 126,
+        "initiativeBonus": 2
+      }
+    ]
+  }
+]

@@ -1,5 +1,7 @@
 import { expect, it } from 'vitest';
 import presets from '../../shared/waterdeep/deployment.json';
+import hdPresets from '../../shared/waterdeep/deployment-hd.json';
+import maps from '../../shared/waterdeep/maps.json';
 import { deployWaterdeep } from '../src/modules/waterdeep-dragon-heist/deployment';
 import { createInitialRoomState, addScene, projectRoomState, type RoomActor } from '../src/domain';
 const host: RoomActor = {userId:'h',memberId:'h',role:'host',accessEpoch:1};
@@ -23,6 +25,18 @@ it('previews all 21 scenes, preserves existing units and current scene, scales p
   expect(deployWaterdeep(state,host,true).added).toBe(0);
   expect(projectRoomState(state,{...host,role:'player'}).scene.tokens.map(t=>t.id)).toEqual(['manual']);
   expect(()=>deployWaterdeep(state,{...host,role:'player'},true)).toThrow();
+});
+it('places the same roster at the HD positions on the Tych composite maps',()=>{
+  const state=createInitialRoomState('深水城','深水城');
+  const book=addScene(state,maps[0].name);book.mapImage='/api/campaigns/test/assets/c-map-001-5d75abeccf13';book.mapSize=[1438,868];book.mapScale=3;
+  const hd=addScene(state,maps[1].name);hd.mapImage=`/api/campaigns/test/assets/c-${maps[1].assetId}`;hd.mapSize=[maps[1].width,maps[1].height];hd.mapScale=maps[1].mapScale;
+  deployWaterdeep(state,host,true);
+  expect(book.tokens[0].x).toBeCloseTo(presets[0].tokens[0].x*1438*3);
+  expect(hd.tokens.map(t=>t.entryId)).toEqual(presets[1].tokens.map(t=>t.entryId));
+  expect(hd.tokens[0].x).toBeCloseTo(hdPresets[1].tokens[0].x*maps[1].width*maps[1].mapScale);
+  expect(hdPresets.map(p=>p.match)).toEqual(presets.map(p=>p.match));
+  hdPresets.forEach((p,i)=>{expect(maps[i].name).toContain(p.match);expect(p.tokens.map(t=>[t.entryId,t.name,t.hp])).toEqual(presets[i].tokens.map(t=>[t.entryId,t.name,t.hp]));});
+  for(const t of hdPresets.flatMap(p=>p.tokens)){expect(t.x).toBeGreaterThan(0);expect(t.x).toBeLessThan(1);expect(t.y).toBeGreaterThan(0);expect(t.y).toBeLessThan(1);}
 });
 it('refuses ambiguous scene names without changing existing scenes',()=>{
   const state=createInitialRoomState('x','x');addScene(state,'地图8.1 a');addScene(state,'地图8.1 b');

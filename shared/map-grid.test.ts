@@ -3,6 +3,7 @@ import strahd from './strahd/scenes.json';
 import strahdRemix from './strahd-remix/scenes.json';
 import hoard from './hoard/scenes.json';
 import phandelver from './phandelver/scenes.json';
+import waterdeep from './waterdeep/maps.json';
 import { gridTokenDiameter } from './map-grid';
 
 const url = (assetId: string) => `/api/campaigns/room/assets/campaign-x-${assetId}`;
@@ -36,5 +37,13 @@ describe('gridTokenDiameter', () => {
       scenes.filter(s => gridTokenDiameter(url(s.map.assetId), 3, monster(85)) !== null).length;
     expect(gridded(strahd)).toBe(21);
     expect(gridded(strahdRemix)).toBe(9);
+  });
+
+  it('sizes Dragon Heist tokens to one Tych square at the preset map scale', () => {
+    expect(waterdeep).toHaveLength(21);
+    for (const map of waterdeep) {
+      expect(gridTokenDiameter(url(map.assetId), map.mapScale, monster(100))).toBeCloseTo(100, 0);
+      expect(gridTokenDiameter(url(map.assetId), map.mapScale, monster(200))).toBeCloseTo(200, 0);
+    }
   });
 });
