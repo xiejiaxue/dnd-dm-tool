@@ -1,0 +1,170 @@
+[
+ {
+  "name": "第1章 好友有难 · 地图1.1 散塔林会藏身处（码头区）",
+  "assetId": "map-waterdeep-001-2b178432f22e",
+  "width": 5205,
+  "height": 2560,
+  "contentType": "image/jpeg",
+  "mapScale": 1.1719
+ },
+ {
+  "name": "第1章 好友有难 · 地图1.2 珊娜萨公会藏身处（南港区）",
+  "assetId": "map-waterdeep-002-5c25e83e2e7a",
+  "width": 2560,
+  "height": 1963,
+  "contentType": "image/jpeg",
+  "mapScale": 1.1719
+ },
+ {
+  "name": "第2章 巨魔颅骨巷 · 地图2.1 巨魔颅骨巷（北区）",
+  "assetId": "map-waterdeep-003-f7900b516505",
+  "width": 2560,
+  "height": 1778,
+  "contentType": "image/jpeg",
+  "mapScale": 5.6249
+ },
+ {
+  "name": "第2章 巨魔颅骨巷 · 巨魔颅骨庄园与酒馆平面图（附录C）",
+  "assetId": "map-waterdeep-004-7be7da49497d",
+  "width": 7931,
+  "height": 2016,
+  "contentType": "image/jpeg",
+  "mapScale": 0.7437
+ },
+ {
+  "name": "第3章 火球术 · 地图3.1 格拉洪德庄园（北区）",
+  "assetId": "map-waterdeep-005-d2dd261b82cc",
+  "width": 5176,
+  "height": 2276,
+  "contentType": "image/jpeg",
+  "mapScale": 1.7578
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.1 小巷",
+  "assetId": "map-waterdeep-006-38ee115ec0e6",
+  "width": 2560,
+  "height": 2021,
+  "contentType": "image/jpeg",
+  "mapScale": 1.4844
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.2 迷雾海岸",
+  "assetId": "map-waterdeep-007-4de1861cebd7",
+  "width": 2560,
+  "height": 1677,
+  "contentType": "image/jpeg",
+  "mapScale": 2.2656
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.3 陵墓",
+  "assetId": "map-waterdeep-008-c3b976b062f0",
+  "width": 3199,
+  "height": 2133,
+  "contentType": "image/jpeg",
+  "mapScale": 2.3437
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.4 剧院",
+  "assetId": "map-waterdeep-009-d3fae938b3f2",
+  "width": 2560,
+  "height": 2021,
+  "contentType": "image/jpeg",
+  "mapScale": 1.4844
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.5 旧塔",
+  "assetId": "map-waterdeep-010-c4a24e8da8e8",
+  "width": 6016,
+  "height": 2560,
+  "contentType": "image/jpeg",
+  "mapScale": 0.7812
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.6 法院",
+  "assetId": "map-waterdeep-011-fab5c120b2b4",
+  "width": 4770,
+  "height": 2560,
+  "contentType": "image/jpeg",
+  "mapScale": 0.8595
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.7 地窖复合体",
+  "assetId": "map-waterdeep-012-b9ba531d0f7c",
+  "width": 2560,
+  "height": 1920,
+  "contentType": "image/jpeg",
+  "mapScale": 1.25
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.8 改造风车",
+  "assetId": "map-waterdeep-013-7df1e3bab361",
+  "width": 4351,
+  "height": 2560,
+  "contentType": "image/jpeg",
+  "mapScale": 1.1721
+ },
+ {
+  "name": "第4章 龙币季节 · 地图4.9 龙之金库",
+  "assetId": "map-waterdeep-014-4101ef31bd95",
+  "width": 6528,
+  "height": 2432,
+  "contentType": "image/jpeg",
+  "mapScale": 1.5625
+ },
+ {
+  "name": "第5章 春之疯狂 · 地图5.1 珊娜萨巢穴",
+  "assetId": "map-waterdeep-015-131297c9d9d2",
+  "width": 2560,
+  "height": 3680,
+  "contentType": "image/jpeg",
+  "mapScale": 3.125
+ },
+ {
+  "name": "第6章 夏之炼狱 · 地图6.1 卡萨兰特庄园",
+  "assetId": "map-waterdeep-016-1cbc20a99175",
+  "width": 4444,
+  "height": 3600,
+  "contentType": "image/jpeg",
+  "mapScale": 3.0821
+ },
+ {
+  "name": "第6章 夏之炼狱 · 地图6.2 阿斯莫德神庙",
+  "assetId": "map-waterdeep-017-908b17c4ca13",
+  "width": 2560,
+  "height": 2332,
+  "contentType": "image/jpeg",
+  "mapScale": 1.7578
+ },
+ {
+  "name": "第7章 秋之大师 · 地图7.1 海洋少女嘉年华船只",
+  "assetId": "map-waterdeep-018-5392b4baf39a",
+  "width": 6015,
+  "height": 2458,
+  "contentType": "image/jpeg",
+  "mapScale": 1.3281
+ },
+ {
+  "name": "第7章 秋之大师 · 地图7.2 猩红落叶号",
+  "assetId": "map-waterdeep-019-13e270f4bcbc",
+  "width": 3620,
+  "height": 2560,
+  "contentType": "image/jpeg",
+  "mapScale": 0.9766
+ },
+ {
+  "name": "第8章 冬之法师 · 地图8.1 克拉特之塔",
+  "assetId": "map-waterdeep-020-523087302162",
+  "width": 4446,
+  "height": 3595,
+  "contentType": "image/jpeg",
+  "mapScale": 1.933
+ },
+ {
+  "name": "第8章 冬之法师 · 地图8.2 异次元圣所",
+  "assetId": "map-waterdeep-021-a04f21c07cf7",
+  "width": 2560,
+  "height": 1707,
+  "contentType": "image/jpeg",
+  "mapScale": 1.4063
+ }
+]

@@ -4,8 +4,9 @@ import type { Token } from './types';
  * One 5-ft battle-grid square of a module map, in original image pixels, keyed by the image hash
  * that ends the map asset id (a module and its remix share it). Curse of Strahd squares were
  * measured on the maps (each says "one square = 5 feet"); Hoard and Phandelver maps were already
- * calibrated so a square is `medium` board pixels at the preset map scale. Regional, town and
- * isometric castle maps have no combat grid and are absent.
+ * calibrated so a square is `medium` board pixels at the preset map scale. Dragon Heist maps are
+ * Tych Maps battle maps composed one level per panel, so a square is the Tych grid. Regional, town
+ * and isometric castle maps have no combat grid and are absent.
  */
 const MAP_GRIDS: Record<string, { square: number; medium?: number }> = {
   // 施特拉德的诅咒
@@ -48,6 +49,28 @@ const MAP_GRIDS: Record<string, { square: number; medium?: number }> = {
   '7248e249939c': { square: 29.797, medium: 100 }, // 04 克拉摩堡
   'd223b5c7a8ea': { square: 16.25, medium: 100 }, // 05 雷树镇废墟
   '97d4db9ada15': { square: 13.3, medium: 100 }, // 06 潮音洞穴
+  // 深水城：龙金劫（Tych Maps 合成图）
+  '2b178432f22e': { square: 85.333, medium: 100 }, // 地图1.1 散塔林会藏身处
+  '5c25e83e2e7a': { square: 85.333, medium: 100 }, // 地图1.2 珊娜萨公会藏身处
+  'f7900b516505': { square: 17.778, medium: 100 }, // 地图2.1 巨魔颅骨巷（图上一格 10 尺）
+  '7be7da49497d': { square: 134.459, medium: 100 }, // 附录C 巨魔颅骨庄园
+  'd2dd261b82cc': { square: 56.889, medium: 100 }, // 地图3.1 格拉洪德庄园
+  '38ee115ec0e6': { square: 67.368, medium: 100 }, // 地图4.1 小巷
+  '4de1861cebd7': { square: 44.138, medium: 100 }, // 地图4.2 迷雾海岸
+  'c3b976b062f0': { square: 42.667, medium: 100 }, // 地图4.3 陵墓
+  'd3fae938b3f2': { square: 67.368, medium: 100 }, // 地图4.4 剧院
+  'c4a24e8da8e8': { square: 128, medium: 100 }, // 地图4.5 旧塔
+  'fab5c120b2b4': { square: 116.35, medium: 100 }, // 地图4.6 法院
+  'b9ba531d0f7c': { square: 80, medium: 100 }, // 地图4.7 地窖复合体
+  '7df1e3bab361': { square: 85.32, medium: 100 }, // 地图4.8 改造风车
+  '4101ef31bd95': { square: 64, medium: 100 }, // 地图4.9 龙之金库
+  '131297c9d9d2': { square: 32, medium: 100 }, // 地图5.1 珊娜萨巢穴
+  '1cbc20a99175': { square: 32.445, medium: 100 }, // 地图6.1 卡萨兰特庄园
+  '908b17c4ca13': { square: 56.889, medium: 100 }, // 地图6.2 阿斯莫德神庙
+  '5392b4baf39a': { square: 75.294, medium: 100 }, // 地图7.1 夺目者号
+  '13e270f4bcbc': { square: 102.4, medium: 100 }, // 地图7.2 猩红落叶号
+  '523087302162': { square: 51.733, medium: 100 }, // 地图8.1 克拉特之塔
+  'a04f21c07cf7': { square: 71.111, medium: 100 }, // 地图8.2 异次元圣所
 };
 
 // Preset creature widths in squares; any other stored size (a hand-placed 100px token) is one square.
