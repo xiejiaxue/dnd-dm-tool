@@ -12,13 +12,6 @@ const MAX_ENTRY_NAME_LENGTH = 180;
 const MAX_SOURCE_LENGTH = 64;
 const SOURCE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]*$/u;
 
-interface OnlineSearchDocument {
-  c?: unknown;
-  n?: unknown;
-  cn?: unknown;
-  s?: unknown;
-}
-
 interface OnlineSearchPayload {
   x?: unknown;
   m?: { s?: unknown };

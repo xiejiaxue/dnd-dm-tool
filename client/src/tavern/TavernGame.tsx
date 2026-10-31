@@ -3,7 +3,7 @@ import TavernDate from './TavernDate';
 import { isSpecial, encounterLabel } from './game';
 import { DRINKS, DRINK_SOURCE, orderLines, type Orders } from './drinks';
 import { useEffect, useRef, useState } from 'react';
-import { EVENTS, PATRONS, PREPARATIONS, STAFF, STAFF_JOBS, STAFF_SOURCE, STYLES, UPGRADES, type Choice } from './catalog';
+import { PATRONS, PREPARATIONS, STAFF, STAFF_JOBS, STAFF_SOURCE, STYLES, UPGRADES, type Choice } from './catalog';
 import { SAVE_KEY, OPENING_COST, setAvailableCash, returnToSetup, advanceCalendarDay, currentCalendarDay, calendarElapsedDay, setCalendarDate, addOtherIncome, dismissStaff, styleUnlocked, changeStyle, beginDay, journalEntries, observeEncounter, continuePlaying, dailyTrade, getStory, money, newGame, nextDay, openTavern, parseGame, purchase, repayDebt, resolveEncounter, settleDay, skillBonus, type GameState, type Plan, type Settlement, type JournalEntry } from './game';
 import { waterdeep } from '../music/catalog';
 import Icon from '../components/Icon';
