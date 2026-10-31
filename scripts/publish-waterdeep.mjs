@@ -20,6 +20,7 @@ async function put(key,file,type){
  }
 }
 let next=0,done=0;
-await Promise.all(Array.from({length:4},async()=>{while(next<manifest.scenes.length){const s=manifest.scenes[next++];await put('assets/'+s.map.assetId,path.join(root,'assets',s.map.assetId),s.map.contentType);console.log(`${++done}/${total} uploaded ${s.key}`);}}));
+// Local R2 is one SQLite file that parallel wrangler processes lock.
+await Promise.all(Array.from({length:remote?4:1},async()=>{while(next<manifest.scenes.length){const s=manifest.scenes[next++];await put('assets/'+s.map.assetId,path.join(root,'assets',s.map.assetId),s.map.contentType);console.log(`${++done}/${total} uploaded ${s.key}`);}}));
 await put('manifest.json',path.join(root,'manifest.json'),'application/json');
 console.log(`Published complete ${moduleId} template (${remote?'remote':'local'})`);
