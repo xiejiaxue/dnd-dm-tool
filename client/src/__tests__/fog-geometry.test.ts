@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fogGeometry, fogGridSize, resolveFogBasisScale, type Scene } from '../types';
-import { fogCellAtPoint, fogSelectionRectangle, fogRectangles } from '../components/fog-geometry';
+import { fogBoundary, fogCellAtPoint, fogSelectionRectangle, fogRectangles } from '../components/fog-geometry';
 import { applyOptimisticOps } from '../optimistic';
 
 function mapScene(): Scene {
@@ -110,5 +110,24 @@ describe('exact fog rectangle selection', () => {
     const covered=fogRectangles(scene);
     expect(covered.reduce((sum,r)=>sum+r.width*r.height,0)).toBe(523*377-(2500+400-100+400-100));
     expect(covered.some(r=>65>=r.x&&65<r.x+r.width&&45>=r.y&&45<r.y+r.height)).toBe(true);
+  });
+});
+
+describe('fog boundary', () => {
+  const bounds = { width: 100, height: 100 };
+  it('outlines a revealed hole inside covered fog as four merged edges', () => {
+    const scene = { ...mapScene(), mapSize: [100, 100] as [number, number], playArea: { x: 0, y: 0, w: 100, h: 100 }, fogReveals: [{ x: 20, y: 30, width: 40, height: 20 }] };
+    const segments = fogBoundary(fogRectangles(scene), bounds);
+    expect(segments).toHaveLength(4);
+    expect(segments).toEqual(expect.arrayContaining([[20, 30, 20, 50], [60, 30, 60, 50], [20, 30, 60, 30], [20, 50, 60, 50]]));
+  });
+  it('skips edges on the map border and seams between touching covered pieces', () => {
+    // Left half covered as two stacked pieces; only the x=50 line borders revealed ground.
+    expect(fogBoundary([{ x: 0, y: 0, width: 50, height: 40 }, { x: 0, y: 40, width: 50, height: 60 }], bounds)).toEqual([[50, 0, 50, 100]]);
+    expect(fogBoundary([{ x: 0, y: 0, width: 100, height: 100 }], bounds)).toEqual([]);
+    expect(fogBoundary([], bounds)).toEqual([]);
+  });
+  it('counts overlapping pieces once', () => {
+    expect(fogBoundary([{ x: 0, y: 0, width: 60, height: 100 }, { x: 40, y: 0, width: 20, height: 100 }], bounds)).toEqual([[60, 0, 60, 100]]);
   });
 });

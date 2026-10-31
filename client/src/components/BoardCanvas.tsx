@@ -3,11 +3,12 @@ import { selectionRect, selectEnemies, visibilityBatches } from './token-selecti
 import { waterdeepHp } from '../waterdeep';
 import { Stage, Layer, Rect, Shape, Line, Image as KImage, Group } from 'react-konva';
 import Konva from 'konva';
-import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo, type ReactNode } from 'react';
 import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
 import { fogGridSize, fogGeometry, resolveFogBasisScale } from '../types';
-import { fogCellAtPoint, fogSelectionRectangle, fogRectangles } from './fog-geometry';
+import { fogBoundary, fogCellAtPoint, fogSelectionRectangle, fogRectangles, type FogRectangle } from './fog-geometry';
+import { MAX_DM_FOG_STRENGTH, useDmFogStrength } from '../hooks/useDmFogStrength';
 import TokenShape from './TokenShape';
 import { gridTokenDiameter } from '../../../shared/map-grid';
 import ZoomControl from './ZoomControl';
@@ -15,14 +16,25 @@ import { zoomAroundPoint, wheelZoomFactor } from './board-zoom';
 import { useMapScale } from '../hooks/useMapScale';
 import type { PendingToken } from '../pending';
 
-// Fog overlay color by role: the DM sees a translucent red veil (they can see
-// through it), players see near-opaque dark so unrevealed areas hide the map.
-const FOG_COLOR = { dm: 'rgba(186,53,38,0.16)', player: '#141412', spectator: '#141412' } as const;
+// Players see opaque dark fog that hides the map and anything on it. The DM
+// sees covered ground desaturated and darkened (strength set per browser),
+// outlined where it meets revealed ground, with tokens drawn on top.
+const PLAYER_FOG = '#141412';
+const DM_FOG_SHADE = '20,20,18';
 
 // Shared ink/accent tokens for the canvas layer (mirror of tailwind.config).
 const INK = '#20221e';
 const ACCENT = '#ba3526';
 const MAP_LOADING = '#E3E1D8';
+
+/** Fills every covered piece as one path, which avoids anti-aliased seams between neighbours. */
+function coverRectangles(rectangles: FogRectangle[]) {
+  return (context: Konva.Context, shape: Konva.Shape) => {
+    context.beginPath();
+    for (const rect of rectangles) context.rect(rect.x, rect.y, rect.width, rect.height);
+    context.fillStrokeShape(shape);
+  };
+}
 
 interface Props {
   tool: string;
@@ -40,6 +52,11 @@ interface Props {
 export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize }: Props) {
   const { scene, role } = useScene();
   const mySessionId = getMySessionId();
+  const [fogStrength, setFogStrength] = useDmFogStrength();
+  // The DM can look at the board exactly as players do; never persisted, so a
+  // reload always returns to the DM view.
+  const [playerPreview, setPlayerPreview] = useState(false);
+  const dmView = role === 'dm' && !playerPreview;
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   // Wheel devices can emit far more events than the display refresh rate.
@@ -457,15 +474,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const fogOverlay = useMemo(() => {
+  const fog = useMemo(() => {
     if (!scene) return null;
     const rectangles = fogRectangles(scene);
-    // One fill avoids anti-aliased seams between adjacent covered pieces.
-    return <Shape fill={FOG_COLOR[role]} listening={false} sceneFunc={(context, shape) => {
-      context.beginPath();
-      for (const rect of rectangles) context.rect(rect.x, rect.y, rect.width, rect.height);
-      context.fillStrokeShape(shape);
-    }} />;
+    return { rectangles, boundary: role === 'dm' ? fogBoundary(rectangles, fogGeometry(scene)) : [] };
   }, [scene?.fog, scene?.fogReveals, scene?.fogBasisScale, scene?.mapImage, scene?.mapSize, scene?.mapScale, scene?.playArea, role]);
 
   if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-faint tracking-label">连接中…</div>;
@@ -474,6 +486,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const area = scene.playArea;
   const displayedMapScale = mapZoom.value;
   const fogBounds = fogGeometry(scene, displayedMapScale);
+  const fogMask = (children: ReactNode) => <Group name="fog-mask" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} clipX={0} clipY={0} clipWidth={fogBounds.width} clipHeight={fogBounds.height} listening={false}>{children}</Group>;
   const tokenInteractionKey = `${tool}:${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
 
   return (
@@ -532,6 +545,16 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           /></Group>
         )}
         {scene.mapImage && !map && <Rect width={scene.mapSize[0] * displayedMapScale} height={scene.mapSize[1] * displayedMapScale} fill={MAP_LOADING} listening={false} />}
+        {/* The DM's fog sits under walls and tokens so pieces stay readable. */}
+        {dmView && fog && fogMask(<>
+          <Shape sceneFunc={coverRectangles(fog.rectangles)} fill="#808080" globalCompositeOperation="saturation" listening={false} />
+          {fogStrength > 0 && <Shape sceneFunc={coverRectangles(fog.rectangles)} fill={`rgba(${DM_FOG_SHADE},${fogStrength})`} listening={false} />}
+          <Shape sceneFunc={(context, shape) => {
+            context.beginPath();
+            for (const [x1, y1, x2, y2] of fog.boundary) { context.moveTo(x1, y1); context.lineTo(x2, y2); }
+            context.strokeShape(shape);
+          }} stroke={ACCENT} strokeWidth={1.5} strokeScaleEnabled={false} listening={false} />
+        </>)}
         {/* Existing walls: thick dark lines. */}
         {scene.walls.map(w => (
           <Line key={w.id} points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke={INK} strokeWidth={10} lineCap="round" lineJoin="round" listening={false} />
@@ -540,12 +563,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         {wallPreview && (
           <Line points={[...wallPreview]} stroke={ACCENT} strokeWidth={3} dash={[8, 8]} lineCap="round" listening={false} />
         )}
-        {scene.tokens.filter(t => role === 'dm' || !t.hidden).map(t => (
+        {scene.tokens.filter(t => dmView || !t.hidden).map(t => (
           <TokenShape
             key={t.id}
             token={t}
             gridDiameter={gridTokenDiameter(scene.mapImage, displayedMapScale, t)}
-            showHp={role === 'dm'}
+            showHp={dmView}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id || (role === 'dm' && selectedEnemies.includes(t.id))}
             draggable={role === 'dm' && tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
@@ -559,9 +582,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(t.id)}
           />
         ))}
-        {/* Cosmetic fog is memoized above so unrelated small patches do not
-            rebuild a large Konva node list. */}
-        <Group name="fog-mask" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} clipX={0} clipY={0} clipWidth={fogBounds.width} clipHeight={fogBounds.height} listening={false}>{fogOverlay}</Group>
+        {/* Players' fog covers enemies too. Its geometry is memoized above so
+            unrelated small patches do not rebuild it. */}
+        {!dmView && fog && fogMask(<Shape sceneFunc={coverRectangles(fog.rectangles)} fill={PLAYER_FOG} listening={false} />)}
       </Layer>
       {/* Player pieces stay above map, walls, enemies and fog for every viewer. */}
       <Layer name="player-tokens">
@@ -596,6 +619,13 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           className="px-2 py-1 text-xs text-muted hover:text-ink hover:bg-well transition-colors duration-150">全部显示</button>
         <button onClick={() => connection.sendOps([{ op: 'coverAllFog' }])}
           className="px-2 py-1 text-xs text-accent hover:bg-well transition-colors duration-150">全部遮蔽</button>
+        <label className="campaign-fog-strength" title="迷雾在你这里的压暗程度，只保存在本机，玩家始终看到全黑">
+          <span>浓度</span>
+          <input type="range" min={0} max={MAX_DM_FOG_STRENGTH * 100} step={5} value={Math.round(fogStrength * 100)} disabled={playerPreview}
+            onChange={event => setFogStrength(Number(event.target.value) / 100)} aria-label="DM 端迷雾浓度" />
+        </label>
+        <button aria-pressed={playerPreview} onClick={() => setPlayerPreview(on => !on)} title="按玩家看到的样子显示棋盘：迷雾全黑，隐藏的敌人不显示"
+          className="campaign-fog-preview">玩家视角</button>
       </div>
     )}
     <div className="campaign-zoom-dock">
