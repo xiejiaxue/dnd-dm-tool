@@ -70,3 +70,10 @@ export function gridTokenDiameter(mapImage: string | null, mapScale: number, tok
   const squares = CREATURE_SQUARES.find(n => Math.abs(ratio - n) < 0.01) ?? 1;
   return grid.square * mapScale * squares;
 }
+
+/** One printed 5-ft square in board pixels at the current map scale; null when the map has no known grid. */
+export function gridSquare(mapImage: string | null, mapScale: number): number | null {
+  const hash = mapHash(mapImage);
+  const grid = hash ? MAP_GRIDS[hash] : undefined;
+  return grid ? grid.square * mapScale : null;
+}

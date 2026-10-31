@@ -10,7 +10,7 @@ vi.mock('react', async importOriginal => ({
   useEffect: vi.fn(), useLayoutEffect: vi.fn(),
   useMemo: (fn: () => unknown) => fn(), useCallback: (fn: unknown) => fn,
 }));
-vi.mock('react-konva', () => Object.fromEntries(['Stage', 'Layer', 'Rect', 'Shape', 'Line', 'Image', 'Group', 'Circle', 'Text', 'Ring'].map(name => [name, name])));
+vi.mock('react-konva', () => Object.fromEntries(['Stage', 'Layer', 'Rect', 'Shape', 'Line', 'Image', 'Group', 'Circle', 'Text', 'Ring', 'Label', 'Tag'].map(name => [name, name])));
 vi.mock('konva', () => ({ default: {} }));
 vi.mock('../ws', () => ({ useScene: () => state, getMySessionId: () => 'me', connection: { sendOps: state.sendOps } }));
 vi.mock('../useImage', () => ({ useImage: () => null }));

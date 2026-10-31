@@ -1,12 +1,12 @@
 import BatchInitiative from './BatchInitiative';
 import { selectionRect, selectEnemies, visibilityBatches } from './token-selection';
 import { waterdeepHp } from '../waterdeep';
-import { Stage, Layer, Rect, Shape, Line, Image as KImage, Group } from 'react-konva';
+import { Stage, Layer, Rect, Shape, Line, Image as KImage, Group, Circle, Text, Label, Tag } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo, type ReactNode } from 'react';
 import { useScene, connection, getMySessionId } from '../ws';
 import { useImage } from '../useImage';
-import { fogGridSize, fogGeometry, resolveFogBasisScale } from '../types';
+import { fogGridSize, fogGeometry, resolveFogBasisScale, type Wall } from '../types';
 import { fogBoundary, fogCellAtPoint, fogSelectionRectangle, fogRectangles, type FogRectangle } from './fog-geometry';
 import { MAX_DM_FOG_STRENGTH, useDmFogStrength } from '../hooks/useDmFogStrength';
 import TokenShape from './TokenShape';
@@ -15,6 +15,9 @@ import ZoomControl from './ZoomControl';
 import { zoomAroundPoint, wheelZoomFactor } from './board-zoom';
 import { useMapScale } from '../hooks/useMapScale';
 import type { PendingToken } from '../pending';
+import ConfirmButton from './ConfirmButton';
+import { brushCells, coverCellsOps, findWall, fogCellsInRect, measureDistance, removeWallOps, squarePixels, typingTarget } from './board-tools';
+import { gridSquare } from '../../../shared/map-grid';
 
 // Players see opaque dark fog that hides the map and anything on it. The DM
 // sees covered ground desaturated and darkened (strength set per browser),
@@ -26,6 +29,15 @@ const DM_FOG_SHADE = '20,20,18';
 const INK = '#20221e';
 const ACCENT = '#ba3526';
 const MAP_LOADING = '#E3E1D8';
+
+type Point = { x: number; y: number };
+
+/** A row of mutually exclusive option buttons in a tool's options bar. */
+function Segmented<T extends string | number>({ label, value, options, onChange }: { label: string; value: T; options: [T, string, string?][]; onChange: (value: T) => void }) {
+  return <div className="board-tool-segment" role="group" aria-label={label}>
+    {options.map(([option, text, title]) => <button key={option} type="button" aria-pressed={value === option} title={title} onClick={() => onChange(option)}>{text}</button>)}
+  </div>;
+}
 
 /** Fills every covered piece as one path, which avoids anti-aliased seams between neighbours. */
 function coverRectangles(rectangles: FogRectangle[]) {
@@ -45,18 +57,38 @@ interface Props {
   // Kept for the existing table shell. The board now measures its own content
   // box, so it also reserves space for a visible filing footer.
   queryOpen: boolean;
-  // Eraser brush radius in fog cells (0/1/2), used by the DM's erase tool.
+  // Fog brush radius in fog cells (0/1/2), used by the DM's fog tool.
   brushSize: number;
+  onBrushSize?: (size: number) => void;
+  /** Lets the fog options switch between brush ('erase') and rectangle ('erase-area'). */
+  onTool?: (tool: string) => void;
+  /** DM only: draw the board as players see it. */
+  playerPreview?: boolean;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize, onBrushSize, onTool, playerPreview = false }: Props) {
   const { scene, role } = useScene();
   const mySessionId = getMySessionId();
   const [fogStrength, setFogStrength] = useDmFogStrength();
-  // The DM can look at the board exactly as players do; never persisted, so a
-  // reload always returns to the DM view.
-  const [playerPreview, setPlayerPreview] = useState(false);
   const dmView = role === 'dm' && !playerPreview;
+  // Fog tool: reveal or cover, for both the brush and the rectangle.
+  const [fogMode, setFogMode] = useState<'reveal' | 'cover'>('reveal');
+  // Fog cell under the brush, for its outline (-1 when the pointer is off the fog).
+  const [brushCenter, setBrushCenter] = useState(-1);
+  const brushCenterRef = useRef(-1);
+  // Wall tool: draw new walls, or click existing ones to delete them.
+  const [wallMode, setWallMode] = useState<'draw' | 'delete'>('draw');
+  const [hoverWall, setHoverWall] = useState<string | null>(null);
+  // Endpoints of the walls this browser drew, newest last, for undo. The room assigns its own wall
+  // ids, so a drawn wall is found again by where it is.
+  const myWalls = useRef<Pick<Wall, 'p1' | 'p2'>[]>([]);
+  // Ruler: local to this viewer. It stays on the board after release until the next measure, Esc or a tool change.
+  const [measure, setMeasure] = useState<{ start: Point; end: Point } | null>(null);
+  const measureRef = useRef<{ start: Point; end: Point } | null>(null);
+  const measuring = useRef(false);
+  // Holding Space pans the board with any tool, as in Foundry, Owlbear Rodeo and most canvas editors.
+  const [spacePan, setSpacePan] = useState(false);
+  const spacePanRef = useRef(false);
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   // Wheel devices can emit far more events than the display refresh rate.
@@ -137,22 +169,56 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     eraserTimer.current = null;
     eraserBatchRef.current = [];
     eraserDown.current = false;
+    measureRef.current = null;
+    measuring.current = false;
+    setMeasure(null);
   }, []);
 
-  // A stroke belongs to one tool, scene and map. Never publish it elsewhere.
+  // A stroke belongs to one tool, mode, scene and map. Never publish it elsewhere.
   useLayoutEffect(() => {
     cancelGesture();
     return cancelGesture;
-  }, [tool, scene?.id, scene?.mapImage, scene?.fogBasisScale, mapZoom.value, scene?.mapSize[0], scene?.mapSize[1], scene?.playArea.x, scene?.playArea.y, scene?.playArea.w, scene?.playArea.h, role, cancelGesture]);
+  }, [tool, fogMode, wallMode, scene?.id, scene?.mapImage, scene?.fogBasisScale, mapZoom.value, scene?.mapSize[0], scene?.mapSize[1], scene?.playArea.x, scene?.playArea.y, scene?.playArea.w, scene?.playArea.h, role, cancelGesture]);
+
+  // Removes the newest wall this browser drew that is still on the board.
+  const undoWall = useCallback(() => {
+    if (!scene || role !== 'dm') return;
+    while (myWalls.current.length) {
+      const wall = findWall(scene.walls, myWalls.current.pop()!);
+      if (wall) { connection.sendOps([{ op: 'removeWall', wallId: wall.id }]); return; }
+    }
+  }, [scene, role]);
+  const undoWallRef = useRef(undoWall);
+  undoWallRef.current = undoWall;
+  const toolRef = useRef(tool);
+  toolRef.current = tool;
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') { cancelGesture(); setSelectedEnemies([]); } };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { cancelGesture(); setSelectedEnemies([]); return; }
+      if (typingTarget(event.target)) return;
+      if ((event.metaKey || event.ctrlKey) && !event.shiftKey && event.key.toLowerCase() === 'z' && toolRef.current === 'wall') {
+        event.preventDefault(); undoWallRef.current();
+      } else if (event.code === 'Space') {
+        // Only for the board and its tool rail, so Space still presses buttons in the side panels.
+        const el = event.target as HTMLElement | null;
+        if (el && el !== document.body && !el.closest?.('.campaign-toolbar, .campaign-board')) return;
+        // Also keeps Space from scrolling the page or re-clicking the focused tool button.
+        event.preventDefault();
+        if (!spacePanRef.current) { cancelGesture(); spacePanRef.current = true; setSpacePan(true); }
+      }
+    };
+    const endPan = () => { spacePanRef.current = false; setSpacePan(false); };
+    const onKeyUp = (event: KeyboardEvent) => { if (event.code === 'Space') endPan(); };
+    const onBlur = () => { cancelGesture(); endPan(); };
     window.addEventListener('keydown', onKey);
-    window.addEventListener('blur', cancelGesture);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
     window.addEventListener('touchcancel', cancelGesture);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('blur', cancelGesture);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
       window.removeEventListener('touchcancel', cancelGesture);
     };
   }, [cancelGesture]);
@@ -188,39 +254,34 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   }, [scene, mapZoom.value]);
 
   // Collect cells under the brush (radius in fog cells) and queue a throttled
-  // setFog send. Scenes without a fog array yet are treated as fully obscured
-  // (fogLen = full grid), and the server's ensureFog lazily initializes fog on
-  // the first send — so the eraser works on old scenes too.
+  // setFog send. Scenes without a fog array yet are treated as fully obscured,
+  // and the server's ensureFog lazily initializes fog on the first send — so
+  // the brush works on old scenes too. Covering sends every cell under the
+  // brush, since a covered cell may still hold an exact rectangle reveal.
   const revealAt = useCallback((wx: number, wy: number) => {
-    const center = fogCellAt(wx, wy);
-    if (center < 0 || !scene) return;
+    if (!scene) return;
     const { cols, rows } = fogGridSize(scene);
-    const fogLen = cols * rows;
-    const centerCol = center % cols;
-    const centerRow = Math.floor(center / cols);
-    const r = brushSize;
-    for (let dr = -r; dr <= r; dr++) {
-      for (let dc = -r; dc <= r; dc++) {
-        const row = centerRow + dr;
-        const col = centerCol + dc;
-        // Stay inside the fog grid — skipping out-of-range avoids wrapping a
-        // brush stroke around the play-area border into an unrelated row.
-        if (row < 0 || row >= rows || col < 0 || col >= cols) continue;
-        const idx = row * cols + col;
-        if (idx >= 0 && idx < fogLen && !(scene.fog?.[idx])) {
-          eraserBatchRef.current.push(idx);
-        }
-      }
+    const reveal = fogMode === 'reveal';
+    for (const idx of brushCells(cols, rows, fogCellAt(wx, wy), brushSize)) {
+      if (!reveal || !scene.fog?.[idx]) eraserBatchRef.current.push(idx);
     }
     if (eraserTimer.current == null) {
       eraserTimer.current = window.setTimeout(() => {
         const cells = [...new Set(eraserBatchRef.current)];
         eraserBatchRef.current = [];
         eraserTimer.current = null;
-        if (cells.length) connection.sendOps([{ op: 'setFog', cells, revealed: true, basisScale: resolveFogBasisScale(scene) }]);
+        if (cells.length) connection.sendOps([{ op: 'setFog', cells, revealed: reveal, basisScale: resolveFogBasisScale(scene) }]);
       }, 120);
     }
-  }, [fogCellAt, scene, brushSize]);
+  }, [fogCellAt, scene, brushSize, fogMode]);
+
+  // Ruler ends sit on square centres when the scene grid snaps; module maps have no known grid offset.
+  const measurePoint = useCallback((): Point | null => {
+    const p = worldPos();
+    if (!p || !scene || !scene.grid.snap || gridSquare(scene.mapImage, mapZoom.value) != null) return p;
+    const { size, offset } = scene.grid;
+    return { x: Math.floor((p.x - offset[0]) / size) * size + offset[0] + size / 2, y: Math.floor((p.y - offset[1]) / size) * size + offset[1] + size / 2 };
+  }, [worldPos, scene, mapZoom.value]);
 
   const scheduleView = useCallback((nextScale: number, nextPos: { x: number; y: number }) => {
     pendingViewRef.current = { scale: nextScale, pos: nextPos };
@@ -272,6 +333,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if ('touches' in e.evt && e.evt.touches.length !== 1) { cancelGesture(); return; }
     if ('button' in e.evt && e.evt.button !== 0) return;
+    if (spacePanRef.current) return;
+    if (tool === 'measure') {
+      const p = measurePoint();
+      if (p) { measuring.current = true; measureRef.current = { start: p, end: p }; setMeasure(measureRef.current); }
+      return;
+    }
     if (role !== 'dm') return;
     if (tool === 'select-tokens') {
       const p = worldPos();
@@ -289,18 +356,24 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       if (p) revealAt(p.x, p.y);
       return;
     }
-    if (tool !== 'wall' || !scene || e.target !== stageRef.current) return;
+    if (tool !== 'wall' || wallMode !== 'draw' || !scene || e.target !== stageRef.current) return;
     const p = worldPos();
     if (!p) return;
     wallStart.current = [snap(p.x, 0), snap(p.y, 1)];
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], wallStart.current[0], wallStart.current[1]]);
-  }, [tool, role, scene, worldPos, snap, revealAt, cancelGesture, onSelect]);
+  }, [tool, wallMode, role, scene, worldPos, measurePoint, snap, revealAt, cancelGesture, onSelect]);
 
   // Erase tool: while pressed, dragging reveals cells as the pointer moves (DM
   // only). Without the eraserDown gate, mere hovering would reveal.
   const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if ('touches' in e.evt && e.evt.touches.length !== 1) { cancelGesture(); return; }
+    if (spacePanRef.current) return;
+    if (tool === 'measure') {
+      const p = measurePoint(), current = measureRef.current;
+      if (p && current && measuring.current) { measureRef.current = { start: current.start, end: p }; setMeasure(measureRef.current); }
+      return;
+    }
     if (role !== 'dm') return;
     if (tool === 'select-tokens') {
       const p = worldPos(), selection = selectionRef.current;
@@ -317,9 +390,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       return;
     }
     if (tool === 'erase' && role === 'dm') {
-      if (!eraserDown.current) return;
       const p = worldPos();
-      if (p) revealAt(p.x, p.y);
+      if (!p) return;
+      const center = fogCellAt(p.x, p.y);
+      if (center !== brushCenterRef.current) { brushCenterRef.current = center; setBrushCenter(center); }
+      if (eraserDown.current) revealAt(p.x, p.y);
       return;
     }
     if (tool !== 'wall' || !wallStart.current) return;
@@ -327,7 +402,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     if (!p) return;
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], p.x, p.y]);
-  }, [tool, role, scene, mapZoom.value, worldPos, revealAt, cancelGesture]);
+  }, [tool, role, scene, mapZoom.value, worldPos, measurePoint, fogCellAt, revealAt, cancelGesture]);
+
+  const finishMeasure = useCallback(() => { measuring.current = false; }, []);
+  const hideBrush = useCallback(() => { brushCenterRef.current = -1; setBrushCenter(-1); }, []);
 
   const finishSelection = useCallback(() => {
     const selection = selectionRef.current;
@@ -355,8 +433,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     areaRef.current=null;setAreaPreview(null);
     if (!area || tool !== 'erase-area' || role !== 'dm' || !scene) return;
     const rect=fogSelectionRectangle(scene,area.start,worldPos()??area.end,mapZoom.value);
-    if (rect) connection.sendOps([{op:'revealFogRect',rect}]);
-  },[tool,role,scene,worldPos,mapZoom.value]);
+    if (!rect) return;
+    if (fogMode === 'reveal') connection.sendOps([{op:'revealFogRect',rect}]);
+    else coverCellsOps(fogCellsInRect(scene, rect), resolveFogBasisScale(scene)).forEach(batch => connection.sendOps(batch));
+  },[tool,role,scene,worldPos,mapZoom.value,fogMode]);
   const finishAreaRef=useRef(finishArea);finishAreaRef.current=finishArea;
   useEffect(()=>{
     if(tool !== 'erase-area') return;
@@ -372,7 +452,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       ? [snap(wallEnd.current.x, 0), snap(wallEnd.current.y, 1)]
       : start;
     if (end[0] !== start[0] || end[1] !== start[1]) {
-      connection.sendOps([{ op: 'addWall', wall: { id: `w${Date.now()}`, p1: start, p2: end } }]);
+      const id = `w${Date.now()}`;
+      myWalls.current.push({ p1: start, p2: end });
+      connection.sendOps([{ op: 'addWall', wall: { id, p1: start, p2: end } }]);
     }
     wallStart.current = null;
     wallEnd.current = null;
@@ -394,11 +476,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     };
   }, [tool]);
 
-  // Release the eraser press even if the pointer is released outside the Stage
+  // Release the eraser press or the ruler even if the pointer is released outside the Stage
   // (mirrors the wall tool's window mouseup pattern).
   useEffect(() => {
-    if (tool !== 'erase') return;
-    const onUp = () => { eraserDown.current = false; };
+    if (tool !== 'erase' && tool !== 'measure') return;
+    const onUp = () => { eraserDown.current = false; measuring.current = false; };
     window.addEventListener('mouseup', onUp);
     window.addEventListener('touchend', onUp);
     return () => {
@@ -488,9 +570,49 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const fogBounds = fogGeometry(scene, displayedMapScale);
   const fogMask = (children: ReactNode) => <Group name="fog-mask" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} clipX={0} clipY={0} clipWidth={fogBounds.width} clipHeight={fogBounds.height} listening={false}>{children}</Group>;
   const tokenInteractionKey = `${tool}:${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
+  // Tools that use the drag themselves: neither the board nor pieces move under them.
+  const drawing = tool === 'select-tokens' || tool === 'wall' || tool === 'erase' || tool === 'erase-area' || tool === 'add' || tool === 'measure';
+  const deletingWalls = role === 'dm' && tool === 'wall' && wallMode === 'delete' && !spacePan;
+  const brushOutline = (() => {
+    if (role !== 'dm' || tool !== 'erase' || brushCenter < 0 || spacePan) return null;
+    const cells = brushCells(fogBounds.cols, fogBounds.rows, brushCenter, brushSize);
+    const cols = cells.map(c => c % fogBounds.cols), rows = cells.map(c => Math.floor(c / fogBounds.cols));
+    const x = Math.min(...cols) * fogBounds.cellSize, y = Math.min(...rows) * fogBounds.cellSize;
+    return { x, y, width: Math.min(fogBounds.width, (Math.max(...cols) + 1) * fogBounds.cellSize) - x, height: Math.min(fogBounds.height, (Math.max(...rows) + 1) * fogBounds.cellSize) - y };
+  })();
+  const ruler = measure && (() => {
+    const { squares, feet } = measureDistance(measure.start, measure.end, squarePixels(scene, displayedMapScale));
+    return { ...measure, text: `${feet} 尺 · ${squares} 格` };
+  })();
+  const fogTint = fogMode === 'reveal' ? { fill: 'rgba(186,53,38,0.12)', stroke: ACCENT } : { fill: 'rgba(20,20,18,0.28)', stroke: INK };
 
   return (
     <div ref={boardRef} className="relative h-full min-h-0 w-full overflow-hidden touch-none">
+    {role === 'dm' && (tool === 'erase' || tool === 'erase-area') && <div className="board-tool-options" role="toolbar" aria-label="迷雾选项">
+      <strong>迷雾</strong>
+      <Segmented label="揭开或遮蔽" value={fogMode} onChange={setFogMode} options={[['reveal', '揭开'], ['cover', '遮蔽']]} />
+      {onTool && <Segmented label="迷雾形状" value={tool} onChange={onTool} options={[['erase', '笔刷', '按住拖动涂抹'], ['erase-area', '矩形', '拖出矩形，松开生效；Esc 取消']]} />}
+      {tool === 'erase' && onBrushSize && <Segmented label="笔刷大小" value={brushSize} onChange={onBrushSize} options={[[0, '小', '1×1 迷雾格'], [1, '中', '3×3 迷雾格'], [2, '大', '5×5 迷雾格']]} />}
+      <span className="board-tool-divider" aria-hidden="true" />
+      <button type="button" className="btn-xs" onClick={() => connection.sendOps([{ op: 'revealAllFog' }])}>全部显示</button>
+      <ConfirmButton className="btn-xs" armedClassName="text-accent" confirmLabel="确认全部遮蔽" title="整张地图重新盖上迷雾" onConfirm={() => connection.sendOps([{ op: 'coverAllFog' }])}>全部遮蔽</ConfirmButton>
+      <label className="campaign-fog-strength" title="迷雾在你这里的压暗程度，只保存在本机，玩家始终看到全黑">
+        <span>浓度</span>
+        <input type="range" min={0} max={MAX_DM_FOG_STRENGTH * 100} step={5} value={Math.round(fogStrength * 100)} disabled={playerPreview}
+          onChange={event => setFogStrength(Number(event.target.value) / 100)} aria-label="DM 端迷雾浓度" />
+      </label>
+    </div>}
+    {role === 'dm' && tool === 'wall' && <div className="board-tool-options" role="toolbar" aria-label="画墙选项">
+      <strong>画墙</strong>
+      <Segmented label="画墙或删墙" value={wallMode} onChange={setWallMode} options={[['draw', '画墙', '拖动画一段墙'], ['delete', '删墙', '点击一段墙删除它']]} />
+      <button type="button" className="btn-xs" title="删除你最近画的一段墙（⌘Z / Ctrl+Z）" disabled={!myWalls.current.some(drawn => findWall(scene.walls, drawn))} onClick={undoWall}>撤销</button>
+      <ConfirmButton className="btn-xs" armedClassName="text-accent" confirmLabel="确认清除全部墙" title="删除这个场景的所有墙" disabled={!scene.walls.length} onConfirm={() => removeWallOps(scene.walls).forEach(batch => connection.sendOps(batch))}>清除全部</ConfirmButton>
+      <span className="board-tool-hint">{wallMode === 'delete' ? '点击墙体删除' : `共 ${scene.walls.length} 段 · 空格拖动平移`}</span>
+    </div>}
+    {tool === 'measure' && <div className="board-tool-options" role="toolbar" aria-label="测距">
+      <strong>测距</strong>
+      <span className="board-tool-hint">{ruler ? ruler.text : '拖动测量'} · 每格 5 尺，斜走算 1 格 · 只有你看得到 · Esc 清除</span>
+    </div>}
     {role === 'dm' && tool === 'select-tokens' && <div className="absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center gap-2 border border-line bg-panel px-3 py-2 shadow-sm" role="group" aria-label="批量Token可见性">
       <span className="text-xs">{selectedEnemies.length ? `已选 ${scene.tokens.filter(t => selectedEnemies.includes(t.id)).length} 个敌人` : '拖动框选敌人 · Esc 取消'}</span>
       <button className="btn-xs" disabled={!scene.tokens.some(t => selectedEnemies.includes(t.id) && t.hidden)} onClick={() => visibilityBatches(scene.tokens, selectedEnemies, false).forEach(batch => connection.sendOps(batch))}>显示选中</button>
@@ -498,7 +620,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       <button className="btn-xs" title="仅为选中且尚未加入先攻的敌人掷骰" disabled={!scene.tokens.some(t => selectedEnemies.includes(t.id) && !scene.initiative.some(e => e.tokenId === t.id))} onClick={() => setInitiativeSelection([...selectedEnemies])}>选中先攻</button>
       <button className="btn-xs" disabled={!selectedEnemies.length} onClick={() => setSelectedEnemies([])}>取消选择</button>
     </div>}
-    {role === 'dm' && tool !== 'select-tokens' && scene.tokens.find(t => t.id === selectedId) && (() => {
+    {role === 'dm' && tool === 'select' && scene.tokens.find(t => t.id === selectedId) && (() => {
       const token = scene.tokens.find(t => t.id === selectedId)!;
       return <div className="absolute top-3 left-3 z-10 flex items-center gap-2 border border-line bg-panel px-3 py-2 shadow-sm">
         <span className="text-xs truncate max-w-40">{token.name} · {token.hidden ? '仅DM可见' : '玩家可见'}</span>
@@ -514,10 +636,10 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       height={stageSize.height}
       scaleX={scale} scaleY={scale} x={pos.x} y={pos.y}
       onWheel={handleWheel}
-      // The Stage stays non-draggable while drawing (wall) or erasing so that
-      // mousemove fires on every pointer move instead of being captured by a
-      // drag — same pattern the wall tool uses for its live preview.
-      draggable={tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
+      // The Stage stays non-draggable while drawing (wall), measuring or erasing
+      // so that mousemove fires on every pointer move instead of being captured
+      // by a drag. Holding Space pans with any tool.
+      draggable={spacePan || !drawing}
       onDragEnd={(e) => {
         // Konva bubbles dragend from dragged children (tokens) up to the Stage;
         // only update the pan position when the Stage itself was the drag target.
@@ -525,14 +647,15 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
-      onMouseUp={() => { finishSelection(); finishArea(); finishWall(); }}
+      onMouseUp={() => { finishSelection(); finishArea(); finishWall(); finishMeasure(); }}
+      onMouseLeave={hideBrush}
       onTouchStart={handleMouseDown}
       onTouchMove={handleMouseMove}
-      onTouchEnd={() => { finishSelection(); finishArea(); finishWall(); }}
+      onTouchEnd={() => { finishSelection(); finishArea(); finishWall(); finishMeasure(); hideBrush(); }}
       onTouchCancel={cancelGesture}
       onClick={handleClick}
       onTap={handleClick}
-      className={tool === 'select-tokens' || tool === 'add' || tool === 'wall' || tool === 'erase-area' ? 'cursor-crosshair' : tool === 'zoom' ? 'cursor-zoom-in' : 'cursor-grab'}
+      className={spacePan ? 'cursor-grab' : deletingWalls ? 'cursor-pointer' : drawing ? 'cursor-crosshair' : tool === 'zoom' ? 'cursor-zoom-in' : 'cursor-grab'}
     >
       <Layer>
         {map && (
@@ -555,9 +678,13 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             context.strokeShape(shape);
           }} stroke={ACCENT} strokeWidth={1.5} strokeScaleEnabled={false} listening={false} />
         </>)}
-        {/* Existing walls: thick dark lines. */}
+        {/* Existing walls: thick dark lines; clickable only while deleting walls. */}
         {scene.walls.map(w => (
-          <Line key={w.id} points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke={INK} strokeWidth={10} lineCap="round" lineJoin="round" listening={false} />
+          <Line key={w.id} name="wall" points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke={deletingWalls && hoverWall === w.id ? ACCENT : INK} strokeWidth={10} lineCap="round" lineJoin="round"
+            listening={deletingWalls} hitStrokeWidth={24}
+            onMouseEnter={() => setHoverWall(w.id)} onMouseLeave={() => setHoverWall(null)}
+            onClick={() => { setHoverWall(null); connection.sendOps([{ op: 'removeWall', wallId: w.id }]); }}
+            onTap={() => connection.sendOps([{ op: 'removeWall', wallId: w.id }])} />
         ))}
         {/* Live wall preview while dragging. */}
         {wallPreview && (
@@ -571,7 +698,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             showHp={dmView}
             active={scene.initiative.find(e => e.active && e.tokenId === t.id) != null}
             selected={selectedId === t.id || (role === 'dm' && selectedEnemies.includes(t.id))}
-            draggable={role === 'dm' && tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add'}
+            draggable={role === 'dm' && !drawing}
             interactionKey={tokenInteractionKey}
             onSelect={() => { if (tool !== 'select-tokens') onSelect(t.id); }}
             onDragEnd={(x, y) => {
@@ -595,7 +722,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             gridDiameter={gridTokenDiameter(scene.mapImage, displayedMapScale, p)}
             active={scene.initiative.find(e => e.active && e.tokenId === p.id) != null}
             selected={selectedId === p.id}
-            draggable={tool !== 'select-tokens' && tool !== 'wall' && tool !== 'erase' && tool !== 'erase-area' && tool !== 'add' && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}
+            draggable={!drawing && (role === 'dm' || (role === 'player' && p.sessionId === mySessionId))}
             interactionKey={tokenInteractionKey}
             onSelect={() => { if (tool !== 'select-tokens') onSelect(p.id); }}
             onDragEnd={(x, y) => {
@@ -607,27 +734,21 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           />
         ))}
         {selectionPreview && <Rect name="token-selection" {...selectionPreview} fill="rgba(186,53,38,0.12)" stroke="#ba3526" strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
-        {areaPreview && <Rect name="fog-selection" {...areaPreview} fill="rgba(186,53,38,0.12)" stroke="#ba3526" strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
+        {areaPreview && <Rect name="fog-selection" {...areaPreview} {...fogTint} strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
+        {brushOutline && <Group name="fog-brush" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} listening={false}>
+          <Rect {...brushOutline} {...fogTint} strokeWidth={1.5} strokeScaleEnabled={false} listening={false} />
+        </Group>}
+        {ruler && <Group name="ruler" listening={false}>
+          <Line points={[ruler.start.x, ruler.start.y, ruler.end.x, ruler.end.y]} stroke={ACCENT} strokeWidth={2 / scale} dash={[8 / scale, 5 / scale]} lineCap="round" listening={false} />
+          <Circle x={ruler.start.x} y={ruler.start.y} radius={4 / scale} fill={ACCENT} listening={false} />
+          <Circle x={ruler.end.x} y={ruler.end.y} radius={4 / scale} fill={ACCENT} listening={false} />
+          <Label x={ruler.end.x} y={ruler.end.y} offsetX={-10} offsetY={30} scaleX={1 / scale} scaleY={1 / scale} listening={false}>
+            <Tag fill={INK} cornerRadius={2} listening={false} />
+            <Text text={ruler.text} fontSize={13} padding={6} fill="#ffffff" listening={false} />
+          </Label>
+        </Group>}
       </Layer>
     </Stage>}
-    {/* Fog controls (DM): reveal-all (清空遮罩) and cover-all (添加遮罩), text
-        buttons per user request. */}
-    {role === 'dm' && (
-      <div className="campaign-fog-controls" aria-label="迷雾">
-        <span className="panel-label text-center select-none py-1">迷雾</span>
-        <button onClick={() => connection.sendOps([{ op: 'revealAllFog' }])}
-          className="px-2 py-1 text-xs text-muted hover:text-ink hover:bg-well transition-colors duration-150">全部显示</button>
-        <button onClick={() => connection.sendOps([{ op: 'coverAllFog' }])}
-          className="px-2 py-1 text-xs text-accent hover:bg-well transition-colors duration-150">全部遮蔽</button>
-        <label className="campaign-fog-strength" title="迷雾在你这里的压暗程度，只保存在本机，玩家始终看到全黑">
-          <span>浓度</span>
-          <input type="range" min={0} max={MAX_DM_FOG_STRENGTH * 100} step={5} value={Math.round(fogStrength * 100)} disabled={playerPreview}
-            onChange={event => setFogStrength(Number(event.target.value) / 100)} aria-label="DM 端迷雾浓度" />
-        </label>
-        <button aria-pressed={playerPreview} onClick={() => setPlayerPreview(on => !on)} title="按玩家看到的样子显示棋盘：迷雾全黑，隐藏的敌人不显示"
-          className="campaign-fog-preview">玩家视角</button>
-      </div>
-    )}
     <div className="campaign-zoom-dock">
       {role === 'dm' && scene.mapImage && !scene.mapImage.startsWith('blob:') && <ZoomControl key={`${scene.id}:${scene.mapImage}`} kind="map" value={displayedMapScale} onChange={mapZoom.preview} onStep={mapZoom.set} onCommit={mapZoom.commit} onCancel={mapZoom.cancel} onReset={() => mapZoom.set(1)} />}
       <ZoomControl kind="view" value={scale} onChange={setViewScale} onStep={setViewScale} onReset={resetView} />
