@@ -7,6 +7,7 @@ import SceneSwitcher, { prefetchScenes } from './SceneSwitcher';
 import CampaignMembers from './CampaignMembers';
 import CharacterSheetPanel from './CharacterSheetPanel';
 import CampaignIcon from './CampaignIcon';
+import { SEARCH_SHORTCUT } from './search/global-search';
 
 interface Props {
   roomName?: string;
@@ -18,11 +19,12 @@ interface Props {
   onToggleQuery?: () => void;
   unreadChat?: number;
   onOpenChat?: () => void;
+  onOpenSearch?: () => void;
 }
 
 const roleLabel: Record<string, string> = { host: '主持人', owner: '主持人', dm: 'DM', assistant_dm: '协作 DM', co_dm: '协作 DM', player: '玩家', spectator: '旁观者' };
 
-export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen, onToggleEncounter, queryOpen, onToggleQuery, unreadChat = 0, onOpenChat }: Props) {
+export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen, onToggleEncounter, queryOpen, onToggleQuery, unreadChat = 0, onOpenChat, onOpenSearch }: Props) {
   const { scene, role, roomRole, online, campaign, connected, revoked } = useScene();
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -66,6 +68,7 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
       </div>
       <div className="campaign-header-actions">
         <span className={`campaign-connection ${connected ? 'is-connected' : ''}`} role="status"><i aria-hidden="true" />{connected ? `在线玩家 ${online}` : revoked ? '已断开' : scene ? '重连中…' : '连接中'}</span>
+        {onOpenSearch && <button className="btn-quiet campaign-search-trigger" onClick={onOpenSearch} title={`全局搜索（${SEARCH_SHORTCUT} 或 /）`}><CampaignIcon name="search" /><span>搜索</span><kbd>{SEARCH_SHORTCUT}</kbd></button>}
         {onToggleEncounter && <button className="btn-quiet campaign-panel-toggle" aria-pressed={encounterOpen} aria-controls="campaign-encounter" onClick={onToggleEncounter}><CampaignIcon name="actors" />遭遇</button>}
         {onToggleQuery && <button className="btn-quiet campaign-panel-toggle" aria-pressed={queryOpen} aria-controls="campaign-query" onClick={onToggleQuery}><CampaignIcon name="library" />资料</button>}
         {unreadChat > 0 && onOpenChat && <button className="btn-quiet campaign-chat-alert" onClick={onOpenChat} title="打开聊天">聊天<span className="campaign-unread">{unreadChat > 99 ? '99+' : unreadChat}</span></button>}

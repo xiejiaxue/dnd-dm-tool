@@ -24,7 +24,7 @@ export function findModule(id: string | undefined): AdventureModule | undefined 
 /** Route names the core campaign API and the Durable Object already use; module routes must avoid them. */
 export const RESERVED_ROUTE_PATHS = [
   'archive', 'assets', 'character-sheet', 'characters', 'invites', 'journals', 'members', 'scenes', 'ws',
-  'bootstrap', 'connect', 'initialize', 'refresh-access',
+  'bootstrap', 'connect', 'initialize', 'notes', 'refresh-access',
 ] as const;
 
 export function findModuleRoute(path: string, hasParam: boolean, method: string): ModuleRoute | undefined {

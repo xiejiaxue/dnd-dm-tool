@@ -18,5 +18,6 @@ export const curseOfStrahd: AdventureModule = {
     },
   },
   compendium: { search: searchStrahd, monsterCard: getStrahdCard, token: strahdToken },
+  presets: strahdScenes,
   routes: [presetSceneRoute('strahd-scene', 'scene.strahd-encounter', 'cos', strahdScenes)],
 };

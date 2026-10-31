@@ -1,4 +1,4 @@
-import type { PresetScene } from '../../shared/encounter-presets';
+import type { ModuleNote, PresetScene } from '../../shared/encounter-presets';
 import type { FactionQuestBook } from '../../shared/faction-quests';
 import type { Campaign, EntryType, IndexEntry, Scene } from './types';
 
@@ -142,6 +142,8 @@ export const api = {
   presetScene: (route: string, sceneId: string) => json<PresetScene | null>(roomPath(`/${route}/${encodeURIComponent(sceneId)}`)),
   addPresetEncounter: (route: string, sceneId: string, encounterKey: string, count: number) => json<{added:number}>(roomPath(`/${route}/${encodeURIComponent(sceneId)}`), {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({id:crypto.randomUUID(),encounterKey,count})}),
 
+  /** DM-only: area notes and scene overviews of this campaign's module maps. */
+  notes: (q: string) => json<ModuleNote[]>(roomPath(`/notes?q=${encodeURIComponent(q)}`)),
   waterdeepFactionQuests: () => json<FactionQuestBook>(roomPath('/waterdeep-faction-quests')),
   previewWaterdeepDeployment: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment')),
   deployWaterdeep: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment'), jsonRequest('POST', {id: crypto.randomUUID()})),

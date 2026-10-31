@@ -9,7 +9,7 @@ import MiniMarkdown, { inline } from './MiniMarkdown';
 
 // One request per page load; the book only changes with a new release.
 let bookRequest: Promise<FactionQuestBook> | null = null;
-const loadBook = () => {
+export const loadBook = () => {
   bookRequest ??= api.waterdeepFactionQuests().catch(error => { bookRequest = null; throw error; });
   return bookRequest;
 };
@@ -44,17 +44,19 @@ export function searchQuests(book: FactionQuestBook, query: string): { chain: Fa
 }
 
 interface Props {
+  /** Opens directly on this quest, e.g. from the global search. */
+  focus?: { chainId: string; questId: string };
   campaign: Campaign | null;
   scene: Scene | null;
   npcCount: (npcFaction: string) => number;
   onShowNpcs: (npcFaction: string) => void;
 }
 
-export default function FactionQuests({ campaign, scene, npcCount, onShowNpcs }: Props) {
+export default function FactionQuests({ focus, campaign, scene, npcCount, onShowNpcs }: Props) {
   const [book, setBook] = useState<FactionQuestBook | null>(null);
   const [error, setError] = useState('');
-  const [selected, setSelected] = useState<string | null>(null);
-  const [focusQuest, setFocusQuest] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(focus?.chainId ?? null);
+  const [focusQuest, setFocusQuest] = useState<string | null>(focus?.questId ?? null);
   const [query, setQuery] = useState('');
   useEffect(() => {
     let active = true;

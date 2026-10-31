@@ -1,4 +1,6 @@
-import { findModuleRoute } from './modules/registry';
+import { findModule, findModuleRoute } from './modules/registry';
+import { presetSceneFor } from './modules/preset-encounters';
+import { presetNotes, type ModuleNote } from '../../shared/encounter-presets';
 import type { ModuleRoute } from './modules/types';
 import { resolveFogBasisScale } from '../../shared/fog';
 import { chatRollExpression, parseRollNotation, rollNotation } from '../../shared/dice-notation';
@@ -30,6 +32,8 @@ import {
 const INTERNAL_REQUEST_HEADER = "x-dnd-internal-request";
 const MAX_WS_MESSAGE_BYTES = 64 * 1024;
 const MAX_COMMANDS_PER_MINUTE = 180;
+/** Area notes run to a few KB each; this keeps one search response small. */
+const MAX_NOTE_RESULTS = 30;
 
 interface SocketAttachment extends RoomActor {
   version: 1;
@@ -128,6 +132,9 @@ export class RoomDurableObject extends DurableObject<Env> {
       return this.initialize(request, actor);
     if (url.pathname === "/bootstrap" && request.method === "GET")
       return this.respondJson(this.bootstrap(actor));
+
+    if (url.pathname === "/notes" && request.method === "GET")
+      return this.respondJson(this.searchNotes(actor, url.searchParams));
 
     const moduleMatch = /^\/([a-z0-9-]+)(?:\/([^/]+))?$/u.exec(url.pathname);
     const moduleRoute = moduleMatch && findModuleRoute(moduleMatch[1], moduleMatch[2] !== undefined, request.method);
@@ -679,6 +686,27 @@ export class RoomDurableObject extends DurableObject<Env> {
       );
     const copy = projectRoomState({ ...this.requireState(), currentSceneId: sceneId }, actor).scene;
     return this.respondJson(copy);
+  }
+
+  /** Overviews and area notes of this campaign's module scenes that contain every query word; more words in the title rank first. */
+  private searchNotes(actor: RoomActor, params: URLSearchParams): ModuleNote[] {
+    this.requireModerator(actor);
+    const presets = findModule(params.get("module") ?? undefined)?.presets;
+    const words = (params.get("q") ?? "").toLocaleLowerCase().split(/\s+/u).filter(Boolean);
+    if (!presets || !words.length) return [];
+    const state = this.requireState();
+    const notes = activeCampaign(state).sceneIds.flatMap((sceneId) => {
+      const scene = state.scenes[sceneId];
+      const preset = scene && presetSceneFor(presets, scene);
+      if (!preset) return [];
+      return presetNotes(preset, words).map((note) => ({ ...note, id: `${sceneId}:${note.id}`, sceneId, sceneName: scene.name }));
+    });
+    const titleWords = (note: ModuleNote) => words.filter((word) => note.title.toLocaleLowerCase().includes(word)).length;
+    return notes
+      .map((note) => ({ note, score: titleWords(note) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, MAX_NOTE_RESULTS)
+      .map(({ note }) => note);
   }
 
   private listScenes(
