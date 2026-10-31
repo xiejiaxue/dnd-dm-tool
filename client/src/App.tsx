@@ -22,6 +22,7 @@ import { useScene, connection } from './ws';
 import { subscribe, setPending as clearPendingToken } from './pending';
 import type { PendingToken } from './pending';
 import { initialNavigation } from './routing';
+import { toolForKey, typingTarget } from './components/board-tools';
 
 function roomSlugFromInvite(result: InviteResult): string | null {
   return result.campaignSlug ?? null;
@@ -119,6 +120,9 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
   const toggleEncounter = () => { setEncounterOpen(open => !open); if (window.matchMedia('(max-width: 1100px)').matches) setQueryCollapsed(true); };
   const toggleQuery = () => { setQueryCollapsed(collapsed => !collapsed); if (window.matchMedia('(max-width: 1100px)').matches) setEncounterOpen(false); };
   const [brushSize, setBrushSize] = useState(1);
+  // The DM can look at the board exactly as players do; never persisted, so a
+  // reload always returns to the DM view.
+  const [playerPreview, setPlayerPreview] = useState(false);
   const [queryTab, setQueryTab] = useState<QueryTab>('query');
   const [detail, setDetail] = useState<PanelDetail | null>(null);
   const [journalFocus, setJournalFocus] = useState<JournalFocus>();
@@ -156,6 +160,18 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
     addEventListener('keydown', onKeyDown);
     return () => removeEventListener('keydown', onKeyDown);
   }, []);
+
+  // Single-letter tool shortcuts (V 选择, B 框选, R 测距, W 画墙, F 迷雾), outside text fields and the search.
+  useEffect(() => {
+    if (!role || searchOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey || event.repeat || typingTarget(event.target)) return;
+      const next = toolForKey(event.key, role, tool);
+      if (next) { event.preventDefault(); setTool(next); }
+    };
+    addEventListener('keydown', onKeyDown);
+    return () => removeEventListener('keydown', onKeyDown);
+  }, [role, tool, searchOpen]);
 
   const showInPanel = (tab: QueryTab) => {
     setQueryTab(tab);
@@ -214,8 +230,8 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
           tool={tool}
           onTool={setTool}
           pendingLabel={pending ? `点击棋盘放置：${pending.name}` : null}
-          brushSize={brushSize}
-          onBrushSize={setBrushSize}
+          playerPreview={playerPreview}
+          onPlayerPreview={setPlayerPreview}
           templateId={room.campaign.templateId}
           campaignSlug={room.campaign.slug}
         />
@@ -229,6 +245,9 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             onSelect={setSelectedId}
             queryOpen={!queryCollapsed}
             brushSize={brushSize}
+            onBrushSize={setBrushSize}
+            onTool={setTool}
+            playerPreview={playerPreview}
           />
         </div>
         <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} tab={queryTab} onTab={tab => { setQueryTab(tab); setDetail(null); }} unreadChat={unreadChat} detail={detail} onDetail={setDetail} search={compendiumSearch} journalFocus={journalFocus} questFocus={questFocus} />

@@ -383,15 +383,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .campaign-turn-order > div { min-height: 32px; padding: 6px 10px; }
 .campaign-turn-order:empty::before { content: '暂无先攻'; color: #a6a49b; font-size: 11px; white-space: nowrap; }
 .campaign-workspace { position: relative; gap: 0; overflow: hidden; }
-.campaign-toolbar { width: 66px; flex: 0 0 66px; display: flex; flex-direction: column; gap: 5px; align-items: stretch; padding: 12px 6px; border-right: 1px solid #d6d7cd; background: #fcfbf8; }
-.campaign-toolbar > button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 60px; color: #62645c; font-size: 10px; }
+.campaign-toolbar { width: 66px; flex: 0 0 66px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 12px 6px; border-right: 1px solid #d6d7cd; background: #fcfbf8; overflow-y: auto; scrollbar-width: none; }
+.campaign-toolbar > button { position: relative; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 56px; color: #62645c; font-size: 10px; }
+.campaign-toolbar > button:disabled { opacity: .35; }
+.campaign-tool-key { position: absolute; top: 4px; right: 4px; font: 500 8px/1 var(--font-mono, ui-monospace, monospace); color: #9a9b92; }
+.campaign-toolbar > button.is-active .campaign-tool-key { color: #ba3526; }
+.campaign-tool-toggle { margin-top: auto; border-top: 1px solid #e4e3dc; }
+.campaign-toolbar > .campaign-tool-toggle.is-active::before { display: none; }
+.campaign-toolbar > .campaign-tool-toggle.is-active { color: #fff; background: #20221e; }
 .campaign-toolbar > button:hover:not(:disabled) { color: #20221e; background: #f6f5f0; }
 .campaign-toolbar > button.is-active { color: #ba3526; background: #f6f5f0; }
 .campaign-toolbar > button.is-active::before { content: ''; position: absolute; left: -6px; top: 10px; bottom: 10px; width: 3px; background: #ba3526; }
 .campaign-toolbar .campaign-icon { width: 21px; height: 21px; }
-.campaign-brush { display: grid; gap: 2px; padding: 0 5px; }
-.campaign-brush button { height: 28px; font-size: 10px; color: #62645c; }
-.campaign-brush button[aria-pressed="true"] { background: #20221e; color: white; }
 .campaign-pending { font-size: 10px; padding: 8px 3px; color: #ba3526; line-height: 1.6; overflow-wrap: anywhere; }
 .campaign-encounter-slot { width: 246px; flex: 0 0 246px; min-height: 0; }
 .campaign-encounter-slot[data-open="false"] { display: none; }
@@ -410,17 +413,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .campaign-query-panel .group { min-height: 60px; }
 .campaign-query-panel .group .btn-xs { height: 28px; }
 .campaign-board { margin: 14px; border: 1px solid #d6d7cd; background: #e9e7df; overflow: hidden; }
-.campaign-fog-controls { position: absolute; left: 14px; bottom: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid #d6d7cd; background: #fcfbf8; padding: 5px 8px; z-index: 20; }
-.campaign-fog-controls .panel-label { font-size: 9px; }
-.campaign-fog-controls button { min-height: 28px; }
 .campaign-fog-strength { display: inline-flex; align-items: center; gap: 6px; padding-left: 8px; border-left: 1px solid #d6d7cd; color: #62645c; font-size: 11px; }
 .campaign-fog-strength input { width: 72px; accent-color: var(--accent); }
 .campaign-fog-strength input:disabled { opacity: .4; }
-.campaign-fog-preview { padding: 0 8px; border: 1px solid #d6d7cd; color: #62645c; font-size: 11px; }
-.campaign-fog-preview[aria-pressed="true"] { background: #20221e; border-color: #20221e; color: white; }
+/* Options for the active board tool, on the board where they act (as in Owlbear Rodeo and Foundry). */
+.board-tool-options { position: absolute; top: 12px; left: 12px; right: 12px; width: max-content; max-width: calc(100% - 24px); z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border: 1px solid #d6d7cd; background: #fcfbf8; padding: 6px 10px; font-size: 11px; color: #62645c; box-shadow: 0 1px 2px rgba(17,17,16,.06); }
+.board-tool-options > strong { color: #20221e; font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+.board-tool-segment { display: inline-flex; border: 1px solid #d6d7cd; }
+.board-tool-segment button { min-height: 26px; padding: 0 9px; font-size: 11px; color: #62645c; }
+.board-tool-segment button + button { border-left: 1px solid #d6d7cd; }
+.board-tool-segment button:hover { color: #20221e; background: #f6f5f0; }
+.board-tool-segment button[aria-pressed="true"] { background: #20221e; color: #fff; }
+.board-tool-divider { width: 1px; align-self: stretch; background: #d6d7cd; }
+.board-tool-options .btn-xs { height: 26px; }
+.board-tool-options .campaign-fog-strength { padding-left: 8px; }
+.board-tool-hint { color: #62645c; }
 @media (max-width: 1250px) { .campaign-connection { display: none; } .campaign-header { padding: 13px 16px; gap: 12px; } .campaign-header-actions { gap: 5px; } .campaign-shell .btn { padding: 0 10px; } .campaign-encounter-slot { width: 218px; flex-basis: 218px; } .campaign-query-panel { width: 310px; flex-basis: 310px; } }
 @media (max-width: 1100px) { .campaign-encounter-slot { position: absolute; top: 0; bottom: 0; left: 66px; width: min(280px, calc(100vw - 80px)); z-index: 30; border-right: 1px solid #20221e; box-shadow: 10px 0 0 rgba(17,17,16,.04); } .campaign-query-panel { position: absolute; right: 0; top: 0; bottom: 0; z-index: 30; width: min(360px, calc(100vw - 80px)); border-left: 1px solid #20221e; } .campaign-header { flex-wrap: wrap; } .campaign-title strong { font-size: 17px; } .campaign-role { display: none; } }
-@media (max-width: 740px) { .campaign-header { padding: 10px 12px; gap: 10px; } .campaign-identity { width: 100%; gap: 10px; } .campaign-title { flex: 1; } .campaign-title strong { max-width: calc(100vw - 90px); font-size: 18px; } .campaign-title { gap: 4px; } .campaign-brand { padding-right: 10px; } .campaign-header-actions { width: 100%; gap: 5px; justify-content: flex-start; } .campaign-header-actions .btn { padding: 0 8px; font-size: 10px; height: 34px; gap: 5px; } .campaign-header-actions .campaign-icon { width: 14px; height: 14px; } .campaign-initiative { padding: 8px 12px; gap: 8px; flex-wrap: wrap; } .campaign-turn-order { flex-basis: calc(100% - 45px); } .campaign-initiative > .shrink-0 { margin-left: auto; } .campaign-toolbar { width: 52px; flex-basis: 52px; padding: 8px 4px; } .campaign-toolbar > button { height: 54px; } .campaign-toolbar > button.is-active::before { left: -4px; } .campaign-board { margin: 8px; } .campaign-encounter-slot { left: 52px; } .campaign-fog-controls { bottom: 58px; left: 8px; right: 8px; width: max-content; max-width: calc(100% - 16px); gap: 5px; font-size: 10px; } .campaign-fog-controls button { font-size: 10px; padding: 0 5px; } .campaign-query-panel { width: min(350px, calc(100vw - 32px)); } .campaign-scene-popover, .campaign-storage-popover { left: 12px; right: auto; width: calc(100vw - 24px); } .campaign-header > .absolute.top-12 { top: calc(100% + 8px); } }
+@media (max-width: 740px) { .campaign-header { padding: 10px 12px; gap: 10px; } .campaign-identity { width: 100%; gap: 10px; } .campaign-title { flex: 1; } .campaign-title strong { max-width: calc(100vw - 90px); font-size: 18px; } .campaign-title { gap: 4px; } .campaign-brand { padding-right: 10px; } .campaign-header-actions { width: 100%; gap: 5px; justify-content: flex-start; } .campaign-header-actions .btn { padding: 0 8px; font-size: 10px; height: 34px; gap: 5px; } .campaign-header-actions .campaign-icon { width: 14px; height: 14px; } .campaign-initiative { padding: 8px 12px; gap: 8px; flex-wrap: wrap; } .campaign-turn-order { flex-basis: calc(100% - 45px); } .campaign-initiative > .shrink-0 { margin-left: auto; } .campaign-toolbar { width: 52px; flex-basis: 52px; padding: 8px 4px; } .campaign-toolbar > button { height: 54px; } .campaign-toolbar > button.is-active::before { left: -4px; } .campaign-board { margin: 8px; } .campaign-encounter-slot { left: 52px; } .board-tool-options { top: 8px; left: 8px; max-width: calc(100% - 16px); gap: 5px; padding: 5px 7px; } .campaign-tool-key { display: none; } .campaign-query-panel { width: min(350px, calc(100vw - 32px)); } .campaign-scene-popover, .campaign-storage-popover { left: 12px; right: auto; width: calc(100vw - 24px); } .campaign-header > .absolute.top-12 { top: calc(100% + 8px); } }
 .campaign-tabs > button { border-bottom: 2px solid transparent; color: #62645c; }
 .campaign-tabs > button.is-active { color: #20221e; font-weight: 700; border-bottom-color: var(--accent); }
 .campaign-tabs > button:hover { color: #20221e; background: #faf9f6; }
@@ -432,7 +442,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .campaign-scene-heading { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px; border-bottom: 1px solid #d6d7cd; margin-bottom: 6px; }
 .campaign-scene-heading button { width: 32px; font-size: 20px; color: #62645c; }
 .campaign-scene-popover > div { max-height: min(65dvh, 500px); overflow-y: auto; }
-@media (max-width: 1100px) { .campaign-workspace[data-role="player"] .campaign-encounter-slot, .campaign-workspace[data-role="spectator"] .campaign-encounter-slot { left: 0; } }
 @media (max-width: 1250px) { .campaign-connection { display: inline-flex; font-size: 0; gap: 0; margin-right: 2px; } }
 .campaign-connection:not(.is-connected) i { background: var(--accent); }
 
@@ -462,7 +471,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .campaign-zoom-inputs .campaign-icon { width: 15px; height: 15px; }
 .campaign-zoom-inputs input[type="range"] { width: 100%; min-width: 0; height: 28px; margin: 0 3px; accent-color: var(--accent); cursor: ew-resize; touch-action: none; }
 .campaign-zoom-inputs input[type="range"]:focus-visible { outline-offset: 2px; }
-@container battle (max-width: 560px) { .campaign-fog-controls { top: 12px; bottom: auto; left: 12px; } .campaign-zoom-dock { bottom: 10px; right: 10px; width: min(290px, calc(100% - 20px)); } }
+@container battle (max-width: 560px) { .campaign-zoom-dock { bottom: 10px; right: 10px; width: min(290px, calc(100% - 20px)); } }
 @media (max-width: 740px) { .campaign-zoom-inputs button { width: 34px; height: 34px; flex-basis: 34px; } .campaign-zoom-inputs input[type="range"] { height: 34px; } }
 .campaign-shell .campaign-panel-toggle[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
 .campaign-shell .bg-paper { background-color: var(--paper); }
