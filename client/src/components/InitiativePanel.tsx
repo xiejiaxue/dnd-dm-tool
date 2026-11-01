@@ -2,6 +2,7 @@ import BatchInitiative from './BatchInitiative';
 import { useEffect, useRef, useState } from 'react';
 import { connection, getMySessionId, useScene } from '../ws';
 import { isDefeated } from '../../../shared/initiative';
+import { conditionInfo } from '../../../shared/conditions';
 
 interface Props {
   selectedTokenId?: string | null;
@@ -106,6 +107,8 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
       <div ref={scrollRef} className="campaign-turn-order">
         {entries.map(e => {
           const defeated = scene ? isDefeated(scene, e) : false;
+          const conditions = e.tokenId ? (scene?.tokens.find(t => t.id === e.tokenId) ?? scene?.players.find(p => p.id === e.tokenId))?.conditions ?? [] : [];
+          const conditionText = conditions.map(c => `${conditionInfo(c.id)?.label ?? c.id}${c.rounds ? ` ${c.rounds} 轮` : ''}`).join('、');
           return (
           <div key={e.id} data-ini={e.id}
             draggable={role === 'dm'}
@@ -122,6 +125,7 @@ export default function InitiativePanel({ selectedTokenId, onClearSelected }: Pr
               e.active ? 'border-ink bg-ink text-white' : 'border-line bg-panel text-ink'
             } ${defeated ? 'opacity-50 line-through' : ''} ${role === 'dm' ? 'cursor-grab' : ''} ${dragId === e.id ? 'opacity-40' : ''}`}>
             <span className="text-xs">{e.name}</span>
+            {conditions.length > 0 && <span className="campaign-turn-conditions" title={conditionText} aria-label={`状态：${conditionText}`}>{conditions.map(c => conditionInfo(c.id)?.badge).join('')}</span>}
             <span className={`text-xs font-bold tabular-nums ${e.active ? 'text-[#ff5140]' : 'text-ink'}`}>{e.value}</span>
             {role === 'dm' && (
               <button aria-label={`移除 ${e.name} 的先攻`}

@@ -49,9 +49,36 @@ type SocketMessage = {
   commandId?: unknown;
   ops?: unknown;
   messages?: ChatMessage[];
+  available?: unknown;
+  label?: unknown;
+  [key: string]: unknown;
 };
 
 type Listener = (msg: SocketMessage) => void;
+
+/** A short-lived marker on the board; `pull` asks every view to centre on it. */
+export interface BoardPing {
+  sceneId: string;
+  x: number;
+  y: number;
+  pull: boolean;
+  name: string;
+  color: string;
+}
+
+export interface UndoStatus {
+  available: number;
+  label: string | null;
+}
+
+export function asPing(msg: { type: string } & Record<string, unknown>): BoardPing | null {
+  if (msg.type !== 'ping' || typeof msg.sceneId !== 'string' || typeof msg.x !== 'number' || typeof msg.y !== 'number') return null;
+  return {
+    sceneId: msg.sceneId, x: msg.x, y: msg.y, pull: msg.pull === true,
+    name: typeof msg.name === 'string' ? msg.name : '',
+    color: typeof msg.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(msg.color) ? msg.color : '#ba3526',
+  };
+}
 
 interface PendingCommand {
   id: string;
@@ -130,6 +157,7 @@ class Connection {
   connected = false;
   revoked = false;
   viewer: Viewer | null = null;
+  undo: UndoStatus = { available: 0, label: null };
 
   get roomSlug(): string | null {
     return this.activeRoomSlug;
@@ -177,6 +205,7 @@ class Connection {
     this.connected = false;
     this.revoked = false;
     this.viewer = null;
+    this.undo = { available: 0, label: null };
     this.emit({ type: 'reset' });
   }
 
@@ -214,6 +243,9 @@ class Connection {
       if (msg.type === 'chat') {
         this.acceptChat(msg);
         return;
+      }
+      if (msg.type === 'undoStatus') {
+        this.undo = { available: typeof msg.available === 'number' ? msg.available : 0, label: typeof msg.label === 'string' ? msg.label : null };
       }
       if (msg.type === 'meta') {
         this.lastOnline = typeof msg.online === 'number' ? msg.online : 0;
@@ -386,6 +418,16 @@ class Connection {
     };
   }
 
+  /** Marks a board point for everyone for a moment. Not stored, so nothing is queued while offline. */
+  ping(x: number, y: number, pull = false): boolean {
+    return this.sendRaw({ type: 'ping', x, y, pull });
+  }
+
+  /** Asks the room to take back this DM's newest board command. */
+  requestUndo(): boolean {
+    return this.sendRaw({ type: 'undo', id: commandId() });
+  }
+
   /**
    * Raw room controls (scene switching, chat) remain authoritative and are not
    * queued: returns false when the socket is not open so callers can keep input.
@@ -424,6 +466,14 @@ class Connection {
 }
 
 const connection = new Connection();
+
+export function useUndoStatus(): UndoStatus {
+  const [status, setStatus] = useState(connection.undo);
+  useEffect(() => connection.onMessage((msg) => {
+    if (msg.type === 'undoStatus' || msg.type === 'reset') setStatus(connection.undo);
+  }), []);
+  return status;
+}
 
 export function useScene(): SceneState {
   const [state, setState] = useState<SceneState>(() => ({

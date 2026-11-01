@@ -1,6 +1,8 @@
 import { resolveFogBasisScale, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
 import { removeFromTurnOrder, stepTurn } from '../../shared/initiative';
 import { applyCampaignTracking } from '../../shared/faction-quests';
+import { tickConditionsForActiveTurn } from '../../shared/conditions';
+import { applyHandoutOp, applyMapNoteOp } from '../../shared/table-state';
 import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
 
 /** The active-room projection that may be predicted locally. */
@@ -110,8 +112,10 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
     case 'removeFromInitiative':
       return { scene: { ...scene, ...removeFromTurnOrder(scene, (entry) => entry.id === operation.entryId) }, campaign };
     case 'advanceTurn':
-    case 'previousTurn':
-      return { scene: { ...scene, ...stepTurn(scene, operation.op === 'advanceTurn' ? 1 : -1) }, campaign };
+    case 'previousTurn': {
+      const turned = { ...scene, ...stepTurn(scene, operation.op === 'advanceTurn' ? 1 : -1) };
+      return { scene: operation.op === 'advanceTurn' ? { ...turned, ...tickConditionsForActiveTurn(turned) } : turned, campaign };
+    }
     case 'reorderInitiative':
       return { scene: { ...scene, initiative: reorderInitiative(scene.initiative, operation.order) }, campaign };
     case 'addFavorite':
@@ -147,6 +151,18 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
       fog.fill(false);
       return { scene: { ...scene, fog, fogReveals: undefined, fogBasisScale: resolveFogBasisScale(scene) }, campaign };
     }
+    case 'addMapNote':
+    case 'updateMapNote':
+    case 'removeMapNote':
+      return { scene: { ...scene, notes: applyMapNoteOp(scene.notes, operation) }, campaign };
+    case 'setMusic':
+      if (!campaign) return null;
+      return { scene, campaign: { ...campaign, music: operation.music ? { ...operation.music } : undefined } };
+    case 'showHandout':
+    case 'hideHandout':
+    case 'removeHandout':
+      if (!campaign) return null;
+      return { scene, campaign: { ...campaign, ...applyHandoutOp(campaign, operation) } };
   }
 }
 

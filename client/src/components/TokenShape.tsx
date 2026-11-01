@@ -1,7 +1,11 @@
-import { Group, Circle, Image as KImage, Text, Ring } from 'react-konva';
+import { Group, Circle, Image as KImage, Text, Ring, Rect } from 'react-konva';
 import { memo, useEffect, useState } from 'react';
 import { useImage } from '../useImage';
 import type { Token } from '../types';
+import { conditionInfo } from '../../../shared/conditions';
+
+/** Condition badges shown above a token before the rest collapse into "+N". */
+const MAX_BADGES = 5;
 
 // One board diameter for both kinds, including previously saved 48px players.
 const TOKEN_SIZE = 100;
@@ -25,6 +29,11 @@ function TokenShape({ token, active, selected, draggable = true, showHp = false,
   const tokenDiameter = gridDiameter ?? (token.entryId?.startsWith('COS__') ? Math.max(12, Math.min(500, token.size)) : TOKEN_SIZE);
   const img = useImage(token.avatar || null);
   const [pulse, setPulse] = useState(0);
+  const conditions = token.conditions ?? [];
+  const badge = Math.max(16, tokenDiameter * 0.22);
+  const shownConditions = conditions.slice(0, conditions.length > MAX_BADGES ? MAX_BADGES - 1 : MAX_BADGES);
+  const extraConditions = conditions.length - shownConditions.length;
+  const badgeCount = shownConditions.length + (extraConditions > 0 ? 1 : 0);
 
   // Animate the active-turn gold ring: oscillate pulse 0..4 while active.
   useEffect(() => {
@@ -55,7 +64,7 @@ function TokenShape({ token, active, selected, draggable = true, showHp = false,
       onTap={onSelect}
       onContextMenu={(e) => { e.evt.preventDefault(); onContextMenu(); }}
     >
-      {token.hidden && <Text text="已隐藏 · 仅DM可见" x={-65} y={-tokenDiameter / 2 - 22} width={130} align="center" fill="#FFFFFF" fontSize={12} listening={false} shadowColor="#000" shadowBlur={3} />}
+      {token.hidden && <Text text="已隐藏 · 仅DM可见" x={-65} y={-tokenDiameter / 2 - 22 - (badgeCount ? badge + 4 : 0)} width={130} align="center" fill="#FFFFFF" fontSize={12} listening={false} shadowColor="#000" shadowBlur={3} />}
       {/* 底圆（颜色环 + 选中高亮） */}
       <Circle
         width={tokenDiameter} height={tokenDiameter}
@@ -106,6 +115,22 @@ function TokenShape({ token, active, selected, draggable = true, showHp = false,
           </Group>
         );
       })()}
+      {/* 状态徽章：一字标记，倒计时轮数写在右下角 */}
+      {badgeCount > 0 && <Group x={-(badgeCount * (badge + 2) - 2) / 2} y={-tokenDiameter / 2 - badge - 4} listening={false}>
+        {shownConditions.map((condition, index) => {
+          const info = conditionInfo(condition.id);
+          if (!info) return null;
+          return <Group key={condition.id} x={index * (badge + 2)}>
+            <Rect width={badge} height={badge} fill={info.color} stroke="#FFFFFF" strokeWidth={1.5} cornerRadius={2} />
+            <Text text={info.badge} width={badge} height={badge} align="center" verticalAlign="middle" fill="#FFFFFF" fontSize={badge * 0.62} fontStyle="bold" />
+            {condition.rounds !== undefined && <Text text={String(condition.rounds)} x={badge * 0.55} y={badge * 0.58} width={badge * 0.45} align="right" fill="#FFFFFF" fontSize={badge * 0.38} fontStyle="bold" shadowColor="#000000" shadowBlur={2} shadowOpacity={1} />}
+          </Group>;
+        })}
+        {extraConditions > 0 && <Group x={shownConditions.length * (badge + 2)}>
+          <Rect width={badge} height={badge} fill="#20221e" stroke="#FFFFFF" strokeWidth={1.5} cornerRadius={2} />
+          <Text text={`+${extraConditions}`} width={badge} height={badge} align="center" verticalAlign="middle" fill="#FFFFFF" fontSize={badge * 0.45} fontStyle="bold" />
+        </Group>}
+      </Group>}
       <Text text={token.name} x={-tokenDiameter / 2} y={tokenDiameter / 2 + 2} width={tokenDiameter} align="center"
         fill="#FFFFFF" fontSize={12} fontStyle="bold"
         shadowColor="#000000" shadowBlur={2} shadowOpacity={0.75} />

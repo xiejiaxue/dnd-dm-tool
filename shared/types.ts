@@ -1,5 +1,6 @@
 import type { QuestStatus } from './faction-quests';
 import type { FogRectangle } from './fog';
+import type { TokenCondition } from './conditions';
 export type Role = 'dm' | 'player';
 
 export { FOG_CELL, fogGridSize, fogGeometry, resolveFogBasisScale } from './fog';
@@ -34,6 +35,8 @@ export interface Token {
   initiativeBonus?: number;
   /** Hidden encounter tokens are only sent to the DM. Legacy tokens stay visible. */
   hidden?: boolean;
+  /** 5e conditions and concentration, in catalogue order. */
+  conditions?: TokenCondition[];
 }
 
 export interface PlayerToken extends Token {
@@ -63,6 +66,41 @@ export interface Favorite {
 
 export interface PlayArea { x: number; y: number; w: number; h: number }
 
+/** A pin on the map. Players receive only the ones marked visible. */
+export interface MapNote {
+  id: string;
+  x: number;
+  y: number;
+  title: string;
+  text: string;
+  /** Optional campaign journal opened from the pin. */
+  journal?: { id: string; title: string };
+  visible: boolean;
+}
+
+export type MapNotePatch = Partial<Pick<MapNote, 'x' | 'y' | 'title' | 'text' | 'visible'>> & { journal?: MapNote['journal'] | null };
+
+/** An image the DM shows to every player. */
+export interface Handout {
+  id: string;
+  title: string;
+  image: string;
+}
+
+/** The track the DM plays for the whole table; every browser derives its playhead from it. */
+export interface TableMusic {
+  trackId: string;
+  title: string;
+  /** Same-origin /music/ recording. */
+  url: string;
+  playing: boolean;
+  /** Seconds into the track at updatedAt. */
+  position: number;
+  /** Room clock (ms) when playing or position last changed. */
+  updatedAt: number;
+  loop: boolean;
+}
+
 export interface Scene {
   id: string;
   name: string;
@@ -87,6 +125,7 @@ export interface Scene {
   fogReveals?: FogRectangle[];
   // DM unlocks a scene so players can view it in the campaign library.
   unlocked?: boolean;
+  notes?: MapNote[];
 }
 
 export interface EnemyTemplate {
@@ -102,6 +141,10 @@ export interface Campaign {
   // DM-only faction quest tracking (Dragon Heist); stripped from player projections.
   questProgress?: Record<string, QuestStatus>;  // questId → status; 'open' is stored as absent
   factionNotes?: Record<string, string>;        // factionId → DM note
+  music?: TableMusic;
+  /** Images shown during the campaign, newest first; players receive only the one on screen. */
+  handouts?: Handout[];
+  shownHandoutId?: string;
 }
 
 export interface ChatMessage {
@@ -124,10 +167,10 @@ export type Op =
   | { op: 'moveToken'; tokenId: string; x: number; y: number }
   | { op: 'addToken'; token: Token }
   | { op: 'removeToken'; tokenId: string }
-  | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden'>> }
+  | { op: 'updateToken'; tokenId: string; patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden' | 'conditions'>> }
   | { op: 'addPlayer'; player: PlayerToken }
   | { op: 'removePlayer'; tokenId: string }
-  | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> }
+  | { op: 'updatePlayer'; tokenId: string; patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus' | 'conditions'>> }
   | { op: 'addWall'; wall: Wall }
   | { op: 'removeWall'; wallId: string }
   | { op: 'updateGrid'; patch: Partial<GridConfig> }
@@ -149,7 +192,14 @@ export type Op =
   | { op: 'setFog'; cells: number[]; revealed: boolean; basisScale?: number }
   | { op: 'revealFogRect'; rect: FogRectangle }
   | { op: 'revealAllFog' }
-  | { op: 'coverAllFog' };
+  | { op: 'coverAllFog' }
+  | { op: 'addMapNote'; note: MapNote }
+  | { op: 'updateMapNote'; noteId: string; patch: MapNotePatch }
+  | { op: 'removeMapNote'; noteId: string }
+  | { op: 'setMusic'; music: TableMusic | null }
+  | { op: 'showHandout'; handout: Handout }
+  | { op: 'hideHandout' }
+  | { op: 'removeHandout'; handoutId: string };
 
 export interface IndexEntry {
   type: EntryType;

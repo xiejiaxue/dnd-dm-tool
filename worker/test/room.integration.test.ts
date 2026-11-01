@@ -447,6 +447,60 @@ describe("Campaign control plane", () => {
       sockets.forEach(ws => ws.close());
     }
   });
+  it("broadcasts pings without storing them and lets the DM undo board commands", async () => {
+    const host = await visitor(), player = await visitor(), spectator = await visitor();
+    const campaign = await create(host);
+    await join(player, await invite(host, campaign.slug));
+    await join(spectator, await invite(host, campaign.slug, "spectator"));
+    await character(player, campaign);
+    const sockets: WebSocket[] = [];
+    const frames: any[][] = [];
+    for (const cookie of [host, player, spectator]) {
+      const response = await api(`/api/campaigns/${campaign.slug}/ws`, { headers: { ...headers(cookie), upgrade: "websocket" } });
+      const ws = response.webSocket!;
+      ws.accept();
+      const list: any[] = [];
+      ws.addEventListener("message", (event) => list.push(JSON.parse(String(event.data))));
+      ws.send(JSON.stringify({ type: "capabilities", patches: 1 }));
+      sockets.push(ws); frames.push(list);
+    }
+    const until = async (check: () => boolean) => {
+      for (let i = 0; i < 100 && !check(); i++) await new Promise((r) => setTimeout(r, 20));
+      expect(check()).toBe(true);
+    };
+    const of = (index: number, type: string) => frames[index].filter((frame) => frame.type === type);
+    try {
+      await until(() => of(0, "undoStatus").length === 1);
+      expect(of(0, "undoStatus")[0]).toEqual({ type: "undoStatus", available: 0, label: null });
+      expect(of(1, "undoStatus")).toHaveLength(0);
+
+      sockets[1].send(JSON.stringify({ type: "ping", x: 120, y: 80, pull: false }));
+      await until(() => frames.every((_, index) => of(index, "ping").length === 1));
+      expect(of(2, "ping")[0]).toMatchObject({ x: 120, y: 80, pull: false, name: "莱拉" });
+      expect(of(2, "ping")[0].userId).toBeUndefined();
+      sockets[1].send(JSON.stringify({ type: "ping", x: 1, y: 1, pull: true }));
+      sockets[2].send(JSON.stringify({ type: "ping", x: 1, y: 1 }));
+      await until(() => of(1, "error").length === 1 && of(2, "error").length === 1);
+      sockets[0].send(JSON.stringify({ type: "ping", x: 5, y: 6, pull: true }));
+      await until(() => of(1, "ping").length === 2);
+      expect(of(1, "ping")[1]).toMatchObject({ pull: true, name: "DM" });
+
+      const before = (await boot(host, campaign.slug)).state.scene;
+      sockets[0].send(JSON.stringify({ type: "op", id: "wall-1", ops: [{ op: "addWall", wall: { id: "w", p1: [0, 0], p2: [100, 0] } }] }));
+      await until(() => of(0, "undoStatus").at(-1)?.available === 1);
+      expect(of(0, "undoStatus").at(-1).label).toBe("画墙");
+      sockets[0].send(JSON.stringify({ type: "undo", id: "undo-1" }));
+      await until(() => of(0, "undoStatus").at(-1)?.available === 0);
+      const after = (await boot(host, campaign.slug)).state.scene;
+      expect(after.walls).toEqual(before.walls);
+      sockets[0].send(JSON.stringify({ type: "undo", id: "undo-2" }));
+      await until(() => of(0, "error").some((frame) => frame.message === "没有可撤销的操作"));
+      sockets[1].send(JSON.stringify({ type: "undo", id: "undo-3" }));
+      await until(() => of(1, "error").length === 2);
+    } finally {
+      sockets.forEach((ws) => ws.close());
+    }
+  });
   it("sends chat as small frames that respect visibility and rolls shared notation", async () => {
     const host = await visitor(), player = await visitor(), spectator = await visitor();
     const campaign = await create(host);
