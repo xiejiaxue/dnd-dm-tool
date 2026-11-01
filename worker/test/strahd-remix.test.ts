@@ -26,17 +26,21 @@ async function campaign(cookie:string){
 const load=(id:string)=>runInDurableObject(env.ROOMS.getByName(`campaign:${id}`),(_instance,state)=>new CampaignStore(state.storage).load());
 
 it('reuses original Strahd maps under its own asset ids with known cards',()=>{
-  expect(strahdRemixScenes).toHaveLength(18);
+  expect(strahdRemixScenes).toHaveLength(19);
   const originals=new Map(strahdScenes.map(s=>[s.map.assetId.slice(-12),s]));
+  // Scene 00 is the prologue's own battle map; every other scene is an original map.
+  const book=strahdRemixScenes.filter(s=>s.key!=='00');
   for(const s of strahdRemixScenes){
     expect(s.map.assetId).toMatch(/^map-cosr-\d\d-[0-9a-f]{12}$/);
-    const o=originals.get(s.map.assetId.slice(-12));expect(o,s.name).toBeDefined();
-    expect([s.map.width,s.map.height]).toEqual([o!.map.width,o!.map.height]);
     expect(s.notes.length+s.areas!.length,s.name).toBeGreaterThan(0);
     for(const e of s.encounters){expect(card(e.entryId),e.entryId).toBeDefined();if(e.automatic)expect(e.position).not.toBeNull();}
   }
-  // Every map lists its rooms by book code: v2 use (or default-empty) first, then the original text.
-  for(const s of strahdRemixScenes){
+  for(const s of book){
+    const o=originals.get(s.map.assetId.slice(-12));expect(o,s.name).toBeDefined();
+    expect([s.map.width,s.map.height]).toEqual([o!.map.width,o!.map.height]);
+  }
+  // Every book map lists its rooms by book code: v2 use (or default-empty) first, then the original text.
+  for(const s of book){
     const rooms=s.areas!.filter(a=>!/^a\d+$/.test(a.key));
     expect(rooms.length,s.name).toBeGreaterThan(0);
     for(const a of rooms){expect(a.text,a.key).toMatch(/^【重置版】/);expect(a.text,a.key).toContain('【原版】');}
@@ -74,8 +78,14 @@ it('creates a 重置版 campaign with only the reconstruction default groups',as
   expect(tokens).toHaveLength(strahdRemixScenes.flatMap(s=>s.encounters).filter(e=>e.automatic).reduce((n,e)=>n+e.count!,0));
   expect(tokens.every(t=>t.hidden && t.id.startsWith('cosr-'))).toBe(true);
   for(const s of scenes)expect((await api(s.mapImage!,cookie)).status).toBe(200);
-  // The prologue wolves are optional: the overview map starts empty.
+  // The prologue is its own battle map: two large dire wolves around the wagon and Darvan on top at 2 HP.
   expect(scenes.find(s=>s.name.startsWith('01'))!.tokens).toHaveLength(0);
+  const prologue=scenes.find(s=>s.name.startsWith('00'))!.tokens;
+  expect(prologue.map(t=>t.entryId).sort()).toEqual(['COSR__darvan','COS__92530ee046b3bf7c','COS__92530ee046b3bf7c']);
+  expect(prologue.filter(t=>t.entryId==='COS__92530ee046b3bf7c').map(t=>t.size)).toEqual([200,200]);
+  const darvan=prologue.find(t=>t.entryId==='COSR__darvan')!;
+  expect(darvan.size).toBe(100);expect(darvan.hp).toEqual({current:2,max:4});
+  expect(card('COSR__darvan')!.name).toBe('达尔万·奥兰斯基');
   expect(scenes.find(s=>s.name.startsWith('17'))!.tokens.some(t=>t.entryId==='COSR__heart-of-sorrow')).toBe(false);
 });
 
@@ -84,7 +94,12 @@ it('serves the v2 notes to the DM only and adds optional groups idempotently',as
   const scene=Object.values((await load(c.id))!.scenes).find(s=>s.name.startsWith('01'))!;
   const route=`/api/campaigns/${c.slug}/strahd-remix-scene/${scene.id}`;
   const preset=await (await api(route,host)).json() as any;
-  expect(preset.areas.some((a:any)=>a.name.startsWith('L0'))).toBe(true);
+  // The prologue handbook sits on its own battle map, with the reinforcements and road blocks on demand.
+  const prologue=Object.values((await load(c.id))!.scenes).find(s=>s.name.startsWith('00'))!;
+  const l0=await (await api(`/api/campaigns/${c.slug}/strahd-remix-scene/${prologue.id}`,host)).json() as any;
+  expect(l0.areas.some((a:any)=>a.name.startsWith('L0 · 二、战斗'))).toBe(true);
+  expect(l0.encounters.filter((e:any)=>!e.automatic).map((e:any)=>e.name)).toEqual(['狼','蝙蝠群','僵尸']);
+  expect(preset.areas.some((a:any)=>a.name.startsWith('L0'))).toBe(false);
   expect(preset.areas.find((a:any)=>a.key==='B').text).toContain('【原版】');
   const e=preset.encounters.find((e:any)=>e.name==='施特拉德恐狼');expect(e.automatic).toBe(false);
   expect((await api(route,host,{id:'remix-cmd',encounterKey:e.key,count:2})).status).toBe(200);

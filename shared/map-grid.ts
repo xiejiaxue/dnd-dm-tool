@@ -31,6 +31,8 @@ const MAP_GRIDS: Record<string, { square: number; medium?: number }> = {
   '58d8f2078fbe': { square: 16.43 }, // 34 往日山丘
   '94db603d52fc': { square: 31.4 }, // 35 狼人巢穴
   '1429ddc431f5': { square: 35.9 }, // 36 死亡之屋
+  // 施特拉德的诅咒（重置版 v2）自绘战斗图：8×8 格，按 100 像素一格预置
+  'b2ab078b2350': { square: 156.75, medium: 100 }, // 00 序章：雾中的狼（废车救援）
   // 龙后的宝山
   '7a977e30944c': { square: 15.674, medium: 100 }, // 03 育龙场
   '4a17abb0025b': { square: 27.248, medium: 100 }, // 04 卡纳特客栈

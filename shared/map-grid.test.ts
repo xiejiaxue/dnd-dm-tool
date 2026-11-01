@@ -4,7 +4,7 @@ import strahdRemix from './strahd-remix/scenes.json';
 import hoard from './hoard/scenes.json';
 import phandelver from './phandelver/scenes.json';
 import waterdeep from './waterdeep/maps.json';
-import { gridTokenDiameter } from './map-grid';
+import { gridSquare, gridTokenDiameter } from './map-grid';
 
 const url = (assetId: string) => `/api/campaigns/room/assets/campaign-x-${assetId}`;
 const monster = (size: number) => ({ kind: 'monster' as const, size });
@@ -36,7 +36,16 @@ describe('gridTokenDiameter', () => {
     const gridded = (scenes: { map: { assetId: string } }[]) =>
       scenes.filter(s => gridTokenDiameter(url(s.map.assetId), 3, monster(85)) !== null).length;
     expect(gridded(strahd)).toBe(21);
-    expect(gridded(strahdRemix)).toBe(9);
+    expect(gridded(strahdRemix)).toBe(10);
+  });
+
+  it('fits the 重置版 prologue tokens to its 8×8 battle map', () => {
+    const prologue = strahdRemix.find(s => s.key === '00')!;
+    const map = url(prologue.map.assetId), scale = prologue.map.mapScale;
+    expect(gridSquare(map, scale)! * 8).toBeCloseTo(prologue.map.width * scale, 0);
+    expect(gridTokenDiameter(map, scale, monster(prologue.tokenSize!))).toBeCloseTo(100, 0);
+    // Dire wolves are large: two squares a side.
+    expect(gridTokenDiameter(map, scale, monster(prologue.tokenSize! * 2))).toBeCloseTo(200, 0);
   });
 
   it('sizes Dragon Heist tokens to one Tych square at the preset map scale', () => {
