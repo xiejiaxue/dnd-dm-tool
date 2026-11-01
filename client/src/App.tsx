@@ -18,7 +18,7 @@ import { useUnreadChat } from './hooks/useUnreadChat';
 import EnemyList from './components/EnemyList';
 import BoardCanvas from './components/BoardCanvas';
 import CampaignPortal from './components/CampaignPortal';
-import { useScene, connection } from './ws';
+import { useScene, useUndoStatus, connection } from './ws';
 import { subscribe, setPending as clearPendingToken } from './pending';
 import type { PendingToken } from './pending';
 import { initialNavigation } from './routing';
@@ -129,6 +129,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
   const [questFocus, setQuestFocus] = useState<QuestFocus>();
   const [searchOpen, setSearchOpen] = useState(false);
   const compendiumSearch = useCompendiumSearch();
+  const undoStatus = useUndoStatus();
   const unreadChat = useUnreadChat(sceneState.messages, sceneState.viewer?.userId, !queryCollapsed && queryTab === 'chat', Boolean(scene));
 
   useLayoutEffect(() => {
@@ -160,6 +161,18 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
     addEventListener('keydown', onKeyDown);
     return () => removeEventListener('keydown', onKeyDown);
   }, []);
+
+  // ⌘Z / Ctrl+Z takes back the DM's newest board command, outside text fields (which keep their own undo).
+  useEffect(() => {
+    if (role !== 'dm' || searchOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.altKey || event.key.toLowerCase() !== 'z' || typingTarget(event.target)) return;
+      event.preventDefault();
+      connection.requestUndo();
+    };
+    addEventListener('keydown', onKeyDown);
+    return () => removeEventListener('keydown', onKeyDown);
+  }, [role, searchOpen]);
 
   // Single-letter tool shortcuts (V 选择, B 框选, R 测距, W 画墙, F 迷雾), outside text fields and the search.
   useEffect(() => {
@@ -234,6 +247,8 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
           onPlayerPreview={setPlayerPreview}
           templateId={room.campaign.templateId}
           campaignSlug={room.campaign.slug}
+          undo={undoStatus}
+          onUndo={() => connection.requestUndo()}
         />
         <div className="campaign-encounter-slot" data-open={encounterOpen}><EnemyList /></div>
         <div className="campaign-board flex-1 min-w-0 relative bg-well">
@@ -248,6 +263,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             onBrushSize={setBrushSize}
             onTool={setTool}
             playerPreview={playerPreview}
+            onOpenJournal={journalId => { setJournalFocus({ id: journalId, nonce: Date.now() }); showInPanel('journal'); }}
           />
         </div>
         <QueryPanel collapsed={queryCollapsed} onToggleCollapsed={toggleQuery} templateId={room.campaign.templateId} tab={queryTab} onTab={tab => { setQueryTab(tab); setDetail(null); }} unreadChat={unreadChat} detail={detail} onDetail={setDetail} search={compendiumSearch} journalFocus={journalFocus} questFocus={questFocus} />

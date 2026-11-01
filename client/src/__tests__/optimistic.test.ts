@@ -37,4 +37,24 @@ describe('optimistic room projection', () => {
       op: 'addToInitiative', name: 'Goblin', value: 13, source: 'dm', tokenId: 'goblin',
     }])).toBeNull();
   });
+
+  it('predicts condition countdowns, map notes and handouts like the room does', () => {
+    const timed: Scene = {
+      ...scene,
+      tokens: [{ ...scene.tokens[0], conditions: [{ id: 'stunned', rounds: 1 }, { id: 'prone' }] }],
+      initiative: [{ id: 'i', name: 'Goblin', value: 12, source: 'dm', sessionId: null, tokenId: 'goblin', active: false }],
+    };
+    const turned = applyOptimisticOps({ scene: timed, campaign: null }, [{ op: 'advanceTurn' }])!;
+    expect(turned.scene.tokens[0].conditions).toEqual([{ id: 'prone' }]);
+    const back = applyOptimisticOps(turned, [{ op: 'previousTurn' }])!;
+    expect(back.scene.tokens[0].conditions).toEqual([{ id: 'prone' }]);
+
+    const noted = applyOptimisticOps({ scene, campaign: null }, [{ op: 'addMapNote', note: { id: 'n', x: 1, y: 1, title: '门', text: '', visible: false } }])!;
+    expect(noted.scene.notes).toHaveLength(1);
+    expect(noted.scene.tokens).toBe(scene.tokens);
+    expect(applyOptimisticOps({ scene, campaign: null }, [{ op: 'hideHandout' }])).toBeNull();
+    const campaign = { id: 'c', name: 'C', sceneIds: ['scene-1'], enemies: [] };
+    const shown = applyOptimisticOps({ scene, campaign }, [{ op: 'showHandout', handout: { id: 'h', title: '信', image: '/api/campaigns/c/assets/1' } }])!;
+    expect(shown.campaign!.shownHandoutId).toBe('h');
+  });
 });

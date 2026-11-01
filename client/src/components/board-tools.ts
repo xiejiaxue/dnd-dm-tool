@@ -3,7 +3,7 @@ import type { FogRectangle } from './fog-geometry';
 import { gridSquare } from '../../../shared/map-grid';
 
 export type Role = 'dm' | 'player' | 'spectator';
-export type ToolIcon = 'select' | 'view' | 'ruler' | 'place' | 'wall' | 'fog';
+export type ToolIcon = 'select' | 'view' | 'ruler' | 'ping' | 'note' | 'place' | 'wall' | 'fog';
 
 export interface BoardTool {
   id: string;
@@ -19,13 +19,16 @@ export const BOARD_TOOLS: readonly BoardTool[] = [
   { id: 'select', label: '选择', icon: 'select', key: 'V', hint: '选择和移动棋子；拖动空白处平移棋盘', dmOnly: false },
   { id: 'select-tokens', label: '框选', icon: 'view', key: 'B', hint: '拖动框选敌人，批量显示、隐藏或掷先攻', dmOnly: true },
   { id: 'measure', label: '测距', icon: 'ruler', key: 'R', hint: '拖动测量距离，每格 5 尺，斜走也算 1 格；只有你看得到', dmOnly: false },
+  { id: 'ping', label: '标记', icon: 'ping', key: 'P', hint: '点击地图，让所有人看到这里；任何工具下按住 Alt 点击也行', dmOnly: false },
+  { id: 'note', label: '笔记', icon: 'note', key: 'N', hint: '点击地图放一枚笔记图钉，可关联日志、选择是否给玩家看', dmOnly: true },
   { id: 'add', label: '放置', icon: 'place', hint: '把从资料库拿起的怪物放到棋盘上', dmOnly: true },
   { id: 'wall', label: '画墙', icon: 'wall', key: 'W', hint: '拖动画墙；可切换为删墙，或撤销上一段', dmOnly: true },
   { id: 'erase', label: '迷雾', icon: 'fog', key: 'F', hint: '用笔刷或矩形揭开、遮蔽迷雾', dmOnly: true },
 ];
 
 export function toolsFor(role: Role) {
-  return BOARD_TOOLS.filter(tool => role === 'dm' || !tool.dmOnly);
+  // Spectators only watch: they may measure, but not mark the board for others.
+  return BOARD_TOOLS.filter(tool => role === 'dm' || (!tool.dmOnly && !(role === 'spectator' && tool.id === 'ping')));
 }
 
 /** The fog button covers both fog shapes. */

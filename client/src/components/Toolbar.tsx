@@ -15,13 +15,16 @@ interface Props {
   /** Module the campaign was created from; decides which module extensions appear. */
   templateId?: string;
   campaignSlug?: string;
+  /** DM only: the newest board command the room can take back. */
+  undo?: { available: number; label: string | null };
+  onUndo?: () => void;
 }
 
 /**
  * The board's tool rail. Tool options (fog mode, brush size, wall deletion…) live in a bar on the
  * board itself, next to where they act, so the rail only switches tools.
  */
-export default function Toolbar({ role = 'dm', tool, onTool, pendingLabel, playerPreview = false, onPlayerPreview, templateId, campaignSlug }: Props) {
+export default function Toolbar({ role = 'dm', tool, onTool, pendingLabel, playerPreview = false, onPlayerPreview, templateId, campaignSlug, undo, onUndo }: Props) {
   return <aside className="campaign-toolbar" aria-label="棋盘工具">
     {toolsFor(role).map(t => {
       const active = isToolActive(t, tool);
@@ -30,6 +33,10 @@ export default function Toolbar({ role = 'dm', tool, onTool, pendingLabel, playe
         <CampaignIcon name={t.icon} /><span>{t.label}</span>{t.key && <kbd className="campaign-tool-key">{t.key}</kbd>}
       </button>;
     })}
+    {role === 'dm' && onUndo && <button className="campaign-tool-undo" aria-label="撤销" aria-keyshortcuts="Meta+Z Control+Z" disabled={!undo?.available}
+      title={undo?.label ? `撤销：${undo.label}（⌘Z / Ctrl+Z，还可撤销 ${undo.available} 步）` : '没有可撤销的操作'} onClick={onUndo}>
+      <CampaignIcon name="undo" /><span>撤销</span>
+    </button>}
     {role === 'dm' && onPlayerPreview && <button className={`campaign-tool-toggle ${playerPreview ? 'is-active' : ''}`} aria-pressed={playerPreview} aria-label="玩家视角" title="按玩家看到的样子显示棋盘：迷雾全黑，隐藏的敌人不显示" onClick={() => onPlayerPreview(!playerPreview)}>
       <CampaignIcon name="eye" /><span>玩家视角</span>
     </button>}

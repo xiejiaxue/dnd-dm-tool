@@ -4,7 +4,10 @@ import { waterdeepHp } from '../waterdeep';
 import { Stage, Layer, Rect, Shape, Line, Image as KImage, Group, Circle, Text, Label, Tag } from 'react-konva';
 import Konva from 'konva';
 import { useRef, useState, useCallback, useEffect, useLayoutEffect, useMemo, type ReactNode } from 'react';
-import { useScene, connection, getMySessionId } from '../ws';
+import { useScene, connection, getMySessionId, asPing, type BoardPing } from '../ws';
+import TokenConditions from './TokenConditions';
+import MapNoteCard from './MapNoteCard';
+import { MapPin, PingMarker, PING_MS } from './BoardMarkers';
 import { useImage } from '../useImage';
 import { fogGridSize, fogGeometry, resolveFogBasisScale, type Wall } from '../types';
 import { fogBoundary, fogCellAtPoint, fogSelectionRectangle, fogRectangles, type FogRectangle } from './fog-geometry';
@@ -64,9 +67,11 @@ interface Props {
   onTool?: (tool: string) => void;
   /** DM only: draw the board as players see it. */
   playerPreview?: boolean;
+  /** Opens a campaign journal in the side panel, from a map note. */
+  onOpenJournal?: (journalId: string) => void;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize, onBrushSize, onTool, playerPreview = false }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize, onBrushSize, onTool, playerPreview = false, onOpenJournal }: Props) {
   const { scene, role } = useScene();
   const mySessionId = getMySessionId();
   const [fogStrength, setFogStrength] = useDmFogStrength();
@@ -89,6 +94,16 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   // Holding Space pans the board with any tool, as in Foundry, Owlbear Rodeo and most canvas editors.
   const [spacePan, setSpacePan] = useState(false);
   const spacePanRef = useRef(false);
+  // Pings from everyone at the table, newest last; each removes itself after its animation.
+  const [pings, setPings] = useState<Array<BoardPing & { key: number }>>([]);
+  const pingKey = useRef(0);
+  // DM ping option: also bring every view to the marked point.
+  const [pullPing, setPullPing] = useState(false);
+  // The map note whose card is open, and whether it opened in the editor.
+  const [openNote, setOpenNote] = useState<{ id: string; editing: boolean } | null>(null);
+  const sceneIdRef = useRef(scene?.id);
+  sceneIdRef.current = scene?.id;
+  useLayoutEffect(() => { setOpenNote(null); setPings([]); }, [scene?.id]);
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   // Wheel devices can emit far more events than the display refresh rate.
@@ -188,18 +203,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       if (wall) { connection.sendOps([{ op: 'removeWall', wallId: wall.id }]); return; }
     }
   }, [scene, role]);
-  const undoWallRef = useRef(undoWall);
-  undoWallRef.current = undoWall;
-  const toolRef = useRef(tool);
-  toolRef.current = tool;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { cancelGesture(); setSelectedEnemies([]); return; }
       if (typingTarget(event.target)) return;
-      if ((event.metaKey || event.ctrlKey) && !event.shiftKey && event.key.toLowerCase() === 'z' && toolRef.current === 'wall') {
-        event.preventDefault(); undoWallRef.current();
-      } else if (event.code === 'Space') {
+      if (event.code === 'Space') {
         // Only for the board and its tool rail, so Space still presses buttons in the side panels.
         const el = event.target as HTMLElement | null;
         if (el && el !== document.body && !el.closest?.('.campaign-toolbar, .campaign-board')) return;
@@ -320,6 +329,23 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     scheduleView(1, { x: 0, y: 0 });
   }, [scheduleView]);
 
+  // Keep the zoom and move the board so a board point sits in the middle of the view.
+  const centerOn = useCallback((x: number, y: number) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const viewScale = pendingViewRef.current?.scale ?? stage.scaleX();
+    scheduleView(viewScale, { x: stage.width() / 2 - x * viewScale, y: stage.height() / 2 - y * viewScale });
+  }, [scheduleView]);
+
+  useEffect(() => connection.onMessage((msg) => {
+    const ping = asPing(msg);
+    if (!ping || ping.sceneId !== sceneIdRef.current) return;
+    const key = ++pingKey.current;
+    setPings(list => [...list.slice(-11), { ...ping, key }]);
+    window.setTimeout(() => setPings(list => list.filter(item => item.key !== key)), PING_MS);
+    if (ping.pull) centerOn(ping.x, ping.y);
+  }), [centerOn]);
+
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const pointer = stageRef.current?.getPointerPosition();
@@ -334,6 +360,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     if ('touches' in e.evt && e.evt.touches.length !== 1) { cancelGesture(); return; }
     if ('button' in e.evt && e.evt.button !== 0) return;
     if (spacePanRef.current) return;
+    // Alt-click pings with any tool, as in Foundry; Alt+Shift (or the DM's option) also pulls every view.
+    const altPing = 'altKey' in e.evt && e.evt.altKey;
+    if ((altPing || tool === 'ping') && role !== 'spectator') {
+      const p = worldPos();
+      const shift = 'shiftKey' in e.evt && e.evt.shiftKey;
+      if (p) connection.ping(p.x, p.y, role === 'dm' && (shift || (tool === 'ping' && pullPing)));
+      return;
+    }
     if (tool === 'measure') {
       const p = measurePoint();
       if (p) { measuring.current = true; measureRef.current = { start: p, end: p }; setMeasure(measureRef.current); }
@@ -362,7 +396,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     wallStart.current = [snap(p.x, 0), snap(p.y, 1)];
     wallEnd.current = p;
     setWallPreview([wallStart.current[0], wallStart.current[1], wallStart.current[0], wallStart.current[1]]);
-  }, [tool, wallMode, role, scene, worldPos, measurePoint, snap, revealAt, cancelGesture, onSelect]);
+  }, [tool, wallMode, role, scene, worldPos, measurePoint, snap, revealAt, cancelGesture, onSelect, pullPing]);
 
   // Erase tool: while pressed, dragging reveals cells as the pointer moves (DM
   // only). Without the eraserDown gate, mere hovering would reveal.
@@ -494,6 +528,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const handleClick = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
     if (tool === 'select-tokens') return;
     if (!scene || (e.target !== stageRef.current && tool !== 'add')) return;
+    if (tool === 'note' && role === 'dm') {
+      const p = worldPos();
+      if (!p) return;
+      const id = `note-${crypto.randomUUID()}`;
+      connection.sendOps([{ op: 'addMapNote', note: { id, x: p.x, y: p.y, title: '新笔记', text: '', visible: false } }]);
+      setOpenNote({ id, editing: true });
+      return;
+    }
     if (tool === 'zoom') {
       const pointer = stageRef.current?.getPointerPosition();
       if (pointer) zoomAt(pointer, e.evt.shiftKey ? 0.8 : 1.25);
@@ -571,7 +613,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const fogMask = (children: ReactNode) => <Group name="fog-mask" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} clipX={0} clipY={0} clipWidth={fogBounds.width} clipHeight={fogBounds.height} listening={false}>{children}</Group>;
   const tokenInteractionKey = `${tool}:${grid.snap ? 1 : 0}:${grid.size}:${grid.offset[0]}:${grid.offset[1]}`;
   // Tools that use the drag themselves: neither the board nor pieces move under them.
-  const drawing = tool === 'select-tokens' || tool === 'wall' || tool === 'erase' || tool === 'erase-area' || tool === 'add' || tool === 'measure';
+  const drawing = tool === 'select-tokens' || tool === 'wall' || tool === 'erase' || tool === 'erase-area' || tool === 'add' || tool === 'measure' || tool === 'ping' || tool === 'note';
+  const selectedPiece = scene.tokens.find(t => t.id === selectedId) ?? scene.players.find(p => p.id === selectedId);
+  // The DM edits any piece; a player only their own character.
+  const editablePiece = selectedPiece && (role === 'dm' || (role === 'player' && selectedPiece.kind === 'player' && (selectedPiece as { sessionId?: string | null }).sessionId === mySessionId)) ? selectedPiece : null;
+  const openNoteData = openNote ? scene.notes?.find(note => note.id === openNote.id) : undefined;
   const deletingWalls = role === 'dm' && tool === 'wall' && wallMode === 'delete' && !spacePan;
   const brushOutline = (() => {
     if (role !== 'dm' || tool !== 'erase' || brushCenter < 0 || spacePan) return null;
@@ -605,13 +651,24 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     {role === 'dm' && tool === 'wall' && <div className="board-tool-options" role="toolbar" aria-label="画墙选项">
       <strong>画墙</strong>
       <Segmented label="画墙或删墙" value={wallMode} onChange={setWallMode} options={[['draw', '画墙', '拖动画一段墙'], ['delete', '删墙', '点击一段墙删除它']]} />
-      <button type="button" className="btn-xs" title="删除你最近画的一段墙（⌘Z / Ctrl+Z）" disabled={!myWalls.current.some(drawn => findWall(scene.walls, drawn))} onClick={undoWall}>撤销</button>
+      <button type="button" className="btn-xs" title="删除你最近画的一段墙" disabled={!myWalls.current.some(drawn => findWall(scene.walls, drawn))} onClick={undoWall}>撤销</button>
       <ConfirmButton className="btn-xs" armedClassName="text-accent" confirmLabel="确认清除全部墙" title="删除这个场景的所有墙" disabled={!scene.walls.length} onConfirm={() => removeWallOps(scene.walls).forEach(batch => connection.sendOps(batch))}>清除全部</ConfirmButton>
       <span className="board-tool-hint">{wallMode === 'delete' ? '点击墙体删除' : `共 ${scene.walls.length} 段 · 空格拖动平移`}</span>
     </div>}
     {tool === 'measure' && <div className="board-tool-options" role="toolbar" aria-label="测距">
       <strong>测距</strong>
       <span className="board-tool-hint">{ruler ? ruler.text : '拖动测量'} · 每格 5 尺，斜走算 1 格 · 只有你看得到 · Esc 清除</span>
+    </div>}
+    {tool === 'ping' && role !== 'spectator' && <div className="board-tool-options" role="toolbar" aria-label="标记">
+      <strong>标记</strong>
+      <span className="board-tool-hint">点击地图，所有人都会看到 · 任何工具下按住 Alt 点击也行</span>
+      {role === 'dm' && <label className="board-tool-check" title="标记时把所有人的画面移到这里；也可以 Alt+Shift 点击">
+        <input type="checkbox" checked={pullPing} onChange={event => setPullPing(event.target.checked)} />同时拉取所有人的视角
+      </label>}
+    </div>}
+    {role === 'dm' && tool === 'note' && <div className="board-tool-options" role="toolbar" aria-label="地图笔记">
+      <strong>笔记</strong>
+      <span className="board-tool-hint">点击地图放置图钉 · 共 {scene.notes?.length ?? 0} 个 · 虚线白钉只有你看得到 · 用选择工具拖动图钉</span>
     </div>}
     {role === 'dm' && tool === 'select-tokens' && <div className="absolute top-3 left-3 right-3 z-10 flex flex-wrap items-center gap-2 border border-line bg-panel px-3 py-2 shadow-sm" role="group" aria-label="批量Token可见性">
       <span className="text-xs">{selectedEnemies.length ? `已选 ${scene.tokens.filter(t => selectedEnemies.includes(t.id)).length} 个敌人` : '拖动框选敌人 · Esc 取消'}</span>
@@ -620,15 +677,16 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       <button className="btn-xs" title="仅为选中且尚未加入先攻的敌人掷骰" disabled={!scene.tokens.some(t => selectedEnemies.includes(t.id) && !scene.initiative.some(e => e.tokenId === t.id))} onClick={() => setInitiativeSelection([...selectedEnemies])}>选中先攻</button>
       <button className="btn-xs" disabled={!selectedEnemies.length} onClick={() => setSelectedEnemies([])}>取消选择</button>
     </div>}
-    {role === 'dm' && tool === 'select' && scene.tokens.find(t => t.id === selectedId) && (() => {
-      const token = scene.tokens.find(t => t.id === selectedId)!;
-      return <div className="absolute top-3 left-3 z-10 flex items-center gap-2 border border-line bg-panel px-3 py-2 shadow-sm">
-        <span className="text-xs truncate max-w-40">{token.name} · {token.hidden ? '仅DM可见' : '玩家可见'}</span>
-        <button className="btn-xs" onClick={() => connection.sendOps([{ op: 'updateToken', tokenId: token.id, patch: { hidden: !token.hidden } }])}>
-          {token.hidden ? '显示' : '隐藏'}
-        </button>
-      </div>;
-    })()}
+    {tool === 'select' && editablePiece && <div className="board-token-bar" role="group" aria-label={`${editablePiece.name} 的设置`}>
+      <span className="text-xs truncate max-w-40">{editablePiece.name}{role === 'dm' && editablePiece.kind === 'monster' ? ` · ${editablePiece.hidden ? '仅DM可见' : '玩家可见'}` : ''}</span>
+      {role === 'dm' && editablePiece.kind === 'monster' && <button className="btn-xs" onClick={() => connection.sendOps([{ op: 'updateToken', tokenId: editablePiece.id, patch: { hidden: !editablePiece.hidden } }])}>
+        {editablePiece.hidden ? '显示' : '隐藏'}
+      </button>}
+      <TokenConditions conditions={editablePiece.conditions} onChange={conditions => connection.sendOps([editablePiece.kind === 'monster'
+        ? { op: 'updateToken', tokenId: editablePiece.id, patch: { conditions } }
+        : { op: 'updatePlayer', tokenId: editablePiece.id, patch: { conditions } }])} />
+    </div>}
+    {openNote && openNoteData && <MapNoteCard key={`${openNote.id}:${openNote.editing}`} note={openNoteData} canEdit={role === 'dm'} editing={openNote.editing} onClose={() => setOpenNote(null)} onOpenJournal={onOpenJournal} />}
     {role === 'dm' && tool === 'select-tokens' && initiativeSelection && <BatchInitiative enemyIds={initiativeSelection} onClose={() => setInitiativeSelection(null)} />}
     {stageSize.width > 0 && stageSize.height > 0 && <Stage
       ref={stageRef}
@@ -733,6 +791,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(p.id)}
           />
         ))}
+        {(scene.notes ?? []).map(note => <MapPin key={note.id} note={note} scale={scale} active={openNote?.id === note.id}
+          draggable={role === 'dm' && tool === 'select' && !spacePan}
+          onOpen={() => setOpenNote({ id: note.id, editing: false })}
+          onMove={(x, y) => connection.sendOps([{ op: 'updateMapNote', noteId: note.id, patch: { x, y } }])} />)}
+        {pings.map(ping => <PingMarker key={ping.key} ping={ping} scale={scale} />)}
         {selectionPreview && <Rect name="token-selection" {...selectionPreview} fill="rgba(186,53,38,0.12)" stroke="#ba3526" strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
         {areaPreview && <Rect name="fog-selection" {...areaPreview} {...fogTint} strokeWidth={1.5/scale} dash={[6/scale,4/scale]} listening={false} />}
         {brushOutline && <Group name="fog-brush" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} listening={false}>

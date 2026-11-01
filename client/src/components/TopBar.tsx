@@ -7,6 +7,8 @@ import SceneSwitcher, { prefetchScenes } from './SceneSwitcher';
 import CampaignMembers from './CampaignMembers';
 import CharacterSheetPanel from './CharacterSheetPanel';
 import CampaignIcon from './CampaignIcon';
+import TableMusic from './TableMusic';
+import Handouts from './Handouts';
 import { SEARCH_SHORTCUT } from './search/global-search';
 
 interface Props {
@@ -29,6 +31,8 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
   const [characterSheetOpen, setCharacterSheetOpen] = useState(false);
+  const [musicOpen, setMusicOpen] = useState(false);
+  const [handoutsOpen, setHandoutsOpen] = useState(false);
   const { inviteMessage, setInviteMessage, creatingInvite, createInvite } = useInvite();
   const { uploadingMap, fileRef, onMapPicked } = useMapUpload(setInviteMessage);
   const headerRef = useRef<HTMLElement>(null);
@@ -44,6 +48,8 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
       setSwitcherOpen(false);
       setMembersOpen(false);
       setCharacterSheetOpen(false);
+      setMusicOpen(false);
+      setHandoutsOpen(false);
     };
     document.addEventListener('pointerdown', close);
     document.addEventListener('keydown', close);
@@ -72,6 +78,8 @@ export default function TopBar({ roomName, roomSlug, onLeaveRoom, encounterOpen,
         {onToggleEncounter && <button className="btn-quiet campaign-panel-toggle" aria-pressed={encounterOpen} aria-controls="campaign-encounter" onClick={onToggleEncounter}><CampaignIcon name="actors" />遭遇</button>}
         {onToggleQuery && <button className="btn-quiet campaign-panel-toggle" aria-pressed={queryOpen} aria-controls="campaign-query" onClick={onToggleQuery}><CampaignIcon name="library" />资料</button>}
         {unreadChat > 0 && onOpenChat && <button className="btn-quiet campaign-chat-alert" onClick={onOpenChat} title="打开聊天">聊天<span className="campaign-unread">{unreadChat > 99 ? '99+' : unreadChat}</span></button>}
+        <TableMusic open={musicOpen} onOpenChange={open => { setMusicOpen(open); if (open) setHandoutsOpen(false); }} />
+        <Handouts open={handoutsOpen} onOpenChange={open => { setHandoutsOpen(open); if (open) setMusicOpen(false); }} />
         {roomRole === 'player' && <button className="btn-quiet" onClick={() => { setCharacterSheetOpen(!characterSheetOpen); setSwitcherOpen(false); setMembersOpen(false); }}>角色卡</button>}
         {isDm && <>
           <button className="btn-quiet campaign-upload" disabled={uploadingMap} onClick={() => fileRef.current?.click()} title="上传地图底图"><CampaignIcon name="map" />{uploadingMap ? '上传中…' : '上传地图'}</button>

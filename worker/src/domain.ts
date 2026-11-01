@@ -1,6 +1,8 @@
 import { resolveFogBasisScale, clipFogRectangle, revealFogRectangle, coverFogRectangles } from '../../shared/fog';
 import { insertByValue, removeFromTurnOrder, stepTurn } from '../../shared/initiative';
 import { applyCampaignTracking, FACTION_NOTE_LIMIT, QUEST_STATUSES, type QuestStatus } from '../../shared/faction-quests';
+import { isConditionId, MAX_CONDITION_ROUNDS, normalizeConditions, tickConditionsForActiveTurn, type TokenCondition } from '../../shared/conditions';
+import { applyHandoutOp, applyMapNoteOp, MAP_NOTE_TEXT_LIMIT, MAX_MAP_NOTES, shownHandout } from '../../shared/table-state';
 import {
   type Campaign,
   type ChatMessage,
@@ -9,12 +11,16 @@ import {
   FOG_CELL,
   fogGridSize,
   type GridConfig,
+  type Handout,
   type InitiativeEntry,
+  type MapNote,
+  type MapNotePatch,
   type Op,
   type PlayArea,
   type PlayerToken,
   type Role,
   type Scene,
+  type TableMusic,
   type Token,
   type Wall,
 } from '../../shared/types';
@@ -147,6 +153,7 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
   const playerScene = structuredClone(scene);
   const hiddenIds = new Set(scene.tokens.filter(t => t.hidden).map(t => t.id));
   playerScene.tokens = playerScene.tokens.filter(t => !t.hidden);
+  if (playerScene.notes) playerScene.notes = playerScene.notes.filter(note => note.visible);
   playerScene.initiative = playerScene.initiative.filter(e => !e.tokenId || !hiddenIds.has(e.tokenId));
   playerScene.players = playerScene.players.map((player) => ({
     ...player,
@@ -164,10 +171,16 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
     scene: playerScene,
     // Encounter-library contents and faction quest tracking are DM-only. The
     // campaign name and unlocked scene ids are enough for the player board.
-    campaign: { ...structuredClone(campaign), enemies: [], questProgress: undefined, factionNotes: undefined },
+    // Of the handout history, players only receive the image on screen.
+    campaign: { ...structuredClone(campaign), enemies: [], questProgress: undefined, factionNotes: undefined, handouts: playerHandouts(campaign) },
     viewer: { userId: actor.userId, roomMemberId: actor.memberId, roomRole: actor.role, canManage: false },
     messages: structuredClone(messages),
   };
+}
+
+function playerHandouts(campaign: Campaign): Handout[] | undefined {
+  const shown = shownHandout(campaign);
+  return shown ? [structuredClone(shown)] : undefined;
 }
 
 /** Public messages reach everyone, 'gm' the author and moderators, 'self' only the author. */
@@ -284,6 +297,21 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
     case 'revealAllFog':
     case 'coverAllFog':
       return { op };
+    case 'addMapNote':
+      if ((activeScene(state).notes?.length ?? 0) >= MAX_MAP_NOTES) throw new DomainError('INVALID', `每个场景最多 ${MAX_MAP_NOTES} 个地图笔记`);
+      return { op, note: mapNote(value.note) };
+    case 'updateMapNote':
+      return { op, noteId: clientId(value.noteId), patch: mapNotePatch(value.patch) };
+    case 'removeMapNote':
+      return { op, noteId: clientId(value.noteId) };
+    case 'setMusic':
+      return { op, music: value.music === null ? null : tableMusic(value.music) };
+    case 'showHandout':
+      return { op, handout: handout(value.handout) };
+    case 'hideHandout':
+      return { op };
+    case 'removeHandout':
+      return { op, handoutId: clientId(value.handoutId) };
     // A room cannot switch to an arbitrary D1 campaign from a browser. This
     // compatibility command only permits a campaign that already belongs to
     // this room's persisted state.
@@ -439,6 +467,8 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
     case 'advanceTurn':
     case 'previousTurn':
       Object.assign(scene, stepTurn(scene, op.op === 'advanceTurn' ? 1 : -1));
+      // Timed conditions count down as their creature's turn begins.
+      if (op.op === 'advanceTurn') Object.assign(scene, tickConditionsForActiveTurn(scene));
       return;
     case 'reorderInitiative': {
       const byId = new Map(scene.initiative.map((entry) => [entry.id, entry]));
@@ -475,6 +505,27 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       ensureFog(scene).fill(false);
       scene.fogReveals = undefined;
       return;
+    case 'addMapNote':
+    case 'updateMapNote':
+    case 'removeMapNote':
+      scene.notes = applyMapNoteOp(scene.notes, op);
+      return;
+    case 'setMusic': {
+      const campaign = activeCampaign(state);
+      if (op.music) campaign.music = { ...op.music };
+      else delete campaign.music;
+      return;
+    }
+    case 'showHandout':
+    case 'hideHandout':
+    case 'removeHandout': {
+      const campaign = activeCampaign(state);
+      const next = applyHandoutOp(campaign, op);
+      campaign.handouts = next.handouts;
+      if (next.shownHandoutId) campaign.shownHandoutId = next.shownHandoutId;
+      else delete campaign.shownHandoutId;
+      return;
+    }
     default: {
       // A new Op variant without a case above fails to compile here instead of being silently ignored.
       const unhandled: never = op;
@@ -666,9 +717,10 @@ function tokenHidden(value: unknown): boolean {
   return value;
 }
 
-function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden'>> {
+function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden' | 'conditions'>> {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden'>> = {};
+  const patch: Partial<Pick<Token, 'name' | 'size' | 'avatar' | 'color' | 'hp' | 'initiativeBonus' | 'hidden' | 'conditions'>> = {};
+  if (value.conditions !== undefined) patch.conditions = conditions(value.conditions);
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.hidden !== undefined) patch.hidden = tokenHidden(value.hidden);
   if (value.size !== undefined) patch.size = boundedNumber(value.size, 12, 500);
@@ -680,9 +732,11 @@ function tokenPatch(value: unknown): Partial<Pick<Token, 'name' | 'size' | 'avat
   return patch;
 }
 
-function playerPatch(value: unknown, maySetHp: boolean, maySetInitiative = maySetHp): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> {
+function playerPatch(value: unknown, maySetHp: boolean, maySetInitiative = maySetHp): Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus' | 'conditions'>> {
   if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
-  const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus'>> = {};
+  const patch: Partial<Pick<PlayerToken, 'name' | 'color' | 'sessionId' | 'hp' | 'avatar' | 'initiativeBonus' | 'conditions'>> = {};
+  // Players keep their own conditions (concentration, prone…) up to date.
+  if (value.conditions !== undefined) patch.conditions = conditions(value.conditions);
   if (value.name !== undefined) patch.name = shortText(value.name, 120);
   if (value.color !== undefined) patch.color = color(value.color);
   if (value.avatar !== undefined) patch.avatar = optionalAssetUrl(value.avatar);
@@ -726,6 +780,91 @@ function hp(value: unknown): { current: number; max: number } | undefined {
   if (value === undefined) return undefined;
   if (!isRecord(value)) throw new DomainError('INVALID', '生命值无效');
   return { current: boundedNumber(value.current, -10_000, 100_000), max: boundedNumber(value.max, 1, 100_000) };
+}
+
+function conditions(value: unknown): TokenCondition[] {
+  if (!Array.isArray(value) || value.length > 32) throw new DomainError('INVALID', '状态列表无效');
+  return normalizeConditions(value.map((item) => {
+    if (!isRecord(item) || !isConditionId(item.id)) throw new DomainError('INVALID', '未知状态');
+    if (item.rounds === undefined) return { id: item.id };
+    const rounds = boundedNumber(item.rounds, 1, MAX_CONDITION_ROUNDS);
+    if (!Number.isInteger(rounds)) throw new DomainError('INVALID', '状态轮数必须是整数');
+    return { id: item.id, rounds };
+  }));
+}
+
+/** Browser-chosen ids for notes and handouts: they are only unique within one campaign. */
+function clientId(value: unknown): string {
+  const candidate = shortText(value, 80);
+  if (!/^[A-Za-z0-9_-]+$/u.test(candidate)) throw new DomainError('INVALID', 'ID 格式无效');
+  return candidate;
+}
+
+function noteText(value: unknown): string {
+  if (typeof value !== 'string' || value.length > MAP_NOTE_TEXT_LIMIT) throw new DomainError('INVALID', `笔记内容不能超过 ${MAP_NOTE_TEXT_LIMIT} 字`);
+  return value;
+}
+
+function noteJournal(value: unknown): { id: string; title: string } {
+  if (!isRecord(value)) throw new DomainError('INVALID', '关联日志无效');
+  return { id: id(value.id), title: shortText(value.title, 120) };
+}
+
+function visibleFlag(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new DomainError('INVALID', '可见性必须是布尔值');
+  return value;
+}
+
+function mapNote(value: unknown): MapNote {
+  if (!isRecord(value)) throw new DomainError('INVALID', '地图笔记无效');
+  return {
+    id: clientId(value.id),
+    x: coordinate(value.x),
+    y: coordinate(value.y),
+    title: shortText(value.title, 120),
+    text: noteText(value.text ?? ''),
+    visible: value.visible === undefined ? false : visibleFlag(value.visible),
+    ...(value.journal === undefined || value.journal === null ? {} : { journal: noteJournal(value.journal) }),
+  };
+}
+
+function mapNotePatch(value: unknown): MapNotePatch {
+  if (!isRecord(value)) throw new DomainError('INVALID', '更新无效');
+  const patch: MapNotePatch = {};
+  if (value.x !== undefined) patch.x = coordinate(value.x);
+  if (value.y !== undefined) patch.y = coordinate(value.y);
+  if (value.title !== undefined) patch.title = shortText(value.title, 120);
+  if (value.text !== undefined) patch.text = noteText(value.text);
+  if (value.visible !== undefined) patch.visible = visibleFlag(value.visible);
+  if (value.journal !== undefined) patch.journal = value.journal === null ? null : noteJournal(value.journal);
+  if (Object.keys(patch).length === 0) throw new DomainError('INVALID', '没有可更新字段');
+  return patch;
+}
+
+function tableMusic(value: unknown): TableMusic {
+  if (!isRecord(value)) throw new DomainError('INVALID', '配乐无效');
+  const url = shortText(value.url, 200);
+  // Only the site's own recordings: every browser can fetch them, and no third-party player is involved.
+  if (!/^\/music\/[A-Za-z0-9._-]+\.(?:mp3|ogg|m4a|opus)$/u.test(url) || url.includes('..')) throw new DomainError('INVALID', '只能同步本站配乐');
+  if (typeof value.playing !== 'boolean' || typeof value.loop !== 'boolean') throw new DomainError('INVALID', '配乐状态无效');
+  return {
+    trackId: shortText(value.trackId, 80),
+    title: shortText(value.title, 160),
+    url,
+    playing: value.playing,
+    position: boundedNumber(value.position, 0, 86_400),
+    // Stamped by the room so every listener measures elapsed time from one clock.
+    updatedAt: Date.now(),
+    loop: value.loop,
+  };
+}
+
+function handout(value: unknown): Handout {
+  if (!isRecord(value)) throw new DomainError('INVALID', '展示内容无效');
+  const image = optionalAssetUrl(value.image);
+  if (!image) throw new DomainError('INVALID', '展示需要一张图片');
+  const title = typeof value.title === 'string' ? value.title.trim().slice(0, 120) : '';
+  return { id: clientId(value.id), title: title || '展示', image };
 }
 
 function entryType(value: unknown): EntryType {

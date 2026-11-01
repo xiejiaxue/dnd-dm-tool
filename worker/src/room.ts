@@ -6,6 +6,7 @@ import { resolveFogBasisScale } from '../../shared/fog';
 import { chatRollExpression, parseRollNotation, rollNotation } from '../../shared/dice-notation';
 import { DurableObject } from "cloudflare:workers";
 import { CampaignStore } from "./campaign-store";
+import { applyUndo, captureUndo, mergeUndo, undoLabel, UNDO_DEPTH, type UndoEntry } from "./undo";
 import type { Campaign, Op, PlayerToken, Scene } from "../../shared/types";
 import type { ChatMessage } from "../../shared/types";
 import {
@@ -34,6 +35,8 @@ const MAX_WS_MESSAGE_BYTES = 64 * 1024;
 const MAX_COMMANDS_PER_MINUTE = 180;
 /** Area notes run to a few KB each; this keeps one search response small. */
 const MAX_NOTE_RESULTS = 30;
+/** Pings mark a point for a moment and are never stored. */
+const PING_COORDINATE_LIMIT = 100_000;
 
 interface SocketAttachment extends RoomActor {
   version: 1;
@@ -100,6 +103,9 @@ export class RoomDurableObject extends DurableObject<Env> {
     );
     this.ctx.storage.sql.exec(
       "CREATE TABLE IF NOT EXISTS campaign_flags(singleton INTEGER PRIMARY KEY,enabled INTEGER NOT NULL)",
+    );
+    this.ctx.storage.sql.exec(
+      "CREATE TABLE IF NOT EXISTS undo_entries(seq INTEGER PRIMARY KEY AUTOINCREMENT,actor_member_id TEXT NOT NULL,data_json TEXT NOT NULL)",
     );
   }
 
@@ -209,6 +215,16 @@ export class RoomDurableObject extends DurableObject<Env> {
     if (!this.consumeCommandBudget(ws, actor)) return;
     let commandId: string | undefined;
     try {
+      if (data.type === "ping") {
+        this.broadcastPing(actor, data);
+        return;
+      }
+      if (data.type === "undo") {
+        this.requireModerator(actor);
+        commandId = clientCommandId(data.id);
+        this.undo(ws, actor, commandId);
+        return;
+      }
       if (data.type === "op") {
         commandId = clientCommandId(data.id);
         const operations = data.ops;
@@ -220,6 +236,9 @@ export class RoomDurableObject extends DurableObject<Env> {
           throw new DomainError("INVALID", "一次最多提交 20 个操作");
         }
         let appliedOperations: Op[] = [];
+        // Scenes are cloned before a mutation, so this object still holds the
+        // pre-command board that the DM's undo history records.
+        const prior = this.requireState();
         const result = this.mutate(
           actor,
           commandId,
@@ -237,9 +256,11 @@ export class RoomDurableObject extends DurableObject<Env> {
           operations.some(
             (op) =>
               isRecord(op) &&
-              ["addEnemy", "removeEnemy", "setQuestStatus", "setFactionNote"].includes(String(op.op)),
+              ["addEnemy", "removeEnemy", "setQuestStatus", "setFactionNote", "setMusic", "showHandout", "hideHandout", "removeHandout"].includes(String(op.op)),
           ),
         );
+        if (!result.duplicate && isRoomModerator(actor.role))
+          this.recordUndo(actor, prior, appliedOperations);
         this.safeSend(ws, {
           type: "ack",
           commandId,
@@ -590,6 +611,8 @@ export class RoomDurableObject extends DurableObject<Env> {
       commandCount: 0,
     } satisfies SocketAttachment);
     this.safeSend(server, projectRoomState(this.requireState(), actor));
+    if (isRoomModerator(actor.role))
+      this.safeSend(server, this.undoStatus(actor.memberId));
     this.broadcastPresence();
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -790,6 +813,108 @@ export class RoomDurableObject extends DurableObject<Env> {
     });
     this.state = next;
     return { revision: next.revision, payload, duplicate: false };
+  }
+
+  /** Adds the command to this DM's history, folding a continuing fog stroke into its first step. */
+  private recordUndo(actor: RoomActor, prior: PersistedRoomState, operations: Op[]): void {
+    const label = undoLabel(operations);
+    const entry = label && captureUndo(prior, this.requireState(), label, Date.now());
+    if (!entry) return;
+    const latest = this.latestUndo(actor.memberId);
+    const merged = latest && mergeUndo(latest.entry, entry);
+    this.ctx.storage.transactionSync(() => {
+      if (merged && latest) {
+        this.ctx.storage.sql.exec("UPDATE undo_entries SET data_json=?1 WHERE seq=?2", JSON.stringify(merged), latest.seq);
+      } else {
+        this.ctx.storage.sql.exec("INSERT INTO undo_entries(actor_member_id,data_json) VALUES(?1,?2)", actor.memberId, JSON.stringify(entry));
+        this.ctx.storage.sql.exec(
+          "DELETE FROM undo_entries WHERE actor_member_id=?1 AND seq NOT IN (SELECT seq FROM undo_entries WHERE actor_member_id=?1 ORDER BY seq DESC LIMIT ?2)",
+          actor.memberId,
+          UNDO_DEPTH,
+        );
+      }
+    });
+    this.sendToMember(actor.memberId, this.undoStatus(actor.memberId));
+  }
+
+  private latestUndo(memberId: string): { seq: number; entry: UndoEntry } | null {
+    const row = this.ctx.storage.sql
+      .exec<{ seq: number; data_json: string }>(
+        "SELECT seq,data_json FROM undo_entries WHERE actor_member_id=?1 ORDER BY seq DESC LIMIT 1",
+        memberId,
+      )
+      .toArray()[0];
+    return row ? { seq: row.seq, entry: JSON.parse(row.data_json) as UndoEntry } : null;
+  }
+
+  private undoStatus(memberId: string): { type: "undoStatus"; available: number; label: string | null } {
+    const available = this.ctx.storage.sql
+      .exec<{ count: number }>("SELECT COUNT(*) AS count FROM undo_entries WHERE actor_member_id=?1", memberId)
+      .toArray()[0]?.count ?? 0;
+    return { type: "undoStatus", available, label: this.latestUndo(memberId)?.entry.label ?? null };
+  }
+
+  /** Takes back this DM's newest board command; entries of deleted scenes are discarded on the way. */
+  private undo(ws: WebSocket, actor: RoomActor, commandId: string): void {
+    let latest = this.latestUndo(actor.memberId);
+    while (latest && !this.requireState().scenes[latest.entry.sceneId]) {
+      this.ctx.storage.sql.exec("DELETE FROM undo_entries WHERE seq=?1", latest.seq);
+      latest = this.latestUndo(actor.memberId);
+    }
+    if (!latest) {
+      // A retried command whose undo already happened is acknowledged, not reported as empty.
+      const receipt = this.ctx.storage.sql
+        .exec<ReceiptRow>("SELECT revision,result_json FROM command_receipts WHERE actor_member_id=?1 AND command_id=?2", actor.memberId, commandId)
+        .toArray()[0];
+      if (receipt) { this.safeSend(ws, { type: "ack", commandId, revision: receipt.revision }); return; }
+      this.sendToMember(actor.memberId, this.undoStatus(actor.memberId));
+      throw new DomainError("INVALID", "没有可撤销的操作");
+    }
+    const { seq, entry } = latest;
+    const result = this.mutate(
+      actor,
+      commandId,
+      "board.undo",
+      (next) => {
+        applyUndo(next, entry);
+        return { label: entry.label };
+      },
+      [entry.sceneId],
+      Object.keys(entry.campaign).length > 0,
+    );
+    if (!result.duplicate) this.ctx.storage.sql.exec("DELETE FROM undo_entries WHERE seq=?1", seq);
+    this.safeSend(ws, { type: "ack", commandId, revision: result.revision });
+    this.broadcastState();
+    this.sendToMember(actor.memberId, this.undoStatus(actor.memberId));
+  }
+
+  /** Everyone on the board sees a ripple; a DM may also bring every view to it. */
+  private broadcastPing(actor: RoomActor, data: Record<string, unknown>): void {
+    if (actor.role === "spectator") throw new DomainError("FORBIDDEN", "旁观者不能标记地图");
+    const { x, y } = data;
+    if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)
+      || Math.abs(x) > PING_COORDINATE_LIMIT || Math.abs(y) > PING_COORDINATE_LIMIT)
+      throw new DomainError("INVALID", "标记位置无效");
+    const pull = data.pull === true;
+    if (pull) this.requireModerator(actor);
+    const state = this.requireState();
+    const moderator = isRoomModerator(actor.role);
+    const own = activeScene(state).players.find((player) => player.sessionId === actor.userId);
+    const ping = {
+      type: "ping",
+      sceneId: state.currentSceneId,
+      x,
+      y,
+      pull,
+      name: own?.name ?? actor.characterName ?? (moderator ? "DM" : actor.displayName || "玩家"),
+      color: own?.color ?? (moderator ? "#ba3526" : "#38a169"),
+    };
+    for (const socket of this.ctx.getWebSockets()) this.safeSend(socket, ping);
+  }
+
+  private sendToMember(memberId: string, data: unknown): void {
+    for (const socket of this.ctx.getWebSockets())
+      if (socketActor(socket)?.memberId === memberId) this.safeSend(socket, data);
   }
 
   private requireState(): PersistedRoomState {
@@ -1093,6 +1218,20 @@ export function projectPatchOperations(
       case "setFactionNote":
         // Player projections intentionally omit the DM's encounter library and quest tracking.
         if (canManage) projected.push(structuredClone(operation));
+        break;
+      case "setMusic":
+        projected.push(structuredClone(operation));
+        break;
+      // Players receive only visible notes and only the handout on screen, so
+      // a visibility change has to add or remove whole items: snapshot instead.
+      case "addMapNote":
+      case "updateMapNote":
+      case "removeMapNote":
+      case "showHandout":
+      case "hideHandout":
+      case "removeHandout":
+        if (!canManage) return null;
+        projected.push(structuredClone(operation));
         break;
       // Initiative additions can get a server-created ID; scene/campaign
       // switching changes more than one projection field. Retain snapshots

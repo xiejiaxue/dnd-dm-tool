@@ -10,17 +10,17 @@ function nodes(tree: ReactNode): Element[] {
   if (!isValidElement<Record<string, any>>(tree)) return [];
   return [tree, ...nodes(tree.props.children)];
 }
-const TOOL_LABELS = ['选择', '框选', '测距', '放置', '画墙', '迷雾'];
+const TOOL_LABELS = ['选择', '框选', '测距', '标记', '笔记', '放置', '画墙', '迷雾'];
 const toolButtons = (tree: ReactNode) => nodes(tree).filter(n => n.type === 'button' && TOOL_LABELS.includes(n.props['aria-label']));
 
 describe('campaign board tools', () => {
   it('offers the DM tools with shortcuts and preserves their IDs', () => {
     const onTool = vi.fn();
     const buttons = toolButtons(Toolbar({ tool: 'select', onTool, pendingLabel: '哥布林' }));
-    expect(buttons.map(n => n.props['aria-label'])).toEqual(['选择', '框选', '测距', '放置', '画墙', '迷雾']);
-    expect(buttons.map(n => n.props['aria-keyshortcuts'])).toEqual(['V', 'B', 'R', undefined, 'W', 'F']);
+    expect(buttons.map(n => n.props['aria-label'])).toEqual(['选择', '框选', '测距', '标记', '笔记', '放置', '画墙', '迷雾']);
+    expect(buttons.map(n => n.props['aria-keyshortcuts'])).toEqual(['V', 'B', 'R', 'P', 'N', undefined, 'W', 'F']);
     buttons.forEach(n => n.props.onClick());
-    expect(onTool.mock.calls.map(([id]) => id)).toEqual(['select', 'select-tokens', 'measure', 'add', 'wall', 'erase']);
+    expect(onTool.mock.calls.map(([id]) => id)).toEqual(['select', 'select-tokens', 'measure', 'ping', 'note', 'add', 'wall', 'erase']);
   });
   it('keeps the fog shape when the fog button is pressed again', () => {
     const onTool = vi.fn();
@@ -35,12 +35,22 @@ describe('campaign board tools', () => {
     expect(placement().props.disabled).toBe(true);
     expect(placement('哥布林').props.disabled).toBe(false);
   });
-  it('gives players and spectators only select and the ruler', () => {
-    for (const role of ['player', 'spectator'] as const) {
-      const tree = Toolbar({ tool: 'select', onTool: vi.fn(), role, onPlayerPreview: vi.fn() });
-      expect(toolButtons(tree).map(n => n.props['aria-label'])).toEqual(['选择', '测距']);
-      expect(nodes(tree).some(n => n.props['aria-label'] === '玩家视角')).toBe(false);
+  it('gives players select, the ruler and pings, and spectators no ping', () => {
+    for (const [role, labels] of [['player', ['选择', '测距', '标记']], ['spectator', ['选择', '测距']]] as const) {
+      const tree = Toolbar({ tool: 'select', onTool: vi.fn(), role, onPlayerPreview: vi.fn(), onUndo: vi.fn() });
+      expect(toolButtons(tree).map(n => n.props['aria-label'])).toEqual(labels);
+      expect(nodes(tree).some(n => n.props['aria-label'] === '玩家视角' || n.props['aria-label'] === '撤销')).toBe(false);
     }
+  });
+  it('offers the DM undo only when the room has something to take back', () => {
+    const onUndo = vi.fn();
+    const button = (undo: { available: number; label: string | null }) => nodes(Toolbar({ tool: 'select', onTool: vi.fn(), undo, onUndo })).find(n => n.props['aria-label'] === '撤销')!;
+    expect(button({ available: 0, label: null }).props.disabled).toBe(true);
+    const ready = button({ available: 2, label: '移动棋子' });
+    expect(ready.props.disabled).toBe(false);
+    expect(ready.props.title).toContain('移动棋子');
+    ready.props.onClick();
+    expect(onUndo).toHaveBeenCalled();
   });
   it('toggles the DM player view from the rail', () => {
     const onPlayerPreview = vi.fn();
@@ -57,6 +67,9 @@ describe('board tool helpers', () => {
     expect(toolForKey('F', 'dm', 'erase-area')).toBe('erase-area');
     expect(toolForKey('f', 'dm', 'select')).toBe('erase');
     expect(toolForKey('r', 'player', 'select')).toBe('measure');
+    expect(toolForKey('p', 'player', 'select')).toBe('ping');
+    expect(toolForKey('p', 'spectator', 'select')).toBeNull();
+    expect(toolForKey('n', 'player', 'select')).toBeNull();
     expect(toolForKey('w', 'player', 'select')).toBeNull();
     expect(toolForKey('x', 'dm', 'select')).toBeNull();
   });
