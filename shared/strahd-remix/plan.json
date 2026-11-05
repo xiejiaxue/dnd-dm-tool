@@ -126,6 +126,20 @@
       0.875
      ],
      "automatic": false
+    },
+    {
+     "card": "COS__af626a35e150ebd1",
+     "section": "可选路障",
+     "region": "前往村庄 · 杜尔斯特家墓（另一段老路）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "与蝙蝠、行尸三选一；只在移开伊丽莎白的石板、翻动棺材或在墓里生火时出现，出了墓门不追。",
+     "source": "L0 · 死亡之屋余烬",
+     "automatic": false,
+     "position": [
+      0.5625,
+      0.9375
+     ]
     }
    ]
   },
@@ -230,6 +244,31 @@
      "heading": "### 去银龙宅邸的路（d6）"
     },
     {
+     "file": "地点手册/路上的小战斗_死亡之屋余烬.md",
+     "heading": null,
+     "name": "死亡之屋的余烬（路上的小战斗）"
+    },
+    {
+     "file": "地点手册/L2_斯瓦里奇老路与橡木湖营地.md",
+     "heading": "### 战斗 5：河边的背包"
+    },
+    {
+     "file": "地点手册/L3_瓦拉吉镇.md",
+     "heading": "### 战斗 5：风车下的夫妇"
+    },
+    {
+     "file": "地点手册/L5_北上之路与克雷茨克.md",
+     "heading": "### 战斗 5：松林里的神龛"
+    },
+    {
+     "file": "地点手册/L5_北上之路与克雷茨克.md",
+     "heading": "### 小冲突：林间小屋的门"
+    },
+    {
+     "file": "地点手册/L6_银龙宅邸.md",
+     "heading": "### 战斗 5：河弯的合唱"
+    },
+    {
      "file": "房间描述/NPC位置与出场.md",
      "heading": null,
      "name": "NPC 位置与出场"
@@ -284,6 +323,66 @@
      "count": 1,
      "condition": "第 2 轮（救过折翅渡鸦则第 1 轮）到场，由主持人操作帮玩家：每轮啄一只恐狼或让它攻击劣势；半血飞走。",
      "source": "L2 战斗 2",
+     "automatic": false
+    },
+    {
+     "card": "COS__e33f8191a4cf1898",
+     "section": "可选战斗",
+     "region": "伊夫里斯河河滩 · 河边的背包",
+     "quantity": "2（5 人 +1）",
+     "count": 2,
+     "condition": "第 2 次与枯萎怪、石桥恐狼三选一；踩上翻土或停留超过 10 分钟时从土里爬出，不撤，涉水过河即脱离。",
+     "source": "L2 战斗 5 · 死亡之屋余烬",
+     "automatic": false
+    },
+    {
+     "card": "COS__c9bc75def3e5cecb",
+     "section": "可选战斗",
+     "region": "破风车山脚 · 风车下的夫妇",
+     "quantity": "1",
+     "count": 1,
+     "condition": "第 3 次路上；先交谈，被嘲笑、拒绝陪等或聊过三轮才动手。交还风车地契（1D6）可以不打。",
+     "source": "L3 战斗 5 · 死亡之屋余烬",
+     "automatic": false
+    },
+    {
+     "card": "COS__3b8f9e52f2e0821a",
+     "section": "可选战斗",
+     "region": "破风车山脚 · 风车下的夫妇",
+     "quantity": "1",
+     "count": 1,
+     "condition": "与古斯塔夫同场；第 1 轮扑向伊丽娜或最近的人。",
+     "source": "L3 战斗 5 · 死亡之屋余烬",
+     "automatic": false
+    },
+    {
+     "card": "COS__a20690e338296546",
+     "section": "可选战斗",
+     "region": "北上松林 · 伯爵神龛",
+     "quantity": "5",
+     "count": 5,
+     "condition": "第 5 次与北上的狼群二选一；碰木像或拿水晶球时出现，走出松林即脱离。",
+     "source": "L5 战斗 5 · 死亡之屋余烬",
+     "automatic": false
+    },
+    {
+     "card": "COS__8cf116414ee0dee0",
+     "section": "可选战斗",
+     "region": "北上松林 · 林间小屋的门",
+     "quantity": "1",
+     "count": 1,
+     "condition": "小屋里多出来的那扇门；碰门者被粘住，速度 15 尺不追。",
+     "source": "L5 小冲突 · 死亡之屋余烬",
+     "automatic": false
+    },
+    {
+     "card": "COS__334229a97a9c13d4",
+     "section": "可选战斗",
+     "region": "去银龙宅邸路上 · 河弯红泥浅滩",
+     "quantity": "1",
+     "count": 1,
+     "condition": "第 6 次时间宽裕时用；十三个幻影合唱的第 2 轮站起，不离开河岸 30 尺。",
+     "source": "L6 战斗 5 · 死亡之屋余烬",
      "automatic": false
     }
    ],
