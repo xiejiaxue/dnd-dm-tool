@@ -231,7 +231,7 @@ export default function EnemyList() {
 
       </div>
       {detail ? (
-        <DetailDrawer entry={detail} onBack={() => setDetail(null)} />
+        <DetailDrawer entry={detail} onBack={() => setDetail(null)} hideHp={!isDm} />
       ) : (
         <div className="flex-1 overflow-y-auto">
           {isDm && players.length > 0 && <>
@@ -285,7 +285,7 @@ export default function EnemyList() {
                     !t.hp ? 'text-faint' : t.hp.current <= 0 ? 'text-accent' : 'text-ink'
                   }`}
                 >{t.hp ? `${t.hp.current}/${t.hp.max}` : 'HP:—'}</button>
-                ) : <span className="shrink-0 px-1 text-xs tabular-nums">{t.hp ? `${t.hp.current}/${t.hp.max}` : 'HP:—'}</span>}
+                ) : null}
                 {eid && (
                   <button
                     onClick={() => setDetail({ type: 'monster', id: eid, nameZh: t.name })}
