@@ -2,9 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-// --remix publishes 施特拉德的诅咒（重置版 v2）, which ships 18 of the same maps under its own template.
+// --remix publishes 施特拉德的诅咒（重置版 v2）, which ships 18 of the same maps plus the prologue's battle map under its own template.
 const remix=process.argv.includes('--remix');
-const moduleId=remix?'curse-of-strahd-remix':'curse-of-strahd', total=remix?18:36;
+const moduleId=remix?'curse-of-strahd-remix':'curse-of-strahd', total=remix?19:36;
 const root=path.resolve(remix?'output/strahd-remix':'output/strahd');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'),'utf8'));
 if(manifest.id!==moduleId||manifest.scenes.length!==total)throw new Error(`Build the complete ${moduleId} module first`);

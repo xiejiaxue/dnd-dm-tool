@@ -9,14 +9,15 @@ export const strahdRemixScenes: PresetScene[] = presets;
 
 /**
  * 施特拉德的诅咒（重置版 v2）: the user's local eight-session reconstruction. It reuses the original maps and
- * cards with its own scene notes, area notes and default groups; the original module stays unchanged.
+ * cards with its own scene notes, area notes and default groups, and adds the prologue's battle map with
+ * its own cards; the original module stays unchanged.
  */
 export const curseOfStrahdRemix: AdventureModule = {
   id: 'curse-of-strahd-remix',
-  library: { name: '施特拉德的诅咒（重置版 v2）', description: '8 次团重构 · 18 张地图 · 场景目标、地点手册与精简遭遇' },
+  library: { name: '施特拉德的诅咒（重置版 v2）', description: '8 次团重构 · 19 张地图 · 场景目标、地点手册与精简遭遇' },
   scenes: {
-    count: 18,
-    // Same maps as the original module; presets place only the reconstruction's default groups.
+    count: 19,
+    // The original module's maps plus the prologue's battle map; presets place only the reconstruction's default groups.
     prepare(map) {
       const preset = strahdRemixScenes.find(s => s.map.assetId === map.assetId);
       if (!preset || preset.map.width !== map.width || preset.map.height !== map.height)

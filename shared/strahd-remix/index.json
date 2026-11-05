@@ -49,11 +49,9 @@
     "hp": 4,
     "initiativeBonus": 0,
     "chapters": [
-      "总览与旅途",
       "第 2 次 · 篝火与塔罗卡"
     ],
     "sceneKeys": [
-      "01",
       "05"
     ]
   },
@@ -150,12 +148,14 @@
     "hp": 37,
     "initiativeBonus": 2,
     "chapters": [
+      "第 1 次 · 迷雾与葬礼",
       "总览与旅途",
       "第 2 次 · 篝火与塔罗卡",
       "第 5 次 · 世界尽头的池水",
       "第 7—8 次 · 鸦阁城堡"
     ],
     "sceneKeys": [
+      "00",
       "01",
       "05",
       "10",
@@ -173,12 +173,14 @@
     "hp": 11,
     "initiativeBonus": 2,
     "chapters": [
+      "第 1 次 · 迷雾与葬礼",
       "总览与旅途",
       "第 2 次 · 篝火与塔罗卡",
       "第 5 次 · 世界尽头的池水",
       "第 7—8 次 · 鸦阁城堡"
     ],
     "sceneKeys": [
+      "00",
       "01",
       "05",
       "10",
@@ -307,8 +309,12 @@
     "cr": "",
     "hp": 22,
     "initiativeBonus": 2,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
   },
   {
     "id": "COS__b0220c04e0da7d47",
@@ -320,8 +326,12 @@
     "cr": "",
     "hp": 22,
     "initiativeBonus": -2,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
   },
   {
     "id": "COS__0a34fb09d570573e",
@@ -4343,6 +4353,29 @@
     ],
     "sceneKeys": [
       "17"
+    ]
+  },
+  {
+    "id": "COSR__darvan",
+    "type": "monster",
+    "nameZh": "达尔万·奥兰斯基",
+    "nameEn": "Darvan Oransky",
+    "source": "施特拉德的诅咒（重置版 v2）",
+    "bookFile": "builtin/strahd-remix",
+    "cr": "0",
+    "hp": 4,
+    "initiativeBonus": 0,
+    "role": "序章送信人 · 重置版",
+    "aliases": [
+      "达尔万",
+      "送信人",
+      "考利安家的帮工"
+    ],
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "00"
     ]
   }
 ]

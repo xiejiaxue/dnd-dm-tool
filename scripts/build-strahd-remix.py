@@ -2,10 +2,11 @@
 python3 scripts/build-strahd-remix.py /path/to/施特拉德的诅咒
 shared/strahd-remix/plan.json (hand-written) picks the maps, the v2 sections shown as scene notes and
 area notes, and the default encounter groups; cards.json holds the reconstruction's own cards. Maps are
-the original PNGs copied byte-for-byte under map-cosr-* ids. Re-running after editing the v2 notes
-refreshes scenes.json, index.json and output/strahd-remix/manifest.json. Each scene's `rooms` names the
-book chapter and the room codes on its map; those rooms follow the v2 areas, each headed by its 房间描述
-entry, else what v2 says about it (or that v2 leaves it empty), and then the original chapter text.
+the original PNGs copied byte-for-byte under map-cosr-* ids, plus v2 battle maps named by `mapFile`.
+Re-running after editing the v2 notes refreshes scenes.json, index.json and output/strahd-remix/manifest.json.
+Each scene's `rooms` names the book chapter and the room codes on its map (a v2 battle map has none); those
+rooms follow the v2 areas, each headed by its 房间描述 entry, else what v2 says about it (or that v2 leaves
+it empty), and then the original chapter text.
 """
 from pathlib import Path
 import json, re, sys, hashlib, math, shutil, struct
@@ -35,7 +36,7 @@ def plain(lines):
     out, fence = [], False
     for line in lines:
         if line.startswith('```'): fence = not fence; continue
-        if fence or re.match(r'^\|\s*-{3}', line) or line.startswith('<!--'): continue
+        if fence or re.match(r'^\|\s*-{3}', line) or line.startswith('<!--') or re.match(r'^<a id="[^"]*"></a>$', line): continue
         line = re.sub(r'!\[[^]]*\]\([^)]*\)', '', line)
         line = re.sub(r'\[([^]]+)\]\([^)]*\)', r'\1', line).replace('**', '').replace('`', '')
         if m := re.match(r'^(#+)\s+(.*)', line): line = f'【{m[2].strip()}】'
@@ -60,7 +61,8 @@ def section(spec):
     """(heading text, body lines) for one plan entry: a whole file, or one heading with its subsections."""
     lines = v2_lines_of(V2 / spec['file'])
     if spec['heading'] is None:
-        start = next(i for i, l in enumerate(lines) if l.startswith('# ')) + 1
+        # `from` skips a file's navigation block: start at that line instead of below the title.
+        start = next(i for i, l in enumerate(lines) if l.startswith(spec.get('from', '# '))) + ('from' not in spec)
         end = next((i for i, l in enumerate(lines) if spec.get('until') and l.startswith(spec['until'])), len(lines))
         return None, lines[start:end]
     hits = [i for i, l in enumerate(lines) if l.startswith(spec['heading'])]
@@ -199,7 +201,8 @@ ASSETS.mkdir(parents=True, exist_ok=True)
 for old in ASSETS.iterdir(): old.unlink()
 scenes, placed = [], descriptions()
 for p in plan['scenes']:
-    img = maps[p['map']]; data = img.read_bytes()
+    # A v2 map of its own (the prologue's battle map) is named by `mapFile`; the rest are book maps.
+    img = V2 / p['mapFile'] if 'mapFile' in p else maps[p['map']]; data = img.read_bytes()
     width, height = struct.unpack('>II', data[16:24])
     asset = f"map-cosr-{p['map']}-{hashlib.sha256(data).hexdigest()[:12]}"
     shutil.copyfile(img, ASSETS / asset)
@@ -213,8 +216,9 @@ for p in plan['scenes']:
             e = {'entryId': row['id'], 'name': row['nameZh'], 'section': spec['section'], 'region': spec['region'],
                  'quantity': spec['quantity'], 'count': spec['count'], 'hp': row['hp'], 'initiativeBonus': row['initiativeBonus'],
                  'condition': spec['condition'], 'source': spec['source'],
-                 'position': originals[spec['at']]['position'] if 'at' in spec else None, 'automatic': spec['automatic']}
-            if 'currentHp' in spec: e['currentHp'] = spec['currentHp']
+                 'position': originals[spec['at']]['position'] if 'at' in spec else spec.get('position'), 'automatic': spec['automatic']}
+            for k in ('currentHp', 'tokenScale'):
+                if k in spec: e[k] = spec[k]
         e['key'] = f"{p['key']}-{ident(e['section'] + e['region'] + e['entryId'])}"
         assert e['key'] not in keys, e['key']; keys.add(e['key'])
         assert not e['automatic'] or (e['count'] and e['position']), (p['key'], e['region'])
@@ -222,15 +226,16 @@ for p in plan['scenes']:
         row = index[e['entryId']]
         if p['chapter'] not in row['chapters']: row['chapters'].append(p['chapter'])
         if p['key'] not in row['sceneKeys']: row['sceneKeys'].append(p['key'])
-    rooms = {r['code'] for r in book_rooms(p['rooms']['file']) if wanted(r['code'], p['rooms']['codes'])}
+    rooms = {r['code'] for r in book_rooms(p['rooms']['file']) if wanted(r['code'], p['rooms']['codes'])} if 'rooms' in p else set()
     entries = placed.pop(p['key'], [])
     described = {d['room']: d['text'] for d in entries if d['room'] in rooms}
     extra = [{'name': d['name'], 'text': d['text']} for d in entries if d['room'] not in rooms]
     scenes.append({'key': p['key'], 'name': f"{p['key']} · {p['name']}", 'chapter': p['chapter'],
-                   'map': {'assetId': asset, 'width': width, 'height': height, 'mapScale': 3},
+                   'map': {'assetId': asset, 'width': width, 'height': height, 'mapScale': p.get('mapScale', 3)},
+                   **({'tokenSize': p['tokenSize']} if 'tokenSize' in p else {}),
                    'encounters': encounters, 'notes': notes(p['notes']),
                    'areas': [{'key': f'a{i + 1:02d}', **a} for i, a in enumerate([*areas(p['areas']), *extra])]
-                            + list(room_areas(p['rooms'], encounters, described))})
+                            + (list(room_areas(p['rooms'], encounters, described)) if 'rooms' in p else [])})
     assert len({a['key'] for a in scenes[-1]['areas']}) == len(scenes[-1]['areas']), p['key']
 assert not placed, f'房间描述 sent to unknown scenes: {list(placed)}'
 

@@ -2,6 +2,134 @@
  "source": "重置版v2",
  "scenes": [
   {
+   "key": "00",
+   "map": "00",
+   "mapFile": "地图示意/第1次_恐狼围攻_纯场景.png",
+   "name": "序章：雾中的狼（废车救援）",
+   "chapter": "第 1 次 · 迷雾与葬礼",
+   "mapScale": 0.638,
+   "tokenSize": 100,
+   "notes": [
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": null,
+     "from": "> 第 1 次开团",
+     "until": "<a id=\"flow-1\">"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 用法"
+    }
+   ],
+   "areas": [
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 一、进雾"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 二、战斗：废车上的人"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 三、战后"
+    },
+    {
+     "file": "地点手册/L0_序章_雾中的狼.md",
+     "heading": "## 主持人要演出来的三件事"
+    }
+   ],
+   "encounters": [
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "默认战斗",
+     "region": "序章 · 恐狼 A（废车左侧）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "阻截送信人；够不到车顶中央的达尔万，先绕车找扑咬位置。生命值过半或第 5 轮嚎叫时退进雾里。大型，占 2×2 格。",
+     "source": "L0 序章",
+     "position": [
+      0.25,
+      0.375
+     ],
+     "tokenScale": 2,
+     "automatic": true
+    },
+    {
+     "card": "COS__92530ee046b3bf7c",
+     "section": "默认战斗",
+     "region": "序章 · 恐狼 B（废车右侧）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "逼近最近的救援者并试图包夹。生命值过半或第 5 轮嚎叫时退进雾里。大型，占 2×2 格。",
+     "source": "L0 序章",
+     "position": [
+      0.75,
+      0.5
+     ],
+     "tokenScale": 2,
+     "automatic": true
+    },
+    {
+     "card": "COSR__darvan",
+     "section": "在场人物",
+     "region": "序章 · 废车顶上（达尔万）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "考利安家的帮工，揣着给维斯塔尼长者的信（1D1），只剩 2 点生命值。车顶中央恐狼够不着，车顶最多站两人。",
+     "source": "L0 序章",
+     "position": [
+      0.5625,
+      0.3125
+     ],
+     "currentHp": 2,
+     "automatic": true
+    },
+    {
+     "card": "COS__24c56ae29e4a1a3d",
+     "section": "可选战斗",
+     "region": "序章 · 雾里的增援",
+     "quantity": "2",
+     "count": 2,
+     "condition": "困难编组：仅 5 人桌开团前选定，第 3 轮从雾里出来；默认编组没有增援，不因玩家打得顺利临时加入。",
+     "source": "L0 序章",
+     "position": [
+      0.125,
+      0.8125
+     ],
+     "automatic": false
+    },
+    {
+     "card": "COS__2983f8407947ab09",
+     "section": "可选路障",
+     "region": "前往村庄 · 森林蝙蝠（另一段老路）",
+     "quantity": "1",
+     "count": 1,
+     "condition": "与路上的行尸二选一，恐狼之后队伍仍有余力才用；生命值过半尝试撤退，脱离接触后不追。",
+     "source": "L0 序章",
+     "position": [
+      0.4375,
+      0.0625
+     ],
+     "automatic": false
+    },
+    {
+     "card": "COS__b0220c04e0da7d47",
+     "section": "可选路障",
+     "region": "前往村庄 · 路上的行尸（另一段老路）",
+     "quantity": "3",
+     "count": 3,
+     "condition": "与森林蝙蝠二选一；普通僵尸，相距约 10 尺占着老路，可潜行绕过或用 20 尺速度脱离。",
+     "source": "L0 序章",
+     "position": [
+      0.5,
+      0.875
+     ],
+     "automatic": false
+    }
+   ]
+  },
+  {
    "key": "01",
    "map": "01",
    "name": "总览与旅途：巴洛维亚总地图",
@@ -42,26 +170,6 @@
      "file": "10_圣物与世界规则.md",
      "heading": null,
      "name": "圣物与世界规则"
-    },
-    {
-     "file": "地点手册/L0_序章_雾中的狼.md",
-     "heading": "## 用法"
-    },
-    {
-     "file": "地点手册/L0_序章_雾中的狼.md",
-     "heading": "## 一、进雾"
-    },
-    {
-     "file": "地点手册/L0_序章_雾中的狼.md",
-     "heading": "## 二、战斗：废车上的人"
-    },
-    {
-     "file": "地点手册/L0_序章_雾中的狼.md",
-     "heading": "## 三、战后"
-    },
-    {
-     "file": "地点手册/L0_序章_雾中的狼.md",
-     "heading": "## 主持人要演出来的三件事"
     },
     {
      "file": "场景/S1_迷雾与葬礼.md",
@@ -128,37 +236,6 @@
     }
    ],
    "encounters": [
-    {
-     "card": "COS__92530ee046b3bf7c",
-     "section": "可选战斗",
-     "region": "序章 · 废车旁",
-     "quantity": "2",
-     "count": 2,
-     "condition": "两头恐狼追杀送信的达尔万；第 5 轮（或一头过半血）城堡方向一声嚎叫，全部撤走。",
-     "source": "L0 序章",
-     "automatic": false
-    },
-    {
-     "card": "COS__24c56ae29e4a1a3d",
-     "section": "可选战斗",
-     "region": "序章 · 雾里的增援",
-     "quantity": "2",
-     "count": 2,
-     "condition": "困难编组：第 3 轮从雾里出来；默认编组只有绿眼睛，不加入。",
-     "source": "L0 序章",
-     "automatic": false
-    },
-    {
-     "card": "COS__e5b2a00a635f65cc",
-     "section": "在场人物",
-     "region": "序章 · 废车顶上（达尔万）",
-     "quantity": "1",
-     "count": 1,
-     "condition": "考利安家的帮工，揣着给维斯塔尼的信（1D1），只剩 2 点生命值。",
-     "source": "L0 序章",
-     "automatic": false,
-     "currentHp": 2
-    },
     {
      "card": "COS__24c56ae29e4a1a3d",
      "section": "可选战斗",
@@ -2049,7 +2126,10 @@
  "descriptions": [
   {
    "file": "房间描述/R0_序章与森林.md",
-   "scene": "01"
+   "scene": "01",
+   "by": {
+    "v2-cart": "00"
+   }
   },
   {
    "file": "房间描述/R1_巴洛维亚村与鬼屋.md",
