@@ -152,11 +152,14 @@ export function projectRoomState(state: PersistedRoomState, actor: RoomActor): R
   // Strip hidden encounter tokens and their initiative entries before transmission.
   const playerScene = structuredClone(scene);
   const hiddenIds = new Set(scene.tokens.filter(t => t.hidden).map(t => t.id));
-  playerScene.tokens = playerScene.tokens.filter(t => !t.hidden);
+  // HP is DM-only: players never receive encounter tokens' HP.
+  playerScene.tokens = playerScene.tokens.filter(t => !t.hidden).map(({ hp: _hp, ...token }) => token);
   if (playerScene.notes) playerScene.notes = playerScene.notes.filter(note => note.visible);
   playerScene.initiative = playerScene.initiative.filter(e => !e.tokenId || !hiddenIds.has(e.tokenId));
-  playerScene.players = playerScene.players.map((player) => ({
+  playerScene.players = playerScene.players.map(({ hp, ...player }) => ({
     ...player,
+    // A player keeps their own HP; other characters' HP is DM-only.
+    ...(player.sessionId === actor.userId && hp ? { hp } : {}),
     sessionId: player.sessionId === actor.userId ? actor.userId : null,
   }));
   playerScene.initiative = playerScene.initiative.map((entry) => ({

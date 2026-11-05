@@ -6,7 +6,7 @@ import { formatCompendiumEntry, StatBlock } from '../format';
 import { setPending } from '../pending';
 import type { EntryType } from '../types';
 
-export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryType; id: string; nameZh: string } | null; onBack: () => void }) {
+export default function DetailDrawer({ entry, onBack, hideHp = false }: { entry: { type: EntryType; id: string; nameZh: string } | null; onBack: () => void; hideHp?: boolean }) {
   const { scene, role } = useScene();
   const [stat, setStat] = useState<StatBlock | null>(null);
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ export default function DetailDrawer({ entry, onBack }: { entry: { type: EntryTy
           <div className="text-zinc-400 text-xs mb-2">{stat.meta}</div>
           <table className="w-full text-xs mb-3">
             <tbody>
-              {stat.rows.map(([k, v]) => (
+              {stat.rows.filter(([k]) => !(hideHp && k === 'HP')).map(([k, v]) => (
                 <tr key={k}><td className="text-zinc-500 pr-2 align-top">{k}</td><td>{v}</td></tr>
               ))}
             </tbody>

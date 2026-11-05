@@ -1199,6 +1199,10 @@ export function projectPatchOperations(
         );
         if (!player) return null;
         const patch = structuredClone(operation.patch);
+        if (!canManage && player.sessionId !== actor.userId) {
+          delete patch.hp;
+          if (Object.keys(patch).length === 0) break;
+        }
         if ("sessionId" in patch) {
           patch.sessionId =
             canManage || player.sessionId === actor.userId
@@ -1256,10 +1260,13 @@ function projectPlayerToken(
   actor: RoomActor,
   canManage: boolean,
 ): PlayerToken {
+  const own = canManage || player.sessionId === actor.userId;
+  const { hp, ...rest } = structuredClone(player);
   return {
-    ...structuredClone(player),
-    sessionId:
-      canManage || player.sessionId === actor.userId ? player.sessionId : null,
+    ...rest,
+    // HP is DM-only except for the player's own character.
+    ...(own && hp ? { hp } : {}),
+    sessionId: own ? player.sessionId : null,
   };
 }
 
