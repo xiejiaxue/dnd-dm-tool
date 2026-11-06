@@ -118,3 +118,20 @@ it('adds only its own cards to search and draws their tokens',async()=>{
   expect((await api('/api/token/COSR__heart-of-sorrow')).headers.get('content-type')).toContain('image/svg+xml');
   expect(strahdRemixIndex.filter(n=>n.id.startsWith('COS__'))).toHaveLength(301);
 });
+
+it('places room descriptions over the labels printed on its book maps',()=>{
+  const rooms=strahdRemixScenes.flatMap(s=>s.areas!.filter(a=>!/^a\d+$/.test(a.key)).map(a=>({scene:s.key,...a})));
+  const located=rooms.filter(a=>a.positions?.length);
+  // Every keyed room carries its description; most are also clickable on the map.
+  expect(rooms.every(a=>a.text.length>0)).toBe(true);
+  expect(located.length/rooms.length).toBeGreaterThan(0.8);
+  for(const a of located)for(const p of a.positions!){expect(p).toHaveLength(2);for(const v of p){expect(v).toBeGreaterThan(0);expect(v).toBeLessThan(1);}}
+  // Section notes (a01…) and the prologue's own battle map have no printed labels.
+  expect(strahdRemixScenes.flatMap(s=>s.areas!).filter(a=>/^a\d+$/.test(a.key)&&a.positions)).toEqual([]);
+  expect(strahdRemixScenes.find(s=>s.key==='00')!.areas!.some(a=>a.positions)).toBe(false);
+  const keys=(scene:string)=>new Set(located.filter(a=>a.scene===scene).map(a=>a.key));
+  expect([...keys('15')].sort()).toEqual(expect.arrayContaining(['K7','K8','K10','K15','K20','K24']));
+  expect(keys('01').size).toBe(26);
+  // Rooms labelled on several floors or map insets keep every label.
+  expect(rooms.find(a=>a.scene==='12'&&a.key==='Q14')!.positions!.length).toBeGreaterThan(1);
+});

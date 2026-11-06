@@ -690,3 +690,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .handout-viewer img { display: block; min-height: 0; max-width: 100%; max-height: calc(100vh - 140px); object-fit: contain; background: #20221e; }
 .handout-viewer figcaption { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: #20221e; font-size: 13px; }
 .handout-viewer figcaption strong { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.room-note-card { width: min(420px, calc(100% - 24px)); }
+.room-note-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.room-notes { position: absolute; left: 14px; bottom: 14px; z-index: 20; width: min(260px, calc(100% - 28px)); max-height: min(60%, 520px); display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); background: #fcfbf8; color: #20221e; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.room-notes.is-collapsed { width: auto; max-height: none; padding: 0; }
+.room-notes > header { display: flex; align-items: baseline; gap: 8px; }
+.room-notes > header strong { font-size: 13px; }
+.room-notes > header span { flex: 1; min-width: 0; font-size: 10px; }
+.room-notes > header button { width: 22px; color: #62645c; font-size: 14px; line-height: 1; }
+.room-notes > header button:hover, .room-notes-toggle:hover { color: var(--accent); }
+.room-notes-toggle { padding: 7px 12px; font-size: 12px; font-weight: 600; }
+.room-notes-scroll { min-height: 0; overflow-y: auto; margin: 0 -4px; }
+.room-notes-scroll ul { display: flex; flex-direction: column; }
+.room-notes-scroll li button { display: flex; width: 100%; align-items: center; gap: 6px; padding: 4px; text-align: left; line-height: 1.4; }
+.room-notes-scroll li button:hover { background: #eeede6; }
+.room-notes-scroll li button[aria-current="true"] { background: #20221e; color: #fff; }
+.room-notes-scroll summary { cursor: pointer; padding: 6px 4px 4px; color: #62645c; font-size: 11px; }
+.room-notes-unplaced { margin-left: auto; color: #a6a49b; font-size: 10px; }
+@container battle (max-width: 560px) { .room-notes { left: 10px; bottom: 10px; } }
