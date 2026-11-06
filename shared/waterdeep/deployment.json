@@ -1418,8 +1418,8 @@
         "entryId": "WDNPC__a49bdf2900633bfb",
         "x": 0.44,
         "y": 0.59,
-        "hp": 58,
-        "initiativeBonus": 1
+        "hp": 52,
+        "initiativeBonus": 4
       },
       {
         "name": "警卫 · C2",

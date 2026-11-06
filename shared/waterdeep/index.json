@@ -996,13 +996,13 @@
     "nameEn": "Willifort Crowelle",
     "source": "深水城 NPC",
     "bookFile": "builtin/waterdeep",
-    "cr": "2",
+    "cr": "3",
     "faction": "卡萨兰特家族与阿斯蒙蒂斯邪教",
     "category": "剧情核心NPC",
     "location": "卡萨兰特庄园；邪教哨站；伪装响应行动",
-    "hp": 58,
+    "hp": 52,
     "combat": true,
-    "template": "拟身怪"
+    "template": "变形怪"
   },
   {
     "id": "WDNPC__5384c4b0acdda5a6",
@@ -2376,13 +2376,13 @@
     "nameEn": "Bonnie / 莱美瑞亚·拉霍瑞尔斯特 / Lymeria Lhaurilstar",
     "source": "深水城 NPC",
     "bookFile": "builtin/waterdeep",
-    "cr": "2",
+    "cr": "3",
     "faction": "独立人物与具名生物",
     "category": "普通NPC",
     "location": "呵欠之门；变形怪团体任务；伪装场景",
-    "hp": 58,
+    "hp": 52,
     "combat": true,
-    "template": "拟身怪"
+    "template": "变形怪"
   },
   {
     "id": "WDNPC__6e6ac1d79140a23a",
