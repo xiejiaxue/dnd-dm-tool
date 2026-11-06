@@ -21,7 +21,3 @@ export type IconName = keyof typeof shapes;
 export default function Icon({ name, className = '' }: { name: IconName; className?: string }) {
   return <svg className={`ui-icon ${className}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[name]}</svg>;
 }
-
-export function DiceArtwork() {
-  return <div className="hero-art" aria-hidden="true"><span className="art-coordinate">FIG. 01 — THE POSSIBILITIES</span><svg viewBox="0 0 320 260" fill="none"><circle cx="160" cy="130" r="100" stroke="currentColor" strokeOpacity=".22"/><path d="M20 130h280M160 10v240" stroke="currentColor" strokeOpacity=".15"/><path d="m160 28 90 55v98l-90 52-90-52V83l90-55Z" fill="#ba3526" stroke="#ba3526" strokeWidth="2"/><path d="m160 28-54 135h108L160 28ZM70 83l36 80 54 70 54-70 36-80M70 181l36-18m108 0 36 18" stroke="#f6f5f0" strokeWidth="1.5"/><text x="160" y="141" fill="#fcfbf8" fontSize="36" fontFamily="Helvetica, Arial, sans-serif" textAnchor="middle">20</text></svg><span className="art-caption">无限世界，一张游戏桌。<span>ROLL / PLAY / REPEAT</span></span></div>;
-}

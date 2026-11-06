@@ -616,7 +616,6 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   if (!scene) return <div className="absolute inset-0 flex items-center justify-center text-faint tracking-label">连接中…</div>;
 
   const grid = scene.grid;
-  const area = scene.playArea;
   const displayedMapScale = mapZoom.value;
   const fogBounds = fogGeometry(scene, displayedMapScale);
   const fogMask = (children: ReactNode) => <Group name="fog-mask" x={fogBounds.x} y={fogBounds.y} scaleX={fogBounds.scale} scaleY={fogBounds.scale} clipX={0} clipY={0} clipWidth={fogBounds.width} clipHeight={fogBounds.height} listening={false}>{children}</Group>;

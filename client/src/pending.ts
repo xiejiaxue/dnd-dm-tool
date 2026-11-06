@@ -15,10 +15,6 @@ type Listener = (pending: PendingToken | null) => void;
 let current: PendingToken | null = null;
 const listeners = new Set<Listener>();
 
-export function getPending(): PendingToken | null {
-  return current;
-}
-
 export function setPending(pending: PendingToken | null): void {
   current = pending;
   for (const l of listeners) l(current);

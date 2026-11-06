@@ -1,7 +1,7 @@
 .tavern-game { --tavern-green: #527262; --tavern-gold: #a8813d; padding-bottom: 16px; }
 .tavern-heading { align-items: center; }.tavern-heading p { margin: 12px 0 0; color: var(--muted); line-height: 1.8; }.tavern-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }.tavern-music { display: inline-flex; align-items: center; gap: 8px; }.tavern-music[aria-pressed="true"] { border-color: var(--tavern-green); color: var(--tavern-green); }
 .tavern-stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border-bottom: 1px solid var(--line); padding: 24px 0; gap: 18px; }.tavern-stats > div { display: grid; gap: 10px; }.tavern-stats span { font-size: 11px; color: var(--muted); }.tavern-stats strong { font-size: 26px; font-weight: 550; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }.tavern-stats strong small { font-size: 11px; font-weight: 400; letter-spacing: 0; color: var(--muted); }.tavern-stats small { font-size: 10px; }.tavern-stats > div:first-child strong { font-size: 23px; }.tavern-debt { grid-column: 1 / -1; color: var(--accent); }.tavern-game .loss { color: var(--accent); }.tavern-game .profit { color: var(--tavern-green); }
-.tavern-layout { display: grid; grid-template-columns: minmax(0,1fr) 286px; gap: 28px; padding-top: 28px; align-items: start; }.tavern-floor { border: 1px solid var(--line); background: #fcfbf7; min-width: 0; }.tavern-scene-wrap { position: relative; background: #d8d9cc; overflow: hidden; }.tavern-scene { display: block; width: 100%; height: auto; }.tavern-scene-label { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid #b8b6a6; background: #ece9dd; }.tavern-scene-label span { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }.tavern-scene-label small { color: var(--muted); font-size: 10px; text-align: right; }
+.tavern-layout { display: grid; grid-template-columns: minmax(0,1fr) 286px; gap: 28px; padding-top: 28px; align-items: start; }.tavern-floor { border: 1px solid var(--line); background: #fcfbf7; min-width: 0; }.tavern-scene-wrap { position: relative; background: #d8d9cc; overflow: hidden; }.tavern-scene-label { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid #b8b6a6; background: #ece9dd; }.tavern-scene-label span { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }.tavern-scene-label small { color: var(--muted); font-size: 10px; text-align: right; }
 .tavern-stage { padding: 28px; }.tavern-stage h2 { margin: 8px 0 16px; font-size: clamp(22px,2.4vw,29px); font-weight: 600; letter-spacing: -.04em; }.tavern-stage h2:focus { outline: none; }.tavern-intro { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 0 0 24px; }.tavern-game fieldset { padding: 0; border: 0; margin: 22px 0; min-width: 0; }.tavern-game legend { font-size: 11px; color: var(--muted); padding: 0 0 12px; }
 .tavern-styles, .tavern-preparation, .tavern-marketing { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }.tavern-styles label, .tavern-preparation button, .tavern-marketing button { position: relative; padding: 16px 14px; border: 1px solid var(--line); display: grid; gap: 8px; align-content: start; text-align: left; background: transparent; min-width: 0; }.tavern-styles label { cursor: pointer; color: var(--ink); }.tavern-styles input { position: absolute; opacity: 0; width: 1px; height: 1px; }.tavern-styles label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }.tavern-styles strong, .tavern-preparation strong { font-size: 13px; font-weight: 600; }.tavern-styles span, .tavern-preparation span, .tavern-marketing small { font-size: 11px; color: var(--muted); line-height: 1.7; }.tavern-game .selected { border-color: var(--tavern-green); background: #edf1e8; }.tavern-opening { border-top: 1px solid var(--line); padding: 18px 0 24px; display: grid; gap: 9px; font-size: 12px; }.tavern-opening > span:first-child { display: flex; justify-content: space-between; gap: 12px; }.tavern-opening strong { font-size: 18px; }.tavern-opening small { font-size: 11px; color: var(--muted); line-height: 1.7; }
 .tavern-primary { width: 100%; display: flex; align-items: center; justify-content: space-between; min-height: 50px; margin-top: 22px; gap: 14px; }.tavern-primary + .button-secondary { width: 100%; margin-top: 10px; }.tavern-inline-note { color: var(--muted); font-size: 11px; line-height: 1.8; }.tavern-shift-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }.tavern-progress { font-size: 11px; color: var(--muted); flex-shrink: 0; }
@@ -22,13 +22,12 @@
 @media(prefers-reduced-motion:reduce) { .tavern-game * { scroll-behavior: auto; } }
 .tavern-game .tavern-heading { padding-top: 28px; padding-bottom: 22px; align-items: center; }
 .tavern-stats { padding-top: 18px; padding-bottom: 18px; }
-.tavern-scene { height: clamp(160px,16vw,195px); }
 .tavern-stage { padding: 24px; }
 .tavern-stage h2 { margin-bottom: 12px; }
 .tavern-intro { margin-bottom: 18px; }
 .tavern-game fieldset { margin-top: 18px; margin-bottom: 18px; }
 .tavern-opening { padding-top: 14px; padding-bottom: 12px; }
-@media(max-width:599px) { .tavern-game .tavern-heading { padding-top: 24px; align-items: start; }.tavern-stage { padding: 22px 18px; }.tavern-scene { height: 150px; } }
+@media(max-width:599px) { .tavern-game .tavern-heading { padding-top: 24px; align-items: start; }.tavern-stage { padding: 22px 18px; } }
 @media(max-width:599px) { .navigation-rail .rail-destination > span:not(.nav-index) { font-size: 10px; white-space: nowrap; } }
 .tavern-story h3:focus { outline: none; }
 .navigation-rail .nav-name-short { display: none; }
@@ -99,8 +98,6 @@
 .tavern-date-events h3 { font-size: 18px; font-weight: 650; margin: 18px 0 10px; }
 .tavern-date p { font-size: 12px; line-height: 1.8; color: var(--muted); margin: 8px 0; }
 .tavern-date-events article+article { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
-.tavern-date .tavern-date-empty { margin: 22px 0; }
-.tavern-date-holiday { display: block; margin-top: 16px; }
 .tavern-date-quote { margin: 10px 0; }
 .tavern-date-quote p { font-size: 13px; color: var(--ink); line-height: 1.9; max-width: 62ch; }
 .tavern-date-quote cite { display: block; font-size: 11px; font-style: normal; color: var(--muted); margin-top: 10px; }

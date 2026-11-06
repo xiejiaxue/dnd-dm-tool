@@ -1,5 +1,3 @@
-import { HttpError } from './http';
-
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1_000;
 
 export interface Session {
@@ -98,8 +96,4 @@ function sessionCookie(request: Request, token: string): string {
   ];
   if (secure) attributes.push('Secure');
   return attributes.join('; ');
-}
-
-export function requireSession(context: SessionContext | undefined): asserts context is SessionContext {
-  if (!context) throw new HttpError(401, 'AUTH_REQUIRED', '需要登录');
 }
