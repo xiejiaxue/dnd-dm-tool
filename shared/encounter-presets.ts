@@ -8,7 +8,11 @@ export interface PresetEncounter {
   /** Token width in grid squares relative to a medium creature (tiny 0.5, large 2). */
   tokenScale?: number;
 }
-export interface PresetArea { key: string; name: string; text: string }
+export interface PresetArea {
+  key: string; name: string; text: string;
+  /** Where the map prints this room's label, as [x, y] fractions of the map image; a room may be labelled more than once. */
+  positions?: number[][];
+}
 export interface PresetScene {
   key: string; name: string; chapter: string;
   map: { assetId: string; width: number; height: number; mapScale: number };

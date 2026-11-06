@@ -200,6 +200,8 @@ def room_areas(spec, encounters, described):
 ASSETS.mkdir(parents=True, exist_ok=True)
 for old in ASSETS.iterdir(): old.unlink()
 scenes, placed = [], descriptions()
+# Hand-checked label positions per book map (shared/strahd-remix/area-positions.json): room code -> [[x, y], ...].
+label_positions = json.loads((DATA / 'area-positions.json').read_text())
 for p in plan['scenes']:
     # A v2 map of its own (the prologue's battle map) is named by `mapFile`; the rest are book maps.
     img = V2 / p['mapFile'] if 'mapFile' in p else maps[p['map']]; data = img.read_bytes()
@@ -237,6 +239,10 @@ for p in plan['scenes']:
                    'areas': [{'key': f'a{i + 1:02d}', **a} for i, a in enumerate([*areas(p['areas']), *extra])]
                             + (list(room_areas(p['rooms'], encounters, described)) if 'rooms' in p else [])})
     assert len({a['key'] for a in scenes[-1]['areas']}) == len(scenes[-1]['areas']), p['key']
+    located = label_positions.get(p['map'], {}) if 'mapFile' not in p else {}
+    assert set(located) <= {a['key'] for a in scenes[-1]['areas']}, (p['key'], set(located) - {a['key'] for a in scenes[-1]['areas']})
+    for a in scenes[-1]['areas']:
+        if a['key'] in located: a['positions'] = located[a['key']]
 assert not placed, f'房间描述 sent to unknown scenes: {list(placed)}'
 
 (DATA / 'scenes.json').write_text(json.dumps(scenes, ensure_ascii=False, indent=2) + '\n')

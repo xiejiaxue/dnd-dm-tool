@@ -263,6 +263,7 @@ function Table({ room, onLeaveRoom }: { room: CampaignBootstrap; onLeaveRoom: ()
             onBrushSize={setBrushSize}
             onTool={setTool}
             playerPreview={playerPreview}
+            templateId={room.campaign.templateId}
             onOpenJournal={journalId => { setJournalFocus({ id: journalId, nonce: Date.now() }); showInPanel('journal'); }}
           />
         </div>

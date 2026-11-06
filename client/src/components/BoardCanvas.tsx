@@ -8,6 +8,7 @@ import { useScene, connection, getMySessionId, asPing, type BoardPing } from '..
 import TokenConditions from './TokenConditions';
 import MapNoteCard from './MapNoteCard';
 import { MapPin, PingMarker, PING_MS } from './BoardMarkers';
+import { RoomCard, RoomList, RoomMarker, useRoomNotes } from './RoomNotes';
 import { useImage } from '../useImage';
 import { fogGridSize, fogGeometry, resolveFogBasisScale, type Wall } from '../types';
 import { fogBoundary, fogCellAtPoint, fogSelectionRectangle, fogRectangles, type FogRectangle } from './fog-geometry';
@@ -69,9 +70,11 @@ interface Props {
   playerPreview?: boolean;
   /** Opens a campaign journal in the side panel, from a map note. */
   onOpenJournal?: (journalId: string) => void;
+  /** The campaign's module, whose maps may carry keyed room descriptions. */
+  templateId?: string;
 }
 
-export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize, onBrushSize, onTool, playerPreview = false, onOpenJournal }: Props) {
+export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize, onBrushSize, onTool, playerPreview = false, onOpenJournal, templateId }: Props) {
   const { scene, role } = useScene();
   const mySessionId = getMySessionId();
   const [fogStrength, setFogStrength] = useDmFogStrength();
@@ -101,9 +104,15 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const [pullPing, setPullPing] = useState(false);
   // The map note whose card is open, and whether it opened in the editor.
   const [openNote, setOpenNote] = useState<{ id: string; editing: boolean } | null>(null);
+  // Module maps: the DM sees every keyed room, as markers over the printed labels and as a list.
+  const roomAreas = useRoomNotes(scene?.id, scene?.mapImage, templateId, role === 'dm');
+  const [openRoom, setOpenRoom] = useState<string | null>(null);
+  const [showRooms, setShowRooms] = useState(true);
   const sceneIdRef = useRef(scene?.id);
   sceneIdRef.current = scene?.id;
-  useLayoutEffect(() => { setOpenNote(null); setPings([]); }, [scene?.id]);
+  useLayoutEffect(() => { setOpenNote(null); setOpenRoom(null); setPings([]); }, [scene?.id]);
+  // A map note and a room share the card slot.
+  useEffect(() => { if (openNote) setOpenRoom(null); }, [openNote]);
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   // Wheel devices can emit far more events than the display refresh rate.
@@ -618,6 +627,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   // The DM edits any piece; a player only their own character.
   const editablePiece = selectedPiece && (role === 'dm' || (role === 'player' && selectedPiece.kind === 'player' && (selectedPiece as { sessionId?: string | null }).sessionId === mySessionId)) ? selectedPiece : null;
   const openNoteData = openNote ? scene.notes?.find(note => note.id === openNote.id) : undefined;
+  const rooms = dmView ? roomAreas : [];
+  const openRoomData = openRoom ? rooms.find(area => area.key === openRoom) : undefined;
+  const openRoomCard = (key: string) => { setOpenNote(null); setOpenRoom(current => current === key ? null : key); };
   const deletingWalls = role === 'dm' && tool === 'wall' && wallMode === 'delete' && !spacePan;
   const brushOutline = (() => {
     if (role !== 'dm' || tool !== 'erase' || brushCenter < 0 || spacePan) return null;
@@ -686,6 +698,8 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         ? { op: 'updateToken', tokenId: editablePiece.id, patch: { conditions } }
         : { op: 'updatePlayer', tokenId: editablePiece.id, patch: { conditions } }])} />
     </div>}
+    {openRoomData && !openNoteData && <RoomCard key={openRoomData.key} area={openRoomData} onClose={() => setOpenRoom(null)} />}
+    {rooms.length > 0 && <RoomList key={scene.id} areas={rooms} openKey={openRoom} showMarkers={showRooms} onShowMarkers={setShowRooms} onOpen={openRoomCard} />}
     {openNote && openNoteData && <MapNoteCard key={`${openNote.id}:${openNote.editing}`} note={openNoteData} canEdit={role === 'dm'} editing={openNote.editing} onClose={() => setOpenNote(null)} onOpenJournal={onOpenJournal} />}
     {role === 'dm' && tool === 'select-tokens' && initiativeSelection && <BatchInitiative enemyIds={initiativeSelection} onClose={() => setInitiativeSelection(null)} />}
     {stageSize.width > 0 && stageSize.height > 0 && <Stage
@@ -791,6 +805,9 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
             onContextMenu={() => onSelect(p.id)}
           />
         ))}
+        {showRooms && rooms.flatMap(area => (area.positions ?? []).map(([x, y], index) => <RoomMarker key={`${area.key}:${index}`} area={area}
+          x={x * scene.mapSize[0] * displayedMapScale} y={y * scene.mapSize[1] * displayedMapScale} scale={scale}
+          active={openRoom === area.key} listening={!drawing && !spacePan} onOpen={() => openRoomCard(area.key)} />))}
         {(scene.notes ?? []).map(note => <MapPin key={note.id} note={note} scale={scale} active={openNote?.id === note.id}
           draggable={role === 'dm' && tool === 'select' && !spacePan}
           onOpen={() => setOpenNote({ id: note.id, editing: false })}
