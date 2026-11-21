@@ -1,6 +1,6 @@
 import type { ModuleNote, PresetScene, StoryScene } from '../../shared/encounter-presets';
 import type { FactionQuestBook } from '../../shared/faction-quests';
-import type { Campaign, EntryType, IndexEntry, Scene } from './types';
+import type { EntryType, IndexEntry, Scene } from './types';
 
 export interface CurrentUser {
   id: string;

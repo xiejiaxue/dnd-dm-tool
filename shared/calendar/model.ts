@@ -9,7 +9,6 @@ export const DAYS = MONTHS.flatMap((name, m) => {
 });
 export const dayIndex = (month: number, day: number) => DAYS.findIndex(d => d.key === `${month}-${day}`);
 export const LAST_MINUTE = DAYS.length * 1440 - 1;
-export const dateLabel = (now: number) => `1492 DR · ${DAYS[Math.floor(now / 1440)]?.label ?? '未知日期'} ${String(Math.floor(now % 1440 / 60)).padStart(2, '0')}:${String(now % 60).padStart(2, '0')}`;
 export function newCalendar(name = '深水城主团', events: CalendarEvent[] = []): CalendarSave { return { version: 1, id: crypto.randomUUID(), name, now: dayIndex(3, 1) * 1440 + 9 * 60, events: structuredClone(events), history: [] }; }
 export function advance(save: CalendarSave, to: number): CalendarSave {
   if (!Number.isInteger(to) || to < 0 || to > LAST_MINUTE || to === save.now) return save;
