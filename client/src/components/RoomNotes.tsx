@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from 'react';
 import { Circle, Group, Label, Tag, Text } from 'react-konva';
 import { isRoomArea, type PresetArea } from '../../../shared/encounter-presets';
 import { api } from '../api';
+import { CARD_PANEL_KEY, useDraggablePanel } from '../hooks/useDraggablePanel';
 
 import { areaTitle, PRESET_ROUTES } from '../story';
 
@@ -78,8 +79,9 @@ interface CardProps {
 
 export function RoomCard({ area, onClose, onLocate, onPull, explored = false, onExplored }: CardProps) {
   const located = !!area.positions?.length;
-  return <section className="map-note-card room-note-card" aria-label={`房间描述：${areaTitle(area)}`}>
-    <header><strong>{areaTitle(area)}</strong><span className="map-note-visibility">仅 DM</span><button type="button" aria-label="关闭" onClick={onClose}>✕</button></header>
+  const panel = useDraggablePanel<HTMLElement>(CARD_PANEL_KEY);
+  return <section ref={panel.ref} style={panel.style} className="map-note-card room-note-card" aria-label={`房间描述：${areaTitle(area)}`}>
+    <header {...panel.handleProps}><strong>{areaTitle(area)}</strong><span className="map-note-visibility">仅 DM</span><button type="button" aria-label="关闭" onClick={onClose}>✕</button></header>
     <div className="map-note-text room-note-text">{area.text}</div>
     {(located || onExplored) && <footer className="room-note-actions">
       {located && onLocate && <button type="button" className="btn-xs" onClick={onLocate} title="把镜头移到这个房间">定位</button>}
@@ -103,6 +105,7 @@ interface ListProps {
 export function RoomList({ areas, openKey, explored, showMarkers, onShowMarkers, onOpen }: ListProps) {
   const [expanded, setExpanded] = useState(true);
   const [query, setQuery] = useState('');
+  const panel = useDraggablePanel<HTMLElement>('dnd:panel:room-list');
   const rooms = areas.filter(isRoom);
   const located = rooms.filter(area => area.positions?.length).length;
   const exploredCount = explored ? rooms.filter(area => explored.has(area.key)).length : 0;
@@ -112,11 +115,12 @@ export function RoomList({ areas, openKey, explored, showMarkers, onShowMarkers,
   const item = (area: PresetArea) => <li key={area.key}><button type="button" aria-current={openKey === area.key ? 'true' : undefined} onClick={() => onOpen(area.key)}>
     {explored?.has(area.key) && <span className="room-notes-done" aria-label="已探索">✓</span>}{areaTitle(area)}{isRoom(area) && !area.positions?.length && <span className="room-notes-unplaced" title="地图上没有找到这个编号">未标</span>}
   </button></li>;
-  if (!expanded) return <div className="room-notes is-collapsed">
+  if (!expanded) return <section ref={panel.ref} style={panel.style} className="room-notes is-collapsed" aria-label="本地图的房间描述（已收起）">
+    <span {...panel.handleProps} className={`${panel.handleProps.className} room-notes-grip`} aria-hidden="true">⠿</span>
     <button type="button" className="room-notes-toggle" aria-expanded="false" onClick={() => setExpanded(true)}>房间描述 · {rooms.length || areas.length}</button>
-  </div>;
-  return <section className="room-notes" aria-label="本地图的房间描述">
-    <header>
+  </section>;
+  return <section ref={panel.ref} style={panel.style} className="room-notes" aria-label="本地图的房间描述">
+    <header {...panel.handleProps}>
       <strong>房间描述</strong>
       <span className="text-faint">{rooms.length ? `${rooms.length} 间 · 标出 ${located}${exploredCount ? ` · 已探索 ${exploredCount}` : ''}` : `${areas.length} 条场景要点`}</span>
       <button type="button" aria-label="收起房间描述" aria-expanded="true" onClick={() => setExpanded(false)}>–</button>
