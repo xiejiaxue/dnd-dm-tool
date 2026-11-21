@@ -5,6 +5,7 @@ import type { MapNote, MapNotePatch } from '../types';
 import { MAP_NOTE_TEXT_LIMIT } from '../../../shared/table-state';
 import MiniMarkdown from './query/MiniMarkdown';
 import ConfirmButton from './ConfirmButton';
+import { CARD_PANEL_KEY, useDraggablePanel } from '../hooks/useDraggablePanel';
 
 interface Props {
   note: MapNote;
@@ -45,10 +46,12 @@ export default function MapNoteCard({ note, canEdit, editing: startEditing = fal
     setEditing(false);
   };
 
+  const panel = useDraggablePanel<HTMLElement>(CARD_PANEL_KEY);
+
   if (editing) {
     const tooLong = text.length > MAP_NOTE_TEXT_LIMIT;
-    return <section className="map-note-card" aria-label="编辑地图笔记">
-      <header><strong>地图笔记</strong><button type="button" aria-label="关闭" onClick={onClose}>✕</button></header>
+    return <section ref={panel.ref} style={panel.style} className="map-note-card" aria-label="编辑地图笔记">
+      <header {...panel.handleProps}><strong>地图笔记</strong><button type="button" aria-label="关闭" onClick={onClose}>✕</button></header>
       <input className="field-sm" aria-label="笔记标题" maxLength={120} value={title} onChange={event => setTitle(event.target.value)} autoFocus />
       <textarea className="field-sm" aria-label="笔记内容" placeholder="房间描述、陷阱、线索……支持 **加粗**、列表与表格" value={text} onChange={event => setText(event.target.value)} rows={7} />
       <div className={`map-note-count ${tooLong ? 'text-accent' : ''}`}>{text.length} / {MAP_NOTE_TEXT_LIMIT}</div>
@@ -69,8 +72,8 @@ export default function MapNoteCard({ note, canEdit, editing: startEditing = fal
     </section>;
   }
 
-  return <section className="map-note-card" aria-label={`地图笔记：${note.title}`}>
-    <header><strong>{note.title}</strong>{canEdit && <span className="map-note-visibility">{note.visible ? '玩家可见' : '仅 DM'}</span>}<button type="button" aria-label="关闭" onClick={onClose}>✕</button></header>
+  return <section ref={panel.ref} style={panel.style} className="map-note-card" aria-label={`地图笔记：${note.title}`}>
+    <header {...panel.handleProps}><strong>{note.title}</strong>{canEdit && <span className="map-note-visibility">{note.visible ? '玩家可见' : '仅 DM'}</span>}<button type="button" aria-label="关闭" onClick={onClose}>✕</button></header>
     <div className="map-note-text">{note.text.trim() ? <MiniMarkdown text={note.text} /> : <p className="text-faint">（没有内容）</p>}</div>
     {(note.journal || canEdit) && <footer>
       {note.journal && onOpenJournal && <button type="button" className="btn-xs" onClick={() => onOpenJournal(note.journal!.id)}>打开日志：{note.journal.title}</button>}

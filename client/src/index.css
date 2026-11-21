@@ -719,6 +719,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .room-note-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
 .room-note-actions .map-note-check { margin-left: auto; }
 .room-notes-done { color: #38604b; font-weight: 700; }
+.panel-drag-handle { cursor: grab; user-select: none; touch-action: none; }
+.panel-drag-handle.is-dragging { cursor: grabbing; }
+.room-notes.is-collapsed { display: flex; flex-direction: row; align-items: stretch; }
+.room-notes-grip { display: flex; align-items: center; padding: 0 2px 0 8px; color: #a6a49b; font-size: 12px; }
 
 /* Story route (DM): chapters, scenes and the steps of the scene at the table. */
 .story-route { flex: 1; min-height: 0; overflow-y: auto; font-size: 12px; color: var(--ink); }
