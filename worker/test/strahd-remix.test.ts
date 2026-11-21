@@ -68,6 +68,15 @@ it('reuses original Strahd maps under its own asset ids with known cards',()=>{
   expect(room('04','12')).toContain('入内所见');
   expect(area('02','R1 · 雾墙')).toContain('入内所见');expect(area('17','R8 · 悲痛之心')).toContain('入内所见');
   expect(area('06','L3 · 三、镇上各处')).not.toContain('入内所见');
+  // Death House's dungeon fights become optional road fights on the travel map, never preset.
+  const road=strahdRemixScenes.find(s=>s.key==='01')!;
+  expect(area('01','死亡之屋的余烬')).toContain('他是上古之人，他是领土本身');
+  for(const fight of ['L2 · 战斗 5：河边的背包','L3 · 战斗 5：风车下的夫妇','L5 · 战斗 5：松林里的神龛','L5 · 小冲突：林间小屋的门','L6 · 战斗 5：河弯的合唱'])
+    expect(road.areas!.some(a=>a.name.startsWith(fight)),fight).toBe(true);
+  const embers=strahdRemixScenes.flatMap(s=>s.encounters.filter(e=>e.source.endsWith('死亡之屋余烬')));
+  expect(embers.map(e=>e.name)).toEqual(['蜈蚣群','食尸鬼','古斯塔夫·杜尔斯特','伊丽莎白·杜尔斯特','幽影','拟身怪','衰败者洛苟斯']);
+  expect(embers.every(e=>!e.automatic)).toBe(true);
+  expect(area('00','L0 · 主持人要演出来的三件事')).toContain('杜尔斯特家墓');
 });
 
 it('creates a 重置版 campaign with only the reconstruction default groups',async()=>{
@@ -98,7 +107,7 @@ it('serves the v2 notes to the DM only and adds optional groups idempotently',as
   const prologue=Object.values((await load(c.id))!.scenes).find(s=>s.name.startsWith('00'))!;
   const l0=await (await api(`/api/campaigns/${c.slug}/strahd-remix-scene/${prologue.id}`,host)).json() as any;
   expect(l0.areas.some((a:any)=>a.name.startsWith('L0 · 二、战斗'))).toBe(true);
-  expect(l0.encounters.filter((e:any)=>!e.automatic).map((e:any)=>e.name)).toEqual(['狼','蝙蝠群','僵尸']);
+  expect(l0.encounters.filter((e:any)=>!e.automatic).map((e:any)=>e.name)).toEqual(['狼','蝙蝠群','僵尸','蜈蚣群']);
   expect(preset.areas.some((a:any)=>a.name.startsWith('L0'))).toBe(false);
   expect(preset.areas.find((a:any)=>a.key==='B').text).toContain('【原版】');
   const e=preset.encounters.find((e:any)=>e.name==='施特拉德恐狼');expect(e.automatic).toBe(false);

@@ -4071,8 +4071,12 @@
     "cr": "",
     "hp": 22,
     "initiativeBonus": 2,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
   },
   {
     "id": "COS__7eff6f0c6143457f",
@@ -4118,8 +4122,12 @@
     "cr": "",
     "hp": 22,
     "initiativeBonus": 1,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "第 1 次 · 迷雾与葬礼"
+    ],
+    "sceneKeys": [
+      "00"
+    ]
   },
   {
     "id": "COS__a20690e338296546",
@@ -4131,8 +4139,12 @@
     "cr": "",
     "hp": 16,
     "initiativeBonus": 2,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
   },
   {
     "id": "COS__8cf116414ee0dee0",
@@ -4144,8 +4156,12 @@
     "cr": "",
     "hp": 58,
     "initiativeBonus": 1,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
   },
   {
     "id": "COS__c9bc75def3e5cecb",
@@ -4157,8 +4173,12 @@
     "cr": "2",
     "hp": 36,
     "initiativeBonus": 3,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
   },
   {
     "id": "COS__3b8f9e52f2e0821a",
@@ -4170,8 +4190,12 @@
     "cr": "2",
     "hp": 36,
     "initiativeBonus": 3,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
   },
   {
     "id": "COS__334229a97a9c13d4",
@@ -4183,8 +4207,12 @@
     "cr": "5",
     "hp": 136,
     "initiativeBonus": -1,
-    "chapters": [],
-    "sceneKeys": []
+    "chapters": [
+      "总览与旅途"
+    ],
+    "sceneKeys": [
+      "01"
+    ]
   },
   {
     "id": "COS__795fd7ef690f6320",
