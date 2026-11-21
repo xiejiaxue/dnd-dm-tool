@@ -39,7 +39,8 @@ export function useMapScale(context: Context) {
   const commit = useCallback(() => {
     const pending = draft.current, scope = current.current;
     if (pending && scope.enabled && pending.sceneId === scope.sceneId && pending.mapImage === scope.mapImage && pending.value !== scope.value) {
-      connection.sendOps([{ op: 'updateMapScale', mapScale: pending.value }]);
+      // Pieces move with the picture so nothing drifts off its spot on the map.
+      connection.sendOps([{ op: 'updateMapScale', mapScale: pending.value, movePieces: true }]);
     }
     // The connection's existing optimistic state handles acknowledgement/rollback.
     cancel();

@@ -3,6 +3,7 @@ import { insertByValue, removeFromTurnOrder, stepTurn } from '../../shared/initi
 import { applyCampaignTracking, FACTION_NOTE_LIMIT, QUEST_STATUSES, type QuestStatus } from '../../shared/faction-quests';
 import { isConditionId, MAX_CONDITION_ROUNDS, normalizeConditions, tickConditionsForActiveTurn, type TokenCondition } from '../../shared/conditions';
 import { applyHandoutOp, applyMapNoteOp, MAP_NOTE_TEXT_LIMIT, MAX_MAP_NOTES, shownHandout } from '../../shared/table-state';
+import { rescalePieces } from '../../shared/map-scale';
 import {
   type Campaign,
   type ChatMessage,
@@ -249,7 +250,7 @@ export function authorizeOperation(value: unknown, state: PersistedRoomState, ac
     case 'updateMap':
       return { op, mapImage: mapUrl(value.mapImage), mapSize: sizePair(value.mapSize), playArea: playArea(value.playArea), fogBasisScale: value.fogBasisScale === undefined ? 1 : boundedNumber(value.fogBasisScale, 0.1, 8) };
     case 'updateMapScale':
-      return { op, mapScale: boundedNumber(value.mapScale, 0.1, 8) };
+      return { op, mapScale: boundedNumber(value.mapScale, 0.1, 8), ...(value.movePieces === true ? { movePieces: true } : {}) };
     case 'addEnemy':
       return { op, entryId: shortText(value.entryId, 180), nameZh: shortText(value.nameZh, 120) };
     case 'removeEnemy':
@@ -414,6 +415,7 @@ export function applyOperation(state: PersistedRoomState, op: Op): void {
       return;
     case 'updateMapScale':
       scene.fogBasisScale = resolveFogBasisScale(scene);
+      if (op.movePieces) Object.assign(scene, rescalePieces(scene, op.mapScale / (scene.mapScale ?? 1)));
       scene.mapScale = op.mapScale;
       return;
     case 'addEnemy': {

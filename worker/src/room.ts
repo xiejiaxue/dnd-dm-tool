@@ -1,6 +1,6 @@
 import { findModule, findModuleRoute } from './modules/registry';
 import { presetSceneFor } from './modules/preset-encounters';
-import { presetNotes, type ModuleNote } from '../../shared/encounter-presets';
+import { presetNotes, storyScene, type ModuleNote, type StoryScene } from '../../shared/encounter-presets';
 import type { ModuleRoute } from './modules/types';
 import { resolveFogBasisScale } from '../../shared/fog';
 import { chatRollExpression, parseRollNotation, rollNotation } from '../../shared/dice-notation';
@@ -141,6 +141,8 @@ export class RoomDurableObject extends DurableObject<Env> {
 
     if (url.pathname === "/notes" && request.method === "GET")
       return this.respondJson(this.searchNotes(actor, url.searchParams));
+    if (url.pathname === "/story" && request.method === "GET")
+      return this.respondJson(this.storyRoute(actor, url.searchParams));
 
     const moduleMatch = /^\/([a-z0-9-]+)(?:\/([^/]+))?$/u.exec(url.pathname);
     const moduleRoute = moduleMatch && findModuleRoute(moduleMatch[1], moduleMatch[2] !== undefined, request.method);
@@ -709,6 +711,17 @@ export class RoomDurableObject extends DurableObject<Env> {
       );
     const copy = projectRoomState({ ...this.requireState(), currentSceneId: sceneId }, actor).scene;
     return this.respondJson(copy);
+  }
+
+  /** The campaign's scenes in order, with each module scene's chapter and step counts, for the DM's story route. */
+  private storyRoute(actor: RoomActor, params: URLSearchParams): StoryScene[] {
+    this.requireModerator(actor);
+    const presets = findModule(params.get("module") ?? undefined)?.presets ?? [];
+    const state = this.requireState();
+    return activeCampaign(state).sceneIds.flatMap((sceneId) => {
+      const scene = state.scenes[sceneId];
+      return scene ? [storyScene(sceneId, scene.name, scene.unlocked === true, presetSceneFor(presets, scene))] : [];
+    });
   }
 
   /** Overviews and area notes of this campaign's module scenes that contain every query word; more words in the title rank first. */

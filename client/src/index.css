@@ -708,3 +708,51 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .room-notes-scroll summary { cursor: pointer; padding: 6px 4px 4px; color: #62645c; font-size: 11px; }
 .room-notes-unplaced { margin-left: auto; color: #a6a49b; font-size: 10px; }
 @container battle (max-width: 560px) { .room-notes { left: 10px; bottom: 10px; } }
+
+/* Quick locate: frames the map, the party or the selected piece with a short camera flight. */
+.campaign-locate { display: flex; align-items: center; gap: 4px; padding: 6px 12px 8px; border-top: 1px solid var(--line); font-size: 11px; }
+.campaign-locate > span { margin-right: auto; color: var(--muted); }
+.campaign-locate button { height: 26px; padding: 0 9px; border: 1px solid var(--line); background: #fcfbf8; color: var(--ink); font-size: 11px; }
+.campaign-locate button:hover:not(:disabled) { border-color: var(--ink); color: var(--accent); }
+.campaign-locate button:disabled { color: #a6a49b; cursor: default; }
+@media (max-width: 740px) { .campaign-locate button { height: 32px; } }
+.room-note-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.room-note-actions .map-note-check { margin-left: auto; }
+.room-notes-done { color: #38604b; font-weight: 700; }
+
+/* Story route (DM): chapters, scenes and the steps of the scene at the table. */
+.story-route { flex: 1; min-height: 0; overflow-y: auto; font-size: 12px; color: var(--ink); }
+.story-muted { color: var(--muted); }
+.story-now { position: sticky; top: 0; z-index: 1; display: flex; flex-direction: column; gap: 4px; padding: 12px; border-bottom: 1px solid var(--ink); background: #fcfbf8; }
+.story-progress { height: 4px; background: #eeede6; }
+.story-progress > span { display: block; height: 100%; background: var(--accent); transition: width 200ms ease; }
+.story-now-title { font-size: 13px; }
+.story-now-brief { line-height: 1.5; }
+.story-next { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 4px; }
+.story-next > span { flex: 1 1 100%; }
+.story-chapter h3 { display: flex; justify-content: space-between; padding: 10px 12px 6px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; }
+.story-scene { border-top: 1px solid var(--line); scroll-margin-top: 190px; }
+.story-scene.is-current { background: #f3f1ea; box-shadow: inset 3px 0 0 var(--accent); }
+.story-scene-row { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
+.story-stage { display: grid; place-items: center; flex: 0 0 20px; width: 20px; height: 20px; border: 1.5px solid var(--muted); border-radius: 50%; font-size: 11px; line-height: 1; color: var(--accent); }
+.story-scene.is-done .story-stage { border-color: #38604b; background: #38604b; color: #fff; }
+.story-scene.is-active .story-stage { border-color: var(--accent); }
+.story-scene-name { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; }
+.story-scene-name > span { overflow-wrap: anywhere; font-weight: 600; }
+.story-scene.is-done .story-scene-name > span { color: var(--muted); }
+.story-scene-name small { color: var(--muted); font-size: 10px; }
+.story-here { flex: 0 0 auto; padding: 2px 6px; background: var(--ink); color: #fff; font-size: 10px; }
+.story-steps { padding: 0 12px 10px 40px; }
+.story-steps h4 { display: flex; justify-content: space-between; margin: 8px 0 4px; font-size: 11px; font-weight: 600; }
+.story-steps h4 span { color: var(--muted); font-weight: 400; }
+.story-steps li { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.story-steps li input { accent-color: #38604b; }
+.story-steps li.is-done .story-step-name { color: var(--muted); text-decoration: line-through; }
+.story-step-name { flex: 1; min-width: 0; text-align: left; line-height: 1.4; }
+.story-step-name:hover { color: var(--accent); }
+.story-locate { flex: 0 0 auto; padding: 1px 6px; border: 1px solid var(--line); font-size: 10px; color: var(--ink); }
+.story-locate:hover:not(:disabled) { border-color: var(--ink); color: var(--accent); }
+.story-locate:disabled { color: #a6a49b; }
+.story-brief { margin-top: 2px; }
+.story-brief summary { cursor: pointer; color: var(--accent); font-size: 11px; }
+.story-brief-text { max-height: 320px; overflow-y: auto; margin-top: 6px; padding: 8px; background: #f3f1ea; line-height: 1.6; }

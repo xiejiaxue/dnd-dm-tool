@@ -52,6 +52,26 @@ describe('fog contract parity and token placement', () => {
     expect(authorizeOperation(input,state,host)).toEqual({op:'revealFogRect',rect:{x:500,y:350,width:23,height:27}});
     expect(()=>authorizeOperation(input,state,{...host,role:'player'})).toThrow();
   });
+  it('moves pieces with the map picture when the DM rescales it, on the room and the client alike', () => {
+    const state = fixture();
+    const scene = activeScene(state);
+    scene.tokens.push({ id: 'goblin', kind: 'monster', name: '哥布林', entryId: 'MM__Goblin', x: 100, y: 60, size: 100, avatar: '', color: '#fff', hidden: false });
+    scene.walls.push({ id: 'w1', p1: [10, 20], p2: [30, 40] });
+    scene.notes = [{ id: 'n1', x: 50, y: 50, title: '门', text: '', visible: false }];
+    let client = { scene: structuredClone(scene), campaign: state.campaign };
+    for (const input of [{ op: 'updateMapScale', mapScale: 2, movePieces: true }, { op: 'updateMapScale', mapScale: 0.5, movePieces: true }]) {
+      const op = authorizeOperation(input, state, host);applyOperation(state, op);
+      client = applyOptimisticOps(client, projectPatchOperations(state, [op], host)!)! as typeof client;
+      expect(client.scene).toEqual(activeScene(state));
+    }
+    expect(activeScene(state).tokens[0]).toMatchObject({ x: 50, y: 30, size: 100 });
+    expect(activeScene(state).walls[0]).toMatchObject({ p1: [5, 10], p2: [15, 20] });
+    expect(activeScene(state).notes![0]).toMatchObject({ x: 25, y: 25 });
+    // Without the flag (a restored backup) pieces stay where they are.
+    applyOperation(state, authorizeOperation({ op: 'updateMapScale', mapScale: 1 }, state, host));
+    expect(activeScene(state).tokens[0]).toMatchObject({ x: 50, y: 30 });
+    expect(authorizeOperation({ op: 'updateMapScale', mapScale: 1, movePieces: 'yes' }, state, host)).toEqual({ op: 'updateMapScale', mapScale: 1 });
+  });
   it('rejects old scale-dependent brush indices instead of corrupting the new raster', () => {
     const state = fixture();applyOperation(state, { op: 'updateMapScale', mapScale: 2 });
     expect(() => authorizeOperation({ op: 'setFog', cells: [25], revealed: true }, state, host)).toThrow('迷雾坐标已更新');

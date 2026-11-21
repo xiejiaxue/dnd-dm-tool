@@ -120,3 +120,17 @@ it('searches area notes of the campaign scenes for moderators only, title matche
   await api('/api/invites/redeem',player,{token:new URL(inv.inviteUrl,base).hash.slice(8)});
   expect((await api(`/api/campaigns/${c.slug}/notes?q=${encodeURIComponent('犬舍')}`,player)).status).toBe(403);
 });
+
+it('lists the story route for moderators: scenes in order with chapters and step counts',async()=>{
+  const host=await visitor(), c=await campaign(host), player=await visitor();
+  const route=await (await api(`/api/campaigns/${c.slug}/story`,host)).json() as any[];
+  expect(route).toHaveLength(phandelverScenes.length);
+  const hideout=route.find(r=>r.name.startsWith('01'));
+  expect(hideout.preset).toMatchObject({name:expect.any(String)});
+  expect(hideout.preset.rooms).toBeGreaterThan(0);
+  expect(hideout.preset.encounters).toBeGreaterThan(0);
+  expect(typeof hideout.chapter==='string'||hideout.chapter===null).toBe(true);
+  const inv=await (await api(`/api/campaigns/${c.slug}/invites`,host,{role:'player'})).json() as any;
+  await api('/api/invites/redeem',player,{token:new URL(inv.inviteUrl,base).hash.slice(8)});
+  expect((await api(`/api/campaigns/${c.slug}/story`,player)).status).toBe(403);
+});
