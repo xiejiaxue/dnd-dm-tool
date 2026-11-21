@@ -23,6 +23,43 @@ export interface PresetScene {
   areas?: PresetArea[];
 }
 
+/** Rooms are keyed by their map label (K7, N2a, 12); `a01`… are a scene's own story sections. */
+export const isRoomArea = (area: Pick<PresetArea, 'key'>) => !/^a\d+$/.test(area.key);
+
+/** One campaign scene on the DM's story route, in campaign order, with its module chapter when it has one. */
+export interface StoryScene {
+  sceneId: string;
+  name: string;
+  unlocked: boolean;
+  chapter: string | null;
+  preset: {
+    name: string;
+    /** Keyed rooms and story sections, which the route lists as steps. */
+    rooms: number;
+    sections: number;
+    encounters: number;
+    /** First line of the scene overview, as a reminder in the route. */
+    brief: string;
+  } | null;
+}
+
+/** The scene's place on the story route, from its module preset. */
+export function storyScene(sceneId: string, name: string, unlocked: boolean, preset: PresetScene | undefined): StoryScene {
+  if (!preset) return { sceneId, name, unlocked, chapter: null, preset: null };
+  const areas = preset.areas ?? [];
+  const brief = preset.notes.split('\n').map(line => line.replace(/^[#>*\-\s]+|\*\*/g, '').trim()).find(line => line.length > 0) ?? '';
+  return {
+    sceneId, name, unlocked, chapter: preset.chapter || null,
+    preset: {
+      name: preset.name,
+      rooms: areas.filter(isRoomArea).length,
+      sections: areas.filter(area => !isRoomArea(area)).length,
+      encounters: preset.encounters.length,
+      brief: brief.length > 90 ? `${brief.slice(0, 89)}…` : brief,
+    },
+  };
+}
+
 /** A DM note found in a campaign scene's preset: its overview or one keyed area. */
 export interface ModuleNote {
   id: string;

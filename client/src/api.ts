@@ -1,4 +1,4 @@
-import type { ModuleNote, PresetScene } from '../../shared/encounter-presets';
+import type { ModuleNote, PresetScene, StoryScene } from '../../shared/encounter-presets';
 import type { FactionQuestBook } from '../../shared/faction-quests';
 import type { Campaign, EntryType, IndexEntry, Scene } from './types';
 
@@ -144,6 +144,8 @@ export const api = {
 
   /** DM-only: area notes and scene overviews of this campaign's module maps. */
   notes: (q: string) => json<ModuleNote[]>(roomPath(`/notes?q=${encodeURIComponent(q)}`)),
+  /** DM-only: the campaign's scenes in order, with module chapters and step counts. */
+  story: () => json<StoryScene[]>(roomPath('/story')),
   waterdeepFactionQuests: () => json<FactionQuestBook>(roomPath('/waterdeep-faction-quests')),
   previewWaterdeepDeployment: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment')),
   deployWaterdeep: () => json<WaterdeepDeploymentResult>(roomPath('/waterdeep-deployment'), jsonRequest('POST', {id: crypto.randomUUID()})),

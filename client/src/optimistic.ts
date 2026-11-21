@@ -3,6 +3,7 @@ import { removeFromTurnOrder, stepTurn } from '../../shared/initiative';
 import { applyCampaignTracking } from '../../shared/faction-quests';
 import { tickConditionsForActiveTurn } from '../../shared/conditions';
 import { applyHandoutOp, applyMapNoteOp } from '../../shared/table-state';
+import { rescalePieces } from '../../shared/map-scale';
 import { fogGridSize, type Campaign, type InitiativeEntry, type Op, type PlayerToken, type Scene, type Token } from './types';
 
 /** The active-room projection that may be predicted locally. */
@@ -92,7 +93,12 @@ function applyOperation(scene: Scene, campaign: Campaign | null, operation: Op):
         campaign,
       };
     case 'updateMapScale':
-      return { scene: scene.mapScale === operation.mapScale && scene.fogBasisScale !== undefined ? scene : { ...scene, mapScale: operation.mapScale, fogBasisScale: operation.fogBasisScale ?? resolveFogBasisScale(scene) }, campaign };
+      return { scene: scene.mapScale === operation.mapScale && scene.fogBasisScale !== undefined ? scene : {
+        ...scene,
+        ...(operation.movePieces ? rescalePieces(scene, operation.mapScale / (scene.mapScale ?? 1)) : {}),
+        mapScale: operation.mapScale,
+        fogBasisScale: operation.fogBasisScale ?? resolveFogBasisScale(scene),
+      }, campaign };
     case 'addEnemy':
       if (!campaign) return null;
       return campaign.enemies.some((entry) => entry.entryId === operation.entryId)

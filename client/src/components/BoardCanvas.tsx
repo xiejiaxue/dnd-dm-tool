@@ -8,7 +8,7 @@ import { useScene, connection, getMySessionId, asPing, type BoardPing } from '..
 import TokenConditions from './TokenConditions';
 import MapNoteCard from './MapNoteCard';
 import { MapPin, PingMarker, PING_MS } from './BoardMarkers';
-import { RoomCard, RoomList, RoomMarker, useRoomNotes } from './RoomNotes';
+import { RoomCard, RoomList, RoomMarker, isRoom, useRoomNotes } from './RoomNotes';
 import { useImage } from '../useImage';
 import { fogGridSize, fogGeometry, resolveFogBasisScale, type Wall } from '../types';
 import { fogBoundary, fogCellAtPoint, fogSelectionRectangle, fogRectangles, type FogRectangle } from './fog-geometry';
@@ -16,7 +16,10 @@ import { MAX_DM_FOG_STRENGTH, useDmFogStrength } from '../hooks/useDmFogStrength
 import TokenShape from './TokenShape';
 import { gridTokenDiameter } from '../../../shared/map-grid';
 import ZoomControl from './ZoomControl';
-import { zoomAroundPoint, wheelZoomFactor } from './board-zoom';
+import { zoomAroundPoint, wheelZoomFactor, viewForRect, viewCenteredOn, boundsOf, easeInOut, interpolateView, type BoardRect, type View } from './board-zoom';
+import { rescalePieces } from '../../../shared/map-scale';
+import { onBoardFocus, takeBoardFocus } from '../board-focus';
+import { areaExplored, areaQuestId } from '../story';
 import { useMapScale } from '../hooks/useMapScale';
 import type { PendingToken } from '../pending';
 import ConfirmButton from './ConfirmButton';
@@ -75,7 +78,7 @@ interface Props {
 }
 
 export default function BoardCanvas({ tool, pending, onClearPending, selectedId, onSelect, brushSize, onBrushSize, onTool, playerPreview = false, onOpenJournal, templateId }: Props) {
-  const { scene, role } = useScene();
+  const { scene, role, campaign } = useScene();
   const mySessionId = getMySessionId();
   const [fogStrength, setFogStrength] = useDmFogStrength();
   const dmView = role === 'dm' && !playerPreview;
@@ -246,6 +249,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return () => {
       if (eraserTimer.current) clearTimeout(eraserTimer.current);
       if (viewFrameRef.current !== null) cancelAnimationFrame(viewFrameRef.current);
+      if (flightRef.current !== null) cancelAnimationFrame(flightRef.current);
     };
   }, []);
 
@@ -301,7 +305,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return { x: Math.floor((p.x - offset[0]) / size) * size + offset[0] + size / 2, y: Math.floor((p.y - offset[1]) / size) * size + offset[1] + size / 2 };
   }, [worldPos, scene, mapZoom.value]);
 
+  // Camera flights: quick locate, rooms, the story route and pulled pings move the view smoothly.
+  const flightRef = useRef<number | null>(null);
+  const stopFlight = useCallback(() => {
+    if (flightRef.current !== null) cancelAnimationFrame(flightRef.current);
+    flightRef.current = null;
+  }, []);
   const scheduleView = useCallback((nextScale: number, nextPos: { x: number; y: number }) => {
+    stopFlight();
     pendingViewRef.current = { scale: nextScale, pos: nextPos };
     if (viewFrameRef.current !== null) return;
     viewFrameRef.current = requestAnimationFrame(() => {
@@ -312,7 +323,35 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       setScale(next.scale);
       setPos(next.pos);
     });
-  }, []);
+  }, [stopFlight]);
+
+  const flyTo = useCallback((target: View) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const from: View = pendingViewRef.current ?? { scale: stage.scaleX(), pos: { x: stage.x(), y: stage.y() } };
+    if (viewFrameRef.current !== null) cancelAnimationFrame(viewFrameRef.current);
+    viewFrameRef.current = null; pendingViewRef.current = null;
+    stopFlight();
+    const viewport = { width: stage.width(), height: stage.height() };
+    const reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Longer trips take a little longer, so far jumps stay readable without slowing short ones.
+    const distance = Math.hypot(target.pos.x - from.pos.x, target.pos.y - from.pos.y) + Math.abs(Math.log(target.scale / from.scale)) * 400;
+    const duration = reduced ? 0 : Math.min(650, 260 + distance * 0.25);
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = duration ? Math.min(1, (now - start) / duration) : 1;
+      const view = t >= 1 ? target : interpolateView(from, target, viewport, easeInOut(t));
+      setScale(view.scale);
+      setPos(view.pos);
+      flightRef.current = t >= 1 ? null : requestAnimationFrame(step);
+    };
+    flightRef.current = requestAnimationFrame(step);
+  }, [stopFlight]);
+
+  const flyToRect = useCallback((rect: BoardRect, maxScale = 2.5) => {
+    const stage = stageRef.current;
+    if (stage) flyTo(viewForRect(rect, { width: stage.width(), height: stage.height() }, 56, maxScale));
+  }, [flyTo]);
 
   // Zoom by a factor around a pointer position (container coordinates), keeping
   // the world point under the cursor fixed — the standard "free zoom" behavior.
@@ -343,8 +382,8 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     const stage = stageRef.current;
     if (!stage) return;
     const viewScale = pendingViewRef.current?.scale ?? stage.scaleX();
-    scheduleView(viewScale, { x: stage.width() / 2 - x * viewScale, y: stage.height() / 2 - y * viewScale });
-  }, [scheduleView]);
+    flyTo(viewCenteredOn({ x, y }, { width: stage.width(), height: stage.height() }, viewScale));
+  }, [flyTo]);
 
   useEffect(() => connection.onMessage((msg) => {
     const ping = asPing(msg);
@@ -357,10 +396,11 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
 
   const handleWheel = useCallback((e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
+    stopFlight();
     const pointer = stageRef.current?.getPointerPosition();
     if (!pointer) return;
     zoomAt(pointer, wheelZoomFactor(e.evt.deltaY, e.evt.deltaMode, stageRef.current?.height() ?? 800));
-  }, [zoomAt]);
+  }, [zoomAt, stopFlight]);
 
   // Erase tool: mousedown reveals cells under the brush (DM only) and marks the
   // press so mousemove only reveals while actually dragging. Runs BEFORE the
@@ -607,6 +647,63 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  // While the DM drags the map-scale slider, pieces preview the move they make on release.
+  const pieces = useMemo(() => scene ? rescalePieces(scene, mapZoom.value / (scene.mapScale ?? 1)) : null,
+    [scene?.tokens, scene?.players, scene?.walls, scene?.notes, scene?.mapScale, mapZoom.value]);
+
+  // Quick locate targets, in board pixels at the displayed map scale.
+  const square = scene ? squarePixels(scene, mapZoom.value) : 50;
+  const mapRect = (): BoardRect | null => scene && (scene.mapImage || scene.mapSize[0]) ? { x: 0, y: 0, width: scene.mapSize[0] * mapZoom.value, height: scene.mapSize[1] * mapZoom.value } : null;
+  const fitMap = () => { const rect = mapRect(); if (rect) flyToRect(rect, 2); };
+  const partyRect = () => boundsOf((pieces?.players ?? []).map(p => ({ x: p.x, y: p.y })), square * 1.5, square * 10);
+  const locateParty = () => { const rect = partyRect(); if (rect) flyToRect(rect); };
+  const selectedPoint = () => {
+    const piece = pieces?.tokens.find(t => t.id === selectedId) ?? pieces?.players.find(p => p.id === selectedId);
+    return piece ? { x: piece.x, y: piece.y } : null;
+  };
+  const locateSelected = () => { const point = selectedPoint(); if (point) flyToRect(boundsOf([point], square, square * 10)!); };
+  /** A room spot ([x, y] fractions of the picture) framed with some surroundings. */
+  const roomRect = (point: number[]): BoardRect | null => {
+    if (!scene) return null;
+    const width = scene.mapSize[0] * mapZoom.value, height = scene.mapSize[1] * mapZoom.value;
+    const span = gridSquare(scene.mapImage, mapZoom.value) ? square * 16 : Math.min(width, height) * 0.3;
+    return boundsOf([{ x: point[0] * width, y: point[1] * height }], 0, span);
+  };
+  const locateRoomRef = useRef<(point: number[]) => void>(() => {});
+  locateRoomRef.current = point => { const rect = roomRect(point); if (rect) flyToRect(rect); };
+
+  // Story route and search: a requested spot is shown once its scene is on the board.
+  const [focusTick, setFocusTick] = useState(0);
+  useEffect(() => onBoardFocus(() => setFocusTick(n => n + 1)), []);
+  useEffect(() => {
+    if (!scene || stageSize.width <= 0) return;
+    const sceneId = scene.id;
+    // Wait one frame so a scene's own fit-on-entry lands first and the flight starts from it.
+    const frame = requestAnimationFrame(() => {
+      const focus = takeBoardFocus(sceneId);
+      if (!focus) return;
+      if (focus.areaKey) { setOpenNote(null); setOpenRoom(focus.areaKey); setShowRooms(true); }
+      if (focus.point) locateRoomRef.current(focus.point);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [scene?.id, stageSize.width > 0, focusTick]);
+
+  // Keyboard: L frames the selected piece (or the party), Shift+L the whole map. (F is the fog tool.)
+  const locateKeys = useRef({ fitMap, locateParty, locateSelected, hasSelection: false });
+  locateKeys.current = { fitMap, locateParty, locateSelected, hasSelection: selectedPoint() != null };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.code !== 'KeyL' || event.metaKey || event.ctrlKey || event.altKey || typingTarget(event.target)) return;
+      const keys = locateKeys.current;
+      event.preventDefault();
+      if (event.shiftKey) keys.fitMap();
+      else if (keys.hasSelection) keys.locateSelected();
+      else keys.locateParty();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const fog = useMemo(() => {
     if (!scene) return null;
     const rectangles = fogRectangles(scene);
@@ -630,6 +727,14 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
   const rooms = dmView ? roomAreas : [];
   const openRoomData = openRoom ? rooms.find(area => area.key === openRoom) : undefined;
   const openRoomCard = (key: string) => { setOpenNote(null); setOpenRoom(current => current === key ? null : key); };
+  // Picking a room from the list also flies there, so the DM never hunts for it on a large map.
+  const openRoomFromList = (key: string) => {
+    const point = rooms.find(area => area.key === key)?.positions?.[0];
+    if (openRoom !== key && point) locateRoomRef.current(point);
+    openRoomCard(key);
+  };
+  const explored = new Set(rooms.filter(area => isRoom(area) && areaExplored(campaign, scene.id, area.key)).map(area => area.key));
+  const roomWorld = (point: number[]) => ({ x: point[0] * scene.mapSize[0] * displayedMapScale, y: point[1] * scene.mapSize[1] * displayedMapScale });
   const deletingWalls = role === 'dm' && tool === 'wall' && wallMode === 'delete' && !spacePan;
   const brushOutline = (() => {
     if (role !== 'dm' || tool !== 'erase' || brushCenter < 0 || spacePan) return null;
@@ -698,8 +803,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         ? { op: 'updateToken', tokenId: editablePiece.id, patch: { conditions } }
         : { op: 'updatePlayer', tokenId: editablePiece.id, patch: { conditions } }])} />
     </div>}
-    {openRoomData && !openNoteData && <RoomCard key={openRoomData.key} area={openRoomData} onClose={() => setOpenRoom(null)} />}
-    {rooms.length > 0 && <RoomList key={scene.id} areas={rooms} openKey={openRoom} showMarkers={showRooms} onShowMarkers={setShowRooms} onOpen={openRoomCard} />}
+    {openRoomData && !openNoteData && <RoomCard key={openRoomData.key} area={openRoomData} onClose={() => setOpenRoom(null)}
+      onLocate={() => { const point = openRoomData.positions?.[0]; if (point) locateRoomRef.current(point); }}
+      onPull={() => { const point = openRoomData.positions?.[0]; if (point) { const p = roomWorld(point); connection.ping(p.x, p.y, true); } }}
+      explored={isRoom(openRoomData) ? explored.has(openRoomData.key) : undefined}
+      onExplored={isRoom(openRoomData) && role === 'dm' ? value => connection.sendOps([{ op: 'setQuestStatus', questId: areaQuestId(scene.id, openRoomData.key), status: value ? 'done' : 'open' }]) : undefined} />}
+    {rooms.length > 0 && <RoomList key={scene.id} areas={rooms} openKey={openRoom} explored={explored} showMarkers={showRooms} onShowMarkers={setShowRooms} onOpen={openRoomFromList} />}
     {openNote && openNoteData && <MapNoteCard key={`${openNote.id}:${openNote.editing}`} note={openNoteData} canEdit={role === 'dm'} editing={openNote.editing} onClose={() => setOpenNote(null)} onOpenJournal={onOpenJournal} />}
     {role === 'dm' && tool === 'select-tokens' && initiativeSelection && <BatchInitiative enemyIds={initiativeSelection} onClose={() => setInitiativeSelection(null)} />}
     {stageSize.width > 0 && stageSize.height > 0 && <Stage
@@ -712,6 +821,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       // so that mousemove fires on every pointer move instead of being captured
       // by a drag. Holding Space pans with any tool.
       draggable={spacePan || !drawing}
+      onDragStart={(e) => { if (e.target === stageRef.current) stopFlight(); }}
       onDragEnd={(e) => {
         // Konva bubbles dragend from dragged children (tokens) up to the Stage;
         // only update the pan position when the Stage itself was the drag target.
@@ -751,7 +861,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
           }} stroke={ACCENT} strokeWidth={1.5} strokeScaleEnabled={false} listening={false} />
         </>)}
         {/* Existing walls: thick dark lines; clickable only while deleting walls. */}
-        {scene.walls.map(w => (
+        {(pieces?.walls ?? scene.walls).map(w => (
           <Line key={w.id} name="wall" points={[w.p1[0], w.p1[1], w.p2[0], w.p2[1]]} stroke={deletingWalls && hoverWall === w.id ? ACCENT : INK} strokeWidth={10} lineCap="round" lineJoin="round"
             listening={deletingWalls} hitStrokeWidth={24}
             onMouseEnter={() => setHoverWall(w.id)} onMouseLeave={() => setHoverWall(null)}
@@ -762,7 +872,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         {wallPreview && (
           <Line points={[...wallPreview]} stroke={ACCENT} strokeWidth={3} dash={[8, 8]} lineCap="round" listening={false} />
         )}
-        {scene.tokens.filter(t => dmView || !t.hidden).map(t => (
+        {(pieces?.tokens ?? scene.tokens).filter(t => dmView || !t.hidden).map(t => (
           <TokenShape
             key={t.id}
             token={t}
@@ -787,7 +897,7 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
       </Layer>
       {/* Player pieces stay above map, walls, enemies and fog for every viewer. */}
       <Layer name="player-tokens">
-        {scene.players.map(p => (
+        {(pieces?.players ?? scene.players).map(p => (
           <TokenShape
             key={p.id}
             token={p}
@@ -807,8 +917,8 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
         ))}
         {showRooms && rooms.flatMap(area => (area.positions ?? []).map(([x, y], index) => <RoomMarker key={`${area.key}:${index}`} area={area}
           x={x * scene.mapSize[0] * displayedMapScale} y={y * scene.mapSize[1] * displayedMapScale} scale={scale}
-          active={openRoom === area.key} listening={!drawing && !spacePan} onOpen={() => openRoomCard(area.key)} />))}
-        {(scene.notes ?? []).map(note => <MapPin key={note.id} note={note} scale={scale} active={openNote?.id === note.id}
+          active={openRoom === area.key} explored={explored.has(area.key)} listening={!drawing && !spacePan} onOpen={() => openRoomCard(area.key)} />))}
+        {(pieces?.notes ?? scene.notes ?? []).map(note => <MapPin key={note.id} note={note} scale={scale} active={openNote?.id === note.id}
           draggable={role === 'dm' && tool === 'select' && !spacePan}
           onOpen={() => setOpenNote({ id: note.id, editing: false })}
           onMove={(x, y) => connection.sendOps([{ op: 'updateMapNote', noteId: note.id, patch: { x, y } }])} />)}
@@ -832,6 +942,12 @@ export default function BoardCanvas({ tool, pending, onClearPending, selectedId,
     <div className="campaign-zoom-dock">
       {role === 'dm' && scene.mapImage && !scene.mapImage.startsWith('blob:') && <ZoomControl key={`${scene.id}:${scene.mapImage}`} kind="map" value={displayedMapScale} onChange={mapZoom.preview} onStep={mapZoom.set} onCommit={mapZoom.commit} onCancel={mapZoom.cancel} onReset={() => mapZoom.set(1)} />}
       <ZoomControl kind="view" value={scale} onChange={setViewScale} onStep={setViewScale} onReset={resetView} />
+      <div className="campaign-locate" role="group" aria-label="快速定位">
+        <span>定位</span>
+        <button type="button" onClick={fitMap} disabled={!mapRect()} title="整张地图放进视野（Shift+L）">全图</button>
+        <button type="button" onClick={locateParty} disabled={!partyRect()} title="框住所有玩家棋子（L）">队伍</button>
+        <button type="button" onClick={locateSelected} disabled={!selectedPoint()} title="移到选中的棋子（L）">选中</button>
+      </div>
     </div>
   </div>
   );

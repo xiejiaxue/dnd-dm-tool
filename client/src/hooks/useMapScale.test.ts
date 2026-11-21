@@ -52,11 +52,11 @@ describe('map-only scale draft', () => {
     expect(frames.size).toBe(1); expect(connection.sendOps).not.toHaveBeenCalled();
     draw(); expect(render().value).toBe(1.8);
     hook.commit(); hook.commit();
-    expect(connection.sendOps).toHaveBeenCalledExactlyOnceWith([{ op: 'updateMapScale', mapScale: 1.8 }]);
+    expect(connection.sendOps).toHaveBeenCalledExactlyOnceWith([{ op: 'updateMapScale', mapScale: 1.8, movePieces: true }]);
   });
   it('commits the latest value even if pointer-up arrives before the animation frame', () => {
     const hook = render(); hook.preview(2.33); hook.commit();
-    expect(connection.sendOps).toHaveBeenCalledExactlyOnceWith([{ op: 'updateMapScale', mapScale: 2.33 }]);
+    expect(connection.sendOps).toHaveBeenCalledExactlyOnceWith([{ op: 'updateMapScale', mapScale: 2.33, movePieces: true }]);
     expect(frames.size).toBe(0);
   });
   it('drops a pending edit when the scene, map image, or role changes', () => {
@@ -74,7 +74,7 @@ describe('map-only scale draft', () => {
   });
   it('clamps bounds, avoids unchanged commands and follows authoritative rollback after commit', () => {
     const hook = render(); hook.set(1); expect(connection.sendOps).not.toHaveBeenCalled();
-    hook.set(99); expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'updateMapScale', mapScale: 8 }]);
+    hook.set(99); expect(connection.sendOps).toHaveBeenLastCalledWith([{ op: 'updateMapScale', mapScale: 8, movePieces: true }]);
     context = { ...context, value: 8 }; expect(render().value).toBe(8);
     context = { ...context, value: 1 }; expect(render().value).toBe(1);
   });

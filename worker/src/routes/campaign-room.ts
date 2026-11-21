@@ -130,6 +130,14 @@ export const campaignRoomRoutes: CampaignRoute[] = [
     },
   },
   {
+    methods: ["GET"],
+    path: "/story",
+    async handle({ env, access }) {
+      const params = new URLSearchParams({ module: access.templateId ?? LEGACY_TEMPLATE_ID });
+      return callRoom(env, access, "GET", `/story?${params}`);
+    },
+  },
+  {
     methods: ["GET", "POST"],
     path: "/scenes",
     async handle({ request, env, access }) {

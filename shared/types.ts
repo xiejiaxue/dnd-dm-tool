@@ -175,7 +175,7 @@ export type Op =
   | { op: 'removeWall'; wallId: string }
   | { op: 'updateGrid'; patch: Partial<GridConfig> }
   | { op: 'updateMap'; mapImage: string | null; mapSize: [number, number]; playArea: PlayArea; fogBasisScale?: number }
-  | { op: 'updateMapScale'; mapScale: number; fogBasisScale?: number }
+  | { op: 'updateMapScale'; mapScale: number; fogBasisScale?: number; /** Move every piece with the picture, keeping it on the same map spot. */ movePieces?: boolean }
   | { op: 'addEnemy'; entryId: string; nameZh: string }
   | { op: 'removeEnemy'; entryId: string }
   | { op: 'switchCampaign'; campaignId: string }
