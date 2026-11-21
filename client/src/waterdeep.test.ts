@@ -39,4 +39,13 @@ describe('Waterdeep NPC cards and tokens', () => {
     expect(card('曼松拟像').campaignCard.rows).toContainEqual(['护甲等级', '12']);
     expect(card('曼松拟像').campaignCard.body.join('\n')).not.toContain('9 环——');
   });
+  it('uses doppelganger, not mimic, stats for the shapechanger NPCs', () => {
+    for (const name of ['邦妮', '威利福特·克维洛']) {
+      const npc = waterdeepIndex.find(n => n.nameZh === name)!;
+      const card = getWaterdeepCard(npc.id)!;
+      expect(npc).toMatchObject({ template: '变形怪', cr: '3', hp: 52 });
+      expect(card.campaignCard.body.join('\n')).toContain('读心Read Thoughts');
+      expect(card.campaignCard.body.join('\n')).not.toContain('拟身怪');
+    }
+  });
 });
